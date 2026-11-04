@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Carnet de liens</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:wght@500;600;700&display=swap">
+<style>
+/* Layout: one notebook column (max 560px) centred on wide screens; sticky header carrying the role switch;
+   entries as dated lines with a left date column, like a diary; sticky action bar at the bottom. */
+:root{
+  --bg:#F1F5F5;
+  --surface:#FFFFFF;
+  --surface-2:#E6EDED;
+  --fg:#17262A;
+  --muted:#5B6E72;
+  --line:#D3DDDE;
+  --accent:#126A6B;
+  --accent-fg:#FFFFFF;
+  --accent-soft:#D9ECEC;
+  --warn:#8F5A00;
+  --warn-soft:#FBEBD0;
+  --ok:#2A7A4D;
+  --ok-soft:#DAF0E2;
+  --danger:#B3261E;
+  --danger-soft:#F8DCDA;
+  --paper:#FFFDF6;
+  --paper-line:#E2DBC4;
+  --shadow:0 1px 2px rgba(23,38,42,.06),0 10px 28px rgba(23,38,42,.10);
+  --font-ui:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1718; --surface:#172123; --surface-2:#1F2C2F; --fg:#E7EEEE; --muted:#9BB0B3; --line:#2B3A3D;
+    --accent:#5FC6C3; --accent-fg:#062A2A; --accent-soft:#153A3B;
+    --warn:#F2B65C; --warn-soft:#3A2A10; --ok:#72CF99; --ok-soft:#143A27; --danger:#FF8C82; --danger-soft:#4A1B18;
+    --paper:#1B1F1A; --paper-line:#3A3D30;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1718; --surface:#172123; --surface-2:#1F2C2F; --fg:#E7EEEE; --muted:#9BB0B3; --line:#2B3A3D;
+  --accent:#5FC6C3; --accent-fg:#062A2A; --accent-soft:#153A3B;
+  --warn:#F2B65C; --warn-soft:#3A2A10; --ok:#72CF99; --ok-soft:#143A27; --danger:#FF8C82; --danger-soft:#4A1B18;
+  --paper:#1B1F1A; --paper-line:#3A3D30;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+*{box-sizing:border-box}
+button,select,textarea,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+.app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;position:relative}
+
+/* header */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px 12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:34px;height:34px;border-radius:9px;background:var(--accent);position:relative;flex:none}
+.mark::before,.mark::after{content:"";position:absolute;left:9px;right:9px;height:2px;background:var(--accent-fg);border-radius:2px}
+.mark::before{top:12px}.mark::after{top:20px;right:15px}
+.brand-name{font-family:var(--font-display);font-weight:700;font-size:18px;line-height:1.1}
+.brand-sub{font-size:12.5px;color:var(--muted);line-height:1.2}
+.demo{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);padding:3px 8px;border-radius:999px;flex:none}
+.rolebox{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.rolelabel{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.rolebox select{width:100%;padding:10px 40px 10px 12px;border:2px solid var(--accent);border-radius:10px;background:var(--surface);font-weight:700;appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--accent) 50%),linear-gradient(135deg,var(--accent) 50%,transparent 50%);
+  background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+
+/* views */
+.view{display:flex;flex-direction:column;gap:14px;padding-block:16px 8px;flex:1}
+.h1{font-size:26px;font-weight:700}
+.sub{color:var(--muted);font-size:14.5px}
+.lead{font-size:15px;color:var(--muted);max-width:60ch}
+.back{align-self:flex-start;background:none;border:0;padding:4px 0;color:var(--accent);font-weight:700}
+.viewhead{display:flex;flex-direction:column;gap:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.accent{background:var(--accent-soft);color:var(--accent)}
+
+/* residents */
+.residents{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.rescard{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.rescard:hover{border-color:var(--accent)}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--font-display);font-weight:700;display:grid;place-items:center;flex:none;font-size:15px}
+.resmain{display:flex;flex-direction:column;min-width:0;flex:1}
+.resname{font-family:var(--font-display);font-weight:600;font-size:17px}
+.ressub{font-size:13px;color:var(--muted)}
+.resbadges{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
+
+/* rule banner */
+.rule{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.rule strong{font-family:var(--font-display);font-size:15px}
+.phone{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tel{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.02em;user-select:all;-webkit-user-select:all}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 12px;font-weight:700;font-size:14px;text-decoration:none;color:var(--fg);display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.btn.small{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+
+/* filters */
+.filters{display:flex;gap:6px;overflow-x:auto;padding-block:2px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+
+/* entries */
+.entries{display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.entry{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:14px 14px;border-top:1px solid var(--line);min-width:0}
+.entry:first-child{border-top:0}
+.entry.pending{background:var(--warn-soft)}
+.entry.pending .when{color:var(--warn)}
+.when{display:flex;flex-direction:column;font-variant-numeric:tabular-nums;color:var(--muted);line-height:1.2;padding-top:3px}
+.when .wd{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.when .d{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--fg)}
+.when .t{font-size:12.5px}
+.ebody{display:flex;flex-direction:column;gap:6px;min-width:0}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cat{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:5px;background:var(--surface-2);color:var(--muted)}
+.cat.sante{background:var(--danger-soft);color:var(--danger)}
+.cat.rdv{background:var(--accent-soft);color:var(--accent)}
+.cat.sejour{background:var(--ok-soft);color:var(--ok)}
+.by{font-size:12.5px;color:var(--muted)}
+.etext{font-size:15.5px;max-width:58ch}
+.status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.status.warn{color:var(--warn);font-weight:700}
+.status.ok{color:var(--ok)}
+.eactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:14.5px}
+
+/* action bar */
+.actionbar{position:sticky;bottom:0;z-index:4;background:var(--bg);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;margin-top:auto}
+.actionbar .btn{padding:12px 16px;font-size:15.5px}
+.actionbar .grow{flex:1;justify-content:center}
+.menuwrap{position:relative;margin-left:auto}
+.menu{position:absolute;right:0;bottom:calc(100% + 8px);min-width:260px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;display:flex;flex-direction:column;z-index:6}
+.menu button{background:none;border:0;text-align:left;padding:10px 12px;border-radius:8px;font-size:15px}
+.menu button:hover{background:var(--surface-2)}
+.menu button.danger{color:var(--danger)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+
+/* sheet */
+.backdrop{position:fixed;inset:0;background:rgba(10,20,22,.45);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:18px 18px 0 0;box-shadow:var(--shadow);
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.sheet h2{font-size:20px}
+.hint{font-size:13.5px;color:var(--muted)}
+.hint.warn{color:var(--warn);font-weight:700}
+.catpick{display:flex;gap:6px;flex-wrap:wrap}
+textarea{width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);resize:vertical;line-height:1.5}
+.sheet-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:14px;font-weight:700;max-width:min(92vw,520px);box-shadow:var(--shadow)}
+
+/* confirm bar */
+.confirm{background:var(--danger-soft);border:1px solid var(--danger);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.confirm .row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* trace */
+.trace{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.trace li{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:12px 14px;border-top:1px solid var(--line);font-size:14.5px}
+.trace li:first-child{border-top:0}
+.kind{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:5px;background:var(--surface-2);color:var(--muted);align-self:flex-start}
+.kind.validate{background:var(--ok-soft);color:var(--ok)}
+.kind.create{background:var(--accent-soft);color:var(--accent)}
+.kind.read,.kind.consult{background:var(--surface-2)}
+.tbody{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tbody .who{color:var(--muted);font-size:13px}
+
+/* access */
+.people{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.person .name{font-family:var(--font-display);font-weight:600;font-size:16.5px}
+.note{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--danger);border-radius:10px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.note strong{font-family:var(--font-display)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+thead th{border-top:0;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.c{text-align:center;font-weight:700}
+td.yes{color:var(--ok)}td.no{color:var(--muted)}
+
+/* paper preview (Carnet du séjour) */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:8px 12px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.paper{background:var(--paper);border:1px solid var(--paper-line);border-radius:4px;padding:18px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;font-size:14.5px}
+.paper .ph{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--fg);padding-bottom:8px}
+.paper .ph h2{font-size:19px}
+.paper .pl{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--paper-line)}
+.paper .pl .pd{font-variant-numeric:tabular-nums;font-weight:700}
+.paper .pl .pc{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block}
+.paper .lines{display:flex;flex-direction:column}
+.paper .lines span{height:28px;border-bottom:1px solid var(--paper-line)}
+.paper .pf{font-size:12.5px;color:var(--muted)}
+
+/* guide / about */
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.steps li::marker{font-family:var(--font-display);font-weight:700;color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.card h2{font-size:18px}
+.list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.list li::marker{color:var(--accent)}
+
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:up .22s ease-out}
+  @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+}
+@media (max-width:420px){
+  .entry,.trace li{grid-template-columns:56px 1fr;gap:10px;padding:12px 12px}
+  .when .d{font-size:17px}
+  .resbadges{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="app" class="app"></div>
+
+<script>
+(function(){
+'use strict';
+const KEY='carnet-de-liens-demo-v2';
+const PHONE='026 000 00 00';
+
+const CATS={
+  quotidien:{label:'Quotidien',vis:['curatrice','proche']},
+  activites:{label:'Activités',vis:['curatrice','proche']},
+  sante:{label:'Santé',vis:['curatrice'],validate:true},
+  rdv:{label:'Rendez-vous',vis:['curatrice']},
+  materiel:{label:'Affaires et matériel',vis:['curatrice','proche']},
+  sejour:{label:'Séjour en famille',vis:['curatrice','proche'],family:true}
+};
+const CAT_ORDER=['quotidien','activites','sante','rdv','materiel','sejour'];
+
+const ROLES={
+  equipe:{label:'Équipe éducative',kind:'team',who:'collaborateur·trice du pavillon'},
+  responsable:{label:'Responsable de pavillon',kind:'team',canValidate:true,canTrace:true,who:'responsable du pavillon'},
+  curatrice:{label:'Famille · mère curatrice',kind:'family',level:'curatrice',rid:'r1',who:'Anne Rey, mère et curatrice de Mathilde',short:'Anne Rey (curatrice)'},
+  proche:{label:'Famille · frère sans mandat',kind:'family',level:'proche',rid:'r1',who:'Luc Rey, frère de Mathilde, sans mandat',short:'Luc Rey (proche)'}
+};
+const ROLE_ORDER=['equipe','responsable','curatrice','proche'];
+
+const RESIDENTS=[
+  {id:'r1',first:'Mathilde',last:'Rey',stay:{from:'2026-10-31',to:'2026-11-02'},
+   family:[{name:'Anne Rey',rel:'mère',level:'curatrice',auth:'Curatelle de portée générale (décision de l’APEA du 12.03.2021)'},
+           {name:'Luc Rey',rel:'frère',level:'proche',auth:'Aucune autorisation écrite ciblée consignée'}]},
+  {id:'r2',first:'Julien',last:'Aebischer',stay:{from:'2026-10-31',to:'2026-11-02'},family:[{name:'Marianne Aebischer',rel:'mère',level:'curatrice',auth:'Curatelle de portée générale'}]},
+  {id:'r3',first:'Samuel',last:'Dorthe',stay:null,family:[{name:'Pierre Dorthe',rel:'père',level:'curatrice',auth:'Curatelle de portée générale'}]},
+  {id:'r4',first:'Clara',last:'Monney',stay:{from:'2026-10-24',to:'2026-10-26'},family:[{name:'Sylvie Monney',rel:'sœur',level:'proche',auth:'Autorisation écrite ciblée de la curatrice (sorties et santé), consignée le 02.09.2026'}]}
+];
+
+const SEED={
+  entries:[
+    {id:'e1',rid:'r1',date:'2026-11-04',time:'16:40',cat:'quotidien',by:'equipe',status:'ok',
+     text:'Bonne journée à l’atelier bois. Mathilde a terminé son coffret et l’a montré à tout le monde au goûter. Appétit normal à midi.'},
+    {id:'e2',rid:'r1',date:'2026-11-04',time:'13:05',cat:'sante',by:'equipe',status:'pending',
+     text:'Mal de ventre signalé après le repas de midi. Mathilde a préféré se reposer trente minutes, puis a rejoint l’atelier. Pas de fièvre. À surveiller ce soir.'},
+    {id:'e3',rid:'r1',date:'2026-11-03',time:'18:20',cat:'activites',by:'equipe',status:'ok',
+     text:'Balade au bord du lac avec le groupe, quarante-cinq minutes. Mathilde a demandé à refaire la sortie samedi.'},
+    {id:'e4',rid:'r1',date:'2026-11-03',time:'11:30',cat:'rdv',by:'equipe',status:'ok',
+     text:'Le rendez-vous chez le dentiste du 10.11 est reporté au 18.11 à 14 h, le cabinet était complet. L’équipe l’accompagne.'},
+    {id:'e5',rid:'r1',date:'2026-11-03',time:'09:10',cat:'sante',by:'equipe',status:'ok',validatedAt:'2026-11-03 10:02',
+     text:'Légère toux depuis lundi, surveillée par l’équipe. Pas de fièvre. Le traitement habituel a été donné comme prévu.'},
+    {id:'e6',rid:'r1',date:'2026-11-02',time:'20:15',cat:'sejour',by:'famille',status:'ok',
+     text:'Week-end calme. Mathilde s’est couchée tard samedi (film), un peu fatiguée dimanche. Elle a beaucoup parlé de la fête de Noël.'},
+    {id:'e7',rid:'r1',date:'2026-10-30',time:'17:00',cat:'materiel',by:'equipe',status:'ok',readAt:'2026-10-31 07:45',
+     text:'Merci de prévoir des chaussettes chaudes pour les sorties ; il reste deux paires dans l’armoire. Argent de poche remis pour le week-end : 20.–'},
+    {id:'e8',rid:'r2',date:'2026-11-04',time:'17:10',cat:'quotidien',by:'equipe',status:'ok',
+     text:'Journée au centre de jour. Julien a préparé la table du souper avec plaisir et a choisi la musique.'},
+    {id:'e9',rid:'r2',date:'2026-11-02',time:'19:40',cat:'sejour',by:'famille',status:'ok',
+     text:'Bon week-end. Promenade dimanche après-midi, Julien a bien dormi les deux nuits.'},
+    {id:'e10',rid:'r3',date:'2026-11-04',time:'15:30',cat:'sante',by:'equipe',status:'pending',
+     text:'Petite écorchure au genou en jouant au foot. Désinfectée, pansement posé. Samuel n’a pas eu mal après.'},
+    {id:'e11',rid:'r3',date:'2026-11-03',time:'12:00',cat:'activites',by:'equipe',status:'ok',
+     text:'Piscine le matin. Samuel a nagé deux longueurs de plus que la semaine passée et l’a fait remarquer fièrement.'},
+    {id:'e12',rid:'r4',date:'2026-11-01',time:'18:00',cat:'quotidien',by:'equipe',status:'ok',
+     text:'Clara a choisi le menu de vendredi : rösti et salade. Elle aidera à la préparation.'}
+  ],
+  trace:[
+    {rid:'r1',date:'2026-11-04',time:'16:41',kind:'create',what:'Entrée « Quotidien » écrite',who:'Équipe · auteur interne C.D.'},
+    {rid:'r1',date:'2026-11-04',time:'13:06',kind:'create',what:'Entrée « Santé » écrite, en attente de validation',who:'Équipe · auteur interne M.B.'},
+    {rid:'r1',date:'2026-11-03',time:'19:12',kind:'consult',what:'Carnet consulté',who:'Anne Rey (curatrice)'},
+    {rid:'r1',date:'2026-11-03',time:'10:02',kind:'validate',what:'Entrée « Santé » du 03.11 validée',who:'Responsable du pavillon'},
+    {rid:'r1',date:'2026-10-31',time:'07:45',kind:'read',what:'Entrée « Affaires et matériel » du 30.10 marquée comme lue',who:'Anne Rey (curatrice)'},
+    {rid:'r1',date:'2026-09-02',time:'14:20',kind:'access',what:'Niveau d’accès de Luc Rey fixé à « proche sans mandat »',who:'Responsable du pavillon'},
+    {rid:'r3',date:'2026-11-04',time:'15:31',kind:'create',what:'Entrée « Santé » écrite, en attente de validation',who:'Équipe · auteur interne J.F.'}
+  ]
+};
+
+const state={role:'equipe',view:'residents',rid:null,filter:'all',data:null,sheet:false,sheetCat:'quotidien',draft:'',menu:false,confirmReset:false,stayVersion:'curatrice',toast:''};
+let toastTimer=null;
+
+/* helpers */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+function today(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
+function fmtDate(iso){const p=iso.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+function fmtShort(iso){const p=iso.split('-');return p[2]+'.'+p[1];}
+function weekday(iso){try{const p=iso.split('-').map(Number);return new Intl.DateTimeFormat('fr-CH',{weekday:'short'}).format(new Date(p[0],p[1]-1,p[2])).replace('.','');}catch(e){return '';}}
+function fmtStamp(s){const p=s.split(' ');return fmtDate(p[0])+' à '+p[1];}
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);if(d&&Array.isArray(d.entries)&&Array.isArray(d.trace))return d;}}catch(e){}return clone(SEED);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state.data));}catch(e){}}
+function role(){return ROLES[state.role];}
+function resident(id){return RESIDENTS.find(r=>r.id===id);}
+function fullName(r){return r.first+' '+r.last;}
+function initials(r){return r.first[0]+r.last[0];}
+function entriesOf(rid){return state.data.entries.filter(e=>e.rid===rid).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));}
+function canSee(e,rl){if(rl.kind==='team')return true;return e.status==='ok'&&CATS[e.cat].vis.includes(rl.level);}
+function visibleCats(rl){return CAT_ORDER.filter(c=>rl.kind==='team'||CATS[c].vis.includes(rl.level));}
+function pendingCount(rid){return state.data.entries.filter(e=>e.rid===rid&&e.status==='pending').length;}
+function unreadCount(rid,rl){return entriesOf(rid).filter(e=>canSee(e,rl)&&e.by==='equipe'&&!e.readAt).length;}
+function addTrace(rid,kind,what,who){const t={rid,date:today(),time:nowTime(),kind,what,who};const last=state.data.trace[state.data.trace.length-1];if(last&&last.rid===rid&&last.kind===kind&&last.who===who&&last.date===t.date&&last.time===t.time&&last.what===what)return;state.data.trace.push(t);}
+function toast(msg){state.toast=msg;render();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{state.toast='';render();},2600);}
+
+/* rendering */
+function render(){
+  const app=document.getElementById('app');
+  const rl=role();
+  let html=header();
+  if(state.view==='residents')html+=viewResidents();
+  else if(state.view==='carnet')html+=viewCarnet();
+  else if(state.view==='trace')html+=viewTrace();
+  else if(state.view==='access')html+=viewAccess();
+  else if(state.view==='stay')html+=viewStay();
+  else if(state.view==='about')html+=viewAbout();
+  else if(state.view==='guide')html+=viewGuide();
+  html+=actionbar(rl);
+  if(state.sheet)html+=sheet(rl);
+  if(state.toast)html+='<div class="toast" role="status">'+esc(state.toast)+'</div>';
+  app.innerHTML=html;
+  if(state.sheet){const ta=document.getElementById('draft');if(ta&&document.activeElement!==ta&&!state.draft)ta.focus();}
+}
+
+function header(){
+  const opts=ROLE_ORDER.map(k=>'<option value="'+k+'"'+(k===state.role?' selected':'')+'>'+esc(ROLES[k].label)+'</option>').join('');
+  return '<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"></span><div><div class="brand-name">Carnet de liens</div><div class="brand-sub">Fondation Exemple · Pavillon des Érables</div></div><span class="demo">Démo</span></div>'+
+    '<label class="rolebox"><span class="rolelabel">J’ouvre le Carnet en tant que</span><select id="role">'+opts+'</select></label></header>';
+}
+
+function viewResidents(){
+  const rl=role();
+  const items=RESIDENTS.map(r=>{
+    const es=entriesOf(r.id);const last=es[0];const pend=pendingCount(r.id);
+    const badges=[];
+    if(pend&&rl.kind==='team')badges.push('<span class="pill warn">'+pend+' à valider</span>');
+    badges.push('<span class="pill">'+es.length+' entrée'+(es.length>1?'s':'')+'</span>');
+    const sub=(last?'Dernière entrée '+weekday(last.date)+' '+fmtShort(last.date):'Aucune entrée')+(r.stay?' · dernier séjour '+fmtShort(r.stay.from)+'–'+fmtShort(r.stay.to):' · pas de séjour récent');
+    return '<li><button type="button" class="rescard" data-act="open" data-id="'+r.id+'"><span class="avatar" aria-hidden="true">'+esc(initials(r))+'</span><span class="resmain"><span class="resname">'+esc(fullName(r))+'</span><span class="ressub">'+esc(sub)+'</span></span><span class="resbadges">'+badges.join('')+'</span></button></li>';
+  }).join('');
+  return '<section class="view"><div class="viewhead"><h1 class="h1">Résidentes et résidents</h1><p class="lead">Un Carnet par personne. Les entrées sont datées et non signées : c’est la voix de l’équipe qui s’adresse à la famille.</p></div><ul class="residents">'+items+'</ul>'+resetBlock()+'</section>';
+}
+
+function ruleBanner(){
+  return '<aside class="rule"><strong>Écrire ou appeler ?</strong><span>Le Carnet n’est pas un canal d’alerte. Ce qui est grave, urgent ou sensible se dit de vive voix et se consigne dans le dossier. Tout ce qui s’écrit ici compte.</span>'+
+    '<div class="phone"><span class="tel" id="tel">'+PHONE+'</span><button type="button" class="btn small" data-act="copy-tel">Copier</button><a class="btn small" href="tel:+41260000000">Appeler le pavillon</a></div></aside>';
+}
+
+function viewCarnet(){
+  const rl=role();const r=resident(state.rid);if(!r)return viewResidents();
+  const cats=visibleCats(rl);
+  const chips=['<button type="button" class="chip" data-act="filter" data-cat="all" aria-pressed="'+(state.filter==='all')+'">Tout</button>']
+    .concat(cats.map(c=>'<button type="button" class="chip" data-act="filter" data-cat="'+c+'" aria-pressed="'+(state.filter===c)+'">'+esc(CATS[c].label)+'</button>')).join('');
+  let es=entriesOf(r.id).filter(e=>canSee(e,rl));
+  if(state.filter!=='all')es=es.filter(e=>e.cat===state.filter);
+  const list=es.length?es.map(e=>entryHtml(e,rl)).join(''):'<div class="empty">Aucune entrée dans cette catégorie pour le moment.</div>';
+  let head='';
+  if(rl.kind==='team'){
+    head='<button type="button" class="back" data-act="back">← Résidentes et résidents</button><h1 class="h1">'+esc(fullName(r))+'</h1><p class="sub">'+(r.stay?'Dernier séjour en famille du '+fmtDate(r.stay.from)+' au '+fmtDate(r.stay.to):'Pas de séjour en famille récent')+(r.family.length?' · famille : '+esc(r.family.map(f=>f.name+' ('+f.rel+')').join(', ')):'')+'</p>';
+  }else{
+    const n=unreadCount(r.id,rl);
+    head='<h1 class="h1">'+esc(r.first)+'</h1><p class="sub">Vous lisez le Carnet en tant que '+esc(rl.who)+'.</p>'+(n?'<p><span class="pill accent">'+n+' nouvelle'+(n>1?'s':'')+' entrée'+(n>1?'s':'')+' depuis votre dernière lecture</span></p>':'<p><span class="pill ok">Tout est lu</span></p>');
+  }
+  return '<section class="view"><div class="viewhead">'+head+'</div>'+ruleBanner()+'<div class="filters" role="group" aria-label="Filtrer par catégorie">'+chips+'</div><div class="entries">'+list+'</div>'+resetBlock()+'</section>';
+}
+
+function entryHtml(e,rl){
+  const c=CATS[e.cat];
+  const by=e.by==='famille'?'Famille':'Équipe du pavillon';
+  let status='',actions='';
+  if(e.status==='pending'){
+    status='<div class="status warn">En attente de validation par le responsable ou le/la référent·e · invisible pour la famille</div>';
+    if(rl.canValidate)actions='<div class="eactions"><button type="button" class="btn small primary" data-act="validate" data-id="'+e.id+'">Valider et rendre visible</button></div>';
+  }else{
+    if(e.validatedAt&&rl.kind==='team')status+='<div class="status ok">Validée le '+esc(fmtStamp(e.validatedAt))+'</div>';
+    if(e.by==='equipe'){
+      if(e.readAt)status+='<div class="status ok">'+(rl.kind==='family'?'Vous avez marqué cette entrée comme lue le ':'Lue par la famille le ')+esc(fmtStamp(e.readAt))+'</div>';
+      else if(rl.kind==='family')actions='<div class="eactions"><button type="button" class="btn small" data-act="read" data-id="'+e.id+'">Marquer comme lu</button></div>';
+      else status+='<div class="status">Pas encore lue par la famille</div>';
+    }
+  }
+  return '<article class="entry'+(e.status==='pending'?' pending':'')+'"><div class="when"><span class="wd">'+esc(weekday(e.date))+'</span><span class="d">'+esc(fmtShort(e.date))+'</span><span class="t">'+esc(e.time)+'</span></div><div class="ebody"><div class="meta"><span class="cat '+e.cat+'">'+esc(c.label)+'</span><span class="by">'+by+'</span></div><p class="etext">'+esc(e.text)+'</p>'+status+actions+'</div></article>';
+}
+
+function viewTrace(){
+  const r=resident(state.rid);
+  const items=state.data.trace.filter(t=>t.rid===r.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time))
+    .map(t=>'<li><div class="when"><span class="wd">'+esc(weekday(t.date))+'</span><span class="d">'+esc(fmtShort(t.date))+'</span><span class="t">'+esc(t.time)+'</span></div><div class="tbody"><span class="kind '+t.kind+'">'+kindLabel(t.kind)+'</span><span>'+esc(t.what)+'</span><span class="who">'+esc(t.who)+'</span></div></li>').join('');
+  return '<section class="view"><div class="viewhead"><button type="button" class="back" data-act="to-carnet">← Carnet de '+esc(r.first)+'</button><h1 class="h1">Traçabilité</h1><p class="sub">Qui a écrit, validé, lu ou consulté. Visible uniquement par le responsable ; la famille ne voit jamais le nom d’un·e collaborateur·trice.</p></div><ol class="trace">'+(items||'<li class="empty">Aucun événement.</li>')+'</ol></section>';
+}
+function kindLabel(k){return {create:'Écrit',validate:'Validé',read:'Lu',consult:'Consulté',access:'Accès'}[k]||k;}
+
+function viewAccess(){
+  const r=resident(state.rid);
+  const people=r.family.map(f=>{
+    const lvl=f.level==='curatrice'?'<span class="pill ok">Curateur·trice · accès complet</span>':(f.auth.indexOf('Autorisation écrite ciblée')===0?'<span class="pill accent">Proche · accès étendu sur autorisation ciblée</span>':'<span class="pill">Proche sans mandat · accès de base</span>');
+    return '<li class="person"><span class="name">'+esc(f.name)+' <span class="by">· '+esc(f.rel)+'</span></span>'+lvl+'<span class="hint">'+esc(f.auth)+'</span></li>';
+  }).join('');
+  const rows=CAT_ORDER.map(c=>'<tr><td>'+esc(CATS[c].label)+'</td><td class="c yes">✓</td><td class="c '+(CATS[c].vis.includes('proche')?'yes">✓':'no">—')+'</td></tr>').join('');
+  return '<section class="view"><div class="viewhead"><button type="button" class="back" data-act="to-carnet">← Carnet de '+esc(r.first)+'</button><h1 class="h1">Accès des proches</h1><p class="sub">Le niveau d’information dépend de la forme de curatelle, jamais de l’insistance d’un proche.</p></div><ul class="people">'+people+'</ul>'+
+    '<aside class="note"><strong>Une procuration ne vaut pas droit d’accès.</strong><span>Seule une autorisation écrite et ciblée du curateur ou de la curatrice, consignée dans le dossier, permet de partager des informations avec un proche sans mandat. Et ce partage se fait de vive voix, pas dans le Carnet.</span></aside>'+
+    '<div class="tablewrap"><table><thead><tr><th>Catégorie</th><th>Curateur·trice</th><th>Proche sans mandat</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+}
+
+function viewStay(){
+  const r=resident(state.rid);
+  const lvl=state.stayVersion;
+  let es=entriesOf(r.id).filter(e=>e.status==='ok'&&CATS[e.cat].vis.includes(lvl));
+  if(r.stay)es=es.filter(e=>e.date>r.stay.to);
+  const lines=es.length?es.slice().reverse().map(e=>'<div class="pl"><span class="pd">'+esc(fmtShort(e.date))+'</span><span><span class="pc">'+esc(CATS[e.cat].label)+(e.by==='famille'?' · famille':'')+'</span>'+esc(e.text)+'</span></div>').join(''):'<p class="pf">Aucune entrée depuis le dernier retour.</p>';
+  return '<section class="view"><div class="viewhead"><button type="button" class="back" data-act="to-carnet">← Carnet de '+esc(r.first)+'</button><h1 class="h1">Carnet du séjour</h1><p class="sub">La feuille recto-verso qui accompagne '+esc(r.first)+' en famille, pour les proches qui préfèrent le papier. Même contenu, même niveau d’accès.</p></div>'+
+    '<div class="seg" role="group" aria-label="Version"><button type="button" data-act="stay-version" data-v="curatrice" aria-pressed="'+(lvl==='curatrice')+'">Version curateur·trice</button><button type="button" data-act="stay-version" data-v="proche" aria-pressed="'+(lvl==='proche')+'">Version proche sans mandat</button></div>'+
+    '<div class="paper"><div class="ph"><h2>Carnet de liens · '+esc(fullName(r))+'</h2><span>'+(r.stay?'Depuis le retour du '+fmtDate(r.stay.to):'Toutes les entrées')+'</span></div>'+lines+
+    '<p><strong>Votre retour sur le séjour</strong> (sommeil, repas, humeur, ce qui a fait plaisir) :</p><div class="lines"><span></span><span></span><span></span><span></span></div>'+
+    '<p class="pf">Entrées datées, non signées. Ce qui est grave, urgent ou sensible se dit de vive voix : '+PHONE+'.</p></div>'+
+    '<p class="hint">Dans la version complète, cette feuille s’exporte en PDF prête à imprimer en un geste.</p></section>';
+}
+
+function viewAbout(){
+  return '<section class="view"><div class="viewhead"><button type="button" class="back" data-act="to-home">← Retour</button><h1 class="h1">Confidentialité et données</h1><p class="sub">Ce que les directions, les curateurs et les familles demandent avant de dire oui.</p></div>'+
+    '<div class="card"><h2>Ce que fait le Carnet</h2><ul class="list"><li>Un espace par résident·e, accessible uniquement aux proches autorisés, avec un niveau d’information lié à la forme de curatelle.</li><li>Des entrées datées et non signées : la famille lit la voix de l’équipe, jamais le nom d’un·e collaborateur·trice.</li><li>Tout ce qui touche à la santé est validé par le responsable de pavillon ou le/la référent·e avant d’être visible.</li><li>Un journal des accès : qui a écrit, validé, lu, consulté.</li><li>Une version papier recto-verso par séjour, pour les familles qui le souhaitent.</li></ul></div>'+
+    '<div class="card"><h2>Ce qu’il n’est pas</h2><ul class="list"><li>Pas un canal d’alerte : le grave, l’urgent et le sensible se disent de vive voix.</li><li>Pas un dossier médical ni un remplaçant du dossier de la personne.</li><li>Pas une messagerie instantanée : on écrit ce qui mérite d’être gardé.</li></ul></div>'+
+    '<div class="card"><h2>Données</h2><ul class="list"><li>Hébergement en Suisse, chiffrement en transit et au repos, connexion nominative pour chaque personne.</li><li>Conforme à la nouvelle loi fédérale sur la protection des données (nLPD) : données sensibles, accès par rôle, journalisation.</li><li>Suppression ou export à la demande de l’institution ; aucune revente de données.</li></ul></div>'+
+    '<p class="hint">Ce prototype fonctionne avec des personnes et des situations fictives. Rien n’est transmis ni enregistré ailleurs que sur cet appareil.</p></section>';
+}
+
+function viewGuide(){
+  return '<section class="view"><div class="viewhead"><button type="button" class="back" data-act="to-home">← Retour</button><h1 class="h1">Fil rouge de la démo</h1><p class="sub">Cinq minutes, cinq gestes, dans cet ordre.</p></div>'+
+    '<ol class="steps"><li><strong>Équipe éducative.</strong> Ouvrir Mathilde. Montrer les entrées datées sans nom d’auteur, et l’entrée « Santé » en attente, surlignée.</li>'+
+    '<li><strong>Écrire une entrée « Santé ».</strong> Elle part en attente : la famille ne la voit pas encore.</li>'+
+    '<li><strong>Responsable de pavillon.</strong> Valider l’entrée. Ouvrir « Traçabilité » et « Accès des proches » : la règle sur la procuration.</li>'+
+    '<li><strong>Famille · mère curatrice.</strong> L’entrée santé est apparue. Marquer une entrée comme lue, puis écrire un retour de séjour.</li>'+
+    '<li><strong>Famille · frère sans mandat.</strong> Santé et rendez-vous ont disparu. Deux niveaux, un seul Carnet.</li></ol>'+
+    '<div class="card"><h2>La phrase à retenir</h2><p>Le cahier de communication a été conçu pour les familles. Le Carnet de liens, lui, respecte aussi la personne : ce qu’on écrit sur elle est pesé, validé, et lisible par les bonnes personnes seulement.</p></div></section>';
+}
+
+function resetBlock(){
+  if(!state.confirmReset)return '';
+  return '<div class="confirm"><span>Réinitialiser la démo ? Les entrées ajoutées pendant la démonstration seront effacées et les exemples remis en place.</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, réinitialiser</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>';
+}
+
+function actionbar(rl){
+  const onCarnet=state.view==='carnet';
+  const primary=onCarnet?'<button type="button" class="btn primary grow" data-act="write">'+(rl.kind==='family'?'Écrire un retour de séjour':'Écrire dans le Carnet')+'</button>':
+    (state.view==='residents'?'<span class="hint">Choisissez une personne pour ouvrir son Carnet.</span>':'<button type="button" class="btn ghost" data-act="to-home">← Retour</button>');
+  const items=[];
+  if(rl.kind==='team'&&state.rid)items.push('<button type="button" data-act="go" data-view="stay">Carnet du séjour (version papier)</button>');
+  if(rl.canTrace&&state.rid){items.push('<button type="button" data-act="go" data-view="trace">Traçabilité</button>');items.push('<button type="button" data-act="go" data-view="access">Accès des proches</button>');}
+  if(items.length)items.push('<hr>');
+  items.push('<button type="button" data-act="go" data-view="guide">Fil rouge de la démo</button>');
+  items.push('<button type="button" data-act="go" data-view="about">Confidentialité et données</button>');
+  items.push('<hr><button type="button" class="danger" data-act="reset">Réinitialiser la démo</button>');
+  const menu=state.menu?'<div class="menu" role="menu">'+items.join('')+'</div>':'';
+  return '<div class="actionbar">'+primary+'<div class="menuwrap"><button type="button" class="btn" data-act="menu" aria-expanded="'+state.menu+'">Plus ▾</button>'+menu+'</div></div>';
+}
+
+function sheet(rl){
+  const r=resident(state.rid);
+  const fam=rl.kind==='family';
+  const cats=fam?['sejour']:CAT_ORDER.filter(c=>!CATS[c].family);
+  if(!cats.includes(state.sheetCat))state.sheetCat=cats[0];
+  const chips=cats.map(c=>'<button type="button" class="chip" data-act="pick-cat" data-cat="'+c+'" aria-pressed="'+(state.sheetCat===c)+'">'+esc(CATS[c].label)+'</button>').join('');
+  const hint=fam?'Ce que vous écrivez est lu par toute l’équipe du pavillon. Pour une urgence, appelez.':'Datée et non signée : votre entrée paraît sous la voix de l’équipe.';
+  const warn=(!fam&&CATS[state.sheetCat].validate)?'<p class="hint warn">Visible par la famille seulement après validation par le responsable ou le/la référent·e.</p>':'';
+  const ph=fam?'Comment s’est passé le séjour ? Sommeil, repas, humeur, ce qui a fait plaisir…':'Qu’est-ce que la famille devrait savoir aujourd’hui ?';
+  return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><div class="sheet-in"><h2 id="sheet-title">'+(fam?'Retour de séjour · ':'Nouvelle entrée · ')+esc(r.first)+'</h2><p class="hint">'+hint+'</p><div class="catpick" role="group" aria-label="Catégorie">'+chips+'</div><textarea id="draft" placeholder="'+esc(ph)+'">'+esc(state.draft)+'</textarea>'+warn+'<div class="sheet-actions"><button type="button" class="btn" data-act="sheet-close">Annuler</button><button type="button" class="btn primary" data-act="save">Enregistrer</button></div></div></div>';
+}
+
+/* actions */
+function setRole(k){
+  state.role=k;state.menu=false;state.sheet=false;state.confirmReset=false;state.filter='all';
+  const rl=ROLES[k];
+  if(rl.kind==='team'){state.view='residents';state.rid=null;}
+  else{state.view='carnet';state.rid=rl.rid;addTrace(rl.rid,'consult','Carnet consulté',rl.short);save();}
+  render();window.scrollTo(0,0);
+}
+function handle(act,d){
+  const rl=role();
+  switch(act){
+    case 'open':state.rid=d.id;state.view='carnet';state.filter='all';break;
+    case 'back':state.view='residents';state.rid=null;break;
+    case 'to-carnet':state.view='carnet';break;
+    case 'to-home':state.view=rl.kind==='team'&&!state.rid?'residents':'carnet';break;
+    case 'go':state.view=d.view;break;
+    case 'filter':state.filter=d.cat;break;
+    case 'menu':state.menu=!state.menu;render();return;
+    case 'write':state.sheet=true;state.draft='';state.sheetCat=rl.kind==='family'?'sejour':'quotidien';break;
+    case 'sheet-close':state.sheet=false;state.draft='';break;
+    case 'pick-cat':state.sheetCat=d.cat;break;
+    case 'save':{
+      const text=state.draft.trim();
+      if(!text){toast('Écrivez d’abord quelques mots.');return;}
+      const r=resident(state.rid);
+      const fam=rl.kind==='family';
+      const cat=fam?'sejour':state.sheetCat;
+      const pending=!fam&&!!CATS[cat].validate;
+      state.data.entries.push({id:'e'+Date.now(),rid:r.id,date:today(),time:nowTime(),cat,by:fam?'famille':'equipe',status:pending?'pending':'ok',text});
+      addTrace(r.id,'create','Entrée « '+CATS[cat].label+' » écrite'+(pending?', en attente de validation':''),fam?rl.short:'Équipe · auteur interne : vous');
+      save();state.sheet=false;state.draft='';state.filter='all';
+      toast(pending?'Enregistrée. En attente de validation avant d’être visible par la famille.':'Enregistrée dans le Carnet.');return;
+    }
+    case 'validate':{
+      const e=state.data.entries.find(x=>x.id===d.id);if(!e)return;
+      e.status='ok';e.validatedAt=today()+' '+nowTime();
+      addTrace(e.rid,'validate','Entrée « '+CATS[e.cat].label+' » du '+fmtShort(e.date)+' validée','Responsable du pavillon');
+      save();toast('Validée. La famille curatrice peut maintenant la lire.');return;
+    }
+    case 'read':{
+      const e=state.data.entries.find(x=>x.id===d.id);if(!e)return;
+      e.readAt=today()+' '+nowTime();
+      addTrace(e.rid,'read','Entrée « '+CATS[e.cat].label+' » du '+fmtShort(e.date)+' marquée comme lue',rl.short);
+      save();toast('Marquée comme lue. L’équipe le voit.');return;
+    }
+    case 'stay-version':state.stayVersion=d.v;break;
+    case 'reset':state.menu=false;state.confirmReset=true;break;
+    case 'reset-no':state.confirmReset=false;break;
+    case 'reset-yes':state.data=clone(SEED);try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.filter='all';toast('Démo remise à zéro.');return;
+    case 'copy-tel':{
+      const el=document.getElementById('tel');
+      const done=()=>toast('Numéro copié : '+PHONE);
+      const fallback=()=>{try{const rg=document.createRange();rg.selectNodeContents(el);const s=window.getSelection();s.removeAllRanges();s.addRange(rg);toast('Numéro sélectionné, copiez-le.');}catch(e){toast(PHONE);}};
+      try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(PHONE).then(done,fallback);else fallback();}catch(e){fallback();}
+      return;
+    }
+    default:return;
+  }
+  if(act!=='menu'&&act!=='pick-cat'&&act!=='filter'&&act!=='stay-version')state.menu=false;
+  render();
+  if(['open','back','go','to-carnet','to-home'].includes(act))window.scrollTo(0,0);
+}
+
+const app=document.getElementById('app');
+app.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el){if(state.menu&&!e.target.closest('.menuwrap')){state.menu=false;render();}return;}
+  if(el.tagName==='A')return;
+  handle(el.dataset.act,el.dataset);
+});
+app.addEventListener('change',e=>{if(e.target.id==='role')setRole(e.target.value);});
+app.addEventListener('input',e=>{if(e.target.id==='draft')state.draft=e.target.value;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(state.sheet||state.menu)){state.sheet=false;state.menu=false;render();}});
+
+try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({state:state}));}catch(e){}
+function boot(data){
+  if(data&&data.state&&data.state.data){Object.assign(state,data.state);state.toast='';}
+  else state.data=load();
+  render();
+}
+if(window.claude&&window.claude.hot&&window.claude.hot.ready)window.claude.hot.ready(boot);else boot((window.claude&&window.claude.hot&&window.claude.hot.data)||{});
+})();
+</script>
+
+</body>
+</html>
