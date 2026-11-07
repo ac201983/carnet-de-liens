@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Encre</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Design plan
+   Subject: a writing desk for social-sector professionals. Ink and paper, nothing else.
+   Color: ink navy (--ink) as the only accent; cool paper ground; oxblood only for the words that judge.
+   Type: Fraunces (soft, inky serif) for the wordmark and headings; Source Sans 3 for the interface;
+   Source Serif 4 for the produced document, so the result reads as a document, not as chat output.
+   Layout: two columns from 900px (notes left, document right), stacked on phone; one sticky top bar. */
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --surface-2:#E3E8F0; --fg:#15192B; --muted:#5A6378; --line:#D1D8E4;
+  --ink:#1E3A8A; --ink-2:#2B4DB3; --ink-fg:#FFFFFF; --ink-soft:#DDE5F7;
+  --paper:#FFFEFA; --paper-line:#E8E3D3;
+  --ox:#8E2B2B; --ox-soft:#F6DEDE;
+  --amber:#8A5A00; --amber-soft:#FBEBCC;
+  --ok:#1F6F4A; --ok-soft:#D7EFE2;
+  --shadow:0 1px 2px rgba(21,25,43,.05),0 12px 30px rgba(21,25,43,.09);
+  --font-ui:'Source Sans 3',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --font-doc:'Source Serif 4',Georgia,'Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1320; --surface:#171C2E; --surface-2:#1F2640; --fg:#E9ECF4; --muted:#9AA5BF; --line:#2B3450;
+    --ink:#8FA8F0; --ink-2:#6F8DE8; --ink-fg:#0B1230; --ink-soft:#1E2A52;
+    --paper:#1C1F2A; --paper-line:#333848;
+    --ox:#F09090; --ox-soft:#4A1F1F; --amber:#F2C06A; --amber-soft:#3C2C10; --ok:#7BD3A3; --ok-soft:#163A29;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1320; --surface:#171C2E; --surface-2:#1F2640; --fg:#E9ECF4; --muted:#9AA5BF; --line:#2B3450;
+  --ink:#8FA8F0; --ink-2:#6F8DE8; --ink-fg:#0B1230; --ink-soft:#1E2A52;
+  --paper:#1C1F2A; --paper-line:#333848;
+  --ox:#F09090; --ox-soft:#4A1F1F; --amber:#F2C06A; --amber-soft:#3C2C10; --ok:#7BD3A3; --ok-soft:#163A29;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 34px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:16px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,select,textarea,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.app{max-width:1120px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-bottom:28px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:14px;padding-block:14px 10px;flex-wrap:wrap}
+.wordmark{display:flex;align-items:baseline;gap:10px}
+.wordmark .name{font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:-.02em;color:var(--ink);line-height:1}
+.wordmark .tag{font-size:14.5px;color:var(--muted)}
+.top .right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.ink{background:var(--ink-soft);color:var(--ink)}.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:600;font-size:14.5px;display:inline-flex;align-items:center;justify-content:center;gap:7px;color:var(--fg)}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--ink-fg);border-color:var(--ink);box-shadow:var(--shadow)}
+.btn.primary:disabled{opacity:.55;cursor:wait}
+.btn.ghost{background:transparent}
+.btn.small{padding:6px 10px;font-size:13.5px;border-radius:8px}
+.btn.wide{width:100%}
+.hint{font-size:13.5px;color:var(--muted)}
+.label{font-size:12.5px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+@media (min-width:900px){.grid{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+
+/* doc types */
+.types{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+@media (min-width:520px){.types{grid-template-columns:repeat(3,1fr)}}
+.type{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 10px;text-align:left;display:flex;flex-direction:column;gap:3px;min-width:0}
+.type b{font-size:14px;line-height:1.25}
+.type span{font-size:12px;color:var(--muted);line-height:1.3}
+.type[aria-pressed="true"]{border-color:var(--ink);background:var(--ink-soft)}
+.type[aria-pressed="true"] b{color:var(--ink)}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{display:flex;flex-direction:column;gap:4px;min-width:0}
+select{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px 32px 8px 10px;appearance:none;-webkit-appearance:none;font-size:14.5px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 55%,calc(100% - 12px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:7px 12px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--ink-fg)}
+
+textarea{width:100%;min-height:200px;border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:var(--surface);resize:vertical;line-height:1.55;font-size:15.5px}
+textarea::placeholder{color:var(--muted)}
+.checks{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.checks li{font-size:12.5px;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.checks li.on{background:var(--ok-soft);color:var(--ok)}
+
+/* names panel */
+.names{border:1px solid var(--amber);background:var(--amber-soft);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.names .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.names b{color:var(--amber)}
+.tagn{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:13px}
+
+/* words */
+.words{display:flex;flex-direction:column;gap:6px}
+.word{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:14px;padding:8px 10px;border-radius:10px;background:var(--ox-soft)}
+.word .w{font-weight:700;color:var(--ox);font-family:var(--font-doc);font-style:italic}
+.word .a{color:var(--fg)}
+.word .a small{display:block;color:var(--muted);font-size:12.5px}
+
+/* output */
+.doc{background:var(--paper);border:1px solid var(--paper-line);border-radius:4px;padding:26px 24px;box-shadow:var(--shadow);min-height:260px;font-family:var(--font-doc);font-size:16.5px;line-height:1.6;color:var(--fg);position:relative}
+.doc h1,.doc h2,.doc h3{font-family:var(--font-doc);font-weight:600;margin:14px 0 6px}
+.doc h1{font-size:21px}.doc h2{font-size:18px}.doc h3{font-size:16.5px}
+.doc p{margin:0 0 10px}
+.doc ul,.doc ol{margin:0 0 10px;padding-left:22px}
+.doc li{margin:2px 0}
+.doc .ph{color:var(--muted);font-style:italic}
+.doc mark{background:var(--ox-soft);color:var(--ox);border-radius:3px;padding:0 2px}
+.doc .thinking{display:flex;align-items:center;gap:10px;color:var(--muted);font-family:var(--font-ui);font-style:normal}
+.dotpulse{width:10px;height:10px;border-radius:50%;background:var(--ink);animation:pulse 1.1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.dotpulse{animation:none}}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+.docbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.docbar .grow{flex:1}
+.review{display:flex;flex-direction:column;gap:10px}
+.review .sec{display:flex;flex-direction:column;gap:6px}
+.review ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.review .q{font-size:14.5px;background:var(--ink-soft);color:var(--ink);padding:8px 10px;border-radius:10px}
+.empty{color:var(--muted);font-size:14.5px;padding:10px 0}
+.notice{border-left:4px solid var(--ink);background:var(--surface);border:1px solid var(--line);border-left-width:4px;border-radius:12px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.notice.warn{border-left-color:var(--amber)}
+.foot{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;color:var(--muted);font-size:13px;padding-top:18px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:14px;font-weight:600;max-width:min(92vw,560px);box-shadow:var(--shadow)}
+details{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0}
+details summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::-webkit-details-marker{display:none}
+details .body{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:r}
+.rules li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start}
+.rules li::before{counter-increment:r;content:counter(r);width:26px;height:26px;border-radius:50%;background:var(--ink-soft);color:var(--ink);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:13px}
+.rules b{display:block}
+</style>
+</head>
+<body>
+
+<div id="app" class="app"></div>
+
+<script>
+(function(){
+'use strict';
+const DRAFT_KEY='encre-draft-v1';
+const I={
+  pen:'<svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M13 8l3 3"/></svg>',
+  copy:'<svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5h10"/></svg>',
+  stop:'<svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  redo:'<svg class="i" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>',
+  check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>',
+  eye:'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  lock:'<svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  minus:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+  plus:'<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>'
+};
+
+/* ---------- document types ---------- */
+const TYPES={
+  obs:{label:'Observation',sub:'Transmission du jour',ph:'Ex. : ce matin M. a refusé le petit-déj, est resté dans sa chambre, a accepté de sortir à 10 h après la musique, a mangé à midi normalement, a dit « mal à la tête » deux fois…',
+    checks:['Date et moment','Contexte','Faits observés','Réaction de la personne','Ce que l’équipe a fait','Suites prévues'],
+    shape:'Une transmission d’équipe : un court paragraphe de contexte, puis les faits dans l’ordre, la réaction de la personne, l’intervention de l’équipe, et les suites. 120 à 220 mots.'},
+  inc:{label:'Note d’incident',sub:'Factuelle, chronologique',ph:'Ex. : 16 h 20, salle à manger, R. a renversé sa chaise et crié, un autre résident a eu peur, deux collègues présents, R. s’est calmé dans sa chambre après 15 min, responsable informé, pas de blessé…',
+    checks:['Date, heure, lieu','Personnes présentes (fonctions)','Déroulé chronologique','Mesures prises','Personnes informées','Suivi'],
+    shape:'Une note d’incident : en-tête (date, heure, lieu, personnes présentes par fonction), déroulé chronologique en phrases courtes, mesures prises, personnes informées, suivi proposé. Aucune hypothèse sur les causes, sauf si la personne les a exprimées elle-même.'},
+  pai:{label:'Objectif de PAI',sub:'Formulé, mesurable',ph:'Ex. : S. aimerait aller seul à la boulangerie du village, il connaît le chemin mais hésite à payer, on a 6 mois, la référente l’accompagnera le mardi…',
+    checks:['Souhait ou besoin de la personne','Objectif formulé positivement','Indicateurs observables','Moyens et rôle de chacun','Échéance','Place de la personne'],
+    shape:'Un objectif de projet d’accompagnement individualisé : le souhait ou le besoin exprimé par la personne (dans ses mots si possible), l’objectif formulé positivement et à la portée de la personne, deux ou trois indicateurs observables, les moyens et le rôle de chacun (personne, équipe, proches), l’échéance, et la façon dont la personne participe à l’évaluation. Utiliser la logique MDH-PPH : facteurs personnels, facteurs environnementaux, habitudes de vie, participation sociale.'},
+  pv:{label:'PV de réseau',sub:'Synthèse de réunion',ph:'Ex. : réunion de réseau du 12.11, présents : curatrice, référente, responsable, la personne, ergo. Points : logement, activité de jour, santé (rdv dentiste), vacances d’été. Décisions : …',
+    checks:['Date et participants (fonctions)','Points abordés','Position de la personne','Décisions','Qui fait quoi, pour quand','Prochaine rencontre'],
+    shape:'Un procès-verbal de réunion de réseau : en-tête (date, lieu, participants par fonction), puis pour chaque point : ce qui a été dit, la position de la personne, la décision. Terminer par un tableau en texte « Décisions et responsabilités » (quoi, qui, pour quand) et la date de la prochaine rencontre.'},
+  rap:{label:'Rapport périodique',sub:'Au curateur ou à l’autorité',ph:'Ex. : période janvier–juin, M. va bien globalement, deux hospitalisations courtes, participe à l’atelier bois, voit sa mère chaque week-end, objectif autonomie repas en bonne voie, souhaite changer d’activité de jour…',
+    checks:['Période couverte','Situation générale','Santé (factuel, sans diagnostic)','Vie quotidienne et activités','Relations et participation','Objectifs et demandes'],
+    shape:'Un rapport périodique destiné au curateur ou à la curatrice, ou à l’autorité de protection de l’adulte : période, situation générale, santé (faits et suivi, sans poser de diagnostic), vie quotidienne, activités, relations et participation sociale, objectifs du projet d’accompagnement et leur avancement, demandes ou points à décider. Ton institutionnel, phrases courtes, 300 à 450 mots.'},
+  bil:{label:'Bilan d’objectif',sub:'Évaluation de PAI',ph:'Ex. : objectif « faire ses courses seul le mardi », 6 mois, il y est allé 14 fois sur 20, a payé seul 9 fois, blocage quand il y a du monde, il dit qu’il est fier…',
+    checks:['Objectif initial','Indicateurs et résultats','Ce que la personne en dit','Obstacles et appuis','Ajustement proposé','Prochaine échéance'],
+    shape:'Un bilan d’objectif : rappel de l’objectif et des indicateurs, résultats observés (chiffres si disponibles), ce que la personne en dit, obstacles rencontrés et appuis qui ont aidé, ajustement proposé (poursuivre, adapter, clore), prochaine échéance.'},
+  rel:{label:'Relecture',sub:'Je relis votre texte',ph:'Collez ici un texte déjà écrit : je le rends factuel, neutre et lisible, sans changer le fond.',
+    checks:['Faits séparés des interprétations','Vocabulaire neutre','Personne d’abord','Phrases courtes','Aucun nom'],
+    shape:'Une relecture : réécrire le texte fourni en gardant tout son contenu factuel, en séparant faits et interprétations, en remplaçant les mots qui jugent par des descriptions de comportement, avec des phrases courtes. Ne rien inventer, ne rien retirer d’important. Si une phrase est une interprétation, la marquer comme telle (« semble », « dit que »).'}
+};
+const TYPE_ORDER=['obs','inc','pai','pv','rap','bil','rel'];
+const SECTORS={hand:'Handicap, adultes',enf:'Enfance et adolescence',age:'Personnes âgées',ins:'Insertion, addictions',psy:'Psychiatrie sociale'};
+const DEST={equipe:'L’équipe',resp:'Le ou la responsable',cur:'Le curateur ou la curatrice',apea:'L’autorité de protection (APEA, Justice de paix)',fam:'La famille',reseau:'Le réseau'};
+const LEN={court:'court',moyen:'moyen',long:'détaillé'};
+
+/* ---------- local review: words that judge ---------- */
+const JUDGE=[
+  ['manipulat', 'Décrire ce que la personne a fait et obtenu, sans prêter d’intention.'],
+  ['capricieu', 'Nommer le comportement et le contexte (a refusé, a réclamé) plutôt que le caractère.'],
+  ['caprice', 'Décrire la demande et la réaction, pas un trait de caractère.'],
+  ['fainéant', 'Décrire ce qui n’a pas été fait et ce qui l’a empêché.'],
+  ['paresseu', 'Décrire ce qui n’a pas été fait et ce qui l’a empêché.'],
+  ['agressi', 'Décrire le geste ou la parole exacts, leur cible, la durée.'],
+  ['violent', 'Décrire l’acte précisément (a frappé la table, a poussé).'],
+  ['fait exprès', 'Intention supposée : écrire ce qui s’est passé, sans la cause.'],
+  ['cherche l’attention', 'Interprétation : décrire le comportement et le moment.'],
+  ['cherche l\'attention', 'Interprétation : décrire le comportement et le moment.'],
+  ['provocat', 'Décrire les paroles ou gestes, pas l’intention.'],
+  ['ingérable', 'Décrire ce qui a débordé et ce qui a été tenté.'],
+  ['hystéri', 'Terme stigmatisant : décrire les cris, les pleurs, la durée.'],
+  ['comédie', 'Jugement : décrire ce qui a été exprimé et observé.'],
+  ['mauvaise volonté', 'Intention supposée : décrire le refus et son contexte.'],
+  ['menteu', 'Écrire « a dit que… » et ce qui a été constaté.'],
+  ['voleu', 'Décrire les faits constatés sans qualifier la personne.'],
+  ['débile', 'Terme inacceptable : parler de la personne et de ses besoins.'],
+  ['handicapé mental', 'Écrire « personne en situation de handicap ».'],
+  ['handicapés mentaux', 'Écrire « personnes en situation de handicap ».'],
+  ['le handicapé', 'La personne d’abord : « la personne », « M. », « elle ».'],
+  ['anormal', 'Décrire ce qui est observé par rapport à l’habitude de la personne.'],
+  ['bizarre', 'Décrire précisément ce qui a été observé.'],
+  ['incapable', 'Décrire ce que la personne fait avec ou sans aide.'],
+  ['refuse tout', 'Généralisation : lister ce qui a été refusé et accepté.'],
+  ['toujours', 'Généralisation : préciser combien de fois, quand.'],
+  ['jamais', 'Généralisation : préciser combien de fois, quand.'],
+  ['il veut', 'Intention supposée : « il dit vouloir », « il demande ».'],
+  ['elle veut', 'Intention supposée : « elle dit vouloir », « elle demande ».'],
+  ['pense que', 'Pensée supposée : écrire ce que la personne a dit ou montré.']
+];
+const COMMON=new Set(['Le','La','Les','Un','Une','Des','Il','Elle','Ils','Elles','On','Nous','Vous','Je','Tu','Ce','Cet','Cette','Ces','Mon','Ma','Mes','Son','Sa','Ses','Notre','Votre','Leur','Leurs','Au','Aux','Du','De','En','Et','Ou','Mais','Donc','Car','Ni','Pas','Plus','Très','Puis','Ensuite','Après','Avant','Pendant','Depuis','Vers','Chez','Pour','Par','Sur','Sous','Dans','Avec','Sans','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre','Matin','Midi','Soir','Nuit','PAI','PV','APEA','AI','PC','CDPH','MDH','PPH','M.','Mme','Ex','Madame','Monsieur','Oui','Non','Rdv','RDV','Salle','Chambre','Bureau','Atelier','Pavillon','Fondation','Foyer','Institution','Équipe','Equipe','Responsable','Curatrice','Curateur','Référente','Référent','Ergo','Physio','Psy','Médecin','Dentiste','Hôpital','Suisse','France','Fribourg','Vaud','Genève','Neuchâtel','Valais','Jura','Berne','Bulle','Lausanne','Je','J','L','D','S','N','C','Qu','T','M']);
+function findNames(text){
+  const out=new Set();
+  const sentences=text.split(/(?<=[.!?\n])\s+/);
+  for(const s of sentences){
+    const words=s.split(/\s+/);
+    words.forEach((w,i)=>{
+      const clean=w.replace(/^[«"(\[]+|[»")\],;:!?.]+$/g,'');
+      if(!clean||clean.length<3)return;
+      if(!/^[A-ZÀ-Ý][a-zà-ÿ]+(-[A-ZÀ-Ý][a-zà-ÿ]+)?$/.test(clean))return;
+      if(i===0)return;
+      if(COMMON.has(clean))return;
+      out.add(clean);
+    });
+  }
+  return [...out];
+}
+function findJudge(text){
+  const low=text.toLowerCase();const hits=[];
+  for(const [w,a] of JUDGE){if(low.includes(w)&&!hits.some(h=>h[0]===w))hits.push([w,a]);}
+  return hits;
+}
+function checksOn(text,type){
+  const low=text.toLowerCase();const t=TYPES[type];
+  const tests={
+    'Date et moment':/\b(\d{1,2}\s?h|\d{1,2}:\d{2}|ce matin|cet après-midi|ce soir|hier|aujourd|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|\d{1,2}\.\d{1,2})/i,
+    'Date, heure, lieu':/\b(\d{1,2}\s?h|\d{1,2}:\d{2}|salle|chambre|couloir|jardin|bus|atelier|cuisine|salon)/i,
+    'Date et participants (fonctions)':/(présent|particip|curat|référent|responsable|ergo|physio|médecin|famille|mère|père)/i,
+    'Période couverte':/(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|semestre|trimestre|période|depuis)/i,
+    'Objectif initial':/(objectif|but|visait|souhait)/i,
+    'Contexte':/(pendant|lors|au moment|après|avant|contexte|repas|atelier|sortie|lever|coucher|douche)/i,
+    'Faits observés':/(a |s’est|s'est|est resté|a dit|a refusé|a accepté|a mangé|a dormi|a crié|a pleuré|a ri)/i,
+    'Déroulé chronologique':/(puis|ensuite|après|\d{1,2}\s?h|d’abord|d'abord|enfin)/i,
+    'Réaction de la personne':/(a dit|s’est calmé|s'est calmé|a souri|a pleuré|a accepté|a refusé|s’est|s'est)/i,
+    'Ce que l’équipe a fait':/(nous avons|on a|l’équipe|l'équipe|j’ai|j'ai|proposé|accompagn)/i,
+    'Mesures prises':/(proposé|accompagn|écarté|appelé|désinfect|calm|isolé|rassur)/i,
+    'Personnes informées':/(inform|prévenu|appelé|responsable|curat|famille|médecin)/i,
+    'Suites prévues':/(à surveiller|demain|suivi|prochain|revoir|refaire|prévoir)/i,
+    'Suivi':/(suivi|prochain|revoir|demain|surveill|rdv|réseau)/i,
+    'Souhait ou besoin de la personne':/(aimerait|souhait|veut|demande|envie|besoin|dit)/i,
+    'Objectif formulé positivement':/(pouvoir|réussir|aller|faire|apprendre|participer|gérer|choisir)/i,
+    'Indicateurs observables':/(fois|sur \d|\d+ ?%|seul|sans aide|avec aide|chaque|par semaine)/i,
+    'Moyens et rôle de chacun':/(accompagn|référent|équipe|famille|curat|mardi|chaque|moyen)/i,
+    'Échéance':/(mois|semaine|\d{4}|jusqu|d’ici|d'ici|échéance|délai)/i,
+    'Place de la personne':/(il dit|elle dit|avec lui|avec elle|son avis|choisit|participe|fier|fière)/i,
+    'Points abordés':/(point|logement|santé|activité|vacances|travail|argent|famille|rdv)/i,
+    'Position de la personne':/(la personne|il dit|elle dit|souhaite|d’accord|d'accord|refuse)/i,
+    'Décisions':/(décid|convenu|retenu|accord)/i,
+    'Qui fait quoi, pour quand':/(s’occupe|s'occupe|fera|prend en charge|d’ici|d'ici|pour le|avant le)/i,
+    'Prochaine rencontre':/(prochain|rendez-vous|réseau du|le \d)/i,
+    'Situation générale':/(va bien|globalement|situation|stable|période)/i,
+    'Santé (factuel, sans diagnostic)':/(santé|hospital|médecin|traitement|douleur|sommeil|poids)/i,
+    'Vie quotidienne et activités':/(atelier|activité|repas|quotidien|sortie|travail|centre)/i,
+    'Relations et participation':/(mère|père|famille|frère|sœur|ami|visite|week-end|téléphone)/i,
+    'Objectifs et demandes':/(objectif|souhaite|demande|changer|projet)/i,
+    'Indicateurs et résultats':/(fois|sur \d|\d+ ?%|résultat|atteint)/i,
+    'Ce que la personne en dit':/(il dit|elle dit|fier|fière|content|aime|n’aime|n'aime)/i,
+    'Obstacles et appuis':/(blocage|difficile|aidé|appui|quand il y a|obstacle|peur)/i,
+    'Ajustement proposé':/(poursuivre|adapter|continuer|arrêter|modifier|proposer)/i,
+    'Prochaine échéance':/(mois|semaine|prochain|\d{4}|d’ici|d'ici)/i,
+    'Faits séparés des interprétations':null,'Vocabulaire neutre':null,'Personne d’abord':null,'Phrases courtes':null,'Aucun nom':null
+  };
+  return t.checks.map(c=>{const re=tests[c];if(re===null){if(c==='Aucun nom')return [c,findNames(text).length===0&&text.trim().length>0];if(c==='Vocabulaire neutre')return [c,findJudge(text).length===0&&text.trim().length>0];return [c,false];}return [c,re?re.test(text):false];});
+}
+
+/* ---------- prompt ---------- */
+function buildPrompt(){
+  const t=TYPES[state.type];
+  const vocab=state.country==='ch'
+    ?'Vocabulaire et cadre suisses : « projet d’accompagnement individualisé (PAI) », « curateur / curatrice », « autorité de protection de l’adulte (APEA ou Justice de paix) », « assurance-invalidité (AI) », « prestations complémentaires », « institution », « personne en situation de handicap ». Orthographe et usages de Suisse romande (septante, huitante/quatre-vingts selon l’usage, nonante ; « 14 h 30 »).'
+    :'Vocabulaire et cadre français : « projet personnalisé », « tuteur / curateur », « juge des contentieux de la protection », « MDPH », « établissement ou service médico-social », « personne en situation de handicap ».';
+  const len={court:'Reste bref : environ la moitié de la longueur habituelle.',moyen:'',long:'Sois détaillé, sans délayer.'}[state.len];
+  return [
+    'Tu es Encre, un assistant d’écriture pour les professionnel·les du travail social (éducateurs et éducatrices, ASE, responsables d’équipe). Tu transformes des notes brutes en un document professionnel, factuel et respectueux de la personne dont on parle.',
+    'RÈGLES ABSOLUES :',
+    '1. Aucun nom de personne, jamais : ni prénom ni nom de famille. Désigne la personne accompagnée par « la personne », « M. » ou « Mme » suivi d’une initiale si les notes en donnent une, ou par le pronom. Les professionnel·les sont désigné·es par leur fonction (« la référente », « l’équipe »), jamais par un nom. Si les notes contiennent un nom, remplace-le.',
+    '2. Les faits d’abord, séparés des interprétations. Une interprétation s’annonce (« semble », « dit que », « l’équipe fait l’hypothèse que »). Aucune intention prêtée à la personne.',
+    '3. Vocabulaire neutre et non stigmatisant : décrire les comportements, jamais le caractère (pas de « manipulateur », « capricieux », « agressif » : décrire le geste exact). La personne d’abord : « personne en situation de handicap », jamais « handicapé mental ».',
+    '4. Aucun diagnostic, aucune appréciation médicale : rapporter les faits de santé observés et le suivi existant.',
+    '5. Phrases courtes, voix active, pas de jargon inutile, pas d’emphase. Écrit en français, destiné à être lu par : '+DEST[state.dest]+'.',
+    '6. N’invente aucun fait. Si une information attendue manque dans les notes, laisse un champ entre crochets, par exemple [heure], [personnes informées], sans le remplir à la place de l’auteur.',
+    'CONTEXTE : secteur « '+SECTORS[state.sector]+' ». '+vocab,
+    'DOCUMENT ATTENDU : '+t.label+'. '+t.shape+' '+len,
+    'FORMAT : du texte structuré avec des titres courts précédés de « ## », des listes avec « - » quand c’est utile, pas de tableau, pas de préambule ni de commentaire : uniquement le document. Pas de gras.',
+    'NOTES BRUTES DE L’AUTEUR :',
+    '"""',
+    state.notes.trim(),
+    '"""'
+  ].join('\n');
+}
+function buildReviewPrompt(doc){
+  return 'Tu relis un document rédigé par un·e professionnel·le du travail social à partir de notes. Réponds UNIQUEMENT avec un objet JSON de la forme {"jugements":[{"mot":"...","pourquoi":"...","alternative":"..."}],"manques":["..."],"questions":["..."]}. '+
+    '« jugements » : mots ou expressions du document qui jugent, interprètent une intention ou stigmatisent (au plus 5, vide si aucun). « manques » : éléments attendus dans un document de type « '+TYPES[state.type].label+' » qui sont absents ou laissés entre crochets (au plus 5, formulés comme ce qu’il faudrait ajouter). « questions » : 1 à 3 questions courtes que l’auteur devrait se poser avant d’envoyer (dont, si pertinent : « Ce que j’écris, la personne pourrait-elle le lire sans être blessée ? »). Pas d’autre texte.\n\nDOCUMENT :\n"""\n'+doc.slice(0,12000)+'\n"""';
+}
+
+/* ---------- state ---------- */
+const state={type:'obs',sector:'hand',dest:'equipe',len:'moyen',country:'ch',notes:'',out:'',busy:false,review:null,reviewBusy:false,sampleReady:null,toast:'',truncated:false,err:''};
+let sampleFn=null,ctl=null,toastTimer=null;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){state.toast=m;renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{state.toast='';renderToast();},2600);}
+function saveDraft(){try{localStorage.setItem(DRAFT_KEY,JSON.stringify({type:state.type,sector:state.sector,dest:state.dest,len:state.len,country:state.country,notes:state.notes}));}catch(e){}}
+function loadDraft(){try{const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');if(d){Object.assign(state,{type:d.type||'obs',sector:d.sector||'hand',dest:d.dest||'equipe',len:d.len||'moyen',country:d.country||'ch',notes:d.notes||''});}}catch(e){}}
+
+/* ---------- markdown-lite to HTML ---------- */
+function mdToHtml(md){
+  const lines=md.split('\n');let html='';let inList=false;
+  const flush=()=>{if(inList){html+='</ul>';inList=false;}};
+  for(let raw of lines){
+    const line=raw.replace(/\*\*(.+?)\*\*/g,'$1').trimEnd();
+    if(/^\s*[-•]\s+/.test(line)){if(!inList){html+='<ul>';inList=true;}html+='<li>'+inline(line.replace(/^\s*[-•]\s+/,''))+'</li>';continue;}
+    flush();
+    if(/^###\s/.test(line))html+='<h3>'+inline(line.replace(/^###\s*/,''))+'</h3>';
+    else if(/^##\s/.test(line))html+='<h2>'+inline(line.replace(/^##\s*/,''))+'</h2>';
+    else if(/^#\s/.test(line))html+='<h1>'+inline(line.replace(/^#\s*/,''))+'</h1>';
+    else if(line.trim()==='')html+='';
+    else html+='<p>'+inline(line)+'</p>';
+  }
+  flush();return html;
+}
+function inline(s){return esc(s).replace(/\[([^\]]{1,60})\]/g,'<mark>[$1]</mark>');}
+
+/* ---------- render ---------- */
+function render(){
+  const app=document.getElementById('app');
+  const t=TYPES[state.type];
+  const names=findNames(state.notes);
+  const judge=findJudge(state.notes);
+  const checks=checksOn(state.notes,state.type);
+  const ready=state.sampleReady;
+  const status=ready===null?'<span class="pill">Connexion…</span>':ready?'<span class="pill ok">'+I.check+'Rédaction prête</span>':'<span class="pill amber">'+I.lock+'Démo locale</span>';
+  const types=TYPE_ORDER.map(k=>'<button type="button" class="type" data-act="type" data-v="'+k+'" aria-pressed="'+(state.type===k)+'"><b>'+esc(TYPES[k].label)+'</b><span>'+esc(TYPES[k].sub)+'</span></button>').join('');
+  const sel=(id,obj,val,label)=>'<label class="opt"><span class="label">'+label+'</span><select id="'+id+'" data-act="opt" data-k="'+id+'">'+Object.keys(obj).map(k=>'<option value="'+k+'"'+(val===k?' selected':'')+'>'+esc(obj[k])+'</option>').join('')+'</select></label>';
+  const namesHtml=names.length?'<div class="names"><div><b>'+names.length+' nom'+(names.length>1?'s':'')+' détecté'+(names.length>1?'s':'')+'.</b> Encre n’écrit jamais de nom. Remplacer par des initiales avant d’envoyer ?</div><div class="row">'+names.map(n=>'<span class="tagn">'+esc(n)+' → '+esc(n[0])+'.</span>').join('')+'<button type="button" class="btn small" data-act="anon">'+I.check+'Remplacer</button></div></div>':'';
+  const judgeHtml=judge.length?'<div class="words">'+judge.map(j=>'<div class="word"><span class="w">'+esc(j[0])+'</span><span class="a">'+esc(j[1])+'</span></div>').join('')+'</div>':'';
+  const checksHtml='<ul class="checks" aria-label="Éléments attendus">'+checks.map(c=>'<li class="'+(c[1]?'on':'')+'">'+(c[1]?'✓ ':'')+esc(c[0])+'</li>').join('')+'</ul>';
+  const canWrite=state.notes.trim().length>=15&&!state.busy;
+  const primary=state.busy
+    ?'<button type="button" class="btn ghost" data-act="stop">'+I.stop+'Arrêter</button>'
+    :'<button type="button" class="btn primary" data-act="write"'+(canWrite?'':' disabled')+'>'+I.pen+(state.type==='rel'?'Relire':'Rédiger')+'</button>';
+  const left='<section class="col">'+
+    '<div class="card"><span class="label">Quel document ?</span><div class="types">'+types+'</div></div>'+
+    '<div class="card"><div class="opts">'+sel('sector',SECTORS,state.sector,'Secteur')+sel('dest',DEST,state.dest,'Destinataire')+'</div><div class="opts"><div class="opt"><span class="label">Longueur</span><div class="seg" role="group">'+Object.keys(LEN).map(k=>'<button type="button" data-act="len" data-v="'+k+'" aria-pressed="'+(state.len===k)+'">'+LEN[k]+'</button>').join('')+'</div></div><div class="opt"><span class="label">Cadre</span><div class="seg" role="group"><button type="button" data-act="country" data-v="ch" aria-pressed="'+(state.country==='ch')+'">Suisse</button><button type="button" data-act="country" data-v="fr" aria-pressed="'+(state.country==='fr')+'">France</button></div></div></div></div>'+
+    '<div class="card"><span class="label">'+(state.type==='rel'?'Votre texte':'Vos notes, comme elles viennent')+'</span><textarea id="notes" placeholder="'+esc(t.ph)+'">'+esc(state.notes)+'</textarea>'+checksHtml+namesHtml+judgeHtml+
+    '<div class="docbar">'+primary+'<span class="hint grow">Sans nom. Les initiales suffisent.</span></div>'+
+    (ready===false?'<div class="notice warn"><b>Mode démonstration.</b><span>Ouvert hors de Claude, Encre vérifie vos notes (noms, mots qui jugent, éléments attendus) mais ne rédige pas. La version complète aura son propre moteur de rédaction, hébergé en Suisse.</span></div>':'')+
+    '</div></section>';
+  const right='<section class="col">'+
+    '<div class="docbar"><span class="label">'+esc(t.label)+(state.out?' · '+esc(SECTORS[state.sector]):'')+'</span><span class="grow"></span>'+(state.out&&!state.busy?'<button type="button" class="btn small" data-act="copy">'+I.copy+'Copier</button><button type="button" class="btn small" data-act="redo">'+I.redo+'Autre version</button><button type="button" class="btn small" data-act="shorter">'+I.minus+'Plus court</button><button type="button" class="btn small" data-act="longer">'+I.plus+'Plus détaillé</button>':'')+'</div>'+
+    '<div class="doc" id="doc">'+docInner()+'</div>'+
+    (state.truncated?'<p class="hint">Le texte a été coupé par la longueur. Demandez plus court, ou découpez vos notes.</p>':'')+
+    (state.err?'<div class="notice warn">'+esc(state.err)+'</div>':'')+
+    reviewHtml()+
+    '<details><summary>'+I.chev+'Les cinq règles d’Encre</summary><div class="body"><ol class="rules"><li><b>Factuel</b>Ce qui s’est passé, pas ce qu’on en pense. Une interprétation s’annonce.</li><li><b>Sans nom</b>La personne, M., Mme, une initiale. Les pros par leur fonction.</li><li><b>La personne d’abord</b>Décrire des comportements, jamais un caractère. Un texte que la personne pourrait lire.</li><li><b>Aucun diagnostic</b>Des faits de santé observés et le suivi, rien de plus.</li><li><b>Court et clair</b>Phrases courtes, voix active, rien d’inventé : ce qui manque reste entre crochets.</li></ol></div></details>'+
+    '<details><summary>'+I.lock+'Confidentialité</summary><div class="body"><p>Encre ne stocke rien : ni vos notes, ni les textes produits. Vos notes partent vers Claude, par votre propre compte, uniquement quand vous appuyez sur « Rédiger », et Encre vous demande d’enlever les noms avant. Le brouillon reste dans ce navigateur, sur cet appareil, jusqu’à ce que vous l’effaciez.</p><p class="hint">Prototype. La version complète sera hébergée en Suisse, avec un compte par professionnel·le et un contrat de traitement pour l’institution.</p></div></details>'+
+    '</section>';
+  app.innerHTML='<header class="top"><div class="wordmark"><span class="name">Encre</span><span class="tag">Écrire juste, pour les gens dont on parle.</span></div><div class="right">'+status+'</div></header><div class="grid">'+left+right+'</div><footer class="foot"><span>Encre · prototype · par Antonio Company</span><button type="button" class="btn small ghost" data-act="clear">Effacer le brouillon</button></footer>'+(state.toast?'<div class="toast" role="status">'+esc(state.toast)+'</div>':'');
+}
+function docInner(){
+  if(state.busy&&!state.out)return '<div class="thinking"><span class="dotpulse" aria-hidden="true"></span><span>Encre relit vos notes et rédige…</span></div>';
+  if(!state.out)return '<p class="ph">Le document apparaîtra ici, dans sa forme finale : titres, faits, suites. Collez-le ensuite dans votre dossier.</p>';
+  return mdToHtml(state.out);
+}
+function renderDoc(){const d=document.getElementById('doc');if(d)d.innerHTML=docInner();}
+function renderToast(){const old=document.querySelector('.toast');if(old)old.remove();if(state.toast){const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=state.toast;document.getElementById('app').appendChild(el);}}
+function reviewHtml(){
+  if(state.reviewBusy)return '<div class="card review"><span class="label">Relecture</span><div class="thinking"><span class="dotpulse" aria-hidden="true"></span><span>Relecture en cours…</span></div></div>';
+  const r=state.review;if(!r)return '';
+  const j=(r.jugements||[]).slice(0,5),m=(r.manques||[]).slice(0,5),q=(r.questions||[]).slice(0,3);
+  if(!j.length&&!m.length&&!q.length)return '<div class="card review"><span class="label">Relecture</span><p class="hint">Rien à signaler : factuel, neutre, complet.</p></div>';
+  return '<div class="card review"><span class="label">Relecture</span>'+
+    (j.length?'<div class="sec"><span class="hint">Mots qui jugent ou interprètent</span><div class="words">'+j.map(x=>'<div class="word"><span class="w">'+esc(x.mot||'')+'</span><span class="a">'+esc(x.alternative||'')+'<small>'+esc(x.pourquoi||'')+'</small></span></div>').join('')+'</div></div>':'<p class="hint">Vocabulaire : rien à signaler.</p>')+
+    (m.length?'<div class="sec"><span class="hint">À compléter avant d’envoyer</span><ul>'+m.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+
+    (q.length?'<div class="sec">'+q.map(x=>'<div class="q">'+esc(x)+'</div>').join('')+'</div>':'')+
+    '</div>';
+}
+
+/* ---------- actions ---------- */
+async function write(mode){
+  if(!sampleFn){toast('La rédaction fonctionne dans Claude. Ici, Encre vérifie vos notes.');return;}
+  if(state.notes.trim().length<15){toast('Écrivez d’abord quelques lignes de notes.');return;}
+  if(findNames(state.notes).length){toast('Remplacez d’abord les noms par des initiales.');return;}
+  if(mode==='shorter')state.len='court';if(mode==='longer')state.len='long';
+  ctl=new AbortController();
+  state.busy=true;state.out='';state.review=null;state.truncated=false;state.err='';render();
+  try{
+    const res=await sampleFn(buildPrompt(),{signal:ctl.signal,cache:mode?false:true,onText:({text})=>{state.out=text;renderDoc();}});
+    state.out=res.text;state.truncated=!!res.truncated;state.busy=false;render();
+    review(res.text);
+  }catch(e){
+    state.busy=false;
+    if(e&&e.code==='cancelled'){state.out=e.text||'';render();return;}
+    state.out=(e&&e.text)||'';
+    state.err=copyFor(e&&e.code);
+    if(e&&e.code==='not_granted'){sampleFn=null;state.sampleReady=false;}
+    render();
+  }
+}
+async function review(doc){
+  if(!sampleFn)return;
+  state.reviewBusy=true;render();
+  try{const r=await sampleFn.json(buildReviewPrompt(doc),{modelTier:'quick'});state.review=(r&&typeof r==='object')?r:{};}
+  catch(e){state.review={};if(e&&e.code==='invalid_json')state.review={questions:['La relecture automatique n’a pas abouti ; relisez les cinq règles avant d’envoyer.']};}
+  state.reviewBusy=false;render();
+}
+function copyFor(code){
+  switch(code){
+    case 'not_granted':return 'Vous n’avez pas autorisé Encre à utiliser Claude. Encre continue de vérifier vos notes, sans rédiger.';
+    case 'rate_limited':return 'Trop de demandes pour le moment. Réessayez dans quelques minutes.';
+    case 'session_expired':return 'Votre session Claude a expiré : reconnectez-vous, puis réessayez.';
+    case 'refused':return 'Claude a refusé cette demande. Reformulez vos notes.';
+    case 'prompt_too_large':return 'Vos notes sont trop longues : découpez-les en deux documents.';
+    case 'empty_completion':return 'Aucun texte n’a été produit. Précisez vos notes et réessayez.';
+    case 'sampling_disabled':case 'not_declared':case 'capability_disabled':return 'La rédaction n’est pas disponible dans cette vue.';
+    default:return 'Interruption pendant la rédaction. Vous pouvez réessayer.';
+  }
+}
+async function copyOut(){
+  const text=state.out;
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(text);toast('Document copié. Collez-le dans votre dossier.');return;}}catch(e){}
+  try{const d=document.getElementById('doc');const rg=document.createRange();rg.selectNodeContents(d);const s=window.getSelection();s.removeAllRanges();s.addRange(rg);toast('Texte sélectionné : copiez-le.');}catch(e){toast('Sélectionnez le texte pour le copier.');}
+}
+function anonymize(){
+  const names=findNames(state.notes);let txt=state.notes;
+  names.forEach(n=>{txt=txt.replace(new RegExp('\\b'+n.replace(/[-\/\\^$*+?.()|[\]{}]/g,'\\$&')+'\\b','g'),n[0]+'.');});
+  state.notes=txt;saveDraft();render();toast('Noms remplacés par des initiales.');
+}
+function handle(act,d,el){
+  switch(act){
+    case 'type':state.type=d.v;state.review=null;break;
+    case 'len':state.len=d.v;break;
+    case 'country':state.country=d.v;break;
+    case 'opt':state[d.k]=el.value;break;
+    case 'write':write();return;
+    case 'redo':write('redo');return;
+    case 'shorter':write('shorter');return;
+    case 'longer':write('longer');return;
+    case 'stop':if(ctl)ctl.abort();return;
+    case 'copy':copyOut();return;
+    case 'anon':anonymize();return;
+    case 'clear':state.notes='';state.out='';state.review=null;state.err='';try{localStorage.removeItem(DRAFT_KEY);}catch(e){}toast('Brouillon effacé.');break;
+    default:return;
+  }
+  saveDraft();render();
+}
+const app=document.getElementById('app');
+app.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.tagName==='SELECT')return;handle(el.dataset.act,el.dataset,el);});
+app.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.act==='opt')handle('opt',e.target.dataset,e.target);});
+let typing=null;
+app.addEventListener('input',e=>{
+  if(e.target.id==='notes'){
+    state.notes=e.target.value;saveDraft();
+    clearTimeout(typing);
+    typing=setTimeout(()=>{const ta=document.getElementById('notes');const pos=ta?ta.selectionStart:null;const focused=document.activeElement===ta;render();if(focused){const nt=document.getElementById('notes');if(nt){nt.focus();if(pos!==null)nt.setSelectionRange(pos,pos);}}},350);
+  }
+});
+
+loadDraft();
+render();
+(async()=>{
+  try{
+    if(window.claude&&typeof window.claude.use==='function'){
+      const s=await window.claude.use('sample');
+      sampleFn=s||null;state.sampleReady=!!s;
+    }else{state.sampleReady=false;}
+  }catch(e){state.sampleReady=false;}
+  render();
+})();
+})();
+</script>
+
+</body>
+</html>
