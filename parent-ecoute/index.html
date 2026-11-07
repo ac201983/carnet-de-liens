@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Parent Écouté, Parent Éclairé : un espace d’écoute pour tout parent en chemin. La dose de lumière intérieure, Déposer, un parcours de six mois, les conseils et outils d’un éducateur.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2E5E4E">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Parent écouté">
+<title>Parent Écouté, Parent Éclairé</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>html{box-sizing:border-box;-webkit-text-size-adjust:100%}*,*::before,*::after{box-sizing:inherit}body{margin:0}</style>
+<style>
+/* Design plan
+   Subject: Parent Écouté, Parent Éclairé, Antonio's accompaniment for parents, as a product in the pocket.
+   Color: the green of his first identity (serenity) as the voice that listens; a sunlight gold for « la dose de
+   lumière intérieure » and for nothing else; a soft coral kept for the SOS only. Light theme: a greenhouse at
+   dawn; dark theme: the same room at night with one lamp.
+   Type: Newsreader for the words that listen and the headings (editorial, calm), Nunito for the interface.
+   Layout: phone-first column (max 640px), five tabs, bottom sheets; one bold moment a day: the dose. */
+:root{
+  --bg:#EFF4F0; --surface:#FFFFFF; --surface-2:#E1EAE3; --fg:#1C2A24; --muted:#5E7168; --line:#D2DDD5;
+  --green:#2E5E4E; --green-2:#3E7A66; --green-fg:#FFFFFF; --green-soft:#DCEBE2;
+  --sun:#D9A441; --sun-soft:#FBF0D6; --sun-fg:#5A3F08;
+  --coral:#D96C58; --coral-soft:#FBE4DE;
+  --rose:#B23B3B; --rose-soft:#F8DCDC;
+  --shadow:0 1px 2px rgba(28,42,36,.05),0 14px 34px rgba(28,42,36,.12);
+  --shadow-sm:0 1px 2px rgba(28,42,36,.06),0 3px 10px rgba(28,42,36,.06);
+  --font-ui:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display:'Newsreader',Georgia,'Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101915; --surface:#17221D; --surface-2:#1F2D26; --fg:#EAF1EC; --muted:#9DB3A8; --line:#2B3A32;
+    --green:#8CCBB2; --green-2:#6FB398; --green-fg:#0B1F17; --green-soft:#1B3A2F;
+    --sun:#E9C06A; --sun-soft:#3A3014; --sun-fg:#F6E2B0;
+    --coral:#F0907B; --coral-soft:#3E2520;
+    --rose:#F09A9A; --rose-soft:#4A2323;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 38px rgba(0,0,0,.55); --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 3px 10px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101915; --surface:#17221D; --surface-2:#1F2D26; --fg:#EAF1EC; --muted:#9DB3A8; --line:#2B3A32;
+  --green:#8CCBB2; --green-2:#6FB398; --green-fg:#0B1F17; --green-soft:#1B3A2F;
+  --sun:#E9C06A; --sun-soft:#3A3014; --sun-fg:#F6E2B0;
+  --coral:#F0907B; --coral-soft:#3E2520;
+  --rose:#F09A9A; --rose-soft:#4A2323;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 38px rgba(0,0,0,.55); --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 3px 10px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:17px;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,select,textarea,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+h1,h2,h3{margin:0;line-height:1.14;text-wrap:balance;font-family:var(--font-display);font-weight:500}
+p{margin:0}
+svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.app{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;position:relative;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.app.nobar{padding-bottom:24px}
+@media (prefers-reduced-motion:no-preference){
+  .reveal{animation:reveal .55s cubic-bezier(.2,.7,.2,1) both}
+  .reveal.d1{animation-delay:.08s}.reveal.d2{animation-delay:.16s}.reveal.d3{animation-delay:.24s}.reveal.d4{animation-delay:.32s}
+  @keyframes reveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .sheet{animation:up .26s cubic-bezier(.2,.7,.2,1)}
+  @keyframes up{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
+  .toast{animation:pop .2s ease-out}
+  @keyframes pop{from{transform:translate(-50%,8px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  .breath .orb{animation:breathe 10s ease-in-out infinite}
+  @keyframes breathe{0%{transform:scale(.62)}40%{transform:scale(1)}60%{transform:scale(1)}100%{transform:scale(.62)}}
+  .dose::before{animation:glow 6s ease-in-out infinite}
+  @keyframes glow{0%,100%{opacity:.55}50%{opacity:.9}}
+}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:10px;padding-block:12px 10px;min-height:60px}
+.bar .back{display:inline-flex;align-items:center;gap:2px;background:none;border:0;padding:6px 8px 6px 0;color:var(--green);font-weight:800;font-size:16px}
+.wordmark{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:500;font-size:20px;color:var(--green);line-height:1.05}
+.wordmark small{display:block;font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700}
+.logo{width:34px;height:34px;flex:none}
+.bar .sos{margin-left:auto;background:var(--coral);color:#fff;border:0;border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow-sm)}
+.view{display:flex;flex-direction:column;gap:14px;padding-block:6px 10px;flex:1}
+.t1{font-size:30px}
+.t2{font-size:21px}
+.sub{color:var(--muted);font-size:15.5px}
+.label{font-size:13px;color:var(--muted);font-weight:800;letter-spacing:.01em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.card.green{background:var(--green-soft);border-color:transparent}
+.card.sun{background:var(--sun-soft);border-color:transparent}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.green{background:var(--green-soft);color:var(--green)}.pill.sun{background:var(--sun-soft);color:var(--sun-fg)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 16px;font-weight:800;font-size:16px;text-decoration:none;color:var(--fg);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{border-color:var(--green)}
+.btn.primary{background:var(--green);color:var(--green-fg);border-color:var(--green);box-shadow:var(--shadow-sm)}
+.btn.sun{background:var(--sun);color:#3A2A08;border-color:var(--sun)}
+.btn.ghost{background:transparent}.btn.small{padding:7px 12px;font-size:14.5px;border-radius:10px}.btn.wide{width:100%}
+.btn.danger{color:var(--rose);border-color:var(--rose)}
+.btn:disabled{opacity:.55;cursor:default}
+.hint{font-size:14.5px;color:var(--muted)}
+.list{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:7px}
+.list li::marker{color:var(--green)}
+/* dose */
+.dose{background:linear-gradient(160deg,var(--green) 0%,var(--green-2) 100%);color:var(--green-fg);border-radius:26px;padding:24px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.dose::before{content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(233,192,106,.55) 0%,rgba(233,192,106,0) 70%)}
+.dose .label{color:var(--green-fg);opacity:.85;position:relative}
+.dose p{font-family:var(--font-display);font-size:23px;line-height:1.32;position:relative}
+.dose .sig{font-size:14px;opacity:.85;position:relative}
+.dose .row{display:flex;gap:8px;flex-wrap:wrap;position:relative}
+.dose .btn{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:var(--green-fg)}
+/* déposer */
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:16px;padding:13px 15px;background:var(--surface);font-size:17px;line-height:1.55}
+textarea{min-height:120px;resize:vertical}
+.mirror{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--green);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.mirror .m{font-family:var(--font-display);font-size:21px;line-height:1.35}
+.mirror .q{font-size:16.5px;color:var(--fg)}
+.mirror .l{font-size:16px;color:var(--muted);font-style:italic;font-family:var(--font-display)}
+.mirror .lbl{font-size:12.5px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.think{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:15px}
+.dotp{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 1.1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.dotp{animation:none}}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+.depots{display:flex;flex-direction:column;gap:8px}
+.depot{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.depot .d{font-size:13px;color:var(--muted);font-weight:800}
+.depot .you{color:var(--muted);font-style:italic}
+/* parcours */
+.months{display:flex;flex-direction:column;gap:12px}
+.month{display:flex;flex-direction:column;gap:8px}
+.month h2{font-size:19px;display:flex;align-items:center;gap:8px}
+.month h2 .n{width:28px;height:28px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-size:14px;font-family:var(--font-ui);font-weight:800}
+.step{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;text-align:left;width:100%;min-width:0}
+.step:hover{border-color:var(--green)}
+.step .n{width:40px;height:40px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;font-weight:800;flex:none}
+.step.now .n{background:var(--sun);color:#3A2A08}
+.step.done .n{background:var(--green);color:var(--green-fg)}
+.step .tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.step .tx b{font-size:16.5px}
+.step .tx span{font-size:13.5px;color:var(--muted)}
+.lesson{font-family:var(--font-display);font-size:19px;line-height:1.45}
+.exo{background:var(--sun-soft);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.exo .label{color:var(--sun-fg)}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.photos button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--muted)}
+.photos button span{font-size:34px;line-height:1}
+.photos button[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+/* evolution */
+.scale{display:flex;flex-direction:column;gap:6px}
+.scale .row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.scale input[type=range]{width:100%;accent-color:var(--green)}
+.bars{display:flex;flex-direction:column;gap:10px}
+.barrow{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;font-size:14px}
+.bartrack{display:flex;flex-direction:column;gap:3px}
+.bartrack i{display:block;height:10px;border-radius:5px;background:var(--surface-2);position:relative}
+.bartrack i b{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--green)}
+.bartrack i.t2 b{background:var(--green-2)}.bartrack i.t3 b{background:var(--sun)}
+.legend{display:flex;gap:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.legend span{font-size:12.5px;line-height:1.4}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;background:var(--green)}
+.legend span.t2::before{background:var(--green-2)}.legend span.t3::before{background:var(--sun)}
+/* plans */
+.plans{display:flex;flex-direction:column;gap:10px}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.plan.best{border-color:var(--green);box-shadow:var(--shadow)}
+.plan .pill{align-self:flex-start}
+.plan .price{font-family:var(--font-display);font-size:30px}
+.plan .price small{font-size:15px;color:var(--muted);font-family:var(--font-ui);font-weight:700}
+/* shared with advice/tools (from the library) */
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 12px}
+.search input{border:0;background:none;padding:12px 0;flex:1;min-width:0;outline:none;font-size:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-block:2px}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:14.5px;font-weight:800;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-fg)}
+.sits{display:flex;flex-direction:column;gap:8px}
+.sit{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:13px 14px;text-align:left;width:100%;min-width:0}
+.sit:hover{border-color:var(--green)}
+.sit .e{width:44px;height:44px;border-radius:14px;background:var(--green-soft);display:grid;place-items:center;font-size:22px;flex:none;color:var(--green)}
+.sit .tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.sit .tx b{font-size:17px}
+.sit .tx span{font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sit .chev{color:var(--muted)}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sec h2{font-size:19px;display:flex;align-items:center;gap:8px}
+.sec h2 .dot{width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block}
+.sec.ess h2 .dot{background:var(--green-2)}.sec.ev h2 .dot{background:var(--coral)}.sec.aide h2 .dot{background:var(--rose)}
+.comfort{border-left:4px solid var(--sun);background:var(--sun-soft);border-radius:16px;padding:14px 16px;font-family:var(--font-display);font-size:19px;line-height:1.35;color:var(--fg)}
+.sosview{display:flex;flex-direction:column;gap:14px}
+.sosstep{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+.sosstep .n{width:38px;height:38px;border-radius:50%;background:var(--coral);color:#fff;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:19px;flex:none}
+.sosstep .tx{display:flex;flex-direction:column;gap:4px}
+.sosstep .tx b{font-size:18px}
+.breath{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 0}
+.breath .orbwrap{width:200px;height:200px;display:grid;place-items:center}
+.breath .orb{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--green-2),var(--green));box-shadow:0 0 60px rgba(46,94,78,.35)}
+.breath .txt{font-family:var(--font-display);font-size:24px;color:var(--green);text-align:center}
+.emg{background:var(--rose-soft);border:1px solid var(--rose);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:15.5px}
+.emg b{color:var(--rose)}
+.tel{font-variant-numeric:tabular-nums;font-weight:800;user-select:all;-webkit-user-select:all}
+.timerwrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.ring{width:240px;height:240px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-size:56px;color:var(--green)}
+.bigrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.ft{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ftcard{background:var(--surface);border:3px solid var(--green);border-radius:24px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-height:190px;justify-content:center}
+.ftcard.then{border-color:var(--sun)}
+.ftcard .lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ftcard .big{font-size:64px;line-height:1}
+.ftcard .txt{font-size:20px;font-weight:800}
+.picto{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.picto button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--muted)}
+.picto button span{font-size:30px;line-height:1}
+.picto button[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.routine{display:flex;flex-direction:column;gap:8px}
+.rstep{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;width:100%;text-align:left}
+.rstep .e{font-size:34px;line-height:1;width:48px;text-align:center;flex:none}
+.rstep .t{flex:1;font-size:20px;font-weight:800}
+.rstep .ck{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center;color:#fff;flex:none}
+.rstep.done{background:var(--green-soft);border-color:transparent}
+.rstep.done .ck{background:var(--green);border-color:var(--green)}
+.rstep.done .t{text-decoration:line-through;color:var(--muted)}
+.abc{display:grid;grid-template-columns:1fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:800;font-size:15.5px}
+.log{display:flex;flex-direction:column;gap:8px}
+.logi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.logi .d{font-size:13px;color:var(--muted);font-weight:800}
+.phr{display:flex;flex-direction:column;gap:6px}
+.phr div{background:var(--surface-2);border-radius:14px;padding:10px 14px;font-family:var(--font-display);font-size:18px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.perm{display:flex;flex-direction:column;gap:8px}
+.perm div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 16px;font-family:var(--font-display);font-size:19px;line-height:1.35}
+.perm div b{color:var(--sun-fg)}
+.ex{display:flex;flex-direction:column;gap:8px}
+.mood{display:flex;justify-content:space-between;gap:6px}
+.mood button{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--muted)}
+.mood button span.e{font-size:26px;line-height:1}
+.mood button[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left;min-width:0}
+.tile:hover{border-color:var(--green)}
+.tile .ic{width:42px;height:42px;border-radius:13px;background:var(--green-soft);color:var(--green);display:grid;place-items:center}
+.tile b{font-size:16.5px}
+.tile span{font-size:13.5px;color:var(--muted)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.tabs-in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;border-radius:12px;font-size:11.5px;font-weight:800;color:var(--muted)}
+.tab[aria-current="page"]{color:var(--green);background:var(--green-soft)}
+.backdrop{position:fixed;inset:0;background:rgba(10,24,18,.5);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:24px 24px 0 0;box-shadow:var(--shadow);padding:14px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-height:92vh;overflow:auto}
+.sheet-in{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 2px}
+.sheet h2{font-size:26px}
+.menu{display:flex;flex-direction:column;gap:2px}
+.menu button{display:flex;align-items:center;gap:12px;background:none;border:0;text-align:left;padding:13px 10px;border-radius:12px;font-size:16.5px;font-weight:800}
+.menu button:hover{background:var(--surface-2)}
+.menu .sep{height:1px;background:var(--line);margin:4px 0}
+.menu small{display:block;font-weight:400;color:var(--muted);font-size:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:15px;font-weight:800;max-width:min(92vw,600px);box-shadow:var(--shadow)}
+.confirm{background:var(--rose-soft);border:1px solid var(--rose);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.confirm .row{display:flex;gap:8px;flex-wrap:wrap}
+.hero{background:linear-gradient(160deg,var(--green) 0%,var(--green-2) 100%);color:var(--green-fg);border-radius:26px;padding:26px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;right:-70px;top:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(233,192,106,.6) 0%,rgba(233,192,106,0) 70%)}
+.hero h1{font-size:34px;font-weight:500;letter-spacing:-.01em;position:relative;line-height:1.1}
+.hero p{font-size:17.5px;max-width:42ch;opacity:.95;position:relative}
+.hero .row{display:flex;gap:8px;flex-wrap:wrap;position:relative}
+.hero .btn{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.14);color:var(--green-fg)}
+.hero .btn.solid{background:var(--surface);color:var(--green);border-color:var(--surface)}
+.quote{font-family:var(--font-display);font-size:19px;line-height:1.4;font-style:italic;color:var(--fg);border-left:3px solid var(--sun);padding-left:14px}
+@media (max-width:400px){.hero h1{font-size:30px}.dose p{font-size:21px}.ring{width:200px;height:200px}.ring .num{font-size:48px}.photos{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<script>
+(function(){
+'use strict';
+const KEY='pepe-v1';
+const I={
+  back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+  check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>',
+  home:'<svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  bulb:'<svg class="i" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>',
+  tools:'<svg class="i" viewBox="0 0 24 24"><path d="M14 7l3 3-8 8H6v-3z"/><path d="M12 5l1.5-1.5a2 2 0 0 1 3 0L18 5a2 2 0 0 1 0 3L16.5 9.5"/><path d="M4 20l2-2"/></svg>',
+  heart:'<svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>',
+  chat:'<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+  dots:'<svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg>',
+  alert:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>',
+  timer:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>',
+  arrows:'<svg class="i" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg>',
+  listc:'<svg class="i" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg>',
+  note:'<svg class="i" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
+  quote:'<svg class="i" viewBox="0 0 24 24"><path d="M7 7h4v6H7a3 3 0 0 1-3-3V7zM15 7h4v6h-4a3 3 0 0 1-3-3V7z"/><path d="M4 13c0 3 2 4 4 4M12 13c0 3 2 4 4 4"/></svg>',
+  wind:'<svg class="i" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h8a2 2 0 1 1-2 2"/></svg>',
+  phone:'<svg class="i" viewBox="0 0 24 24"><path d="M6 3h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 12l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"/></svg>',
+  info:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  trash:'<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  plus:'<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  send:'<svg class="i" viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"/></svg>',
+  stop:'<svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  search:'<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>',
+  swap:'<svg class="i" viewBox="0 0 24 24"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>',
+  download:'<svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>',
+  star:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17.3 6.4 20.3l1.2-6.3L3 9.6l6.3-.8z"/></svg>'
+};
+const LOGO='<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 34h36" style="fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round"/><path d="M12 34a12 12 0 0 1 24 0" style="fill:var(--sun);stroke:var(--sun);stroke-width:3;stroke-linejoin:round"/><path d="M24 8v5M11 13l3.5 3.5M37 13l-3.5 3.5M4 24h5M39 24h5" style="fill:none;stroke:var(--sun);stroke-width:3.5;stroke-linecap:round"/></svg>';
+const LOGO_LIGHT=LOGO.replace(/var\(--green\)/g,'var(--green-fg)');
+
+/* ---------- comforting words, one a day ---------- */
+const WORDS=[
+  'Vous n’êtes pas un mauvais parent parce que c’est dur. C’est dur parce que c’est dur.',
+  'Ce que vous faites tous les jours sans que personne le voie, c’est précisément ce qui le tient debout.',
+  'Une crise n’efface pas une bonne journée. Et une mauvaise journée n’efface pas des années d’amour.',
+  'Vous avez le droit d’être fatigué·e d’une personne que vous aimez plus que tout.',
+  'Ce n’est pas à vous d’avoir toutes les réponses. C’est à vous d’être là, et vous l’êtes.',
+  'Demander de l’aide n’est pas abandonner. C’est tenir plus longtemps.',
+  'Votre enfant ne vous compare à personne. Il vous préfère.',
+  'Les progrès ne se mesurent pas aux autres enfants. Ils se mesurent à hier.',
+  'Si vous avez pleuré dans la voiture aujourd’hui, vous êtes en bonne compagnie : des milliers de parents l’ont fait aussi.',
+  'Vous n’avez pas à aimer chaque jour. Vous avez le droit d’aimer la personne et de détester la journée.',
+  'La culpabilité est la preuve que vous vous souciez. Elle n’est pas la preuve que vous avez tort.',
+  'Il y aura un soir où tout aura marché. Gardez-le quelque part. Pour les autres soirs.',
+  'Prendre soin de vous, ce n’est pas du temps pris à votre enfant. C’est du temps rendu à votre enfant, en mieux.',
+  'Personne ne connaît votre enfant comme vous. Les professionnels le savent. Les bons le disent.'
+];
+const PERMISSIONS=[
+  ['Vous avez le droit','de ne pas aimer certaines journées.'],
+  ['Vous avez le droit','de dire « je ne sais pas » à un professionnel.'],
+  ['Vous avez le droit','de demander du répit sans vous justifier.'],
+  ['Vous avez le droit','d’être en colère contre la situation, pas contre votre enfant.'],
+  ['Vous avez le droit','de ne pas être un parent-thérapeute 24 heures sur 24.'],
+  ['Vous avez le droit','d’avoir des projets qui ne concernent pas le handicap.'],
+  ['Vous avez le droit','de pleurer devant votre enfant. Il apprend que les émotions passent.'],
+  ['Vous avez le droit','de refuser un conseil, même bien intentionné.'],
+  ['Vous avez le droit','de rire. Beaucoup. Y compris de la situation.'],
+  ['Vous avez le droit','d’être fier ou fière pour des choses que personne d’autre ne remarque.']
+];
+const MOODS=[['😩','Épuisé·e'],['😔','Lourd'],['😐','Ça va'],['🙂','Plutôt bien'],['😊','Bien']];
+const MOOD_WORDS={
+  0:'Alors aujourd’hui, on vise petit : une seule chose, pas plus. Le reste peut attendre demain. Et si vous le pouvez, un message à quelqu’un : « journée dure ». Juste ça.',
+  1:'Les journées lourdes ont une fin. Choisissez un moment de la journée qui sera à vous, même cinq minutes. Mettez-le dans votre tête comme un rendez-vous.',
+  2:'« Ça va » est une très bonne réponse. Pas besoin de plus. Profitez-en pour faire une chose qui vous attend depuis longtemps, ou pour ne rien faire.',
+  3:'Gardez ce « plutôt bien » quelque part : notez ce qui l’a permis. C’est votre mode d’emploi pour les jours gris.',
+  4:'Un bon jour. Regardez votre enfant aujourd’hui comme si vous ne saviez rien de son dossier. Juste lui. Juste elle.'
+};
+
+/* ---------- situations: the advice library ---------- */
+/* ages: e = enfant, a = ado, g = grand (adulte). themes: comp, comm, quot, ecole, fam, moi */
+const SITS=[
+  {id:'crise',e:'🌪️',t:'La crise',s:'Cris, pleurs, se jette au sol, casse',ages:['e','a','g'],th:'comp',
+   comp:'Une crise n’est pas un caprice ni une attaque contre vous : c’est un débordement. Le cerveau n’arrive plus à traiter ce qui arrive (bruit, fatigue, frustration, imprévu, douleur) et il déborde. À ce moment-là, personne n’apprend rien : ni votre enfant, ni vous. L’objectif n’est pas d’éduquer, c’est de passer la vague en sécurité.',
+   ess:['Moins de mots. Une phrase courte, calme, répétée : « Je suis là. On attend. »','Baissez la voix et la hauteur : accroupissez-vous, à distance, sans fixer du regard.','Sécurisez l’espace plutôt que la personne : écartez ce qui peut blesser, laissez de la place.','Attendez. Les crises montent, plafonnent, redescendent. Ne cherchez pas à les écourter par la discussion.','Après : un verre d’eau, un geste doux si accepté, et rien d’autre. On ne rejoue pas la scène. On en reparle plus tard, ou jamais.'],
+   ev:['Raisonner, menacer, promettre pendant la crise : ça n’arrive pas au cerveau à ce moment-là.','Punir après coup pour quelque chose qui n’était pas un choix.','Vous juger pour avoir crié aussi. Ça arrive. Réparez simplement après.'],
+   moi:'Pendant la crise, vous aussi vous débordez. Respirez par le ventre, trois fois, les pieds bien au sol. Vous avez le droit de sortir trente secondes si l’enfant est en sécurité.',
+   aide:'Si les crises deviennent quotidiennes, plus longues, ou si quelqu’un se blesse, demandez une observation : pédiatre, équipe de l’institution, ou un·e éducateur·trice spécialisé·e qui vient à la maison. Notez avant/pendant/après dans l’outil « Journal avant-pendant-après » : trois semaines de notes valent mieux que n’importe quel récit.'},
+  {id:'automut',e:'🩹',t:'Il ou elle se fait mal',s:'Se tape, se mord, se griffe',ages:['e','a','g'],th:'comp',
+   comp:'Se faire mal est presque toujours un langage : une douleur qu’on ne sait pas dire (dents, ventre, oreilles), une tension trop forte, une recherche de sensation, ou un moyen d’obtenir quelque chose qui a marché une fois. Ce n’est pas « pour vous embêter ». Et ce n’est pas de votre faute.',
+   ess:['D’abord la santé : faites vérifier qu’il n’y a pas de douleur cachée. C’est la cause la plus oubliée.','Protégez sans retenir fort : un coussin, une main douce qui dévie, un vêtement épais.','Proposez une sensation de remplacement au bon moment : presser une balle, mordre un objet prévu pour ça, une pression ferme sur les épaules si elle apaise.','Repérez ce qui précède : fatigue, bruit, transition, attente. C’est là qu’on agit, en amont.','Baissez les exigences les jours où ça monte. Ce n’est pas céder, c’est lire la météo.'],
+   ev:['Crier ou réagir fort : si l’attention est le carburant, ça l’alimente.','Culpabiliser l’enfant (« regarde ce que tu te fais »).','Rester seul·e avec ça des mois sans en parler.'],
+   moi:'Voir son enfant se faire mal est l’une des choses les plus dures qui existent. Si vous tremblez après, c’est normal. Parlez-en à quelqu’un qui comprend, pas à quelqu’un qui va s’affoler.',
+   aide:'Parlez-en vite : pédiatre ou médecin traitant d’abord (douleur), puis un·e professionnel·le du comportement. En Suisse romande, Pro Infirmis et les associations (autisme suisse romande, insieme, Cerebral) orientent vers les bons services.'},
+  {id:'refus',e:'🙅',t:'Le refus',s:'Ne veut pas s’habiller, sortir, manger, se laver',ages:['e','a','g'],th:'quot',
+   comp:'Le refus est souvent la seule forme de pouvoir qu’une personne très accompagnée possède encore. Il protège aussi d’un inconfort que nous ne voyons pas : une étiquette qui gratte, une douche trop chaude, un changement trop brusque. Derrière « non », il y a presque toujours « pas comme ça » ou « pas maintenant ».',
+   ess:['Donnez un choix entre deux options que vous acceptez toutes les deux : « le pull bleu ou le rouge ? » Pas « tu t’habilles ? ».','Annoncez avant : « dans cinq minutes, on va… ». Utilisez le minuteur visuel.','« D’abord… ensuite » : d’abord les dents, ensuite la tablette. Montrez-le avec le tableau.','Réduisez la demande au plus petit pas possible, et félicitez ce pas.','Laissez une sortie honorable : « tu veux le faire toi ou je t’aide ? »'],
+   ev:['Le bras de fer : il n’y a pas de gagnant, seulement deux perdants fatigués.','Multiplier les demandes en même temps.','Négocier une fois la crise lancée.'],
+   moi:'Un refus le matin, quand tout le monde est pressé, c’est une épreuve de nerfs. Préparez la veille ce qui peut l’être. Et acceptez qu’un matin sur quatre soit bancal.',
+   aide:'Si les refus s’étendent à presque tout et depuis plusieurs semaines, cherchez un changement : santé, sommeil, événement, personne nouvelle. Un·e ergothérapeute peut aider pour les refus liés aux sensations (vêtements, douche, textures).'},
+  {id:'transitions',e:'🔁',t:'Les transitions',s:'Passer d’une activité à l’autre, quitter un lieu',ages:['e','a','g'],th:'quot',
+   comp:'Arrêter quelque chose d’agréable pour quelque chose d’incertain est difficile pour tout le monde ; pour une personne qui a besoin de prévisibilité, c’est une petite chute dans le vide. Le secret n’est pas d’être plus ferme, c’est de rendre la suite visible avant qu’elle arrive.',
+   ess:['Prévenez deux fois : « encore 5 minutes », puis « encore 1 minute », avec le minuteur visuel.','Toujours le même signal de fin : une chanson, un geste, une phrase.','Montrez la suite : un pictogramme, une photo du lieu, l’objet qu’on emporte.','Donnez un rôle dans la transition : porter le sac, éteindre la lumière, fermer la porte.','Gardez un objet de transition qui fait le pont entre les deux moments.'],
+   ev:['Interrompre sans prévenir, surtout un jeu ou un écran.','Changer la règle au dernier moment parce qu’on est pressé.'],
+   moi:'Les transitions ratées, c’est souvent vous qui courez. Si une transition est toujours difficile, c’est elle qu’il faut changer, pas votre patience.',
+   aide:'Un·e éducateur·trice ou un·e logopédiste formé·e à la communication alternative (pictogrammes, soutien gestuel) peut construire avec vous un emploi du temps visuel. En institution, demandez comment l’équipe fait : copiez ce qui marche là-bas.'},
+  {id:'sommeil',e:'🌙',t:'Le coucher et la nuit',s:'Endormissement long, réveils, se lève',ages:['e','a'],th:'quot',
+   comp:'Le sommeil est fragile chez beaucoup d’enfants en situation de handicap : le corps ne produit pas toujours les signaux au bon moment, l’angoisse de la séparation est plus forte, et la journée laisse trop de tension. Un coucher raté n’est pas un échec d’autorité.',
+   ess:['Le même déroulé chaque soir, dans le même ordre, en images : bain, pyjama, dents, histoire, dodo. Utilisez la routine du soir.','Baissez la lumière et le bruit une heure avant ; les écrans plus tôt encore.','Un objet de nuit qui ne change jamais ; une veilleuse si besoin.','Si l’enfant se relève : raccompagnez sans parler, autant de fois qu’il faut, la même phrase douce.','Le matin, de la lumière et des mots chaleureux, quelle qu’ait été la nuit.'],
+   ev:['Changer de méthode tous les trois jours.','Faire du coucher une négociation.','Vous culpabiliser de dormir avec lui ou elle certains soirs : parfois c’est la bonne décision pour que tout le monde dorme.'],
+   moi:'Le manque de sommeil rend tout plus dur, et c’est vous qui le portez. Si vous êtes deux, alternez les nuits. Si vous êtes seul·e, la sieste n’est pas un luxe : c’est une nécessité médicale.',
+   aide:'Si l’enfant dort moins de huit heures la plupart des nuits, ou si vous êtes épuisé·e depuis des semaines, parlez-en au pédiatre : il existe des solutions, y compris médicales, qui ne sont pas un aveu d’échec.'},
+  {id:'repas',e:'🍽️',t:'Les repas',s:'Ne mange que trois choses, refuse les textures',ages:['e','a','g'],th:'quot',
+   comp:'La sélectivité alimentaire tient souvent aux sensations (textures, odeurs, couleurs), pas au caractère. Pour certaines personnes, un aliment nouveau dans l’assiette est aussi menaçant qu’un insecte. Le repas, lui, doit rester un moment où l’on est ensemble, pas un champ de bataille.',
+   ess:['Un aliment connu toujours présent dans l’assiette : la sécurité d’abord.','Le nouvel aliment à côté, pas dessus, en toute petite quantité, sans obligation de le goûter. Le voir vingt fois, c’est déjà un progrès.','Les mêmes couverts, la même place, la même heure.','Laissez toucher, sentir, jouer avec la nourriture : c’est une étape, pas une bêtise.','Félicitez l’effort, jamais la quantité.'],
+   ev:['Forcer, chantage au dessert, « tu restes à table jusqu’à… ».','Cacher des aliments dans d’autres : la confiance est plus précieuse qu’une carotte.'],
+   moi:'Si vous cuisinez trois repas différents chaque soir, vous avez le droit d’arrêter. Une assiette commune et un aliment refuge suffisent.',
+   aide:'Un suivi avec un·e ergothérapeute ou un·e logopédiste spécialisé·e dans l’oralité change beaucoup de choses. Faites vérifier le poids et le fer une fois par an avec le médecin.'},
+  {id:'parole',e:'💬',t:'Communiquer sans les mots',s:'Ne parle pas, peu, ou autrement',ages:['e','a','g'],th:'comm',
+   comp:'Ne pas parler n’est pas ne rien dire. Votre enfant communique déjà : par le regard, le corps, les gestes, les cris, les objets qu’il apporte. La communication alternative (pictogrammes, soutien gestuel, tablette) ne remplace pas la parole : elle l’aide à venir, et quand elle ne vient pas, elle donne une voix. C’est prouvé, et c’est le contraire de « renoncer ».',
+   ess:['Nommez ce qu’il ou elle fait, veut, regarde : « tu veux l’eau », en montrant l’eau. Tout le temps, sans attendre de réponse.','Laissez du temps : comptez jusqu’à dix dans votre tête après une question.','Offrez des choix visibles : deux objets, deux images. Le choix, c’est déjà une phrase.','Apprenez trois gestes ou pictogrammes utiles (encore, fini, aide) et utilisez-les vous-même.','Fêtez chaque tentative, même imparfaite.'],
+   ev:['Faire à sa place avant qu’il ait eu le temps d’essayer.','Attendre la parole pour commencer la communication.','Poser des questions auxquelles il ne peut pas répondre.'],
+   moi:'Ne pas entendre « maman » ou « papa » fait mal. Ce que vous entendez à la place, apprenez à le lire : c’est votre langue à vous deux, et elle est réelle.',
+   aide:'Demandez une évaluation en logopédie orientée communication alternative et améliorée (CAA). Les associations (autisme suisse romande, insieme, Cerebral) connaissent les professionnel·les formé·es. En institution, demandez quels moyens l’équipe utilise, et utilisez les mêmes à la maison.'},
+  {id:'dehors',e:'🛒',t:'Les sorties',s:'Magasin, bus, fête de famille, restaurant',ages:['e','a'],th:'quot',
+   comp:'Dehors, tout est plus fort : lumière, bruit, odeurs, attente, regards. Ce qui tient à la maison ne tient pas toujours au supermarché, et ce n’est pas une régression. Une sortie réussie se prépare comme une expédition, et se termine avant la limite, pas après.',
+   ess:['Préparez en images : où on va, ce qu’on fait, combien de temps, ce qu’on rapporte.','Un rôle : tenir la liste, mettre les objets dans le chariot.','Casque ou bouchons d’oreilles, un objet rassurant, une collation.','Visez court et réussi : dix minutes bien, plutôt que quarante jusqu’à la crise.','Prévoyez la sortie de secours : où aller si ça monte, et partez sans discuter.'],
+   ev:['Les grandes surfaces à l’heure de pointe pour commencer.','Prolonger « encore un rayon » quand les signes sont là.'],
+   moi:'Le regard des gens au magasin, on l’a tous senti. Une phrase prête aide : « Il a besoin d’une minute, merci. » Vous n’avez rien à expliquer.',
+   aide:'Beaucoup de magasins et de piscines ont des heures calmes ; demandez. Une carte de priorité ou un justificatif peut éviter les files : renseignez-vous auprès de Pro Infirmis ou de l’association de votre région.'},
+  {id:'regard',e:'👀',t:'Le regard des autres',s:'Remarques, pitié, conseils non demandés',ages:['e','a','g'],th:'fam',
+   comp:'Le regard des autres blesse parce qu’il touche ce qui est déjà sensible chez nous. Les gens ne savent pas ; certains sont maladroits, quelques-uns méchants, la plupart simplement ignorants. Vous ne leur devez rien, ni explication ni pédagogie. Vous pouvez choisir, chaque fois, de protéger votre énergie.',
+   ess:['Préparez deux phrases courtes, l’une qui ferme (« Merci, nous gérons. »), l’autre qui ouvre si vous en avez envie (« Il entend tout, vous pouvez lui dire bonjour. »).','Décidez à l’avance à qui vous expliquez, et à qui jamais.','Dans la famille, nommez ce dont vous avez besoin : « Pas de conseils, de la présence. »','Trouvez vos semblables : un groupe de parents vaut cent inconnus.'],
+   ev:['Vous justifier auprès d’inconnus.','Couper tout lien avec la famille qui ne comprend pas : parfois ils apprennent lentement.'],
+   moi:'Vous avez le droit de ne pas être l’ambassadeur du handicap tous les jours. Certains jours, on ferme les yeux et on passe.',
+   aide:'Les groupes de parents (insieme, autisme suisse romande, Cerebral, et beaucoup de groupes locaux) existent pour ça : parler sans devoir expliquer.'},
+  {id:'ecole',e:'🏫',t:'L’école',s:'Intégration, devoirs, réunions, enseignants',ages:['e','a'],th:'ecole',
+   comp:'L’école est le premier lieu où la différence se mesure. Les enseignants sont souvent de bonne volonté et peu formés ; les réunions sont nombreuses et vous y êtes parfois seul·e face à plusieurs professionnels. Vous êtes pourtant la personne qui connaît le mieux l’enfant : c’est une expertise, pas une opinion.',
+   ess:['Demandez un interlocuteur unique et un canal simple (cahier, mail hebdomadaire).','Avant chaque réunion : trois forces de votre enfant, deux difficultés, une demande. Écrit.','Partagez ce qui marche à la maison (gestes, pictos, routines) : copiez ce qui marche à l’école.','Les devoirs : courts, même heure, même place, et le droit de s’arrêter après quinze minutes.','Demandez les décisions par écrit, et ce que chacun fait.'],
+   ev:['Arriver en réunion sans avoir écrit vos points : on ressort frustré·e.','Faire des devoirs un combat quotidien : l’école a besoin d’une famille, pas d’une deuxième école.'],
+   moi:'Les réunions scolaires épuisent : préparez-les, venez à deux si possible, et autorisez-vous un café après, seul·e.',
+   aide:'Chaque canton a un service de pédagogie spécialisée ; demandez à l’école quel appui est possible (soutien, ergothérapie, logopédie, aide à l’intégration). Pro Infirmis et les associations de parents vous aident à comprendre vos droits.'},
+  {id:'fratrie',e:'👧👦',t:'Les frères et sœurs',s:'Jalousie, colère, trop sages, trop grands',ages:['e','a','g'],th:'fam',
+   comp:'Les frères et sœurs vivent le handicap de l’intérieur, sans l’avoir choisi. Certains deviennent « trop sages » pour ne pas rajouter de poids ; d’autres explosent. Tous ont besoin d’être vus pour eux-mêmes, pas comme l’enfant « qui va bien ».',
+   ess:['Un moment rien qu’à eux, régulier, même court, et sacré : le mercredi de midi, le samedi matin.','Des mots vrais, adaptés à l’âge : ce qu’a leur frère ou sœur, pourquoi ça prend de la place, et que ce n’est la faute de personne.','Le droit à la colère et à la jalousie, dits à voix haute, sans morale.','Ne leur confiez pas un rôle d’adulte : aider oui, être responsable non.','Demandez-leur ce qu’ils veulent que les autres sachent.'],
+   ev:['« Tu as de la chance, toi. »','Faire d’eux les futurs tuteurs sans jamais leur demander.'],
+   moi:'La culpabilité envers les autres enfants est l’une des plus lourdes. Dites-leur ce que vous ressentez simplement : « j’aimerais avoir plus de temps pour toi, et je t’aime autant ». Ils entendent.',
+   aide:'Il existe des groupes de fratrie en Suisse romande (insieme, Cerebral, certaines fondations). Un espace où ils ne sont pas « le frère de ».'},
+  {id:'ecrans',e:'📱',t:'Les écrans',s:'Tablette, jeux, vidéos en boucle',ages:['e','a'],th:'quot',
+   comp:'L’écran apaise, occupe, et pour certains enfants c’est le seul endroit où tout est prévisible. Ce n’est pas un ennemi, c’est un outil puissant : il doit avoir un cadre visible, pas un cadre négociable.',
+   ess:['Des moments fixes, visibles sur un planning en images, plutôt qu’une durée négociée.','Le minuteur visuel pour la fin, annoncé deux fois.','Un « après » attrayant : l’écran s’arrête quand quelque chose d’autre commence, pas quand rien ne commence.','Les écrans comme outil, aussi : pictogrammes, communication, musique pour se calmer.','Pas d’écran la dernière heure avant le coucher.'],
+   ev:['Retirer l’écran brutalement : vous récupérez une crise.','Culpabiliser d’y avoir recours un jour difficile.'],
+   moi:'L’écran qui vous donne vingt minutes pour respirer n’est pas une faute. C’est une pause. Prenez-la vraiment.',
+   aide:'Si l’écran devient le seul intérêt et que tout le reste disparaît, parlez-en à l’équipe ou au pédiatre : on cherche alors ce qu’il remplace.'},
+  {id:'ado',e:'🌱',t:'L’adolescence et le corps',s:'Puberté, intimité, humeur, pudeur',ages:['a','g'],th:'comm',
+   comp:'Le corps change, les hormones aussi, et la compréhension ne suit pas toujours. L’intimité, la pudeur, la sexualité existent pour toute personne, handicap ou pas. Le silence protège moins que les mots simples et répétés.',
+   ess:['Nommez les parties du corps avec les vrais mots, et les règles : ce qu’on fait seul, dans sa chambre, porte fermée.','Les règles : préparez en images avant les premières fois.','Apprenez le « non » et le « stop », à dire et à entendre, pour se protéger.','Respectez la pudeur nouvelle : frapper avant d’entrer, demander avant d’aider.','Parlez-en avec l’équipe ou l’école : les mêmes mots partout.'],
+   ev:['Interdire ou punir des gestes intimes au lieu de les orienter vers le bon lieu.','Supposer que « ça ne le concerne pas ».'],
+   moi:'Voir son enfant devenir un adulte différent de celui qu’on imaginait, c’est un deuil et une fierté mêlés. Les deux sont permis en même temps.',
+   aide:'Des associations proposent de l’éducation sexuelle adaptée (SEHP en Suisse romande, par exemple). Le médecin et l’équipe sont des alliés : demandez un temps dédié.'},
+  {id:'annonce',e:'🌫️',t:'On vient d’apprendre',s:'Diagnostic, premiers mois, sidération',ages:['e'],th:'moi',
+   comp:'Les premiers mois après un diagnostic, on ne vit pas, on encaisse. Choc, déni, colère, tristesse, culpabilité, parfois soulagement d’avoir enfin un nom : tout cela est normal, dans n’importe quel ordre, en boucle. Et pendant ce temps-là, l’enfant est le même qu’hier. Il n’a pas changé. C’est la carte qui a changé, pas le territoire.',
+   ess:['Ne prenez aucune grande décision le premier mois.','Une seule source d’information fiable à la fois ; fermez les forums la nuit.','Notez vos questions pour le prochain rendez-vous : elles arrivent à 3 h du matin, pas en consultation.','Dites-le à deux ou trois personnes choisies, pas à tout le monde.','Regardez votre enfant jouer. Longtemps. C’est le meilleur antidote au dossier.'],
+   ev:['Chercher la cause, le coupable, la faute : il n’y en a pas.','Vous comparer aux parents qui « gèrent bien » : ils ont eu leurs premiers mois aussi.'],
+   moi:'Vous avez le droit de pleurer l’enfant que vous aviez imaginé. Ce n’est pas trahir celui qui est là. C’est faire de la place pour l’aimer tel qu’il est.',
+   aide:'Pro Infirmis vous reçoit gratuitement dès le diagnostic. Les associations spécialisées (autisme suisse romande, insieme, Cerebral, Procap) ont des permanences pour parents. Si le sol se dérobe, La Main Tendue au 143, jour et nuit.'},
+  {id:'culpa',e:'🪞',t:'La culpabilité',s:'Pas assez, trop, mal, pas comme il faut',ages:['e','a','g'],th:'moi',
+   comp:'La culpabilité des parents d’un enfant différent est quasi universelle et presque toujours injuste. Elle dit : « si j’avais… ». Elle ignore qu’on ne décide pas avec ce qu’on sait aujourd’hui, mais avec ce qu’on savait hier. Elle est un signe d’amour qui se trompe de cible.',
+   ess:['Nommez-la quand elle vient : « c’est ma culpabilité qui parle ». Ça la fait reculer d’un pas.','Demandez-vous : « que dirais-je à mon meilleur ami dans la même situation ? » Puis dites-le-vous.','Faites la liste de ce que vous faites. Vraiment. Sur papier. Elle est longue.','Acceptez qu’une bonne décision puisse avoir de mauvaises journées.','Réparez quand il faut (« j’ai crié, pardon »), puis passez à autre chose.'],
+   ev:['Le « je dois tout compenser », qui mène à l’épuisement.','Les comparaisons avec d’autres familles.'],
+   moi:'Vous n’êtes pas en retard. Vous n’avez rien raté. Vous êtes là, ce soir, en train de chercher comment mieux faire. C’est exactement ce qu’un bon parent fait.',
+   aide:'Si la culpabilité vous empêche de dormir ou de vous réjouir depuis des semaines, un·e psychologue qui connaît le handicap peut aider ; Pro Infirmis et les associations orientent. Ce n’est pas une faiblesse, c’est un soin.'},
+  {id:'epuise',e:'🔋',t:'Je n’en peux plus',s:'Épuisement, isolement, à bout',ages:['e','a','g'],th:'moi',
+   comp:'L’épuisement des proches aidants est un état, pas une faiblesse. Il arrive après des mois ou des années de vigilance sans relâche, de nuits coupées, de rendez-vous, de combats administratifs. Le corps finit par dire ce que vous n’osez pas dire. L’écouter n’est pas abandonner votre enfant : c’est rester debout pour lui.',
+   ess:['Aujourd’hui : une seule chose. Le reste attend.','Dites-le à une personne, en une phrase : « je suis à bout ». Pas besoin de détails.','Demandez du répit : un week-end, une après-midi, une nuit. Ce n’est pas un luxe, c’est un soin.','Protégez une heure par semaine rien qu’à vous, dans l’agenda, comme un rendez-vous médical.','Dormez quand vous le pouvez, même mal, même peu.'],
+   ev:['Attendre d’aller « vraiment mal » pour demander de l’aide.','Refuser l’aide proposée parce que « personne ne fera aussi bien ». Personne ne fera pareil. C’est très bien.'],
+   moi:'Si vous lisez ceci à 2 h du matin, posez le téléphone après cette phrase : vous avez tenu aujourd’hui. C’est assez.',
+   aide:'Pro Infirmis (service de relève), Croix-Rouge (garde à domicile), Cerebral (répit), votre commune (aide aux proches aidants) : des solutions existent et beaucoup sont financées. Si vous avez des idées noires, La Main Tendue au 143, maintenant.'},
+  {id:'couple',e:'💑',t:'Le couple',s:'Plus de temps à deux, désaccords, solitude',ages:['e','a','g'],th:'fam',
+   comp:'Le handicap d’un enfant met le couple à l’épreuve : fatigue, désaccords sur l’éducation, un parent qui porte plus, le désir qui s’éteint, les mots qui manquent. Ce n’est pas un manque d’amour : c’est que toute l’énergie part ailleurs. Le couple a besoin d’être nourri exprès, puisqu’il ne l’est plus par hasard.',
+   ess:['Un rendez-vous à deux, régulier, même court, même à la maison après le coucher : sans parler du handicap.','Répartissez les rôles à voix haute : qui gère quoi, et révisez.','Dites ce que vous ressentez avec « je » : « je me sens seul·e », pas « tu ne fais rien ».','Acceptez que l’autre ne vive pas la même chose au même moment.','Demandez de l’aide à deux, pas l’un contre l’autre.'],
+   ev:['Compter les points.','Attendre que ça aille mieux pour s’occuper du couple.'],
+   moi:'Si vous êtes parent solo : votre couple, c’est vous avec vous-même. Les mêmes rendez-vous valent.',
+   aide:'Des consultations de couple existent dans chaque canton (centres de consultation conjugale, souvent à tarif adapté). En parler à deux à un tiers, c’est parfois le début d’une autre conversation.'},
+  {id:'aide',e:'🤝',t:'Demander de l’aide',s:'Répit, relève, droits, financement',ages:['e','a','g'],th:'moi',
+   comp:'Demander de l’aide est la chose la plus difficile et la plus efficace que vous puissiez faire. Difficile parce qu’on a l’impression de ne pas y arriver ; efficace parce que personne n’est fait pour porter ça seul. Des aides existent, financées, et peu de familles les connaissent toutes.',
+   ess:['Commencez par un rendez-vous chez Pro Infirmis : gratuit, dans votre canton, ils font le tour de ce à quoi vous avez droit.','Demandez l’allocation pour impotent (API) et le supplément pour soins intenses si vous êtes concerné·e : beaucoup de familles ne le font pas.','Répit : relève à domicile, week-ends, camps adaptés. Demandez les listes à l’association de votre région.','Acceptez l’aide informelle : un repas, une heure de garde, un trajet. Dites oui.','Faites une liste de ce que quelqu’un pourrait faire pour vous, pour répondre quand on vous demande « je peux faire quoi ? ».'],
+   ev:['Attendre d’être à bout.','Penser que vous prenez la place de quelqu’un qui en aurait plus besoin.'],
+   moi:'Vous n’êtes pas un dossier de plus. Vous êtes une famille qui a besoin d’un coup de main, comme toutes les familles, en plus fort.',
+   aide:'Pro Infirmis · insieme · Cerebral · Procap · autisme suisse romande · Croix-Rouge (garde d’enfants malades, relève) · votre commune (proches aidants). Pro Juventute, conseils aux parents : 058 261 61 61, gratuit, jour et nuit.'},
+  {id:'grandir',e:'🎓',t:'Grandir : vers 18 ans',s:'Majorité, curatelle, AI, institution, avenir',ages:['a','g'],th:'ecole',
+   comp:'Vers 18 ans, tout change de cadre : l’assurance-invalidité passe au régime adulte, une mesure de protection (curatelle) peut être examinée, l’école s’arrête, et la question « et après ? » devient concrète. C’est beaucoup. Ça se prépare en petites décisions, pas en une seule grande, et il existe des gens dont c’est le métier de vous guider.',
+   ess:['Prenez rendez-vous chez Pro Infirmis un an avant les 18 ans : ils font la carte des démarches.','Déposez la demande de rente AI adulte dès que possible.','Réfléchissez à la mesure de protection la plus légère qui protège assez : il en existe plusieurs.','Parlez-en avec votre enfant, dans ses mots : ce qu’il veut décider, ce qu’il veut qu’on l’aide à décider.','Visitez des lieux (ateliers, foyers, centres de jour) sans pression, pour vous faire une idée.'],
+   ev:['Tout décider seul·e, sans votre enfant.','Croire que la curatelle vous retire votre place : elle la nomme.'],
+   moi:'Ce passage réveille la question de l’après-vous. C’est normal qu’elle fasse peur. Elle fait moins peur quand il y a des noms, des papiers et des gens autour.',
+   aide:'Pro Infirmis, insieme (brochures sur la protection de l’adulte, en langage simplifié aussi), la Justice de paix de votre canton, l’Office AI.'},
+  {id:'loin',e:'🏡',t:'Quand il ou elle vit ailleurs',s:'Institution, foyer, séjours en famille',ages:['g'],th:'fam',
+   comp:'Confier son enfant adulte à une institution est un projet de vie, pas un abandon, et pourtant la culpabilité est là. Les premières semaines, l’équipe apprend à le connaître ; vous apprenez à partager. La relation avec l’équipe se construit comme toutes les relations : par petites touches, dans la durée.',
+   ess:['Écrivez pour l’équipe qui il est : ses goûts, ce qui l’apaise, comment il communique. C’est ce qui manque le plus les premiers jours.','Demandez qui est le ou la référent·e et comment on se parle au quotidien.','Préparez chaque rencontre (réseau, projet) : ce qui va bien, ce qui inquiète, ce que vous demandez.','Gardez des rituels : l’appel du mercredi, le gâteau du dimanche.','Dites à l’équipe ce qui marche à la maison, et copiez ce qui marche chez eux.'],
+   ev:['Vérifier et corriger l’équipe sur tout : la confiance se construit, elle ne se décrète pas.','Vous excuser d’avoir une vie à vous.'],
+   moi:'La maison vide le dimanche soir est l’un des moments les plus durs. Prévoyez-le : une sortie, un appel, un film. Pas le silence.',
+   aide:'Les associations de parents (insieme, surtout) regroupent beaucoup de familles dont l’enfant vit en institution : elles savent exactement ce que vous vivez.'},
+  {id:'pros',e:'🗂️',t:'Parler aux professionnels',s:'Rendez-vous, réunions, se faire entendre',ages:['e','a','g'],th:'ecole',
+   comp:'Face à plusieurs professionnels, le parent se sent souvent petit, en retard d’un vocabulaire. Pourtant vous apportez la seule chose qu’ils n’ont pas : vingt-quatre heures par jour avec votre enfant. Un bon professionnel vous écoute ; un très bon vous le demande.',
+   ess:['Trois points écrits avant chaque rendez-vous : ce qui va bien, ce qui inquiète, ce que je demande.','Demandez de reformuler ce que vous n’avez pas compris : « concrètement, ça veut dire quoi pour lui ? »','Demandez les décisions et qui fait quoi, par écrit.','Venez à deux si vous le pouvez : l’un parle, l’autre note.','Dites quand vous n’êtes pas d’accord, calmement : « je ne le vois pas comme ça à la maison, voilà ce que je vois ».'],
+   ev:['Sortir d’un rendez-vous sans avoir posé votre question.','Accepter un jargon qui vous exclut.'],
+   moi:'Vous n’avez pas besoin du bon vocabulaire pour avoir raison. Vous avez besoin de vos observations. Elles valent de l’or.',
+   aide:'Utilisez le journal avant-pendant-après de l’app : trois semaines d’observations, apportées à un rendez-vous, changent la conversation.'},
+  {id:'deuil',e:'🕊️',t:'L’enfant qu’on avait imaginé',s:'Accepter, sans renoncer',ages:['e','a','g'],th:'moi',
+   comp:'Avant la naissance, on imagine une vie. Le handicap efface cette image, et il faut la pleurer pour pouvoir regarder l’enfant qui est là. Ce deuil-là revient par vagues, à chaque étape : la rentrée des autres, le permis des autres, le mariage des autres. Il ne signifie pas que vous n’aimez pas votre enfant. Il signifie que vous êtes humain·e.',
+   ess:['Laissez venir la vague sans la juger ; elle passe toujours.','Nommez ce que vous perdez, précisément. Ce qui est nommé pèse moins.','Cherchez ce que vous n’auriez jamais eu sans lui, sans elle : une autre idée du temps, de la réussite, de la joie.','Entourez-vous de parents qui connaissent ce deuil-là : eux ne diront pas « mais il est tellement mignon ».'],
+   ev:['Vous interdire la tristesse « parce qu’il y a pire ».','Vous forcer à la joie quand c’est le jour des larmes.'],
+   moi:'Les deux sont vrais en même temps : vous pleurez ce qui ne sera pas, et vous êtes fou ou folle de qui est là. Vous n’avez pas à choisir.',
+   aide:'Si la tristesse s’installe des semaines sans répit, un·e psychologue qui connaît le handicap, ou un groupe de parents. Et pour les nuits trop longues, La Main Tendue au 143.'}
+];
+const THEMES={all:'Tout',comp:'Comportement',comm:'Communication',quot:'Quotidien',ecole:'École, pros, avenir',fam:'Famille',moi:'Pour moi'};
+const AGES={all:'Tous âges',e:'Enfant',a:'Ado',g:'Adulte'};
+
+/* ---------- self-care exercises ---------- */
+const EXOS=[
+  {id:'breath',ico:'wind',t:'Respirer 4-6',s:'Deux minutes qui calment le corps',how:'Inspirez par le nez en comptant jusqu’à 4, expirez par la bouche en comptant jusqu’à 6. Suivez le cercle : il grandit, vous inspirez ; il rétrécit, vous expirez. Dix fois.'},
+  {id:'trois',ico:'star',t:'Trois choses',s:'Qui ont été bien aujourd’hui, même minuscules',how:'Écrivez trois choses. Un café chaud compte. Un sourire compte. Le fait d’être encore debout compte.'},
+  {id:'deposer',ico:'wind',t:'Déposer',s:'Écrire ce qui pèse, puis l’effacer',how:'Écrivez tout ce qui tourne dans votre tête, sans vous relire. Rien n’est gardé. Quand c’est écrit, c’est posé quelque part hors de vous.'},
+  {id:'droit',ico:'heart',t:'Vous avez le droit',s:'Dix permissions à relire',how:''},
+  {id:'minute',ico:'timer',t:'Une minute pour moi',s:'Soixante secondes, les yeux fermés',how:'Posez le téléphone à l’envers. Fermez les yeux. Écoutez les sons autour. Quand ça sonne, c’est fini.'},
+  {id:'appeler',ico:'phone',t:'Parler à quelqu’un',s:'Maintenant, pas plus tard',how:''}
+];
+const HELPLINES=[
+  ['La Main Tendue','143','Jour et nuit, pour parler, quand ça ne va pas.'],
+  ['Pro Juventute, conseils aux parents','058 261 61 61','Gratuit, 24h/24, pour toutes les questions de parents.'],
+  ['Urgences','144','Danger immédiat pour la vie.'],
+  ['Pro Infirmis','site proinfirmis.ch','Conseil social et juridique gratuit, dans votre canton.']
+];
+const PICTOS=[['🍽️','Manger'],['🚿','Douche'],['🪥','Dents'],['🛏️','Dodo'],['🧩','Jouer'],['📱','Tablette'],['🏫','École'],['🚗','Voiture'],['☕','Pause'],['🤗','Câlin'],['🌳','Dehors'],['🎵','Musique'],['📖','Histoire'],['👕','Habiller'],['🧸','Doudou'],['🚽','Toilettes']];
+const ROUTINE_DEF=[['🛁','Bain'],['👕','Pyjama'],['🪥','Dents'],['📖','Histoire'],['🤗','Câlin'],['🛏️','Dodo']];
+
+/* ---------- La dose de lumière intérieure (curated) ---------- */
+const DOSES=[
+  'Ce matin, avant la liste des choses à faire, une seule question : qu’est-ce qui va bien, là, maintenant ? Même petit. Même fragile. Commencez par là.',
+  'Vous portez beaucoup. Posez une chose aujourd’hui, une seule, rien qu’une heure : un rendez-vous reporté, une tâche déléguée, un « non » poli. Le monde tient.',
+  'Votre enfant vous regarde comme personne ne vous regardera jamais. Pas pour ce que vous réussissez. Pour le fait que vous soyez là.',
+  'La culpabilité frappe à la porte chaque jour à la même heure. Vous n’êtes pas obligé·e d’ouvrir. Dites-lui : « je t’ai entendue », et retournez à votre journée.',
+  'Vous n’avez pas raté hier. Hier est passé. Aujourd’hui a dix-sept heures encore devant lui.',
+  'Les progrès de votre enfant ne se mesurent pas à ceux des autres. Ils se mesurent à lui, à elle, il y a six mois. Regardez bien.',
+  'Vous êtes fatigué·e parce que vous faites le travail de trois personnes. Pas parce que vous êtes faible. La fatigue est une information, pas un verdict.',
+  'Aujourd’hui, dites à quelqu’un une vraie phrase : « c’est dur en ce moment ». Juste ça. Vous verrez ce qui revient.',
+  'Vos attentes font pousser votre enfant ou le freinent. Attendez de lui quelque chose de possible aujourd’hui, et dites-le-lui à voix haute.',
+  'Il y a une chose que vous faites tous les jours et que personne ne voit. Je la vois. Elle compte.',
+  'Un enfant différent apprend à ses parents une autre idée du temps. Vous êtes en train de l’apprendre. Ça ne s’enseigne nulle part ailleurs.',
+  'Si vous lisez ceci à une heure où tout le monde dort, vous avez tenu la journée entière. C’est beaucoup. Reposez-vous maintenant.',
+  'Cherchez aujourd’hui une seule fois où votre enfant a essayé. Pas réussi : essayé. Et nommez-le : « j’ai vu que tu as essayé ».',
+  'Vous avez le droit de rire de tout ça, parfois. Le rire n’enlève rien à la gravité. Il la rend portable.',
+  'Le regard des autres pèse. Vous n’êtes pas là pour l’éduquer. Vous êtes là pour votre enfant, et pour vous. Le reste peut attendre.',
+  'Ce que vous craignez pour l’avenir n’est pas arrivé. Ce qui arrive, c’est aujourd’hui. Et aujourd’hui, vous êtes là.',
+  'Dites-vous ce que vous diriez à votre meilleur ami s’il vivait votre vie. Puis croyez-le autant que lui vous croirait.',
+  'Dimanche : rien à réussir. Une promenade, un café, un silence. Les familles qui tiennent sont celles qui s’arrêtent parfois.'
+];
+/* ---------- Le parcours en 24 étapes (6 mois) ---------- */
+const PARCOURS=[
+  {m:'Accueil, point de départ et changement de regard',steps:[
+    {t:'D’où je pars',lesson:'Avant d’avancer, on regarde où l’on est. Pas pour se juger : pour avoir un point de comparaison dans trois mois, puis dans six. Les parents qui tiennent sont ceux qui voient leur chemin. Aujourd’hui, vous faites votre premier point : stress, sentiment de compétence, solitude, et votre regard sur votre enfant. Il n’y a pas de bonne réponse. Il y a la vôtre, à cette date.',exo:'Faites le point de départ dans « Mon évolution » (cinq curseurs, trois minutes). Puis écrivez une phrase : « Je commence ce parcours parce que… »',obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Juste remarquer.',link:'evo'},
+    {t:'L’effet Pygmalion',lesson:'Ce qu’on attend d’une personne finit souvent par arriver, parce que nos attentes changent la façon dont on l’encourage, dont on lui laisse le temps, dont on remarque ses essais. C’est l’effet Pygmalion. Il ne s’agit pas de croire au miracle : il s’agit de vérifier ce que nos gestes disent à notre enfant de ce qu’on pense de lui. Un enfant qui sent qu’on le croit capable essaie plus longtemps.',exo:'Choisissez une petite chose que votre enfant pourrait réussir cette semaine. Dites-lui une fois par jour que vous le croyez capable. Donnez-lui le temps d’essayer.',obs:'Notez ce qui change dans sa façon d’essayer, pas dans le résultat.'},
+    {t:'Les croyances qui freinent',lesson:'« Il ne pourra jamais… », « avec son handicap, c’est inutile de… », « je dois tout faire à sa place ». Ces phrases ne sont pas des faits : ce sont des croyances, souvent héritées, parfois dites par un professionnel pressé il y a dix ans. Une croyance aidante n’est pas un mensonge optimiste : c’est une phrase vraie qui ouvre une porte au lieu de la fermer. « Il apprend à son rythme » est aussi vrai que « il est lent », et ne mène pas au même endroit.',exo:'Écrivez trois phrases que vous vous dites sur votre enfant quand c’est difficile. Pour chacune, trouvez une phrase aussi vraie qui ouvre une porte.',obs:'Repérez la croyance qui revient le plus souvent dans votre tête.'},
+    {t:'Mes objectifs à moi',lesson:'Un parcours sans objectif, c’est une promenade : agréable, mais on ne sait pas si l’on avance. Vos objectifs ne concernent pas votre enfant : ils vous concernent, vous. Dormir, souffler, comprendre, oser demander, cesser de vous excuser. Petits, concrets, datés. Un objectif que vous pouvez tenir une semaine vaut mieux qu’un idéal pour l’année.',exo:'Écrivez un objectif pour le mois : « D’ici un mois, je… » Un seul. Dites-le à une personne.',obs:'Chaque soir, une croix si vous avez fait un pas vers lui. Pas de croix n’est pas un échec : c’est une information.'}
+  ]},
+  {m:'Représentations du handicap et inclusion',steps:[
+    {t:'Le handicap selon les époques',lesson:'Le handicap n’a pas toujours été vu de la même manière : caché, soigné, réparé, intégré, et aujourd’hui, dans la Convention de l’ONU, pensé comme la rencontre entre une personne et un environnement plus ou moins accessible. Savoir cela change quelque chose : ce que votre enfant ne peut pas faire dépend aussi de ce que le monde met ou ne met pas à sa portée. Vous n’êtes pas seul·e responsable de ses limites. Et vous pouvez agir sur l’environnement.',exo:'Photolangage : choisissez l’image qui dit le mieux votre vécu du handicap aujourd’hui, et écrivez pourquoi.',obs:'Repérez une situation où c’est l’environnement, pas votre enfant, qui a créé la difficulté.',link:'photo'},
+    {t:'Ce que ces croyances font à mon regard',lesson:'Les représentations collectives s’invitent dans la cuisine. Elles nous font voir les difficultés avant la personne, le diagnostic avant le prénom. Cette semaine, on inverse l’ordre : d’abord qui il est, ensuite ce dont il a besoin. Ce n’est pas nier le handicap, c’est le remettre à sa place : une partie de la vie, pas toute la vie.',exo:'Décrivez votre enfant en dix lignes sans utiliser un seul mot du dossier. Goûts, caractère, humour, manières.',obs:'Remarquez quand vous présentez votre enfant aux autres : par son prénom ou par son diagnostic ?'},
+    {t:'L’inclusion, concrètement',lesson:'L’inclusion n’est pas un slogan : c’est un enfant qui a une place à la table, à l’école, au club, au magasin, avec les adaptations qu’il faut. Elle réussit quand quelqu’un prépare le terrain, pas quand on jette l’enfant dans le grand bain. Vous êtes souvent ce quelqu’un. Vous avez le droit de choisir vos combats : certains lieux valent l’énergie, d’autres non.',exo:'Choisissez un lieu où vous aimeriez que votre enfant ait plus sa place. Écrivez ce qui le rendrait possible : une personne, une adaptation, une habitude.',obs:'Observez un lieu où l’inclusion marche déjà. Qu’est-ce qui fait que ça marche ?'},
+    {t:'Une vision de l’avenir qui donne envie',lesson:'L’avenir fait peur parce qu’il est flou. Un avenir souhaité, même imparfait, se construit. Pas un plan de carrière : une image. Où vit-il, avec qui, qu’est-ce qu’il fait le matin, qu’est-ce qui le fait rire ? Les parents qui ont une image avancent vers elle. Ceux qui n’en ont pas subissent celle des autres.',exo:'Écrivez une journée de votre enfant dans dix ans, la plus belle possible et réaliste. Du réveil au coucher.',obs:'Dans la semaine, remarquez un petit pas qui va déjà dans cette direction.'}
+  ]},
+  {m:'Émotions et résilience parentale',steps:[
+    {t:'Mes émotions, mes signaux',lesson:'Colère, tristesse, honte, peur, épuisement : les émotions des parents d’un enfant différent sont fortes et souvent interdites. Elles sont pourtant des signaux, pas des fautes. La colère dit « c’est injuste ». La tristesse dit « j’ai perdu quelque chose ». La peur dit « je tiens à lui ». Nommer l’émotion la fait baisser d’un cran. La nier la fait sortir ailleurs, souvent sur la mauvaise personne.',exo:'Trois fois cette semaine, quand ça monte, nommez à voix basse : « là, c’est de la colère / de la peur / de la tristesse ». Rien d’autre.',obs:'Repérez l’émotion que vous vous interdisez le plus.'},
+    {t:'Réguler et lâcher',lesson:'On ne décide pas de ne pas ressentir. On peut décider de ce qu’on fait avec. Respirer plus lentement que l’émotion, sortir trente secondes, poser les mains à plat, dire une phrase apprise par cœur : ce sont des gestes qui ramènent le corps avant la tête. Lâcher prise n’est pas renoncer : c’est arrêter de tenir ce qui ne dépend pas de vous.',exo:'Choisissez un geste de régulation (respirer 4-6, mains à plat, sortir, une phrase). Utilisez-le chaque fois que ça monte, pendant une semaine. Un seul geste.',obs:'Notez ce qui ne dépend pas de vous dans vos soucis de la semaine. Écrivez-le, puis posez-le.',link:'breath'},
+    {t:'Mes ressources de résilience',lesson:'La résilience n’est pas une qualité qu’on a ou pas : c’est ce qui se construit avec des appuis. Une personne qui écoute, un lieu qui apaise, une activité qui rend à soi-même, une phrase qui tient. J’ai été placé à dix ans ; ce qui m’a tenu, ce sont deux personnes et un endroit. Trouvez les vôtres. Nommez-les. Allez-y exprès.',exo:'Écrivez vos quatre appuis : une personne, un lieu, une activité, une phrase. Programmez un rendez-vous avec chacun dans le mois.',obs:'Remarquez ce qui vous recharge vraiment, et ce qui ne fait que vous anesthésier.'},
+    {t:'Bilan de mi-parcours',lesson:'Trois mois. Il est temps de regarder le chemin, pas la montagne. Refaites le point : stress, compétence, solitude, regard. Comparez avec le départ sans vous juger. Ce qui a bougé vous appartient. Ce qui n’a pas bougé indique où porter l’effort des trois mois à venir. Et ajustez votre objectif : il a le droit d’avoir changé.',exo:'Refaites le point dans « Mon évolution ». Relisez votre première phrase « Je commence ce parcours parce que… ».',obs:'Qu’est-ce que vous faites aujourd’hui que vous ne faisiez pas il y a trois mois ?',link:'evo'}
+  ]},
+  {m:'Changer de perspective et reconnaître les forces',steps:[
+    {t:'Sa singularité',lesson:'Chaque personne en situation de handicap est d’abord une personne singulière : des goûts, un humour, des peurs, des talents. Le handicap décrit une partie de son fonctionnement, pas son identité. Cette semaine, on apprend à regarder sans la grille : ce qu’il aime, ce qu’il sait, ce qu’il fait mieux que vous.',exo:'Listez cinq choses que votre enfant fait mieux que la plupart des gens. Cherchez bien : il y en a.',obs:'Observez un moment où il est pleinement lui-même, sans effort. Que fait-il ?'},
+    {t:'Ses talents, ses compétences',lesson:'Un talent n’est pas forcément spectaculaire. Remarquer les détails, mémoriser, persévérer, ressentir l’humeur des autres, rire aux éclats, être fidèle : ce sont des compétences, et elles se cultivent. Une compétence nommée se renforce. Une compétence ignorée s’éteint.',exo:'Choisissez une compétence de votre enfant et créez une occasion de l’exercer cette semaine. Dites-lui ce que vous avez vu.',obs:'Comptez les fois où vous nommez une compétence, et les fois où vous nommez une difficulté.'},
+    {t:'Encourager juste',lesson:'Encourager, ce n’est pas féliciter tout le temps : c’est ajuster. Trop d’aide étouffe, trop peu décourage. Le bon encouragement vise le pas suivant, celui qui est à portée avec un peu d’effort, et il nomme l’effort plutôt que le résultat. « Tu as essayé trois fois » porte plus loin que « bravo ».',exo:'Cette semaine, remplacez « bravo » par la description de ce que vous avez vu : « tu as attendu », « tu as demandé », « tu as réessayé ».',obs:'Repérez un moment où vous aidez par habitude alors que votre enfant pourrait essayer.'},
+    {t:'Des solutions pour le quotidien',lesson:'Les problèmes concrets ont souvent des solutions concrètes : prévenir avant une transition, montrer en images, offrir deux choix, simplifier une consigne, préparer la sortie. Les outils de l’application sont là pour ça. Choisissez un seul point de friction du quotidien et attaquez-le avec une méthode, pas avec plus de volonté.',exo:'Choisissez la situation la plus fréquente dans « Conseils » et essayez une seule des pistes pendant sept jours.',obs:'Notez chaque soir : mieux, pareil, moins bien. Après sept jours, décidez.',link:'advice'}
+  ]},
+  {m:'Les clés de l’inclusion au quotidien',steps:[
+    {t:'Les formes de l’inclusion',lesson:'Scolaire, professionnelle, sociale, résidentielle : l’inclusion n’est pas une case à cocher mais un continuum. Entre la classe ordinaire et l’institution spécialisée, il existe mille nuances, et la bonne pour votre enfant peut changer avec l’âge. Connaître les formes qui existent, c’est pouvoir choisir au lieu de subir.',exo:'Dessinez une ligne : à gauche « tout ordinaire », à droite « tout spécialisé ». Placez où votre enfant est aujourd’hui, et où vous aimeriez qu’il soit dans deux ans.',obs:'Repérez une forme d’inclusion dont vous n’aviez pas connaissance.'},
+    {t:'Collaborer avec les professionnels',lesson:'Les professionnels savent des choses que vous ne savez pas. Vous savez des choses qu’ils ne sauront jamais. La collaboration commence quand chacun apporte sa part sans défendre son territoire. Trois points écrits avant chaque rencontre, des questions simples, des décisions notées : vous devenez un partenaire, pas un visiteur.',exo:'Préparez votre prochaine rencontre avec trois points écrits : ce qui va bien, ce qui inquiète, ce que je demande.',obs:'Pendant la rencontre, remarquez si vous êtes écouté·e. Si non, redemandez, calmement.',link:'pros'},
+    {t:'Ma place dans mon entourage',lesson:'Vous avez changé. Votre regard sur la différence a changé. Autour de vous, il y a des gens qui n’ont pas fait ce chemin et qui disent des choses maladroites. Vous pouvez, si vous le souhaitez et quand vous en avez la force, faire bouger un regard à la fois. Pas en militant : en montrant votre enfant tel qu’il est.',exo:'Choisissez une personne de votre entourage et racontez-lui une chose de votre enfant qu’elle ne connaît pas et qui le montre tel qu’il est.',obs:'Observez ce qui change dans la façon dont cette personne parle de lui ensuite.'},
+    {t:'Avant la dernière ligne droite',lesson:'Cinq mois. Prenez un moment pour regarder ce que vous avez mis en place, ce qui tient tout seul maintenant, et ce qui a besoin d’encore un peu de vous. La dernière phase ne consiste pas à en faire plus : elle consiste à consolider ce qui marche et à décider ce qui continuera sans parcours.',exo:'Relisez vos notes et vos dépôts. Écrivez trois choses qui ont changé et une qui résiste.',obs:'Cette semaine, ne rajoutez rien. Maintenez.'}
+  ]},
+  {m:'Consolider et devenir autonome',steps:[
+    {t:'Le bilan des six mois',lesson:'Refaites le point une dernière fois et regardez les trois courbes : départ, mi-parcours, aujourd’hui. Ce qui a bougé est à vous. Ce qui n’a pas bougé n’est pas un échec : certaines choses demandent plus de temps ou d’autres appuis. Les acquis, ce ne sont pas seulement des chiffres : ce sont des réflexes que vous avez maintenant et que vous n’aviez pas.',exo:'Faites le point final dans « Mon évolution ». Écrivez trois réflexes que vous avez acquis.',obs:'Remarquez une situation que vous gérez aujourd’hui sans y penser.',link:'evo'},
+    {t:'Mes prochaines étapes',lesson:'La suite n’a pas besoin d’un parcours pour exister. Elle a besoin d’un rythme : un moment pour vous chaque semaine, une rencontre préparée, un dépôt quand ça pèse, une dose quand il faut. Choisissez ce que vous gardez. Laissez le reste.',exo:'Écrivez vos trois rituels pour les six prochains mois. Mettez-les dans votre agenda.',obs:'Testez-les une semaine. Gardez ceux qui tiennent.'},
+    {t:'Une vision à long terme',lesson:'Revenez à la journée dans dix ans que vous aviez écrite. Relisez-la. Qu’est-ce qui a déjà avancé ? Qu’est-ce qui manque ? Les grandes questions, l’après-vous, le logement, les proches qui prendront le relais, se préparent en petites décisions, une par saison. Vous avez six mois d’entraînement à faire des petits pas. Continuez.',exo:'Choisissez une seule décision pour les six prochains mois qui prépare l’avenir. Datez-la.',obs:'Nommez une personne à qui vous en parlerez.'},
+    {t:'Le chemin parcouru',lesson:'Vous êtes arrivé·e au bout de vingt-quatre étapes, avec un enfant qui n’a pas attendu que vous ayez fini pour grandir. Vous avez regardé où vous étiez, changé une partie de votre regard, appris à nommer vos émotions, trouvé vos appuis, vu les forces de votre enfant, préparé vos rencontres, et choisi vos rituels. Vous n’êtes pas devenu·e un parent parfait. Vous êtes devenu·e un parent plus éclairé. C’était la promesse. Vous l’avez tenue vous-même.',exo:'Écrivez une lettre à vous-même d’il y a six mois. Dites-lui ce que vous savez maintenant.',obs:'Gardez cette lettre. Relisez-la un jour gris.'}
+  ]}
+];
+/* ---------- Mon évolution (questionnaire) ---------- */
+const EVO_SCALES=[
+  {id:'stress',t:'Mon niveau de stress',lo:'calme',hi:'à bout'},
+  {id:'comp',t:'Mon sentiment de compétence comme parent',lo:'perdu·e',hi:'solide'},
+  {id:'seul',t:'Ma solitude face à la situation',lo:'entouré·e',hi:'seul·e'},
+  {id:'regard',t:'Mon regard sur mon enfant',lo:'je vois d’abord ses difficultés',hi:'je vois d’abord qui il est'},
+  {id:'confiance',t:'Ma confiance dans l’avenir',lo:'peur',hi:'confiance'}
+];
+const EVO_OPEN=[['avant','Que connaissiez-vous du handicap avant d’y être confronté·e dans votre vie de famille ?'],['change','Votre regard a-t-il changé depuis ? Qu’est-ce qui a changé, et comment l’expliquez-vous ?']];
+const EVO_TIMES=[['t1','Point de départ'],['t2','Mi-parcours (3 mois)'],['t3','Bilan (6 mois)']];
+/* ---------- Photolangage ---------- */
+const PHOTOS=[['🌄','Une aube'],['🌊','Une mer agitée'],['🧗','Une paroi'],['🌳','Un arbre'],['🚪','Une porte'],['🧭','Une boussole'],['🌧️','La pluie'],['🔥','Un feu'],['🪢','Un nœud'],['🌱','Une pousse'],['🏔️','Un col'],['🤲','Des mains']];
+/* ---------- Formules ---------- */
+const PLANS=[
+  {t:'Découverte',p:'0',per:'7 jours',best:false,items:['La dose de lumière chaque jour','Les conseils et les outils','Déposer, trois fois']},
+  {t:'Le parcours',p:'14',per:'par mois',best:true,items:['Tout Découverte, sans limite','Le parcours de six mois en 24 étapes','Mon évolution : départ, mi-parcours, bilan','Déposer autant que nécessaire, avec la phrase-miroir']},
+  {t:'Avec Antonio',p:'49',per:'par mois',best:false,items:['Tout Le parcours','Un retour personnel écrit d’Antonio chaque mois, à partir de vos dépôts','Une réponse prioritaire quand une situation déborde']}
+];
+
+Object.assign(I,{
+  drop:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>',
+  path:'<svg class="i" viewBox="0 0 24 24"><path d="M4 19c4-1 5-5 8-6s5 1 8-2"/><circle cx="4" cy="19" r="1.6" fill="currentColor"/><circle cx="20" cy="11" r="1.6" fill="currentColor"/><path d="M12 13v-3"/></svg>',
+  sun2:'<svg class="i" viewBox="0 0 24 24"><path d="M4 16h16M6 16a6 6 0 0 1 12 0"/><path d="M12 4v2M5.6 7.6l1.4 1.4M18.4 7.6L17 9M2 13h2M20 13h2"/></svg>',
+  chart:'<svg class="i" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>',
+  image:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>',
+  tag:'<svg class="i" viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.2" fill="currentColor"/></svg>'
+});
+
+/* ---------- state ---------- */
+const DEF={me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],onboarded:false,doseDate:'',doseText:''};
+const state={data:null,view:'today',prev:null,sit:null,q:'',theme:'all',age:'all',sheet:null,toast:'',exo:null,tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',month:0,step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,photoText:''};
+let toastTimer=null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),d);}catch(e){}return JSON.parse(JSON.stringify(DEF));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state.data));}catch(e){}}
+function toast(m){state.toast=m;renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{state.toast='';renderToast();},2800);}
+function renderToast(){const old=document.querySelector('.toast');if(old)old.remove();if(state.toast){const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=state.toast;document.getElementById('app').appendChild(el);}}
+const D=()=>state.data;
+const pad=n=>String(n).padStart(2,'0');
+const todayIso=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const fmtDate=iso=>{const p=iso.split('-');return p[2]+'.'+p[1]+'.'+p[0];};
+function dayIdx(n){return Math.floor(Date.now()/86400000)%n;}
+function greeting(){const h=new Date().getHours();return h<5?'Il est tard':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';}
+function weekNo(){const s=D().start||todayIso();const p=s.split('-').map(Number);const d0=new Date(p[0],p[1]-1,p[2]);return Math.max(0,Math.floor((Date.now()-d0.getTime())/(7*86400000)));}
+function allSteps(){const out=[];PARCOURS.forEach((m,mi)=>m.steps.forEach((s,si)=>out.push(Object.assign({mi,si,idx:out.length},s))));return out;}
+function currentStepIdx(){return Math.min(23,weekNo());}
+function doneCount(){return Object.keys(D().steps).filter(k=>D().steps[k]).length;}
+function curatedDose(){const i=dayIdx(DOSES.length);const sunday=new Date().getDay()===0;return sunday?DOSES[DOSES.length-1]:DOSES[i];}
+function doseText(){const d=D();return d.doseDate===todayIso()&&d.doseText?d.doseText:curatedDose();}
+function lastDepot(){const l=D().depots;return l.length?l[l.length-1]:null;}
+function sitOfDay(){const a=D().age;const pool=SITS.filter(s=>s.ages.includes(a));return pool[dayIdx(pool.length)];}
+const WEIGHTS=[['solitude','La solitude'],['fatigue','La fatigue'],['culpa','La culpabilité'],['doutes','Les doutes'],['regard','Le regard des autres'],['pros','Les professionnels'],['charge','La charge mentale'],['couple','Le couple']];
+
+/* ---------- render ---------- */
+function render(){
+  const app=document.getElementById('app');let html='';
+  if(!D().onboarded){app.className='app nobar';html=viewWelcome();}
+  else if(state.view==='sos'){app.className='app nobar';html=viewSOS();}
+  else{
+    app.className='app';html+=bar();
+    switch(state.view){
+      case 'today':html+=viewToday();break;
+      case 'depot':html+=viewDepot();break;
+      case 'parcours':html+=viewParcours();break;
+      case 'step':html+=viewStep();break;
+      case 'evo':html+=viewEvo();break;
+      case 'photo':html+=viewPhoto();break;
+      case 'advice':html+=viewAdvice();break;
+      case 'sit':html+=viewSit();break;
+      case 'tools':html+=viewTools();break;
+      case 'me':html+=viewMe();break;
+      case 'exo':html+=viewExo();break;
+      case 'plans':html+=viewPlans();break;
+      case 'data':html+=viewData();break;
+      case 'about':html+=viewAbout();break;
+      default:html+=viewToday();
+    }
+    html+=tabs();
+  }
+  if(state.sheet==='menu')html+=sheetMenu();
+  if(state.sheet==='onboard')html+=sheetOnboard();
+  app.innerHTML=html;
+  const f=document.querySelector('[data-autofocus]');if(f)f.focus();
+  if(state.view==='tools'&&state.tool==='timer')drawTimer();
+}
+function viewWelcome(){
+  return '<section class="view" style="padding-top:22px"><div class="hero reveal">'+LOGO_LIGHT+'<h1>Parent écouté,<br>parent éclairé</h1><p>Un espace d’écoute pour tout parent en chemin. Chaque jour une dose de lumière intérieure, un endroit où déposer ce qui pèse, un parcours de six mois pour changer de regard, et les outils d’un éducateur pour le quotidien.</p><div class="row"><button type="button" class="btn solid" data-act="onboard">Commencer '+I.chev+'</button><button type="button" class="btn" data-act="go-free" data-view="plans">Les formules</button></div></div>'+
+    '<div class="card reveal d1"><p class="quote">« Quand un parent est écouté, il devient éclairé. Et quand il est éclairé, c’est tout son entourage qui en bénéficie. »</p><p class="hint" style="text-align:right">Antonio Company</p></div>'+
+    '<div class="card reveal d2"><span class="label">Ce que vous trouverez</span><ul class="list"><li><b>Écouté</b> : vous déposez ce qui pèse, par écrit, quand vous voulez. Vous recevez une phrase-miroir, une question qui ouvre, et une lumière. Puis, si vous le souhaitez, du concret.</li><li><b>Éclairé</b> : la dose de lumière intérieure chaque jour, le parcours en 24 étapes (regard, croyances, émotions, forces de l’enfant, inclusion, autonomie), et « Mon évolution » pour voir le chemin.</li><li><b>Équipé</b> : vingt-deux situations du quotidien avec les pistes d’un éducateur, les outils de la table de cuisine, et le bouton SOS.</li></ul></div>'+
+    '<div class="card green reveal d3"><span class="label">Qui vous parle</span><p>Antonio Company, éducateur social et formateur à la pratique professionnelle, vingt ans auprès de personnes en situation de handicap et de leurs familles, père de trois enfants, placé lui-même en famille d’accueil à dix ans. Il a imaginé cet accompagnement en 2025 ; le voici dans votre poche.</p></div>'+
+    '<p class="hint reveal d4">Tout reste sur votre appareil. Ce que vous déposez part sans nom et n’est pas conservé ailleurs.</p></section>';
+}
+function bar(){
+  const back=['sit','exo','step','photo','data','about','plans','evo'].includes(state.view)?'<button type="button" class="back" data-act="back">'+I.back+'Retour</button>':'';
+  const wm=back?'':'<span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span>';
+  return '<header class="bar">'+back+wm+'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
+}
+function viewToday(){
+  const d=D();const t=todayIso();const m=d.moods[t];const s=sitOfDay();const st=allSteps()[currentStepIdx()];const ld=lastDepot();
+  const canPerso=!!state.sample&&ld&&(Date.now()-new Date(ld.date).getTime())<4*86400000;
+  return '<section class="view"><div class="reveal"><span class="label">'+esc(fmtDate(t))+' · semaine '+(weekNo()+1)+' du parcours</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>'+
+    '<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p><span class="sig">Antonio</span>'+(canPerso?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose à moi, d’après ce que j’ai déposé'))+'</button></div>':'')+'</div>'+
+    '<button type="button" class="card reveal d2" data-act="go" data-view="depot" style="text-align:left;cursor:pointer"><span class="label">Écouté</span><p class="lesson" style="font-size:20px">Qu’est-ce qui pèse, là, maintenant ? Déposez-le.</p><span class="hint">'+(ld?'Dernier dépôt le '+esc(fmtDate(ld.date))+'.':'Par écrit, comme ça vient. Vous recevez une phrase-miroir, une question, une lumière.')+'</span></button>'+
+    '<div class="card reveal d3"><span class="label">Et vous, comment ça va ?</span><div class="mood">'+MOODS.map((x,i)=>'<button type="button" data-act="mood" data-i="'+i+'" aria-pressed="'+(m===i)+'"><span class="e">'+x[0]+'</span>'+x[1]+'</button>').join('')+'</div>'+(m!==undefined?'<p style="font-family:var(--font-display);font-size:18px;line-height:1.4">'+esc(MOOD_WORDS[m])+'</p>':'')+'</div>'+
+    '<button type="button" class="step now reveal d4" data-act="step" data-i="'+st.idx+'"><span class="n">'+(st.idx+1)+'</span><span class="tx"><span class="label">Éclairé · l’étape de la semaine</span><b>'+esc(st.t)+'</b><span>'+esc(PARCOURS[st.mi].m)+'</span></span><span class="chev">'+I.chev+'</span></button>'+
+    '<button type="button" class="sit" data-act="sit" data-id="'+s.id+'"><span class="e">'+s.e+'</span><span class="tx"><span class="label">Équipé · le conseil du jour</span><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span><span class="chev">'+I.chev+'</span></button>'+
+    '<div class="quick"><button type="button" class="tile" data-act="go" data-view="tools"><span class="ic">'+I.tools+'</span><b>Les outils</b><span>Minuteur, d’abord-ensuite, routine</span></button><button type="button" class="tile" data-act="go" data-view="me"><span class="ic">'+I.heart+'</span><b>Pour moi</b><span>Respirer, déposer, mes droits</span></button></div></section>';
+}
+/* ---------- déposer ---------- */
+function viewDepot(){
+  const d=D();const list=d.depots.slice().reverse().slice(0,8);
+  const ready=state.sample;
+  const offline=ready===false?'<div class="card sun"><b>Ici, l’écoute est locale.</b><p>Dans la version complète, chaque dépôt reçoit une phrase-miroir écrite pour vous. Ici, vous recevez une question et une lumière, et votre dépôt est gardé pour vous.</p></div>':'';
+  return '<section class="view"><div><h1 class="t1">Déposer</h1><p class="sub">Écrivez comme ça vient : la journée, la colère, la fatigue, le doute, la petite joie. Sans prénom. Personne ne juge, personne ne corrige.</p></div>'+offline+
+    '<div class="card"><textarea id="draft" placeholder="Ce soir…" style="min-height:140px">'+esc(state.draft)+'</textarea><div class="chips"><button type="button" class="chip" data-act="dmode" data-v="listen" aria-pressed="'+(state.depotMode==='listen')+'">Je veux être écouté·e</button><button type="button" class="chip" data-act="dmode" data-v="advice" aria-pressed="'+(state.depotMode==='advice')+'">Et concrètement, je fais quoi ?</button></div><div class="quick">'+(state.busy?'<button type="button" class="btn" data-act="dstop">'+I.stop+'Arrêter</button>':'<button type="button" class="btn primary" data-act="dsend">'+I.drop+'Déposer</button>')+'<button type="button" class="btn ghost" data-act="go" data-view="me">'+I.wind+'Respirer d’abord</button></div></div>'+
+    (state.busy?'<div class="mirror"><div class="think"><span class="dotp"></span>Je vous lis…</div></div>':'')+
+    (list.length?'<div class="depots">'+list.map(x=>depotHtml(x)).join('')+'</div>':'')+'</section>';
+}
+function depotHtml(x){
+  let out='<div class="mirror"><span class="lbl">'+esc(fmtDate(x.date))+(x.time?' · '+esc(x.time):'')+'</span><p class="depot you">« '+esc(x.text.length>180?x.text.slice(0,180)+'…':x.text)+' »</p>';
+  if(x.miroir)out+='<p class="m">'+esc(x.miroir)+'</p>';
+  if(x.question)out+='<p class="q">'+esc(x.question)+'</p>';
+  if(x.lumiere)out+='<p class="l">'+esc(x.lumiere)+'</p>';
+  if(x.conseil)out+='<div class="q">'+mdLite(x.conseil)+'</div>';
+  if(x.miroir&&!x.conseil&&state.sample)out+='<button type="button" class="btn small" data-act="dconcret" data-id="'+x.id+'">'+I.bulb+'Et concrètement ?</button>';
+  return out+'</div>';
+}
+const LOCAL_Q=['Qu’est-ce qui, dans tout ça, dépend vraiment de vous ?','Si une amie vivait exactement cela, que lui diriez-vous ?','Qu’est-ce qui vous a tenu debout aujourd’hui, même un peu ?','De quoi auriez-vous besoin ce soir, en une phrase ?','Qu’est-ce que votre enfant a fait aujourd’hui que vous n’avez pas eu le temps de voir ?'];
+function listenPrompt(text){
+  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », un espace d’écoute créé par Antonio Company, éducateur social (vingt ans auprès de familles d’enfants en situation de handicap ou en difficulté, père, placé lui-même à dix ans). Un parent vient de déposer ce qui pèse. Ta tâche : l’écouter, pas le conseiller. Réponds UNIQUEMENT avec un objet JSON : {"miroir":"...","question":"...","lumiere":"..."}.\n'+
+  '« miroir » : une ou deux phrases qui reformulent ce que le parent vit, avec ses mots, en nommant l’émotion probable sans l’imposer (« on dirait que… »), sans aucun conseil, sans jugement, sans minimiser. « question » : une seule question ouverte, courte, qui aide le parent à voir plus clair ou à se reconnecter à ses ressources ; jamais « pourquoi ». « lumiere » : une phrase chaleureuse et vraie, jamais mièvre, qui reconnaît ce que le parent fait déjà, ou lui donne une permission (droit à la fatigue, à la colère, au repos). Français de Suisse romande, vouvoiement, aucun prénom, aucun diagnostic. Si le message évoque un danger immédiat (idées suicidaires, violence grave), « lumiere » commence par inviter doucement à appeler le 143 (La Main Tendue) ou le 144.\n\nContexte : enfant '+AGES[D().age].toLowerCase()+' ; ce qui pèse le plus pour ce parent : '+(D().weights.length?D().weights.map(w=>(WEIGHTS.find(x=>x[0]===w)||['',w])[1].toLowerCase()).join(', '):'non précisé')+'.\n\nDÉPÔT :\n"""\n'+text.slice(0,6000)+'\n"""';
+}
+function advicePrompt(){
+  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », celle d’un éducateur social expérimenté (vingt ans auprès d’enfants, d’adolescents et d’adultes en situation de handicap ou en difficulté, formateur, père). Tu parles à un parent, en français de Suisse romande, vouvoiement, chaleur, zéro jargon, zéro jugement. Aucun diagnostic, aucun trouble nommé, aucun médicament, aucun prénom. L’enfant est : '+AGES[D().age].toLowerCase()+'.\n'+
+  'Structure en quatre parties courtes avec ces titres exacts précédés de « ## » : « Ce que j’entends » (deux phrases, sans juger, qui reconnaissent l’effort), « Ce que vous pouvez essayer » (trois pistes concrètes en liste à puces, réalistes ce soir ou cette semaine : prévisibilité, moins de mots, choix entre deux options, d’abord/ensuite, routines visuelles, sécurité d’abord, observer ce qui précède), « Pour vous » (une ou deux phrases pour le parent lui-même), « Si ça continue » (une phrase : quand et à qui demander de l’aide, sans dramatiser ; pédiatre ou médecin, l’équipe de l’institution ou de l’école, Pro Infirmis, associations de parents ; La Main Tendue 143 si le parent va très mal). Maximum 200 mots. Pas de gras. Termine par une phrase courte et vraie.';
+}
+const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais le frapper|je vais la frapper)/i;
+async function sendDepot(){
+  const text=state.draft.trim();if(text.length<5){toast('Écrivez quelques mots, comme ça vient.');return;}
+  const d=D();const n=new Date();const dep={id:'d'+Date.now(),date:todayIso(),time:pad(n.getHours())+':'+pad(n.getMinutes()),text};
+  if(RISK.test(text))toast('Si c’est urgent : 143 (La Main Tendue) ou 144. Vous n’êtes pas seul·e.');
+  state.draft='';state.busy=true;render();
+  if(!state.sample){
+    dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
+    d.depots.push(dep);state.busy=false;save();render();toast('Déposé. Gardé pour vous.');return;
+  }
+  state.ctl=new AbortController();
+  try{
+    if(state.depotMode==='advice'){
+      const res=await state.sample([{role:'user',content:advicePrompt()},{role:'user',content:text}],{signal:state.ctl.signal,cache:false});
+      dep.conseil=res.text;
+    }else{
+      const r=await state.sample.json(listenPrompt(text),{signal:state.ctl.signal,cache:false});
+      dep.miroir=String((r&&r.miroir)||'').trim();dep.question=String((r&&r.question)||'').trim();dep.lumiere=String((r&&r.lumiere)||'').trim();
+      if(!dep.miroir&&!dep.question){dep.question=LOCAL_Q[0];}
+    }
+  }catch(e){
+    if(e&&e.code==='not_granted'){state.sample=false;}
+    dep.question=dep.question||LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=dep.lumiere||'Déposé. Même sans réponse, c’est posé quelque part hors de vous.';
+    if(e&&e.code!=='cancelled'&&e.code!=='not_granted')toast('La réponse n’est pas venue cette fois. Votre dépôt est gardé.');
+  }
+  d.depots.push(dep);state.busy=false;state.ctl=null;save();render();
+}
+async function concret(id){
+  const d=D();const dep=d.depots.find(x=>x.id===id);if(!dep||!state.sample)return;
+  state.busy=true;render();state.ctl=new AbortController();
+  try{const res=await state.sample([{role:'user',content:advicePrompt()},{role:'user',content:dep.text}],{signal:state.ctl.signal,cache:false});dep.conseil=res.text;}
+  catch(e){if(e&&e.code!=='cancelled')toast('Pas de réponse cette fois. Réessayez dans un instant.');}
+  state.busy=false;state.ctl=null;save();render();
+}
+async function dosePerso(){
+  const ld=lastDepot();if(!ld||!state.sample)return;
+  state.doseBusy=true;render();
+  try{
+    const r=await state.sample('Tu écris « la dose de lumière intérieure » de « Parent Écouté, Parent Éclairé », créé par Antonio Company, éducateur social. Un parent a déposé ceci il y a peu : """'+ld.text.slice(0,1500)+'""" (le '+fmtDate(ld.date)+'). Écris pour lui, pour aujourd’hui '+fmtDate(todayIso())+', une dose de 45 à 70 mots : une phrase qui montre que tu as entendu ce qu’il a déposé (sans le répéter mot à mot), une phrase qui éclaire ou donne une permission, et une petite chose à faire ou à regarder aujourd’hui. Français de Suisse romande, vouvoiement, aucun prénom, aucun conseil médical, aucune mièvrerie, pas de titre, pas de guillemets, pas de signature. Réponds avec le texte seul.',{cache:false,modelTier:'quick'});
+    D().doseDate=todayIso();D().doseText=r.text.trim();save();
+  }catch(e){if(e&&e.code==='not_granted')state.sample=false;toast('La dose personnalisée n’est pas venue. Celle du jour reste là.');}
+  state.doseBusy=false;render();
+}
+/* ---------- parcours ---------- */
+function viewParcours(){
+  const cur=currentStepIdx();const steps=allSteps();const done=doneCount();
+  return '<section class="view"><div><h1 class="t1">Le parcours</h1><p class="sub">Six mois, vingt-quatre étapes, une par semaine : deux minutes à lire, une chose à essayer, une chose à observer. Vous en êtes à la semaine '+(weekNo()+1)+' · '+done+' étape'+(done>1?'s':'')+' faite'+(done>1?'s':'')+'.</p></div>'+
+    '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!D().steps[st.idx];return '<button type="button" class="step'+(st.idx===cur?' now':'')+(dn?' done':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+(st.idx===cur?'Cette semaine':(st.idx<cur?'Semaine '+(st.idx+1):'Semaine '+(st.idx+1)+' · à venir'))+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
+    '<button type="button" class="sit" data-act="go" data-view="photo"><span class="e">'+I.image+'</span><span class="tx"><b>Photolangage</b><span>Une image pour dire votre vécu, au départ et au bilan</span></span><span class="chev">'+I.chev+'</span></button>'+
+    '<p class="hint">Vous pouvez avancer librement : le parcours propose un rythme, il ne l’impose pas.</p></section>';
+}
+function viewStep(){
+  const steps=allSteps();const s=steps[state.step];if(!s){state.view='parcours';return viewParcours();}
+  const dn=!!D().steps[s.idx];
+  const links={evo:['go','evo',I.chart,'Faire le point dans Mon évolution'],photo:['go','photo',I.image,'Ouvrir le photolangage'],breath:['exo','breath',I.wind,'Respirer 4-6 maintenant'],advice:['go','advice',I.bulb,'Ouvrir les conseils'],pros:['sit','pros',I.bulb,'Parler aux professionnels']};
+  const lk=s.link?links[s.link]:null;
+  return '<section class="view"><div><span class="label">Mois '+(s.mi+1)+' · '+esc(PARCOURS[s.mi].m)+' · étape '+(s.idx+1)+' / 24</span><h1 class="t1">'+esc(s.t)+'</h1></div>'+
+    '<div class="card"><span class="label">En deux minutes</span><p class="lesson">'+esc(s.lesson)+'</p><p class="hint" style="text-align:right">Antonio</p></div>'+
+    '<div class="exo"><span class="label">Cette semaine, j’essaie</span><p>'+esc(s.exo)+'</p></div>'+
+    '<div class="card green"><span class="label">À observer</span><p>'+esc(s.obs)+'</p></div>'+
+    (lk?'<button type="button" class="btn wide" data-act="'+lk[0]+'" data-view="'+lk[1]+'" data-id="'+lk[1]+'">'+lk[2]+lk[3]+'</button>':'')+
+    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-i="'+s.idx+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+(s.idx<23?'<button type="button" class="btn" data-act="step" data-i="'+(s.idx+1)+'">Étape suivante '+I.chev+'</button>':'<button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button>')+'</div></section>';
+}
+/* ---------- évolution ---------- */
+function viewEvo(){
+  const e=D().evo;const t=state.evoTime;const cur=e[t]||{};
+  const chips='<div class="chips">'+EVO_TIMES.map(x=>'<button type="button" class="chip" data-act="evotime" data-v="'+x[0]+'" aria-pressed="'+(t===x[0])+'">'+x[1]+(e[x[0]]?' ✓':'')+'</button>').join('')+'</div>';
+  const scales=EVO_SCALES.map(s=>'<div class="scale"><b>'+esc(s.t)+'</b><input type="range" min="0" max="10" step="1" value="'+(cur[s.id]!==undefined?cur[s.id]:5)+'" data-evo="'+s.id+'" aria-label="'+esc(s.t)+'"><div class="row"><span>0 · '+esc(s.lo)+'</span><span>10 · '+esc(s.hi)+'</span></div></div>').join('');
+  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(o[1])+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" style="min-height:80px">'+esc(cur[o[0]]||'')+'</textarea></div>').join('');
+  const have=EVO_TIMES.filter(x=>e[x[0]]);
+  let bars='';
+  if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map((x,i)=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?' · '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Le stress et la solitude ont vocation à baisser ; la compétence, le regard et la confiance à monter. Ce qui bouge est à vous.</p></div>';}
+  return '<section class="view"><div><h1 class="t1">Mon évolution</h1><p class="sub">Trois points sur six mois : départ, mi-parcours, bilan. Cinq curseurs et deux questions. Pas de bonne réponse : la vôtre, à cette date.</p></div>'+chips+bars+
+    '<div class="card">'+scales+opens+'<button type="button" class="btn primary" data-act="evosave" style="align-self:flex-start">'+I.check+'Enregistrer ce point</button></div></section>';
+}
+/* ---------- photolangage ---------- */
+function viewPhoto(){
+  const p=D().photo||{};
+  return '<section class="view"><div><h1 class="t1">Photolangage</h1><p class="sub">Choisissez l’image qui dit le mieux votre vécu du handicap aujourd’hui. Puis écrivez ce qu’elle évoque, et pourquoi vous l’avez choisie. Une image dit souvent ce que les mots n’osent pas.</p></div>'+
+    '<div class="photos">'+PHOTOS.map((x,i)=>'<button type="button" data-act="photopick" data-i="'+i+'" aria-pressed="'+(p.i===i)+'"><span>'+x[0]+'</span>'+x[1]+'</button>').join('')+'</div>'+
+    '<div class="card"><div class="field"><label for="ptext">Ce qu’elle évoque pour moi</label><textarea id="ptext" style="min-height:120px">'+esc(p.text||'')+'</textarea></div><button type="button" class="btn primary" data-act="photosave" style="align-self:flex-start">'+I.check+'Garder</button>'+(p.date?'<p class="hint">Choisi le '+esc(fmtDate(p.date))+'. Vous pourrez refaire l’exercice au bilan et comparer.</p>':'')+'</div></section>';
+}
+/* ---------- advice (library) ---------- */
+function viewAdvice(){
+  let list=SITS.filter(s=>(state.theme==='all'||s.th===state.theme)&&(state.age==='all'||s.ages.includes(state.age)));
+  const q=state.q.trim().toLowerCase();if(q)list=list.filter(s=>(s.t+' '+s.s+' '+s.comp).toLowerCase().includes(q));
+  return '<section class="view"><div><h1 class="t1">Les conseils</h1><p class="sub">Vingt-deux situations de la vraie vie, avec les pistes d’un éducateur, et toujours un mot pour vous.</p></div>'+
+    '<div class="search">'+I.search+'<input type="search" id="q" placeholder="Chercher : coucher, crise, école…" value="'+esc(state.q)+'" autocomplete="off"></div>'+
+    '<div class="chips scroll" role="group" aria-label="Âge">'+Object.keys(AGES).map(k=>'<button type="button" class="chip" data-act="age" data-v="'+k+'" aria-pressed="'+(state.age===k)+'">'+AGES[k]+'</button>').join('')+'</div>'+
+    '<div class="chips scroll" role="group" aria-label="Thème">'+Object.keys(THEMES).map(k=>'<button type="button" class="chip" data-act="theme" data-v="'+k+'" aria-pressed="'+(state.theme===k)+'">'+THEMES[k]+'</button>').join('')+'</div>'+
+    '<div class="sits">'+(list.length?list.map(s=>'<button type="button" class="sit" data-act="sit" data-id="'+s.id+'"><span class="e">'+s.e+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span><span class="chev">'+I.chev+'</span></button>').join(''):'<p class="hint">Rien pour ce mot. Déposez-le : on vous répond.</p>')+'</div></section>';
+}
+function viewSit(){
+  const s=SITS.find(x=>x.id===state.sit);if(!s){state.view='advice';return viewAdvice();}
+  const li=a=>'<ul class="list">'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+  return '<section class="view"><div><span class="label">'+s.ages.map(a=>AGES[a]).join(' · ')+'</span><h1 class="t1">'+s.e+' '+esc(s.t)+'</h1><p class="sub">'+esc(s.s)+'</p></div>'+
+    '<div class="card sec"><h2><span class="dot"></span>Ce qui se passe</h2><p>'+esc(s.comp)+'</p></div>'+
+    '<div class="card sec ess"><h2><span class="dot"></span>Ce que vous pouvez essayer</h2>'+li(s.ess)+'</div>'+
+    '<div class="card sec ev"><h2><span class="dot"></span>Ce qu’il vaut mieux éviter</h2>'+li(s.ev)+'</div>'+
+    '<div class="comfort">'+esc(s.moi)+'</div>'+
+    '<div class="card sec aide"><h2><span class="dot"></span>Quand demander de l’aide</h2><p>'+esc(s.aide)+'</p></div>'+
+    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="depot">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="go" data-view="tools">'+I.tools+'Les outils</button></div></section>';
+}
+function viewSOS(){
+  return '<section class="view sosview" style="padding-top:14px"><header class="bar"><button type="button" class="back" data-act="go" data-view="today">'+I.back+'Sortir</button></header>'+
+    '<div><h1 class="t1" style="color:var(--coral)">Là, maintenant.</h1><p class="sub">Rien à réussir. Juste passer la vague. Dans l’ordre :</p></div>'+
+    '<div class="sosstep"><span class="n">1</span><div class="tx"><b>Sécurité</b><span>Écartez ce qui peut blesser. Laissez de la place. Ne retenez pas si ce n’est pas nécessaire.</span></div></div>'+
+    '<div class="sosstep"><span class="n">2</span><div class="tx"><b>Moins</b><span>Moins de mots, moins de lumière, moins de bruit. Une phrase, calme, répétée : « Je suis là. On attend. »</span></div></div>'+
+    '<div class="sosstep"><span class="n">3</span><div class="tx"><b>Vous</b><span>Pieds au sol. Respirez avec le cercle. Vous avez le droit de sortir trente secondes si tout est sûr.</span></div></div>'+
+    '<div class="breath"><div class="orbwrap"><div class="orb"></div></div><div class="txt">Inspirez… expirez…</div></div>'+
+    '<div class="sosstep"><span class="n">4</span><div class="tx"><b>Après</b><span>Un verre d’eau. Un geste doux si accepté. On ne rejoue pas la scène. On ne punit pas une vague. Plus tard, notez ce qui a précédé.</span></div></div>'+
+    '<div class="emg"><b>Si quelqu’un est en danger</b><span>Urgences : <span class="tel">144</span> · Police : <span class="tel">117</span></span><span>Si c’est vous qui n’en pouvez plus : La Main Tendue <span class="tel">143</span>, jour et nuit.</span></div>'+
+    '<button type="button" class="btn primary wide" data-act="go" data-view="today">C’est passé. Revenir.</button><p class="hint">Ce que vous venez de faire, c’est exactement ce qu’un professionnel aurait fait.</p></section>';
+}
+/* ---------- tools ---------- */
+function viewTools(){
+  const tabs=[['timer','Minuteur'],['ft','D’abord, ensuite'],['routine','Routine'],['abc','Journal'],['phr','Mes phrases']];
+  const seg='<div class="chips scroll" role="tablist">'+tabs.map(t=>'<button type="button" class="chip" data-act="tool" data-v="'+t[0]+'" aria-pressed="'+(state.tool===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
+  let body='';
+  if(state.tool==='timer')body=toolTimer();else if(state.tool==='ft')body=toolFT();else if(state.tool==='routine')body=toolRoutine();else if(state.tool==='abc')body=toolABC();else body=toolPhr();
+  return '<section class="view"><div><h1 class="t1">Les outils</h1><p class="sub">Ceux que les éducateurs utilisent tous les jours. Pour la table de la cuisine.</p></div>'+seg+body+'</section>';
+}
+function toolTimer(){const t=state.timer;const mins=[1,2,3,5,10,15];return '<div class="card green" style="align-items:center"><span class="label">Minuteur visuel</span><p class="hint" style="text-align:center">Le temps qui reste se voit. « Quand le vert a disparu, on range. »</p><div class="timerwrap"><div class="ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" style="fill:none;stroke:var(--surface);stroke-width:12"/><circle id="arc" cx="60" cy="60" r="52" style="fill:none;stroke:var(--green);stroke-width:12;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:0"/></svg><div class="num" id="tnum">'+Math.floor(t.left/60)+':'+pad(t.left%60)+'</div></div><div class="bigrow">'+mins.map(m=>'<button type="button" class="btn small'+(t.total===m*60?' primary':'')+'" data-act="tset" data-m="'+m+'">'+m+' min</button>').join('')+'</div><div class="bigrow"><button type="button" class="btn primary" data-act="ttoggle">'+(t.running?I.stop+'Pause':I.timer+'Lancer')+'</button><button type="button" class="btn" data-act="treset">Remettre</button></div></div></div>';}
+function drawTimer(){const t=state.timer;const arc=document.getElementById('arc');const num=document.getElementById('tnum');if(!arc||!num)return;const frac=t.total?t.left/t.total:0;arc.style.strokeDashoffset=String(326.7*(1-frac));num.textContent=Math.floor(t.left/60)+':'+pad(t.left%60);arc.style.stroke=frac<.2?'var(--coral)':'var(--green)';}
+function tick(){const t=state.timer;if(!t.running)return;t.left=Math.max(0,t.left-1);drawTimer();if(t.left===0){t.running=false;clearInterval(t.h);t.h=null;try{if(navigator.vibrate)navigator.vibrate([200,100,200]);}catch(e){}toast('C’est fini. Bravo.');render();}}
+function stopTimer(){const t=state.timer;t.running=false;if(t.h){clearInterval(t.h);t.h=null;}}
+function toolFT(){const f=state.ft;const card=(k,lbl,v,cls)=>'<button type="button" class="ftcard '+cls+'" data-act="ftpick" data-k="'+k+'" style="'+(f.pick===k?'box-shadow:var(--shadow)':'')+'"><span class="lbl">'+lbl+'</span>'+(v?'<span class="big">'+v[0]+'</span><span class="txt">'+esc(v[1])+'</span>':'<span class="hint">Choisissez en dessous</span>')+'</button>';return '<div class="card"><span class="label">Tableau « d’abord, ensuite »</span><p class="hint">D’abord ce qu’il faut faire, ensuite ce qui fait plaisir. Montrez-le, pointez-le, c’est tout.</p><div class="ft">'+card('first','D’abord',f.first,'')+card('then','Ensuite',f.then,'then')+'</div><p class="hint">Vous remplissez : <b>'+(f.pick==='first'?'D’abord':'Ensuite')+'</b></p><div class="picto">'+PICTOS.map((p,i)=>'<button type="button" data-act="ftset" data-i="'+i+'" aria-pressed="'+((f[f.pick]&&f[f.pick][1]===p[1])?'true':'false')+'"><span>'+p[0]+'</span>'+p[1]+'</button>').join('')+'</div></div>';}
+function toolRoutine(){const d=D();const r=ROUTINE_DEF;const done=d.routineDone[todayIso()]||{};const all=r.every((x,i)=>done[i]);return '<div class="card"><span class="label">La routine du soir</span><p class="hint">Dans l’ordre, chaque soir pareil. L’enfant coche lui-même : c’est lui qui avance.</p><div class="routine">'+r.map((x,i)=>'<button type="button" class="rstep'+(done[i]?' done':'')+'" data-act="rdone" data-i="'+i+'"><span class="e">'+x[0]+'</span><span class="t">'+esc(x[1])+'</span><span class="ck">'+(done[i]?I.check:'')+'</span></button>').join('')+'</div>'+(all?'<div class="comfort">Tout est fait. Bonne nuit à tous les deux.</div>':'')+'<button type="button" class="btn small" data-act="rreset" style="align-self:flex-start">Remettre à zéro</button></div>';}
+function toolABC(){const d=D();const list=d.abc.slice().reverse().slice(0,10);return '<div class="card"><span class="label">Journal avant, pendant, après</span><p class="hint">Trois lignes à chaque fois que ça déborde. Après trois semaines, on voit ce qui précède. C’est ce que demandera tout professionnel.</p><div class="abc"><div class="field"><label for="a1">Avant</label><input type="text" id="a1" placeholder="Où, quand, qui, quoi juste avant" autocomplete="off"></div><div class="field"><label for="a2">Pendant</label><input type="text" id="a2" placeholder="Ce qui s’est passé, combien de temps" autocomplete="off"></div><div class="field"><label for="a3">Après</label><input type="text" id="a3" placeholder="Ce qui a aidé, ce qui a suivi" autocomplete="off"></div></div><button type="button" class="btn primary" data-act="abcadd" style="align-self:flex-start">'+I.plus+'Noter</button></div>'+(list.length?'<div class="log">'+list.map(x=>'<div class="logi"><span class="d">'+esc(fmtDate(x.date))+' · '+esc(x.time)+'</span><span><b>Avant :</b> '+esc(x.a)+'</span><span><b>Pendant :</b> '+esc(x.b)+'</span><span><b>Après :</b> '+esc(x.c)+'</span></div>').join('')+'</div>':'');}
+function toolPhr(){const d=D();return '<div class="card"><span class="label">Mes phrases qui marchent</span><p class="hint">Celles qui calment, qui font rire, qui débloquent. Pour vous, pour l’autre parent, pour la grand-mère qui garde samedi.</p><div class="field"><input type="text" id="ph" placeholder="Ex. : « On respire comme le dragon »" autocomplete="off"></div><button type="button" class="btn primary" data-act="phadd" style="align-self:flex-start">'+I.plus+'Garder</button>'+(d.phrases.length?'<div class="phr">'+d.phrases.map((p,i)=>'<div><span>'+esc(p)+'</span><button type="button" class="btn small ghost" data-act="phdel" data-i="'+i+'" aria-label="Retirer">'+I.trash+'</button></div>').join('')+'</div>':'')+'</div>';}
+/* ---------- me ---------- */
+function viewMe(){
+  return '<section class="view"><div><h1 class="t1">Pour vous</h1><p class="sub">Deux minutes. Pas pour devenir un meilleur parent : pour rester une personne.</p></div>'+
+    '<button type="button" class="sit" data-act="go" data-view="evo"><span class="e">'+I.chart+'</span><span class="tx"><b>Mon évolution</b><span>Départ, mi-parcours, bilan</span></span><span class="chev">'+I.chev+'</span></button>'+
+    '<div class="ex">'+EXOS.map(x=>'<button type="button" class="sit" data-act="exo" data-id="'+x.id+'"><span class="e">'+I[x.ico]+'</span><span class="tx"><b>'+esc(x.t)+'</b><span>'+esc(x.s)+'</span></span><span class="chev">'+I.chev+'</span></button>').join('')+'</div>'+
+    '<div class="comfort">'+esc(WORDS[(dayIdx(WORDS.length)+5)%WORDS.length])+'</div>'+
+    '<button type="button" class="btn wide" data-act="go" data-view="plans">'+I.tag+'Les formules</button></section>';
+}
+function viewExo(){
+  const x=EXOS.find(e=>e.id===state.exo);if(!x){state.view='me';return viewMe();}
+  let body='';
+  if(x.id==='breath')body='<div class="breath"><div class="orbwrap"><div class="orb"></div></div><div class="txt">Le cercle grandit : inspirez. Il rétrécit : expirez.</div></div>';
+  else if(x.id==='trois'){const t=D().three.slice().reverse().slice(0,5);body='<div class="card"><div class="field"><input type="text" id="t1" placeholder="Une" autocomplete="off"></div><div class="field"><input type="text" id="t2" placeholder="Deux" autocomplete="off"></div><div class="field"><input type="text" id="t3" placeholder="Trois" autocomplete="off"></div><button type="button" class="btn primary" data-act="threeadd" style="align-self:flex-start">'+I.star+'Garder</button></div>'+(t.length?'<div class="log">'+t.map(e=>'<div class="logi"><span class="d">'+esc(fmtDate(e.date))+'</span><span>'+esc(e.items.join(' · '))+'</span></div>').join('')+'</div>':'');}
+  else if(x.id==='deposer')body='<div class="card"><textarea id="dep" style="min-height:200px" placeholder="Tout ce qui tourne…"></textarea><button type="button" class="btn primary" data-act="depose" style="align-self:flex-start">'+I.wind+'Déposer et effacer</button><p class="hint">Rien n’est enregistré. Quand vous appuyez, le texte disparaît. Pour être écouté·e, utilisez « Déposer » sur l’accueil.</p></div>';
+  else if(x.id==='droit')body='<div class="perm">'+PERMISSIONS.map(p=>'<div><b>'+esc(p[0])+'</b> '+esc(p[1])+'</div>').join('')+'</div>';
+  else if(x.id==='minute')body='<div class="card green" style="align-items:center"><div class="ring" style="width:200px;height:200px"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" style="fill:none;stroke:var(--surface);stroke-width:12"/><circle id="arc" cx="60" cy="60" r="52" style="fill:none;stroke:var(--green);stroke-width:12;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:0"/></svg><div class="num" id="tnum" style="font-size:44px">'+Math.floor(state.timer.left/60)+':'+pad(state.timer.left%60)+'</div></div><button type="button" class="btn primary" data-act="minute">'+(state.timer.running?I.stop+'Arrêter':I.timer+'Une minute')+'</button></div>';
+  else if(x.id==='appeler')body='<div class="log">'+HELPLINES.map(h=>'<div class="logi"><b>'+esc(h[0])+'</b><span class="tel" style="font-size:22px">'+esc(h[1])+'</span><span class="hint">'+esc(h[2])+'</span></div>').join('')+'</div>';
+  return '<section class="view"><div><h1 class="t1">'+esc(x.t)+'</h1>'+(x.how?'<p class="sub">'+esc(x.how)+'</p>':'')+'</div>'+body+'</section>';
+}
+function viewPlans(){
+  return '<section class="view"><div><h1 class="t1">Les formules</h1><p class="sub">Un espace d’écoute pour tout parent en chemin. Sans engagement, résiliable à tout moment.</p></div><div class="plans">'+PLANS.map(p=>'<div class="plan'+(p.best?' best':'')+'">'+(p.best?'<span class="pill sun">Le plus choisi</span>':'')+'<h2 class="t2">'+esc(p.t)+'</h2><div class="price">'+esc(p.p)+' CHF <small>'+esc(p.per)+'</small></div><ul class="list">'+p.items.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul><button type="button" class="btn'+(p.best?' primary':'')+' wide" data-act="soon">'+(p.p==='0'?'Commencer gratuitement':'Choisir')+'</button></div>').join('')+'</div><p class="hint">Version de démonstration : les paiements s’ouvriront au lancement. Les prix sont ceux prévus pour la Suisse ; une version pour la France suivra.</p></section>';
+}
+function viewData(){
+  return '<section class="view"><div><h1 class="t1">Vos données</h1><p class="sub">Tout reste sur cet appareil : vos dépôts, vos points, vos notes. Vos dépôts partent sans nom pour recevoir une réponse, et ne sont pas conservés ailleurs.</p></div><div class="card"><span class="label">Tout effacer</span>'+(state.confirmReset?'<div class="confirm"><span>Effacer tout le contenu sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, effacer</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>':'<button type="button" class="btn danger" data-act="reset" style="align-self:flex-start">'+I.trash+'Effacer</button>')+'</div></section>';
+}
+function viewAbout(){
+  return '<section class="view"><div><h1 class="t1">Pourquoi cet espace</h1></div><div class="card"><p class="quote">« Parce qu’un parent écouté devient un parent éclairé. Et un parent éclairé devient un parent confiant, aligné et pleinement acteur du bien-être de son enfant. »</p></div>'+
+    '<div class="card"><span class="label">Qui parle</span><p>Antonio Company, éducateur social et formateur à la pratique professionnelle. Placé en famille d’accueil à dix ans, il a connu ce que change la présence d’une personne qui écoute. Père de trois enfants, vingt ans auprès de personnes en situation de handicap et de leurs familles. En 2025, il a imaginé « Parent Écouté, Parent Éclairé » : un accompagnement de six mois pour les parents, puis un espace d’écoute ouvert à tout parent en chemin. Cette application en est la forme qui tient dans la poche, avec lui derrière, pour celles et ceux qui le souhaitent.</p></div>'+
+    '<div class="card green"><span class="label">Ce que ce n’est pas</span><ul class="list"><li>Pas un diagnostic ni une thérapie : pour ça, le pédiatre, le médecin, les thérapeutes.</li><li>Pas une urgence : en danger, le 144 ; à bout, le 143.</li><li>Pas un remplaçant des gens : un pont vers eux.</li></ul></div><p class="hint">Version de démonstration.</p></section>';
+}
+function tabs(){
+  const cur=v=>(state.view===v||(v==='advice'&&state.view==='sit')||(v==='me'&&['exo','evo','plans'].includes(state.view))||(v==='parcours'&&['step','photo'].includes(state.view)))?' aria-current="page"':'';
+  return '<nav class="tabs" aria-label="Navigation"><div class="tabs-in"><button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="depot"'+cur('depot')+'>'+I.drop+'Déposer</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="advice"'+cur('advice')+'>'+I.bulb+'Conseils</button><button type="button" class="tab" data-act="menu">'+I.dots+'Plus</button></div></nav>';
+}
+function sheetMenu(){
+  const items=[['go','tools',I.tools,'Les outils','Minuteur, d’abord-ensuite, routine, journal'],['go','me',I.heart,'Pour vous','Respirer, trois choses, vos droits'],['go','evo',I.chart,'Mon évolution',''],['go','photo',I.image,'Photolangage',''],['go','plans',I.tag,'Les formules',''],['sep'],['onboard','',I.swap,'Modifier le début',''],['go','data',I.download,'Vos données',''],['go','about',I.info,'Pourquoi cet espace','']];
+  return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Menu"><div class="sheet-in"><div class="grab"></div><div class="menu">'+items.map(it=>it[0]==='sep'?'<div class="sep"></div>':'<button type="button" data-act="'+it[0]+'" data-view="'+it[1]+'">'+it[2]+'<span>'+esc(it[3])+(it[4]?'<small>'+esc(it[4])+'</small>':'')+'</span></button>').join('')+'</div></div></div>';
+}
+function sheetOnboard(){
+  const d=D();const opt=(k,v,l)=>'<button type="button" class="chip" data-act="ob" data-k="'+k+'" data-v="'+v+'" aria-pressed="'+(d[k]===v)+'">'+esc(l)+'</button>';
+  const w=(k,l)=>'<button type="button" class="chip" data-act="obw" data-v="'+k+'" aria-pressed="'+(d.weights.includes(k))+'">'+esc(l)+'</button>';
+  return '<div class="backdrop"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ob-title"><div class="sheet-in"><div class="grab"></div><h2 id="ob-title">Faisons connaissance</h2>'+
+    '<div class="field"><label for="ob-me">Votre prénom (facultatif)</label><input type="text" id="ob-me" value="'+esc(d.me)+'" autocomplete="off" data-autofocus></div>'+
+    '<div class="field"><label>Votre enfant est…</label><div class="chips">'+opt('age','e','un enfant')+opt('age','a','un ado')+opt('age','g','un adulte')+'</div></div>'+
+    '<div class="field"><label>Votre situation</label><div class="chips">'+opt('situation','hand','handicap ou besoins particuliers')+opt('situation','diff','une période difficile')+opt('situation','parent','je suis parent, simplement')+'</div></div>'+
+    '<div class="field"><label>Ce qui pèse le plus en ce moment (plusieurs possibles)</label><div class="chips">'+WEIGHTS.map(x=>w(x[0],x[1])).join('')+'</div></div>'+
+    '<p class="hint">Pas de prénom pour votre enfant : rien de lui ne doit quitter votre poche.</p>'+
+    '<button type="button" class="btn primary wide" data-act="ob-done">'+I.sun2+'Recevoir ma première dose</button></div></div>';
+}
+function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;for(const raw of lines){const l=raw.replace(/\*\*(.+?)\*\*/g,'$1');if(/^\s*[-•]\s+/.test(l)){if(!inl){out+='<ul class="list">';inl=true;}out+='<li>'+esc(l.replace(/^\s*[-•]\s+/,''))+'</li>';continue;}if(inl){out+='</ul>';inl=false;}if(/^#{1,3}\s/.test(l))out+='<p style="font-weight:800;margin-top:6px;color:var(--green)">'+esc(l.replace(/^#{1,3}\s*/,''))+'</p>';else if(l.trim())out+='<p>'+esc(l)+'</p>';}if(inl)out+='</ul>';return out;}
+
+/* ---------- actions ---------- */
+function handle(act,d){
+  const data=D();
+  switch(act){
+    case 'onboard':state.sheet='onboard';break;
+    case 'ob':data[d.k]=d.v;save();break;
+    case 'obw':{const i=data.weights.indexOf(d.v);if(i>=0)data.weights.splice(i,1);else data.weights.push(d.v);save();break;}
+    case 'ob-done':{const m=document.getElementById('ob-me');if(m)data.me=m.value.trim();if(!data.start)data.start=todayIso();data.onboarded=true;state.sheet=null;save();break;}
+    case 'go-free':data.onboarded=true;if(!data.start)data.start=todayIso();save();state.view=d.view;break;
+    case 'go':state.prev=state.view;state.view=d.view;state.sheet=null;state.confirmReset=false;if(d.view!=='tools'&&d.view!=='exo')stopTimer();break;
+    case 'back':{const v=state.view;let t;if(v==='sit')t='advice';else if(v==='exo'){t='me';stopTimer();}else if(v==='step'||v==='photo')t='parcours';else if(v==='evo'||v==='plans')t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
+    case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
+    case 'sit':state.sit=d.id;state.prev=state.view;state.view='sit';break;
+    case 'age':state.age=d.v;break;
+    case 'theme':state.theme=d.v;break;
+    case 'dmode':state.depotMode=d.v;break;
+    case 'dsend':sendDepot();return;
+    case 'dstop':if(state.ctl)state.ctl.abort();return;
+    case 'dconcret':concret(d.id);return;
+    case 'dose-perso':dosePerso();return;
+    case 'step':state.step=Number(d.i);state.prev=state.view;state.view='step';break;
+    case 'stepdone':data.steps[d.i]=!data.steps[d.i];save();if(data.steps[d.i])toast('Étape faite. Une par semaine, c’est le bon rythme.');break;
+    case 'evotime':state.evoTime=d.v;break;
+    case 'evosave':{const rec={date:todayIso()};EVO_SCALES.forEach(s=>{const el=document.querySelector('[data-evo="'+s.id+'"]');rec[s.id]=el?Number(el.value):5;});EVO_OPEN.forEach(o=>{const el=document.querySelector('[data-evoopen="'+o[0]+'"]');rec[o[0]]=el?el.value.trim():'';});data.evo[state.evoTime]=rec;save();render();toast('Point enregistré. Ce qui bouge est à vous.');return;}
+    case 'photopick':data.photo=Object.assign({},data.photo||{},{i:Number(d.i)});save();break;
+    case 'photosave':{const t=document.getElementById('ptext');data.photo=Object.assign({},data.photo||{},{text:t?t.value.trim():'',date:todayIso()});save();render();toast('Gardé.');return;}
+    case 'tool':state.tool=d.v;if(d.v!=='timer')stopTimer();break;
+    case 'tset':stopTimer();state.timer.total=Number(d.m)*60;state.timer.left=state.timer.total;break;
+    case 'ttoggle':if(state.timer.running)stopTimer();else{if(state.timer.left===0)state.timer.left=state.timer.total;state.timer.running=true;state.timer.h=setInterval(tick,1000);}break;
+    case 'treset':stopTimer();state.timer.left=state.timer.total;break;
+    case 'minute':if(state.timer.running)stopTimer();else{state.timer.total=60;state.timer.left=60;state.timer.running=true;state.timer.h=setInterval(tick,1000);}break;
+    case 'ftpick':state.ft.pick=d.k;break;
+    case 'ftset':state.ft[state.ft.pick]=PICTOS[Number(d.i)];if(state.ft.pick==='first')state.ft.pick='then';break;
+    case 'rdone':{const t=todayIso();data.routineDone[t]=data.routineDone[t]||{};data.routineDone[t][d.i]=!data.routineDone[t][d.i];save();break;}
+    case 'rreset':data.routineDone[todayIso()]={};save();break;
+    case 'abcadd':{const a=document.getElementById('a1').value.trim(),b=document.getElementById('a2').value.trim(),c=document.getElementById('a3').value.trim();if(!a&&!b&&!c){toast('Une ligne, au moins.');return;}const n=new Date();data.abc.push({date:todayIso(),time:pad(n.getHours())+':'+pad(n.getMinutes()),a,b,c});save();render();toast('Noté.');return;}
+    case 'phadd':{const v=document.getElementById('ph').value.trim();if(!v){toast('Écrivez la phrase.');return;}data.phrases.push(v);save();render();toast('Gardée.');return;}
+    case 'phdel':data.phrases.splice(Number(d.i),1);save();break;
+    case 'exo':state.exo=d.id;state.prev=state.view;state.view='exo';break;
+    case 'threeadd':{const items=['t1','t2','t3'].map(id=>document.getElementById(id).value.trim()).filter(Boolean);if(!items.length){toast('Une chose suffit.');return;}data.three.push({date:todayIso(),items});save();render();toast('Gardé.');return;}
+    case 'depose':{const t=document.getElementById('dep');if(t)t.value='';toast('Déposé. Ce n’est plus que sur vous.');return;}
+    case 'soon':toast('Les formules s’ouvrent au lancement. Merci d’être là en premier.');return;
+    case 'menu':state.sheet=state.sheet==='menu'?null:'menu';break;
+    case 'sheet-close':state.sheet=null;break;
+    case 'reset':state.confirmReset=true;break;
+    case 'reset-no':state.confirmReset=false;break;
+    case 'reset-yes':state.data=JSON.parse(JSON.stringify(DEF));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='today';render();toast('Effacé.');return;
+    default:return;
+  }
+  render();
+  if(['go','sit','back','exo','step','go-free'].includes(act))window.scrollTo(0,0);
+}
+const app=document.getElementById('app');
+app.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.tagName==='A')return;handle(el.dataset.act,el.dataset);});
+let typing=null;
+app.addEventListener('input',e=>{const t=e.target;if(t.id==='draft')state.draft=t.value;if(t.id==='q'){state.q=t.value;clearTimeout(typing);typing=setTimeout(()=>{const pos=t.selectionStart;render();const nq=document.getElementById('q');if(nq){nq.focus();try{nq.setSelectionRange(pos,pos);}catch(e){}}},250);}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;render();}});
+state.data=load();
+state.inClaude=!!(window.claude&&typeof window.claude.use==='function');
+render();
+(async()=>{try{if(state.inClaude){const s=await window.claude.use('sample');state.sample=s||false;}else state.sample=false;}catch(e){state.sample=false;}render();})();
+})();
+</script>
+</body>
+</html>
