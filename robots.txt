@@ -1,0 +1,7 @@
+# Parent Écouté, Parent Éclairé
+# Remarque : un robots.txt ne prend effet que servi à la racine du domaine (il le sera avec un nom de domaine propre).
+# En attendant, chaque page porte sa propre consigne (balise meta robots).
+User-agent: *
+Allow: /
+
+Sitemap: https://ac201983.github.io/carnet-de-liens/sitemap.xml
