@@ -1,4 +1,4 @@
-/* Espace Antonio : démonstration du tableau de bord de l'éducateur. Données fictives : aucun parent réel. */
+/* Espace Antonio : démonstration du tableau de bord d'Antonio. Données fictives : aucun parent réel. */
 (function(){
 'use strict';
 const HERO='img/hero.webp';

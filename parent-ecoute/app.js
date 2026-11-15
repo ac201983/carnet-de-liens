@@ -266,7 +266,7 @@ const PARCOURS=[
   {m:'Émotions et résilience parentale',steps:[
     {t:'Mes émotions, mes signaux',lesson:'Colère, tristesse, honte, peur, épuisement : les émotions des parents d’un enfant différent sont fortes et souvent interdites. Elles sont pourtant des signaux, pas des fautes. La colère dit « c’est injuste ». La tristesse dit « j’ai perdu quelque chose ». La peur dit « je tiens à lui ». Nommer l’émotion la fait baisser d’un cran. La nier la fait sortir ailleurs, souvent sur la mauvaise personne.',exo:'Trois fois cette semaine, quand ça monte, nommez à voix basse : « là, c’est de la colère / de la peur / de la tristesse ». Rien d’autre.',obs:'Repérez l’émotion que vous vous interdisez le plus.'},
     {t:'Réguler et lâcher',lesson:'On ne décide pas de ne pas ressentir. On peut décider de ce qu’on fait avec. Respirer plus lentement que l’émotion, sortir trente secondes, poser les mains à plat, dire une phrase apprise par cœur : ce sont des gestes qui ramènent le corps avant la tête. Lâcher prise n’est pas renoncer : c’est arrêter de tenir ce qui ne dépend pas de vous.',exo:'Choisissez un geste de régulation (respirer 4-6, mains à plat, sortir, une phrase). Utilisez-le chaque fois que ça monte, pendant une semaine. Un seul geste.',obs:'Notez ce qui ne dépend pas de vous dans vos soucis de la semaine. Écrivez-le, puis posez-le.',link:'breath'},
-    {t:'Mes ressources de résilience',lesson:'La résilience n’est pas une qualité qu’on a ou pas : c’est ce qui se construit avec des appuis. Une personne qui écoute, un lieu qui apaise, une activité qui rend à soi-même, une phrase qui tient. J’ai été placé à dix ans ; ce qui m’a tenu, ce sont deux personnes et un endroit. Trouvez les vôtres. Nommez-les. Allez-y exprès.',exo:'Écrivez vos quatre appuis : une personne, un lieu, une activité, une phrase. Programmez un rendez-vous avec chacun dans le mois.',obs:'Remarquez ce qui vous recharge vraiment, et ce qui ne fait que vous anesthésier.'},
+    {t:'Mes ressources de résilience',lesson:'La résilience n’est pas une qualité qu’on a ou pas : c’est ce qui se construit avec des appuis. Une personne qui écoute, un lieu qui apaise, une activité qui rend à soi-même, une phrase qui tient. Enfant, j’ai connu la famille d’accueil ; ce qui m’a tenu, ce sont mes parents d’accueil, devenus mon pilier. Trouvez vos appuis. Nommez-les. Allez-y exprès.',exo:'Écrivez vos quatre appuis : une personne, un lieu, une activité, une phrase. Programmez un rendez-vous avec chacun dans le mois.',obs:'Remarquez ce qui vous recharge vraiment, et ce qui ne fait que vous anesthésier.'},
     {t:'Bilan de mi-parcours',lesson:'Trois mois. Il est temps de regarder le chemin, pas la montagne. Refaites le point : stress, compétence, solitude, regard. Comparez avec le départ sans vous juger. Ce qui a bougé vous appartient. Ce qui n’a pas bougé indique où porter l’effort des trois mois à venir. Et ajustez votre objectif : il a le droit d’avoir changé.',exo:'Refaites le point dans « Mon évolution ». Relisez votre première phrase « Je commence ce parcours parce que… ».',obs:'Qu’est-ce que vous faites aujourd’hui que vous ne faisiez pas il y a trois mois ?',link:'evo'}
   ]},
   {m:'Changer de perspective et reconnaître les forces',steps:[
@@ -416,7 +416,7 @@ function render(){
   const app=document.getElementById('app');let html='';let base='app';let key;
   const fkey=focusKey(document.activeElement);
   const oldSheet=app.querySelector('.sheet');const sheetTop=oldSheet?oldSheet.scrollTop:0;
-  if(!D().onboarded&&state.view==='plans'){base='app nobar';key='peek';html='<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button></header>'+viewPlans();}
+  if(!D().onboarded&&(state.view==='plans'||state.view==='about')){base='app nobar';key='peek-'+state.view;html='<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button></header>'+(state.view==='about'?viewAbout():viewPlans());}
   else if(!D().onboarded){base='app nobar';key='intro';html=viewIntro();}
   else if(state.view==='sos'){base='app nobar';key='sos';html=viewSOS();}
   else{
@@ -460,7 +460,26 @@ function render(){
     }
   }
   if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
+  syncStory(entering);
 }
+/* ---------- « Mon histoire » : adresse partageable (#histoire, sur le site) et un seul moment d'animation ---------- */
+const STORY_HASH='#histoire';const TITLE0=document.title;
+function syncStory(entering){
+  const on=state.view==='about';
+  try{document.title=on?'Mon histoire, par Antonio Company · Parent Écouté, Parent Éclairé':TITLE0;}catch(e){}
+  if(SITE&&!on&&location.hash===STORY_HASH){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+  if(!on||!entering)return;
+  const el=document.querySelector('.avec');
+  if(!el||!('IntersectionObserver' in window)||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches))return;
+  el.classList.add('arm');
+  const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){el.classList.add('seen');io.disconnect();}},{threshold:.35});
+  io.observe(el);
+}
+function openStory(){
+  if(SITE&&location.hash!==STORY_HASH){location.hash=STORY_HASH.slice(1);return;}
+  showStory();
+}
+function showStory(){if(state.view!=='about')state.prev=state.view;state.view='about';state.sheet=null;state.confirmReset=false;stopTimer();render();window.scrollTo(0,0);}
 function bar(){
   const back=BACK_VIEWS.includes(state.view)?'<button type="button" class="back" data-act="back">'+I.back+'Retour</button>':'';
   const wm=back?'':'<span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span>';
@@ -493,9 +512,10 @@ function viewIntro(){
     '<div class="pillars reveal d1">'+
     '<div class="pillar"><span class="ic">'+I.drop+'</span><div><h2>Écouté</h2><span>Vous déposez, par écrit, sans prénom. Vous recevez une phrase-miroir, une question qui ouvre, une lumière.</span></div></div>'+
     '<div class="pillar sun"><span class="ic">'+I.sun2+'</span><div><h2>Éclairé</h2><span>La dose de lumière intérieure chaque matin, et un parcours de six mois, une étape par semaine.</span></div></div>'+
-    '<div class="pillar"><span class="ic">'+I.user+'</span><div><h2>Accompagné, si vous le voulez</h2><span>Antonio Company, éducateur social depuis vingt ans, vous écrit chaque mois dans la formule « Avec Antonio ».</span></div></div>'+
+    '<div class="pillar"><span class="ic">'+I.user+'</span><div><h2>Accompagné, si vous le voulez</h2><span>Antonio Company, travailleur social depuis ses 19 ans, vous écrit chaque mois dans la formule « Avec Antonio ».</span></div></div>'+
     '</div>'+
-    '<div class="cta-stack reveal d2">'+cta(true)+'</div>'+
+    '<section class="voice reveal d2" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai été accueilli par une famille.</p><p>Travailleur social depuis mes 19 ans et père de trois enfants, j’ai mis dans cet espace ce que j’ai appris\u00a0: composer, apprendre, évoluer avec la différence.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></section>'+
+    '<div class="cta-stack reveal d3">'+cta(true)+'</div>'+
     '<p class="hint" style="text-align:center">'+priv+'</p></main>'+
     '<footer class="foot"><button type="button" class="linkbtn" data-act="peek-plans">Formules</button>'+(SITE?'<a href="confidentialite.html">Confidentialité</a><a href="conditions.html">Conditions générales</a>':'')+'</footer>';
 }
@@ -550,11 +570,11 @@ function depotHtml(x,compact){
 const LOCAL_Q=['Qu’est-ce qui, dans tout ça, dépend vraiment de vous ?','Si une amie vivait exactement cela, que lui diriez-vous ?','Qu’est-ce qui vous a tenu debout aujourd’hui, même un peu ?','De quoi auriez-vous besoin ce soir, en une phrase ?','Qu’est-ce que votre enfant a fait aujourd’hui que vous n’avez pas eu le temps de voir ?'];
 function ctx(){return 'enfant '+AGES[D().age].toLowerCase()+' ; ce qui pèse le plus pour ce parent : '+(D().weights.length?D().weights.map(w=>(WEIGHTS.find(x=>x[0]===w)||['',w])[1].toLowerCase()).join(', '):'non précisé');}
 function listenPrompt(text){
-  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », un espace d’écoute créé par Antonio Company, éducateur social (vingt ans auprès de familles d’enfants en situation de handicap ou en difficulté, père, placé lui-même à dix ans). Un parent vient de déposer ce qui pèse. Ta tâche : l’écouter, pas le conseiller. Réponds UNIQUEMENT avec un objet JSON : {"miroir":"...","question":"...","lumiere":"..."}.\n'+
+  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », un espace d’écoute créé par Antonio Company, travailleur social depuis ses 19 ans (responsable d’une équipe socio-éducative, auprès de personnes en situation de handicap ou en difficulté et de leurs familles ; père de trois enfants ; il a lui-même connu la famille d’accueil dans son enfance). Un parent vient de déposer ce qui pèse. Ta tâche : l’écouter, pas le conseiller. Réponds UNIQUEMENT avec un objet JSON : {"miroir":"...","question":"...","lumiere":"..."}.\n'+
   '« miroir » : une ou deux phrases qui reformulent ce que le parent vit, avec ses mots, en nommant l’émotion probable sans l’imposer (« on dirait que… »), sans aucun conseil, sans jugement, sans minimiser. « question » : une seule question ouverte, courte, qui aide le parent à voir plus clair ou à se reconnecter à ses ressources ; jamais « pourquoi ». « lumiere » : une phrase chaleureuse et vraie, jamais mièvre, qui reconnaît ce que le parent fait déjà, ou lui donne une permission (droit à la fatigue, à la colère, au repos). Français de Suisse romande, vouvoiement, aucun prénom, aucun diagnostic. Si le message évoque un danger immédiat (idées suicidaires, violence grave), « lumiere » commence par inviter doucement à appeler le 143 (La Main Tendue) ou le 144.\n\nContexte : '+ctx()+'.\n\nDÉPÔT :\n"""\n'+text.slice(0,6000)+'\n"""';
 }
 function advicePrompt(){
-  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », celle d’un éducateur social expérimenté (vingt ans auprès d’enfants, d’adolescents et d’adultes en situation de handicap ou en difficulté, formateur, père). Tu parles à un parent, en français de Suisse romande, vouvoiement, chaleur, zéro jargon, zéro jugement. Aucun diagnostic, aucun trouble nommé, aucun médicament, aucun prénom. Contexte : '+ctx()+'.\n'+
+  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », celle d’un travailleur social expérimenté (dans le métier depuis ses 19 ans, auprès d’enfants, d’adolescents et d’adultes en situation de handicap ou en difficulté, responsable d’une équipe socio-éducative, père). Tu parles à un parent, en français de Suisse romande, vouvoiement, chaleur, zéro jargon, zéro jugement. Aucun diagnostic, aucun trouble nommé, aucun médicament, aucun prénom. Contexte : '+ctx()+'.\n'+
   'Structure en quatre parties courtes avec ces titres exacts précédés de « ## » : « Ce que j’entends » (deux phrases, sans juger, qui reconnaissent l’effort), « Ce que vous pouvez essayer » (trois pistes concrètes en liste à puces, réalistes ce soir ou cette semaine : prévisibilité, moins de mots, choix entre deux options, d’abord/ensuite, routines visuelles, sécurité d’abord, observer ce qui précède), « Pour vous » (une ou deux phrases pour le parent lui-même), « Si ça continue » (une phrase : quand et à qui demander de l’aide, sans dramatiser ; pédiatre ou médecin, l’équipe de l’institution ou de l’école, Pro Infirmis, associations de parents ; La Main Tendue 143 si le parent va très mal). Maximum 200 mots. Pas de gras. Termine par une phrase courte et vraie.';
 }
 const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais le frapper|je vais la frapper)/i;
@@ -598,7 +618,7 @@ async function dosePerso(){
   if(!can('parcours')){openUpgrade('dose');render();return;}
   state.doseBusy=true;render();
   try{
-    const r=await state.sample('Tu écris « la dose de lumière intérieure » de « Parent Écouté, Parent Éclairé », créé par Antonio Company, éducateur social. Un parent a déposé ceci il y a peu : """'+ld.text.slice(0,1500)+'""" (le '+fmtDate(ld.date)+'). Écris pour lui, pour aujourd’hui '+fmtDate(todayIso())+', une dose de 45 à 70 mots : une phrase qui montre que tu as entendu ce qu’il a déposé (sans le répéter mot à mot), une phrase qui éclaire ou donne une permission, et une petite chose à faire ou à regarder aujourd’hui. Français de Suisse romande, vouvoiement, aucun prénom, aucun conseil médical, aucune mièvrerie, pas de titre, pas de guillemets, pas de signature. Réponds avec le texte seul.',{cache:false,modelTier:'quick'});
+    const r=await state.sample('Tu écris « la dose de lumière intérieure » de « Parent Écouté, Parent Éclairé », créé par Antonio Company, travailleur social. Un parent a déposé ceci il y a peu : """'+ld.text.slice(0,1500)+'""" (le '+fmtDate(ld.date)+'). Écris pour lui, pour aujourd’hui '+fmtDate(todayIso())+', une dose de 45 à 70 mots : une phrase qui montre que tu as entendu ce qu’il a déposé (sans le répéter mot à mot), une phrase qui éclaire ou donne une permission, et une petite chose à faire ou à regarder aujourd’hui. Français de Suisse romande, vouvoiement, aucun prénom, aucun conseil médical, aucune mièvrerie, pas de titre, pas de guillemets, pas de signature. Réponds avec le texte seul.',{cache:false,modelTier:'quick'});
     D().doseDate=todayIso();D().doseText=r.text.trim();save();
   }catch(e){if(e&&e.code==='not_granted')state.sample=false;toast('La dose personnalisée n’est pas venue. Celle du jour reste là.');}
   state.doseBusy=false;render();
@@ -650,7 +670,7 @@ function viewKit(){
   const seg='<div class="seg" role="group" aria-label="Rubriques de la boîte à outils"><button type="button" data-act="kit" data-v="sits" aria-pressed="'+(state.kit==='sits')+'">Situations</button><button type="button" data-act="kit" data-v="tools" aria-pressed="'+(state.kit==='tools')+'">Outils</button><button type="button" data-act="kit" data-v="me" aria-pressed="'+(state.kit==='me')+'">Pour moi</button></div>';
   let body='';
   if(state.kit==='sits')body=kitSits();else if(state.kit==='tools')body=kitTools();else body=kitMe();
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">La boîte à outils</h1></div><p class="sub">'+(state.kit==='sits'?'Vingt-deux situations de la vraie vie, avec les pistes d’un éducateur, et toujours un mot pour vous.':state.kit==='tools'?'Ceux que les éducateurs utilisent tous les jours. Pour la table de la cuisine.':'Deux minutes. Pas pour devenir un meilleur parent : pour rester une personne.')+'</p>'+seg+body+'</main>';
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">La boîte à outils</h1></div><p class="sub">'+(state.kit==='sits'?'Vingt-deux situations de la vraie vie, avec des pistes venues du terrain, et toujours un mot pour vous.':state.kit==='tools'?'Ceux que les éducateurs utilisent tous les jours. Pour la table de la cuisine.':'Deux minutes. Pas pour devenir un meilleur parent : pour rester une personne.')+'</p>'+seg+body+'</main>';
 }
 function kitSits(){
   let list=SITS.filter(s=>(state.theme==='all'||s.th===state.theme)&&(state.age==='all'||s.ages.includes(state.age)));
@@ -723,7 +743,7 @@ function viewMe(){
     (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration · exemples de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+' · '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot chaque mois, deux questions, réponse sous 48 h</span></span><span class="chev">'+I.chev+'</span></button>')+
     '<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+(d.depots.length?d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+' · dernier le '+esc(fmtDate(ld.date)):'Aucun dépôt pour l’instant')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
     '<div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Un carré par jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
-    '<div class="menu-list"><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données · recommencer depuis le début</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>Pourquoi cet espace</span><span class="chev">'+I.chev+'</span></button>'+
+    '<div class="menu-list"><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données · recommencer depuis le début</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
     (SITE?'<a href="confidentialite.html">'+I.shield+'<span>Politique de confidentialité</span><span class="chev">'+I.chev+'</span></a><a href="conditions.html">'+I.note+'<span>Conditions générales</span><span class="chev">'+I.chev+'</span></a>':'')+'</div></main>';
 }
 function viewDepots(){
@@ -745,7 +765,7 @@ function viewPlans(){
     '<div class="plans">'+
     '<div class="plan"><h2 class="t2">Découverte</h2><div class="price">0 CHF <small>pour toujours</small></div><p>Pour voir si l’espace vous parle : la dose chaque jour, toute la boîte à outils, trois dépôts écoutés, la première étape.</p>'+btn('free')+'</div>'+
     '<div class="plan best"><span class="pill sun">Recommandé</span><h2 class="t2">Le parcours</h2><div class="price">14 CHF <small>par mois</small></div><p>Les cadenas disparaissent : déposez autant que nécessaire avec la phrase-miroir, recevez votre dose à vous, suivez les 24 étapes et voyez votre chemin sur six mois.</p>'+btn('parcours')+'</div>'+
-    '<div class="plan"><h2 class="t2">Avec Antonio</h2><div class="price">49 CHF <small>par mois</small></div><p>Tout Le parcours, et un éducateur qui vous connaît : <b>chaque mois, Antonio lit les dépôts que vous choisissez de lui partager et vous écrit un mot personnel</b>, qui s’affiche en haut de votre accueil. <b>Deux fois par mois, vous lui posez une question</b> ; il répond par écrit sous 48 heures. Jamais de prénom d’enfant, jamais de diagnostic.</p>'+btn('antonio')+'</div></div>'+
+    '<div class="plan"><h2 class="t2">Avec Antonio</h2><div class="price">49 CHF <small>par mois</small></div><p>Tout Le parcours, et un travailleur social qui vous connaît : <b>chaque mois, Antonio lit les dépôts que vous choisissez de lui partager et vous écrit un mot personnel</b>, qui s’affiche en haut de votre accueil. <b>Deux fois par mois, vous lui posez une question</b> ; il répond par écrit sous 48 heures. Jamais de prénom d’enfant, jamais de diagnostic.</p>'+btn('antonio')+'</div></div>'+
     '<p class="hint">Version de test : choisir une formule change l’interface pour la montrer. Aucun paiement n’est demandé et rien n’est transmis à Antonio. Les prix sont ceux prévus pour la Suisse.'+(SITE?' <a href="conditions.html">Conditions générales</a>':'')+'</p></main>';
 }
 function sheetUpgrade(sheetIn){
@@ -758,7 +778,7 @@ function sheetUpgrade(sheetIn){
 /* ---------- avec Antonio ---------- */
 function viewAntonio(){
   const d=D();const L=d.letters.slice().reverse();const Q=d.questions.slice().reverse();const ql=questionsLeft();
-  return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mes échanges avec Antonio</h1><p class="sub">Un éducateur qui vous connaît, sans que vous ayez à tout raconter : il lit ce que vous choisissez de partager.</p></div>'+
+  return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mes échanges avec Antonio</h1><p class="sub">Un travailleur social qui vous connaît, sans que vous ayez à tout raconter : il lit ce que vous choisissez de partager.</p></div>'+
     (DEMO?'<div class="demo-note"><b>Démonstration.</b> Dans cette version de test, rien n’est transmis à Antonio : vos questions et vos dépôts cochés restent sur votre appareil, et le mot comme la réponse affichés ici sont des exemples. Les vrais échanges commenceront à l’ouverture des abonnements.</div>':'')+
     '<div class="card sun"><div class="kv"><span>Le mot d’Antonio</span><span>'+(DEMO?'le 1er de chaque mois':esc(nextLetterDate()))+'</span></div><div class="kv"><span>Dépôts cochés ce mois</span><span>'+sharedThisMonth()+'</span></div><div class="kv"><span>Questions restantes ce mois</span><span>'+ql+' / '+Q_PER_MONTH+'</span></div><p class="hint">Pour partager un dépôt, cochez « Partager avec Antonio » sous le dépôt. Sans dépôt partagé, le mot d’Antonio se base sur votre humeur et vos étapes.</p></div>'+
     (ql>0?'<div class="card"><label class="label" for="qdraft">Poser une question à Antonio</label><textarea id="qdraft" maxlength="'+LIM.q+'" placeholder="Une situation, une décision, un doute… Sans prénom." style="min-height:90px">'+esc(state.qdraft)+'</textarea><button type="button" class="btn primary" data-act="qsend" style="align-self:flex-start">'+I.send+(DEMO?'Enregistrer ma question':'Envoyer · réponse sous 48 h')+'</button></div>':'<div class="card"><span class="label">Poser une question à Antonio</span><p>Vos deux questions du mois sont posées. Vous pourrez en poser à nouveau le '+esc(nextLetterDate())+'. En attendant, « Déposer » reste ouvert.</p></div>')+
@@ -770,7 +790,7 @@ function viewAntonio(){
 function viewLetter(){
   const i=state.letter;const l=i>=0?D().letters[i]:null;const txt=l?l.text:LETTER_EXAMPLE;
   return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+(l?'Le mot d’Antonio · '+esc(fmtDate(l.date)):'Exemple · à quoi ressemblera le mot d’Antonio')+'</span><h1 class="t1">'+(D().me?'Bonjour '+esc(D().me)+',':'Bonjour,')+'</h1></div>'+
-    '<div class="letter">'+txt.split('\n').map(p=>'<p>'+esc(p)+'</p>').join('')+'<div class="from" style="margin-top:6px"><span class="av" aria-hidden="true">A</span><div><b>Antonio Company</b><span>éducateur social</span></div></div></div>'+
+    '<div class="letter">'+txt.split('\n').map(p=>'<p>'+esc(p)+'</p>').join('')+'<div class="from" style="margin-top:6px"><span class="av" aria-hidden="true">A</span><div><b>Antonio Company</b><span>travailleur social</span></div></div></div>'+
     (l?'':'<p class="hint">Ceci est un exemple. Dans la version complète, Antonio écrira ce mot chaque mois à partir des dépôts que vous aurez partagés, de votre humeur et de vos étapes. Il ne citera jamais de prénom et ne posera jamais de diagnostic.</p>')+
     '<div class="quick"><button type="button" class="btn" data-act="go" data-view="today">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="go" data-view="antonio">'+I.question+'Poser une question</button></div></main>';
 }
@@ -790,9 +810,30 @@ function viewData(){
     '<div class="card"><span class="label">Pour les tests</span><p class="hint">Vous pouvez aussi ouvrir l’app avec <b>?nouveau</b> à la fin de l’adresse : elle repart de zéro sur cet appareil.</p></div></main>';
 }
 function viewAbout(){
-  return '<main id="main" tabindex="-1" class="view"><img class="medal small" src="'+MEDAL+'" alt="Logo de Parent Écouté, Parent Éclairé : une goutte tombe sur un étang, dans la lumière d’une forêt." width="120" height="120" loading="lazy" decoding="async"><div><h1 class="t1" style="text-align:center">Pourquoi cet espace</h1></div><div class="card"><p class="quote">« Parce qu’un parent écouté devient un parent éclairé. Et un parent éclairé devient un parent confiant, aligné et pleinement acteur du bien-être de son enfant. »</p></div>'+
-    '<div class="card"><span class="label">Qui parle</span><p>Antonio Company, éducateur social et formateur à la pratique professionnelle. Placé en famille d’accueil à dix ans, il a connu ce que change la présence d’une personne qui écoute. Père de trois enfants, vingt ans auprès de personnes en situation de handicap et de leurs familles. En 2025, il a imaginé « Parent Écouté, Parent Éclairé » : un accompagnement de six mois pour les parents, puis un espace d’écoute ouvert à tout parent en chemin. Cette application en est la forme qui tient dans la poche, avec lui derrière, pour celles et ceux qui le souhaitent.</p></div>'+
-    '<div class="card green"><span class="label">Ce que ce n’est pas</span><ul class="list"><li>Pas un diagnostic ni une thérapie : pour ça, le pédiatre, le médecin, les thérapeutes.</li><li>Pas une urgence : en danger, le '+tel('144')+' ; à bout, le '+tel('143')+'.</li><li>Pas un remplaçant des gens : un pont vers eux.</li></ul></div><p class="hint">Version de test.</p></main>';
+  const peek=!D().onboarded;
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0">'+
+    '<div class="band story bleed" style="background-image:url('+HERO+')"><h1 class="t1">Avant d’accompagner des familles, j’ai été accueilli par une famille.</h1></div>'+
+    '<div class="story">'+
+    '<p>La famille, je la connais de trois places.</p>'+
+    '<ul class="places">'+
+    '<li><h2>Enfant</h2><p>J’ai connu la famille d’accueil. Mes parents d’accueil sont devenus mon pilier.</p></li>'+
+    '<li><h2>Travailleur social</h2><p>Je le suis depuis mes 19 ans. Aujourd’hui, je suis responsable d’une équipe socio-éducative. Dans mon travail, je côtoie des personnes en situation de handicap et leurs familles.</p></li>'+
+    '<li><h2>Père</h2><p>J’ai trois enfants. Parent, je le suis comme vous\u00a0: sans mode d’emploi.</p></li>'+
+    '</ul>'+
+    '<p>Ces trois places m’ont fait comprendre ce que change la présence de quelqu’un qui écoute et qui soutient.</p>'+
+    '<div class="avec">'+
+    '<p>On parle souvent d’ouverture à la différence. Je préfère dire\u00a0: avec la différence.</p>'+
+    '<svg class="rings" viewBox="0 0 320 112" aria-hidden="true" focusable="false"><path class="drop" d="M160 8c5 9 8 14 8 19a8 8 0 0 1-16 0c0-5 3-10 8-19z"/><ellipse cx="160" cy="76" rx="30" ry="8" stroke-opacity=".95" stroke-width="1.7"/><ellipse cx="160" cy="76" rx="76" ry="19" stroke-opacity=".6" stroke-width="1.4"/><ellipse cx="160" cy="76" rx="132" ry="32" stroke-opacity=".34" stroke-width="1.1"/></svg>'+
+    '<ul class="verbs"><li><b>Composer</b> <span>avec la différence</span></li><li><b>Apprendre</b> <span>avec la différence</span></li><li><b>Évoluer</b> <span>avec la différence</span></li></ul>'+
+    '<p class="punch"><span>Pas contre elle.</span> <span>Pas malgré elle.</span> <span>Avec elle.</span></p>'+
+    '</div>'+
+    '<p>C’est à partir de ce vécu, personnel et professionnel, que j’ai voulu créer un espace consacré au parent. En 2025, j’ai imaginé «\u00a0Parent Écouté, Parent Éclairé\u00a0»\u00a0: d’abord un accompagnement de six mois, puis un espace d’écoute ouvert à tout parent en chemin. Cette application en est la forme qui tient dans la poche.</p>'+
+    '<p class="quote">«\u00a0Parce qu’un parent écouté devient un parent éclairé. Et un parent éclairé devient un parent confiant, aligné et pleinement acteur du bien-être de son enfant.\u00a0»</p>'+
+    '<p>Ici, vous n’avez rien à prouver. Vous pouvez simplement déposer ce qui pèse.</p>'+
+    '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent Écouté, Parent Éclairé\u00a0: une goutte tombe sur un étang, dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
+    '</div>'+
+    (peek?'<button type="button" class="btn primary wide" data-act="onboard">'+I.sun2+'Commencer gratuitement</button>':'')+
+    '<div class="card green"><h2 class="label">Ce que cet espace n’est pas</h2><ul class="list"><li>Pas un diagnostic ni une thérapie : pour ça, le pédiatre, le médecin, les thérapeutes.</li><li>Pas une urgence : en danger, le '+tel('144')+' ; à bout, le '+tel('143')+'.</li><li>Pas un remplaçant des gens : un pont vers eux.</li></ul></div><p class="hint">Version de test.</p></main>';
 }
 /* ---------- onglets, feuilles ---------- */
 function tabs(){
@@ -819,11 +860,12 @@ function handle(act,d,el){
   const data=D();
   switch(act){
     case 'peek-plans':state.prev=null;state.sheet=null;state.view='plans';break;
+    case 'peek-about':openStory();return;
     case 'onboard':state.sheet='onboard';break;
     case 'ob':data[d.k]=d.v;save();break;
     case 'obw':{const i=data.weights.indexOf(d.v);if(i>=0)data.weights.splice(i,1);else data.weights.push(d.v);save();break;}
     case 'ob-done':{const m=document.getElementById('ob-me');data.me=clean(m?m.value:data.me,LIM.me);if(!data.start)data.start=todayIso();const first=!data.onboarded;data.onboarded=true;state.sheet=null;save();if(first)state.view='today';break;}
-    case 'go':if(d.view==='photo'&&!can('parcours')){openUpgrade('photo');break;}nav(d.view);if(d.view!=='kit'&&d.view!=='exo')stopTimer();break;
+    case 'go':if(d.view==='about'){openStory();return;}if(d.view==='photo'&&!can('parcours')){openUpgrade('photo');break;}nav(d.view);if(d.view!=='kit'&&d.view!=='exo')stopTimer();break;
     case 'back':{if(!data.onboarded){state.view='today';break;}const v=state.view;let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
     case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
     case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();break;
@@ -889,12 +931,19 @@ app.addEventListener('keydown',e=>{
   else if(t.id==='ob-me'){e.preventDefault();handle('ob-done',{},t);}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;render();}});
-try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname);}}catch(e){}
+try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
+/* Sur le site, « Mon histoire » a sa propre adresse (…/#histoire) : on peut l'envoyer telle quelle, et le bouton Retour du téléphone fonctionne. */
+const storyFirst=SITE&&location.hash===STORY_HASH;
+if(storyFirst)state.view='about';
+if(SITE)window.addEventListener('hashchange',()=>{
+  if(location.hash===STORY_HASH){if(state.view!=='about')showStory();}
+  else if(state.view==='about')handle('back',{},null);
+});
 state.inClaude=!SITE&&!!(window.claude&&typeof window.claude.use==='function');
 if(SITE)state.sample=false;
 /* Sur le site, l'accueil est déjà écrit dans la page (affichage immédiat, lisible sans JavaScript par les moteurs) : on le garde tel quel. */
-if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded){state.lastKey='intro';app.removeAttribute('data-prerender');}
+if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');}
 else render();
 if(!SITE)(async()=>{try{if(state.inClaude){const s=await window.claude.use('sample');state.sample=s||false;}else state.sample=false;}catch(e){state.sample=false;}if(D().onboarded||state.view==='plans')render();})();
 })();
