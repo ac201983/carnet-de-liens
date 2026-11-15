@@ -365,7 +365,7 @@ const HELP=[
 ];
 
 /* ---------- état ---------- */
-const DEF={tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
+const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
 const state={data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -406,6 +406,62 @@ function sharedThisMonth(){const mk=monthKey(todayIso());return D().depots.filte
 function openUpgrade(f){state.upFeat=f;state.sheet='upgrade';}
 function badge(){const t=TIERS[tier()];return '<span class="tierbadge '+t.cls+'">'+(tier()==='free'?I.star:tier()==='parcours'?I.path:I.user)+esc(t.t)+'</span>';}
 function lockline(txt,f){return '<button type="button" class="lockline" data-act="upgrade" data-f="'+f+'">'+I.lock+'<span>'+esc(txt)+'</span></button>';}
+
+/* ---------- effets visuels : tout part d'une goutte ---------- */
+const FX_OK=!!(typeof window!=='undefined'&&window.requestAnimationFrame&&document.documentElement&&document.body);
+const FX_RM=FX_OK&&window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+/* Les textes qui s'éclairent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils apparaissent une fois, à leur arrivée. */
+const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 150px)'));
+const FX_SEL='main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
+const fxPt={x:0,y:0,t:0};let fxIO=null,fxSeq=0,fxSkip=0;
+function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
+function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);}
+function fxHost(){let h=document.getElementById('fx');if(!h){h=document.createElement('div');h.id='fx';h.setAttribute('aria-hidden','true');document.body.appendChild(h);}return h;}
+function fxAdd(cls,x,y,d,life){const el=document.createElement('i');el.className=cls;el.style.setProperty('--x',Math.round(x)+'px');el.style.setProperty('--y',Math.round(y)+'px');if(d)el.style.setProperty('--d',Math.round(d)+'px');fxHost().appendChild(el);setTimeout(()=>{el.remove();},life||1200);}
+/* Chaque geste fait un cercle sur l'eau : rond sur un bouton, aplati comme sur l'étang quand on touche la photo. */
+function fxTap(e){
+  if(!fxOn()||e.button>0)return;fxPt.x=e.clientX;fxPt.y=e.clientY;fxPt.t=Date.now();
+  const t=e.target&&e.target.closest?e.target:null;if(!t)return;
+  const act=t.closest('button,a,[data-act],label.share');const water=!act&&t.closest('.herofull,.band');
+  if(!act&&!water)return;
+  const d=water?280:Math.max(110,Math.min(200,act.getBoundingClientRect().width));
+  fxAdd('rip'+(water?' flat':''),e.clientX,e.clientY,d,950);fxAdd('rip b'+(water?' flat':''),e.clientX,e.clientY,d*1.3,1300);
+}
+/* Changer d'écran : le nouvel écran s'ouvre en cercle depuis l'endroit touché (ou l'ancien se referme vers lui pour un retour).
+   Le SOS s'affiche tout de suite, sans effet. Sans l'API du navigateur, on change d'écran comme avant. */
+function fxGo(update,kind){
+  /* Pas d'effet non plus quand le téléphone anime déjà lui-même le retour en arrière (geste de balayage). */
+  if(!fxOn()||typeof document.startViewTransition!=='function'||state.view==='sos'||Date.now()-fxSkip<500){update();return;}
+  const fresh=Date.now()-fxPt.t<1200;const w=window.innerWidth,h=window.innerHeight;
+  const x=fresh?fxPt.x:w/2,y=fresh?fxPt.y:h*.4;
+  const r=Math.ceil(Math.hypot(Math.max(x,w-x),Math.max(y,h-y)))+12;
+  const de=document.documentElement;const dur=kind==='tab'?.44:kind==='back'?.46:.62;const id=++fxSeq;
+  de.style.setProperty('--fx-x',Math.round(x)+'px');de.style.setProperty('--fx-y',Math.round(y)+'px');de.style.setProperty('--fx-r',r+'px');de.style.setProperty('--fx-dur',dur+'s');
+  de.classList.toggle('fx-back',kind==='back');
+  let done=false;const run=()=>{if(done)return;done=true;update();};
+  const end=()=>{if(id===fxSeq)de.classList.remove('fx-back');};
+  try{
+    const vt=document.startViewTransition(run);
+    vt.ready.then(()=>{fxAdd('wave'+(kind==='back'?' in':''),x,y,0,dur*1000+200);},()=>{});
+    vt.finished.then(end,end);
+  }catch(e){run();end();}
+}
+/* Après chaque rendu : repérer les blocs de texte qui s'éclaireront en arrivant à l'écran. */
+function fxMark(){
+  if(!fxOn()||!document.querySelectorAll)return;const vh=window.innerHeight;
+  if(!FX_SD&&!fxIO&&'IntersectionObserver' in window)fxIO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('fxs');fxIO.unobserve(e.target);}});},{rootMargin:'0px 0px -20px 0px'});
+  document.querySelectorAll(FX_SEL).forEach(el=>{
+    const below=el.getBoundingClientRect().top>vh-100;
+    if(el.classList.contains('reveal')){if(!below)return;el.classList.remove('reveal','d1','d2','d3','d4');}
+    el.classList.add('fxr');
+    if(!FX_SD&&below&&fxIO){el.classList.add('fxw');fxIO.observe(el);}
+  });
+}
+/* Déposer : le texte s'enfonce dans l'eau avant que la réponse remonte. */
+function fxSink(){
+  const el=document.getElementById('draft');if(!fxOn()||!el)return Promise.resolve();
+  return new Promise(res=>{const r=el.getBoundingClientRect();const x=r.left+r.width/2,y=r.top+r.height/2;el.classList.add('sink');fxAdd('rip flat',x,y,r.width*1.05,1000);fxAdd('rip b flat',x,y,r.width*1.5,1400);setTimeout(res,440);});
+}
 
 /* ---------- rendu ---------- */
 const BACK_VIEWS=['sit','exo','step','photo','data','about','plans','evo','depots','antonio','letter'];
@@ -470,6 +526,7 @@ function render(){
   }
   if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
   syncStory(entering);
+  fxMark();
 }
 /* ---------- « Mon histoire » : adresse partageable (#histoire, sur le site) et un seul moment d'animation ---------- */
 const STORY_HASH='#histoire';const TITLE0=document.title;
@@ -488,7 +545,7 @@ function openStory(){
   if(SITE&&location.hash!==STORY_HASH){location.hash=STORY_HASH.slice(1);return;}
   showStory();
 }
-function showStory(){if(state.view!=='about')state.prev=state.view;state.view='about';state.sheet=null;state.confirmReset=false;stopTimer();render();window.scrollTo(0,0);}
+function showStory(){if(state.view!=='about')state.prev=state.view;state.view='about';state.sheet=null;state.confirmReset=false;stopTimer();fxGo(()=>{render();window.scrollTo(0,0);},'open');}
 function bar(){
   const back=BACK_VIEWS.includes(state.view)?'<button type="button" class="back" data-act="back">'+I.back+'Retour</button>':'';
   const wm=back?'':'<span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span>';
@@ -517,7 +574,7 @@ function viewIntro(){
   const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="onboard">'+I.sun2+'Commencer gratuitement</button>';
   const priv=SITE?'Cette version de test est gratuite et tout ce que vous écrivez reste sur votre appareil. La phrase-miroir personnalisée arrivera avec la version complète. En attendant, chaque dépôt reçoit une question et une lumière.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom pour recevoir une réponse.';
   return '<main id="main" tabindex="-1" class="view" style="padding-top:0">'+
-    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer six mois à votre rythme.</p>'+cta(false)+'</div>'+
+    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="beam" aria-hidden="true"></span><span class="pond" aria-hidden="true"><i></i><i></i><i></i></span><span class="glint" aria-hidden="true"></span><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer six mois à votre rythme.</p>'+cta(false)+'</div>'+
     '<div class="pillars reveal d1">'+
     '<div class="pillar"><span class="ic">'+I.drop+'</span><div><h2>Écouté</h2><span>Vous déposez par écrit ce qui vous pèse, sans donner de prénom. En retour, vous recevez une phrase-miroir, une question qui ouvre et une lumière.</span></div></div>'+
     '<div class="pillar sun"><span class="ic">'+I.sun2+'</span><div><h2>Éclairé</h2><span>Vous recevez chaque matin la dose de lumière intérieure et vous suivez un parcours de six mois, à raison d’une étape par semaine.</span></div></div>'+
@@ -564,7 +621,7 @@ function depotBox(){
   html+='</div>';return html;
 }
 function depotHtml(x,compact){
-  let out='<div class="mirror"><span class="lbl">'+esc(fmtDate(x.date))+(x.time?' à '+esc(hm(x.time)):'')+'</span>'+(compact?'':'<p class="depot you">« '+esc(x.text.length>220?x.text.slice(0,220)+'…':x.text)+' »</p>');
+  let out='<div class="mirror'+(x.id===state.fresh?' surface':'')+'"><span class="lbl">'+esc(fmtDate(x.date))+(x.time?' à '+esc(hm(x.time)):'')+'</span>'+(compact?'':'<p class="depot you">« '+esc(x.text.length>220?x.text.slice(0,220)+'…':x.text)+' »</p>');
   if(x.risk)out+=riskHtml('q');
   if(x.miroir)out+='<p class="m">'+esc(x.miroir)+'</p>';
   if(x.question)out+='<p class="q">'+esc(x.question)+'</p>';
@@ -589,14 +646,16 @@ function advicePrompt(){
 }
 const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais le frapper|je vais la frapper)/i;
 async function sendDepot(){
+  if(state.busy||state.sinking)return;
   const text=clean(state.draft,LIM.draft);if(text.length<5){fieldErr('draft','Écrivez quelques mots, comme ça vient (cinq caractères au moins).');return;}
   if(depotsLeft()===0){openUpgrade('depots');render();return;}
   const d=D();const n=new Date();const dep={id:'d'+Date.now(),date:todayIso(),time:pad(n.getHours())+':'+pad(n.getMinutes()),text,mode:state.depotMode};
   if(RISK.test(text)){dep.risk=true;toast('Si c’est urgent, appelez le 143 (La Main Tendue) ou le 144, de jour comme de nuit.');}
+  state.sinking=true;await fxSink();state.sinking=false;
   state.draft='';state.busy=true;render();
   if(!state.sample){
     dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
-    d.depots.push(dep);state.busy=false;save();render();if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1200);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
   }
   state.ctl=new AbortController();
   try{
@@ -613,7 +672,7 @@ async function sendDepot(){
     dep.question=dep.question||LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=dep.lumiere||'C’est déposé. Même sans réponse, ce que vous avez écrit est maintenant en dehors de vous.';
     if(e&&e.code!=='cancelled'&&e.code!=='not_granted')toast('La réponse n’est pas venue cette fois. Votre dépôt est gardé.');
   }
-  d.depots.push(dep);state.busy=false;state.ctl=null;save();render();
+  d.depots.push(dep);state.busy=false;state.ctl=null;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1200);
 }
 async function concret(id){
   const d=D();const dep=d.depots.find(x=>x.id===id);if(!dep||!state.sample)return;
@@ -754,7 +813,7 @@ function viewMe(){
     (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration avec un exemple de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+', il vous reste '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot par mois et deux questions</span></span><span class="chev">'+I.chev+'</span></button>')+
     '<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+(d.depots.length?d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+', le dernier le '+esc(fmtDate(ld.date)):'Aucun dépôt pour l’instant')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
     '<div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
-    '<div class="menu-list"><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
+    '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre téléphone':d.fxOff?'Désactivés':'Activés')+'</span></button><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
     (SITE?'<a href="confidentialite.html">'+I.shield+'<span>Politique de confidentialité</span><span class="chev">'+I.chev+'</span></a><a href="conditions.html">'+I.note+'<span>Conditions générales</span><span class="chev">'+I.chev+'</span></a>':'')+'</div></main>';
 }
 function viewDepots(){
@@ -875,8 +934,9 @@ function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;fo
 
 /* ---------- actions ---------- */
 function nav(v){state.prev=state.view;state.view=v;state.sheet=null;state.confirmReset=false;}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.letter,!!D().onboarded].join('|');}
 function handle(act,d,el){
-  const data=D();
+  const data=D();const sig0=fxSig();
   switch(act){
     case 'peek-plans':state.prev=null;state.sheet=null;state.view='plans';break;
     case 'peek-about':openStory();return;
@@ -919,18 +979,21 @@ function handle(act,d,el){
     case 'phdel':data.phrases.splice(Number(d.i),1);save();break;
     case 'exo':state.exo=d.id;nav('exo');break;
     case 'threeadd':{const items=['t1','t2','t3'].map(id=>clean(document.getElementById(id).value,LIM.three)).filter(Boolean);if(!items.length){fieldErr('t1','Une seule chose suffit, écrivez-la ici.');return;}data.three.push({date:todayIso(),items});save();render();toast('Gardé.');return;}
-    case 'depose':{const t=document.getElementById('dep');if(t)t.value='';toast('C’est déposé, vous n’avez plus à le garder en vous.');return;}
+    case 'depose':{const t=document.getElementById('dep');if(t&&t.value&&fxOn()){t.classList.add('ink');setTimeout(()=>{t.value='';t.classList.remove('ink');},700);}else if(t)t.value='';toast('C’est déposé, vous n’avez plus à le garder en vous.');return;}
     case 'letter':state.letter=Number(d.i);nav('letter');break;
     case 'qsend':{const t=clean(state.qdraft,LIM.q);if(t.length<10){fieldErr('qdraft','Écrivez votre question en une phrase ou deux (dix caractères au moins).');return;}if(questionsLeft()===0){toast('Vos deux questions du mois sont posées.');return;}const risk=RISK.test(t);data.questions.push(risk?{id:'q'+Date.now(),date:todayIso(),text:t,risk:true}:{id:'q'+Date.now(),date:todayIso(),text:t});state.qdraft='';save();render();toast(risk?'Si c’est urgent, n’attendez pas et appelez le 143 ou le 144 maintenant.':(DEMO?'Votre question est gardée sur votre appareil. Dans cette version de test, elle n’est pas transmise à Antonio.':'Votre question est envoyée. Antonio répond par écrit sous 48 heures.'));return;}
     case 'sheet-close':state.sheet=null;break;
+    case 'fx':data.fxOff=!data.fxOff;save();fxSync();toast(data.fxOff?'Les effets visuels sont désactivés.':'Les effets visuels sont activés.');break;
     case 'consent':if(window.PEPEConsent)window.PEPEConsent.set(d.v==='yes');break;
     case 'reset':state.confirmReset=true;break;
     case 'reset-no':state.confirmReset=false;break;
-    case 'reset-yes':state.data=JSON.parse(JSON.stringify(DEF));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='today';state.prev=null;render();window.scrollTo(0,0);toast('Effacé.');return;
+    case 'reset-yes':state.data=JSON.parse(JSON.stringify(DEF));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='today';state.prev=null;fxSync();render();window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
+  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','tier','ob-done'].includes(act);
+  if(navAct&&fxSig()!==sig0){fxGo(()=>{render();window.scrollTo(0,0);},act==='back'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   render();
-  if(['go','sit','back','exo','step','kit','letter','peek-plans','tier','ob-done'].includes(act))window.scrollTo(0,0);
+  if(navAct)window.scrollTo(0,0);
 }
 const app=document.getElementById('app');
 app.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.tagName==='A'||el.tagName==='INPUT'||el.tagName==='LABEL')return;handle(el.dataset.act,el.dataset,el);});
@@ -952,6 +1015,8 @@ app.addEventListener('keydown',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;render();}});
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
+fxSync();
+if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, « Mon histoire » a sa propre adresse (…/#histoire) : on peut l'envoyer telle quelle, et le bouton Retour du téléphone fonctionne. */
 const storyFirst=SITE&&location.hash===STORY_HASH;
 if(storyFirst)state.view='about';
@@ -962,7 +1027,7 @@ if(SITE)window.addEventListener('hashchange',()=>{
 state.inClaude=!SITE&&!!(window.claude&&typeof window.claude.use==='function');
 if(SITE)state.sample=false;
 /* Sur le site, l'accueil est déjà écrit dans la page (affichage immédiat, lisible sans JavaScript par les moteurs) : on le garde tel quel. */
-if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');}
+if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');fxMark();}
 else render();
 if(!SITE)(async()=>{try{if(state.inClaude){const s=await window.claude.use('sample');state.sample=s||false;}else state.sample=false;}catch(e){state.sample=false;}if(D().onboarded||state.view==='plans')render();})();
 })();
