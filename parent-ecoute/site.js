@@ -48,7 +48,7 @@
   function paint() {
     var c = get(), els = document.querySelectorAll('[data-consent-state]');
     for (var i = 0; i < els.length; i++) {
-      els[i].textContent = c ? (c.audience ? 'Votre choix actuel : mesure d’audience acceptée le ' + fr(c.date) + '.' : 'Votre choix actuel : mesure d’audience refusée le ' + fr(c.date) + '.') : 'Vous n’avez pas encore fait de choix.';
+      els[i].textContent = c ? (c.audience ? 'Vous avez accepté la mesure d’audience le ' + fr(c.date) + '.' : 'Vous avez refusé la mesure d’audience le ' + fr(c.date) + '.') : 'Vous n’avez pas encore fait de choix.';
     }
   }
   document.addEventListener('click', function (e) {

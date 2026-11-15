@@ -53,7 +53,7 @@ svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-widt
   .sheet.in{animation:up .26s cubic-bezier(.2,.7,.2,1)}
   @keyframes up{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
   .toast{animation:pop .2s ease-out}
-  @keyframes pop{from{transform:translate(-50%,8px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
   .breath .orb{animation:breathe 10s ease-in-out infinite}
   @keyframes breathe{0%{transform:scale(.62)}40%{transform:scale(1)}60%{transform:scale(1)}100%{transform:scale(.62)}}
   .dose::before{animation:glow 6s ease-in-out infinite}
@@ -244,7 +244,7 @@ textarea{min-height:120px;resize:vertical}
 .menu button:hover{background:var(--surface-2)}
 .menu .sep{height:1px;background:var(--line);margin:4px 0}
 .menu small{display:block;font-weight:400;color:var(--muted);font-size:14px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--cream);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:15px;font-weight:800;max-width:min(92vw,600px);box-shadow:var(--shadow)}
+.toast{position:fixed;left:0;right:0;margin-inline:auto;width:fit-content;bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--cream);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:15px;font-weight:800;line-height:1.4;max-width:min(92vw,600px);box-shadow:var(--shadow)}
 .confirm{background:var(--rose-soft);border:1px solid var(--rose);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:15px}
 .confirm .row{display:flex;gap:8px;flex-wrap:wrap}
 .hero{background:linear-gradient(160deg,var(--green) 0%,var(--green-2) 100%);color:var(--green-fg);border-radius:26px;padding:26px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -282,6 +282,7 @@ textarea{min-height:120px;resize:vertical}
 .cmp tbody th{font-size:13.5px;color:var(--fg)}
 .cmp td .i{width:18px;height:18px;color:var(--green)}
 .cmp td.no{color:var(--muted)}
+.cmp td.no::before{content:"";display:inline-block;width:12px;height:2px;border-radius:1px;background:currentColor;opacity:.75;vertical-align:middle}
 .cmp td.tx{font-size:12px;font-weight:800;color:var(--green)}
 .cmp tr:last-child td{border-bottom:0}
 .seg{display:flex;background:var(--surface-2);border-radius:14px;padding:4px;gap:4px}

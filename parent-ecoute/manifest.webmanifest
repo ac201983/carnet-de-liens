@@ -2,7 +2,7 @@
   "name": "Parent Écouté, Parent Éclairé",
   "short_name": "Parent écouté",
   "id": "/carnet-de-liens/parent-ecoute/",
-  "description": "Un espace d’écoute pour tout parent en chemin : la dose de lumière intérieure, Déposer, le parcours de six mois, les conseils et outils d’un travailleur social.",
+  "description": "Un espace d’écoute pour tout parent en chemin, avec la dose de lumière intérieure, Déposer, le parcours de six mois et les conseils et outils d’un travailleur social.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./",
