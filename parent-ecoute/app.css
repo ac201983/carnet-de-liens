@@ -395,6 +395,7 @@ a.wordmark{text-decoration:none}
 .voice{display:flex;flex-direction:column;gap:10px;border-left:3px solid var(--sun);padding:2px 0 2px 16px;margin-block:12px 6px}
 .voice .say{font-family:var(--font-display);font-size:clamp(23px,6.4vw,28px);line-height:1.18;font-weight:600;color:var(--cream);letter-spacing:-.005em;text-wrap:balance}
 .voice p{font-size:15.5px;line-height:1.5;color:var(--muted)}
+.voice p:not(.say)+p{color:var(--cream)}
 .voice .who{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
 .voice .who .av,.sign .av{width:34px;height:34px;border-radius:50%;background:var(--sun);color:#243A12;display:grid;place-items:center;font-weight:600;font-family:var(--font-display);font-size:17px;flex:none}
 .voice .who b{font-size:15px;color:var(--cream);margin-right:auto}
@@ -411,6 +412,12 @@ a.wordmark{text-decoration:none}
 .places li::before{content:"";position:absolute;left:-32px;top:1px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--green);background:var(--bg);box-shadow:0 0 0 5px var(--bg)}
 .places li::after{content:"";position:absolute;left:-25px;top:8px;width:4px;height:4px;border-radius:50%;background:var(--sun)}
 .places h2{font-family:var(--font-ui);font-size:14.5px;font-weight:800;color:var(--green);line-height:1.4}
+.places li p+p{margin-top:10px}
+.story .big{font-size:clamp(23px,6.5vw,29px);line-height:1.18;font-weight:600;letter-spacing:-.005em;text-wrap:balance;margin-top:14px}
+.story h2.chap{font-size:clamp(24px,6.6vw,29px);line-height:1.15;font-weight:600;color:var(--cream);margin:10px 0 -8px}
+.defs{margin:0;display:flex;flex-direction:column;gap:14px;border-left:1px solid rgba(180,222,156,.35);padding-left:16px}
+.defs dt{font-family:var(--font-display);font-size:21px;font-weight:600;color:var(--sun-fg);line-height:1.2}
+.defs dd{margin:2px 0 0;font-family:var(--font-display);font-size:17.5px;line-height:1.5;color:var(--cream)}
 .avec{display:flex;flex-direction:column;gap:16px;padding-block:6px 4px}
 .avec .rings{display:block;width:100%;max-width:400px;height:auto;margin:2px auto -6px;overflow:visible}
 .avec .rings ellipse{fill:none;stroke:var(--green);transform-box:fill-box;transform-origin:center}
