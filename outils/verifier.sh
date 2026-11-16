@@ -79,7 +79,7 @@ try:
     d = json.load(sys.stdin)
     print(" ; ".join(a.get("data", "") for a in d.get("Answer", [])) or "rien")
 except Exception:
-    print("pas de réponse")' 2>/dev/null || echo "pas de réponse"
+    print("pas de réponse")' 2>/dev/null || true
 }
 note "Courrier" "MX : $(dns "$hote" MX)" "TXT : $(dns "$hote" TXT)" "DMARC : $(dns "_dmarc.$hote" TXT)"
 

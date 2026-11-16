@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const SITE=true;
-const MENTIONS=false;
+const MENTIONS=true;
 const KEY='pepe-v1';
 const I={
   back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
