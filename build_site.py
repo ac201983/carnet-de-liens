@@ -24,6 +24,9 @@ APP_URL = SITE_URL + APP_PATH               # adresse publique de l'app
 OUT = REPO + ('/' + APPDIR if APPDIR else '')
 HOST = cfg.get('host', 'github')            # hébergeur : 'github' (GitHub Pages) ou 'infomaniak' (Apache, en Suisse)
 assert HOST in ('github', 'infomaniak'), HOST
+MOVED = (cfg.get('moved_to') or '').strip()   # l'espace a déménagé : cette adresse ne fait plus que renvoyer vers la nouvelle (ex. https://parent-ecoute.ch/)
+if MOVED and not MOVED.endswith('/'):
+    MOVED += '/'
 NAME = 'Parent Écouté, Parent Éclairé'
 
 LOGO = ('<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C24 5 15.5 15.5 15.5 21.5a8.5 8.5 0 0 0 17 0C32.5 15.5 24 5 24 5z" style="fill:var(--cream)"/>'
@@ -100,6 +103,31 @@ def app_css():
 INLINE = ("try{var e=document.documentElement,h=location.hash==='#histoire',d=null;if(!/[?&](nouveau|reset|new)\\b/.test(location.search))d=JSON.parse(localStorage.getItem('pepe-v1')||'null');"
           "if(h||(d&&d.onboarded))e.classList.add('returning');"
           "if(!(d&&d.fxOff)&&window.matchMedia&&!matchMedia('(prefers-reduced-motion: reduce)').matches)e.classList.add('fx');}catch(e){}")
+
+
+def inline_moved():
+    """À l'ancienne adresse : on part tout de suite vers la nouvelle, sauf si quelqu'un a déjà écrit ici.
+    Ses notes sont alors dans cet appareil, à cette adresse : on le laisse entrer, et demenage.js le prévient sans rien effacer."""
+    return ("(function(){var N=%s,d=null;try{d=JSON.parse(localStorage.getItem('pepe-v1')||'null')}catch(x){}"
+            "if(d&&d.onboarded){window.PEPE_DEMENAGE=N;return}"
+            "var r=document.documentElement;r.style.visibility='hidden';setTimeout(function(){r.style.visibility=''},4000);"
+            "location.replace(N+location.hash)})();" % json.dumps(MOVED))
+
+
+def moved_page(fname, robots='noindex,follow'):
+    """Une page de l'ancienne adresse, réduite à un renvoi vers la même page à la nouvelle adresse."""
+    new = html.escape(MOVED + fname)
+    write(OUT + '/' + fname, '\n'.join([
+        '<!doctype html>', '<html lang="fr">', '<head>', '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        '<title>Cette page a déménagé</title>',
+        '<meta name="robots" content="%s">' % robots,
+        '<link rel="canonical" href="%s">' % new,
+        '<meta http-equiv="refresh" content="0; url=%s">' % new,
+        '<style>html{background:#07240F;color:#F4EFD8;font:17px/1.5 system-ui,sans-serif}body{margin:0;padding:32px 24px}a{color:inherit}</style>',
+        '</head>', '<body>',
+        '<p>Cette page a déménagé. <a href="%s">Ouvrir la nouvelle adresse</a></p>' % new,
+        '</body>', '</html>', '']))
 
 
 def csp(inline=''):
@@ -252,44 +280,63 @@ def build_site():
     write(OUT + '/antonio.js', ajs)
     node_check(OUT + '/antonio.js')
     v = {'css': sha8(css), 'js': sha8(js), 'site': sha8(sjs), 'ant': sha8(ajs)}
+    djs = ''
+    if MOVED:   # la fenêtre « Cet espace a déménagé », pour qui a déjà écrit à cette adresse
+        djs = read(SRC + '/demenage.js')
+        write(OUT + '/demenage.js', djs)
+        node_check(OUT + '/demenage.js')
+    elif os.path.exists(OUT + '/demenage.js'):
+        os.remove(OUT + '/demenage.js')
 
     # --- accueil pré-écrit (même HTML que celui que l'app écrit elle-même)
     pre = json.loads(subprocess.run(['node', ROOT + '/tests/prerender.js', OUT + '/app.js'], check=True, capture_output=True, text=True).stdout)
     title = NAME + ', un espace d’écoute pour les parents'
     desc = ('Déposez ce qui pèse, recevez chaque jour une dose de lumière et avancez six mois à votre rythme. '
             'Un espace d’écoute pour tout parent, par Antonio Company, travailleur social.')
-    index = (head(title, desc, APP_URL, '', v, inline=INLINE)
+    index = (head(title, desc, MOVED or APP_URL, '', v, inline=(inline_moved() + INLINE) if MOVED else INLINE)
              + '<body>\n<div id="app" class="' + pre['className'] + '" data-prerender="intro">' + pre['html'] + '</div>\n'
              + '<noscript><p class="noscript">Cet espace a besoin de JavaScript pour fonctionner. Activez-le dans votre navigateur, puis rechargez la page.</p></noscript>\n'
-             + '<script src="site.js?v=' + v['site'] + '" defer></script>\n<script src="app.js?v=' + v['js'] + '" defer></script>\n</body>\n</html>\n')
+             + '<script src="site.js?v=' + v['site'] + '" defer></script>\n'
+             + (('<script src="demenage.js?v=' + sha8(djs) + '" defer></script>\n') if MOVED else '')
+             + '<script src="app.js?v=' + v['js'] + '" defer></script>\n</body>\n</html>\n')
     write(OUT + '/index.html', index)
 
     # --- pages de texte
     urls = [APP_URL]
-    urls.append(text_page('confidentialite.html', 'Politique de confidentialité', 'Politique de confidentialité de ' + NAME,
-                          'Ce que vous écrivez reste sur votre appareil. Il n’y a ni compte ni cookie, et la mesure d’audience anonyme ne se fait qu’avec votre accord.',
-                          read(SRC + '/confidentialite.body.html'), v))
-    urls.append(text_page('conditions.html', 'Conditions générales', 'Conditions générales de ' + NAME,
-                          'Les règles d’utilisation de l’espace, avec la version de test gratuite, ce que l’espace est et n’est pas, et les formules présentées à titre de démonstration.',
-                          read(SRC + '/conditions.body.html'), v, band='left 55%'))
-    if editeur_ok():
-        urls.append(text_page('mentions-legales.html', 'Mentions légales', 'Mentions légales de ' + NAME,
-                              'Qui édite l’espace, comment le joindre et qui héberge le site.', mentions_body(), v, band='right 70%'))
-    elif os.path.exists(OUT + '/mentions-legales.html'):
-        os.remove(OUT + '/mentions-legales.html')
+    if MOVED:   # à l'ancienne adresse, les pages de texte ne font plus que renvoyer vers les nouvelles
+        for f in ('confidentialite.html', 'conditions.html'):
+            moved_page(f)
+        if os.path.exists(OUT + '/mentions-legales.html'):
+            os.remove(OUT + '/mentions-legales.html')
+    else:
+        urls.append(text_page('confidentialite.html', 'Politique de confidentialité', 'Politique de confidentialité de ' + NAME,
+                              'Ce que vous écrivez reste sur votre appareil. Il n’y a ni compte ni cookie, et la mesure d’audience anonyme ne se fait qu’avec votre accord.',
+                              read(SRC + '/confidentialite.body.html'), v))
+        urls.append(text_page('conditions.html', 'Conditions générales', 'Conditions générales de ' + NAME,
+                              'Les règles d’utilisation de l’espace, avec la version de test gratuite, ce que l’espace est et n’est pas, et les formules présentées à titre de démonstration.',
+                              read(SRC + '/conditions.body.html'), v, band='left 55%'))
+        if editeur_ok():
+            urls.append(text_page('mentions-legales.html', 'Mentions légales', 'Mentions légales de ' + NAME,
+                                  'Qui édite l’espace, comment le joindre et qui héberge le site.', mentions_body(), v, band='right 70%'))
+        elif os.path.exists(OUT + '/mentions-legales.html'):
+            os.remove(OUT + '/mentions-legales.html')
 
     # --- Espace Antonio (démonstration, non référencée)
-    ant = (head('Espace Antonio, démonstration de ' + NAME, 'Démonstration du tableau de bord d’Antonio. Parents et dépôts fictifs.', '', '', v, robots='noindex,nofollow', social=False, noconsent=True)
-           + '<body>\n<div id="app" class="app nobar"></div>\n<noscript><p class="noscript">Cette page a besoin de JavaScript.</p></noscript>\n'
-           + '<script src="site.js?v=' + v['site'] + '" defer></script>\n<script src="antonio.js?v=' + v['ant'] + '" defer></script>\n</body>\n</html>\n')
-    write(OUT + '/antonio.html', ant)
+    if MOVED:
+        moved_page('antonio.html', robots='noindex,nofollow')
+    else:
+        ant = (head('Espace Antonio, démonstration de ' + NAME, 'Démonstration du tableau de bord d’Antonio. Parents et dépôts fictifs.', '', '', v, robots='noindex,nofollow', social=False, noconsent=True)
+               + '<body>\n<div id="app" class="app nobar"></div>\n<noscript><p class="noscript">Cette page a besoin de JavaScript.</p></noscript>\n'
+               + '<script src="site.js?v=' + v['site'] + '" defer></script>\n<script src="antonio.js?v=' + v['ant'] + '" defer></script>\n</body>\n</html>\n')
+        write(OUT + '/antonio.html', ant)
 
     # --- 404 (à la racine du dépôt : GitHub Pages la sert pour toute adresse inconnue du projet)
+    home = MOVED or APP_PATH   # après le déménagement, la page 404 de l'ancienne adresse ramène à la nouvelle
     nf = (head('Page introuvable sur ' + NAME, 'Cette page n’existe pas ou plus.', '', APP_PATH, v, robots='noindex', social=False, hero=False)
-          + '<body>\n<div class="app nobar">\n<header class="bar"><a class="wordmark" href="' + APP_PATH + '">' + LOGO + '<span>Parent écouté<small>parent éclairé</small></span></a></header>\n'
+          + '<body>\n<div class="app nobar">\n<header class="bar"><a class="wordmark" href="' + home + '">' + LOGO + '<span>Parent écouté<small>parent éclairé</small></span></a></header>\n'
           + '<main id="main" class="view notfound">\n<p class="label">Erreur 404</p>\n<h1>Ce chemin ne mène nulle part.</h1>\n'
           + '<p>La page que vous cherchez n’existe pas ou n’existe plus, mais l’espace est toujours là.</p>\n'
-          + '<a class="btn primary" href="' + APP_PATH + '">Revenir à l’accueil</a>\n'
+          + '<a class="btn primary" href="' + home + '">Revenir à l’accueil</a>\n'
           + '<p class="hint">Si vous avez besoin de parler tout de suite, appelez La Main Tendue au <a class="tel" href="tel:143">143</a>, de jour comme de nuit.</p>\n</main>\n</div>\n'
           + '<script src="' + APP_PATH + 'site.js?v=' + v['site'] + '" defer></script>\n</body>\n</html>\n')
     write(REPO + '/404.html', nf)
@@ -303,6 +350,11 @@ def build_site():
         'icons': [{'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png'}, {'src': 'icon-512.png', 'sizes': '512x512', 'type': 'image/png'},
                   {'src': 'icon-maskable-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'}]}
     write(OUT + '/manifest.webmanifest', json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+    if MOVED:   # plus de plan du site à l'ancienne adresse : ses pages renvoient toutes vers la nouvelle
+        write(REPO + '/robots.txt', '# ' + NAME + ' a déménagé : ' + MOVED + '\nUser-agent: *\nAllow: /\n')
+        if os.path.exists(REPO + '/sitemap.xml'):
+            os.remove(REPO + '/sitemap.xml')
+        return v
     remark = '' if (BASE == '/' and not APPDIR) else ('# Remarque : un robots.txt ne prend effet que servi à la racine du domaine (il le sera avec un nom de domaine propre).\n'
                                                       '# En attendant, chaque page porte sa propre consigne (balise meta robots).\n')
     write(REPO + '/robots.txt', '# ' + NAME + '\n' + remark + 'User-agent: *\nAllow: /\n\nSitemap: ' + SITE_URL + BASE + 'sitemap.xml\n')
