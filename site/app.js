@@ -253,7 +253,7 @@ const DOSES=[
 /* ---------- Le parcours en 24 étapes (6 mois) ---------- */
 const PARCOURS=[
   {m:'Accueil, point de départ et changement de regard',steps:[
-    {t:'D’où je pars',lesson:'Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger mais d’avoir un point de comparaison dans trois mois, puis dans six. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru. Aujourd’hui, vous faites donc votre premier point sur votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.',exo:'Faites votre point de départ dans « Mon évolution ». Il y a cinq curseurs et cela prend trois minutes. Écrivez ensuite une phrase qui commence par « Je commence ce parcours parce que… ».',obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',link:'evo'},
+    {t:'D’où je pars',lesson:'Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger mais d’avoir un point de comparaison dans trois mois, puis dans six. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru. Aujourd’hui, vous faites donc votre premier point sur votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.',exo:'Faites votre point de départ dans « Mon évolution ». Il y a cinq échelles de 0 à 10 et cela prend trois minutes. Écrivez ensuite une phrase qui commence par « Je commence ce parcours parce que… ».',obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',link:'evo'},
     {t:'L’effet Pygmalion',lesson:'Ce qu’on attend d’une personne finit souvent par arriver, parce que nos attentes changent notre façon de l’encourager, de lui laisser du temps et de remarquer ses essais. On appelle cela l’effet Pygmalion. Il ne s’agit pas de croire aux miracles. Il s’agit de regarder ce que nos gestes disent à notre enfant de ce que nous pensons de lui. Un enfant qui sent qu’on le croit capable essaie plus longtemps.',exo:'Choisissez une petite chose que votre enfant pourrait réussir cette semaine. Dites-lui une fois par jour que vous l’en croyez capable, et laissez-lui le temps d’essayer.',obs:'Notez ce qui change dans sa façon d’essayer, plutôt que dans le résultat.'},
     {t:'Les croyances qui freinent',lesson:'Vous vous êtes peut-être déjà dit « il ne pourra jamais », « avec son handicap, c’est inutile » ou « je dois tout faire à sa place ». Ces phrases ne sont pas des faits. Ce sont des croyances, que nous avons souvent héritées ou qu’un professionnel pressé nous a dites il y a dix ans. Une croyance qui aide n’a rien d’un mensonge optimiste. C’est une phrase tout aussi vraie, mais qui ouvre une porte au lieu de la fermer. « Il apprend à son rythme » est aussi vrai que « il est lent », et pourtant ces deux phrases ne vous emmènent pas au même endroit.',exo:'Écrivez trois phrases que vous vous dites sur votre enfant quand c’est difficile. Pour chacune, cherchez une phrase aussi vraie qui ouvre une porte.',obs:'Repérez la croyance qui revient le plus souvent dans votre tête.'},
     {t:'Mes objectifs à moi',lesson:'Un parcours sans objectif ressemble à une promenade. C’est agréable, mais on ne sait pas vraiment si l’on avance. Les objectifs dont je parle ici ne concernent pas votre enfant, ils vous concernent vous. Cela peut être dormir, souffler, mieux comprendre, oser demander ou arrêter de vous excuser. Choisissez-les petits et concrets, avec une date. Un objectif que vous pouvez tenir une semaine vaut mieux qu’un idéal pour toute l’année.',exo:'Écrivez un seul objectif pour le mois, en commençant par « D’ici un mois, je… ». Puis parlez-en à une personne.',obs:'Chaque soir, faites une croix si vous avez fait un pas vers cet objectif. Un soir sans croix n’est pas un échec, il vous renseigne simplement sur votre journée.'}
@@ -300,7 +300,61 @@ const EVO_SCALES=[
 const EVO_OPEN=[['avant','Que connaissiez-vous du handicap avant qu’il entre dans votre vie de famille ?'],['change','Votre regard a-t-il changé depuis ? Qu’est-ce qui a changé, et comment l’expliquez-vous ?']];
 const EVO_TIMES=[['t1','Point de départ'],['t2','Mi-parcours (3 mois)'],['t3','Bilan (6 mois)']];
 /* ---------- Photolangage ---------- */
-const PHOTOS=[['🌄','Une aube'],['🌊','Une mer agitée'],['🧗','Une paroi'],['🌳','Un arbre'],['🚪','Une porte'],['🧭','Une boussole'],['🌧️','La pluie'],['🔥','Un feu'],['🪢','Un nœud'],['🌱','Une pousse'],['🏔️','Un col'],['🤲','Des mains']];
+/* Quarante-huit photos du domaine public (licence CC0). Elles viennent de la collection de fonds d'écran d'Ubuntu Budgie,
+   qui indique l'auteur et la source de chacune (la liste est dans site-src/credits-photos.md).
+   Chaque ligne : le nom du fichier, le libellé, la description lue par les lecteurs d'écran. */
+const PHOTOS=[
+  ['aube','Une aube','Les premiers rayons du soleil traversent une forêt.'],
+  ['mer','Une mer agitée','Une mer grise et agitée, avec des vagues courtes.'],
+  ['calme','Une mer calme','Une mer parfaitement calme sous un ciel pâle.'],
+  ['ciel','Un ciel chargé','Des nuages sombres au-dessus de la mer, au coucher du soleil.'],
+  ['bouteille','Une bouteille à la mer','Une bouteille fermée, avec un message dedans, posée sur le sable.'],
+  ['barques','Deux barques','Deux barques posées au bord d’un lac, au coucher du soleil.'],
+  ['amarre','Une barque amarrée','Une barque en bois attachée à un ponton par une chaîne.'],
+  ['goutte','Une goutte','Une goutte rebondit sur une eau calme.'],
+  ['eau','Une eau claire','Une eau verte et transparente au pied de rochers et de sapins.'],
+  ['arcenciel','Un arc-en-ciel','Une personne, les bras ouverts, devant une cascade et un arc-en-ciel.'],
+  ['cascade','Une cascade','Une personne de dos, toute petite, devant une grande cascade.'],
+  ['crete','Une crête dans les nuages','Une crête rocheuse à moitié cachée par les nuages.'],
+  ['col','Un col de montagne','Une vallée entre deux montagnes, avec un lac où elles se reflètent.'],
+  ['cordee','Une cordée','Une file de marcheurs traverse une grande étendue de neige.'],
+  ['echelle','Une échelle','Une échelle en bois posée contre une pente, qui monte vers la brume.'],
+  ['chemin','Un chemin','Un chemin de terre qui tourne dans une forêt, sous un rayon de soleil.'],
+  ['tunnel','Un tunnel','Une longue passerelle couverte, avec la lumière au bout.'],
+  ['escalier','Un escalier','Un escalier en colimaçon qui monte vers la lumière.'],
+  ['depart','Une ligne de départ','Les couloirs numérotés d’une piste de course.'],
+  ['cloture','Une clôture','Un long grillage qui traverse une forêt.'],
+  ['passants','Des passants','Des silhouettes de voyageurs marchent devant de grandes fenêtres.'],
+  ['soleil','Le soleil qui perce','Le soleil apparaît entre deux montagnes et se reflète dans un lac.'],
+  ['trouee','Une trouée de lumière','Le soleil passe entre les troncs d’une forêt sombre.'],
+  ['etoiles','Une nuit étoilée','Un ciel de nuit rempli d’étoiles, avec la Voie lactée.'],
+  ['lune','Un croissant de lune','Un fin croissant de lune dans un ciel noir.'],
+  ['ampoule','Une lumière dans le noir','Une ampoule allumée dans l’obscurité.'],
+  ['fenetre','Une fenêtre','Une fenêtre sans vitre dans un mur de bois, qui donne sur une prairie.'],
+  ['volets','Des volets fermés','De vieux volets en bois fermés sur une façade claire.'],
+  ['porte','Une porte','Une porte rouge avec un heurtoir ancien.'],
+  ['banc','Un banc','Un banc blanc vide devant une maison.'],
+  ['balancoire','Une balançoire','Un pneu suspendu à une corde, dans l’herbe haute.'],
+  ['doudou','Un doudou','Un ours en peluche couché sur un lit.'],
+  ['plume','Une plume','Une plume posée sur le rebord d’une vieille fenêtre.'],
+  ['temps','Le temps','Les aiguilles d’une montre, vues de très près.'],
+  ['livre','Un livre ouvert','Un livre ouvert avec une paire de lunettes posée dessus.'],
+  ['pliage','Un pliage de papier','Un petit pliage en papier posé sur le sol.'],
+  ['cadeau','Un cadeau','Un paquet cadeau bleu, fermé par un ruban.'],
+  ['pause','Une pause','Une tasse de café posée sur un banc en bois.'],
+  ['envol','Un envol','Une mouette en plein vol au-dessus de l’eau.'],
+  ['herbes','Des herbes dans le vent','Des herbes sèches penchées par le vent.'],
+  ['fleur','Une fleur','Une rose jaune qui s’ouvre dans l’ombre.'],
+  ['repos','Le repos','Un jeune lion blanc endormi sur un rocher.'],
+  ['duo','À deux','La silhouette d’une personne et de son chien, sur des rochers au bord de l’eau.'],
+  ['saut','Un saut dans le vide','Trois parachutes ouverts au-dessus des montagnes.'],
+  ['filet','Un filet lancé','Un pêcheur debout sur sa barque lance son filet, au coucher du soleil.'],
+  ['ensemble','Marcher ensemble','Quatre personnes vues de haut marchent sur une plage claire.'],
+  ['jumelles','Des jumelles','Des jumelles d’observation tournées vers une ville.'],
+  ['koala','Un koala endormi','Un koala endormi, accroché à une branche.']
+];
+/* Les douze pictogrammes de la première version : un choix déjà enregistré retrouve la photo la plus proche. */
+const PHOTOS_AVANT=['aube','mer','crete','trouee','porte','jumelles','ciel','ampoule','amarre','fleur','col','ensemble'];
 /* ---------- Formules ---------- */
 const PLANS=[
   {t:'Découverte',p:'0',per:'7 jours',best:false,items:['La dose de lumière chaque jour','Les conseils et les outils','Déposer, trois fois']},
@@ -367,7 +421,7 @@ const HELP=[
 
 /* ---------- état ---------- */
 const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
-const state={data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
+const state={photoPick:false,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),d);}catch(e){}return JSON.parse(JSON.stringify(DEF));}
@@ -882,7 +936,7 @@ function viewToday(){
   let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+', semaine '+(weekNo()+1)+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
   html+='<div class="duo"><div class="duo-a">';
   if(can('antonio'))html+=letterCard();
-  if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq curseurs et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
+  if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq échelles de 0 à 10 et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
   html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p><span class="sig">'+(d.doseDate===t&&d.doseText?'Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio':'Antonio')+'</span>'+
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
   html+='</div><div class="duo-b">';
@@ -1011,23 +1065,57 @@ function viewStep(){
     '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-i="'+s.idx+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+(s.idx<23?'<button type="button" class="btn" data-act="step" data-i="'+(s.idx+1)+'">Étape suivante '+I.chev+'</button>':'<button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button>')+'</div></main>';
 }
 /* ---------- évolution ---------- */
+/* Une échelle numérotée de 0 à 10 : le rond se glisse, les chiffres se touchent, et le rond porte le chiffre choisi.
+   Ce qui est réglé mais pas encore enregistré est gardé de côté (state.evoDraft), pour ne pas le perdre si l'écran est redessiné. */
+function evoSync(r){
+  const v=Number(r.value),b=r.closest('.scale');if(!b)return;
+  b.style.setProperty('--p',String(v/10));
+  const th=b.querySelector('.scale-thumb');if(th)th.textContent=String(v);
+  const o=b.querySelector('.scale-val b');if(o)o.textContent=String(v);
+  r.setAttribute('aria-valuetext',v+' sur 10');
+  [].forEach.call(b.querySelectorAll('.scale-nums button'),x=>{const n=Number(x.dataset.v);x.classList.toggle('on',n<=v);x.classList.toggle('cur',n===v);});
+  const t=state.evoTime;state.evoDraft=state.evoDraft||{};state.evoDraft[t]=state.evoDraft[t]||{};state.evoDraft[t][r.dataset.evo]=v;
+  if(th&&fxOn()){th.classList.remove('pop');void th.offsetWidth;th.classList.add('pop');}
+}
 function viewEvo(){
-  const e=D().evo;const t=state.evoTime;const cur=e[t]||{};
+  const e=D().evo;const t=state.evoTime;const cur=e[t]||{};const dr=(state.evoDraft||{})[t]||{};
   const chips='<div class="chips">'+EVO_TIMES.map((x,i)=>{const lk=i>0&&!can('parcours');return '<button type="button" class="chip" data-act="evotime" data-v="'+x[0]+'" aria-pressed="'+(t===x[0])+'">'+(lk?I.lock+' ':'')+x[1]+(e[x[0]]?' ✓':'')+'</button>';}).join('')+'</div>';
-  const scales=EVO_SCALES.map(s=>'<div class="scale"><b>'+esc(s.t)+'</b><input type="range" min="0" max="10" step="1" value="'+(cur[s.id]!==undefined?cur[s.id]:5)+'" data-evo="'+s.id+'" aria-label="'+esc(s.t)+'"><div class="row"><span><b>0</b> '+esc(s.lo)+'</span><span><b>10</b> '+esc(s.hi)+'</span></div></div>').join('');
-  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(o[1])+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(cur[o[0]]||'')+'</textarea></div>').join('');
+  const NUMS=[0,1,2,3,4,5,6,7,8,9,10];
+  const scales=EVO_SCALES.map(s=>{
+    const v=dr[s.id]!==undefined?dr[s.id]:(cur[s.id]!==undefined?cur[s.id]:5);
+    return '<div class="scale" style="--p:'+(v/10)+'">'+
+      '<div class="scale-top"><b id="sc-'+s.id+'">'+esc(s.t)+'</b><span class="scale-val" aria-hidden="true"><b>'+v+'</b> sur 10</span></div>'+
+      '<div class="scale-track"><input type="range" id="evo-r-'+s.id+'" min="0" max="10" step="1" value="'+v+'" data-evo="'+s.id+'" aria-labelledby="sc-'+s.id+'" aria-describedby="sd-'+s.id+'" aria-valuetext="'+v+' sur 10"><span class="scale-thumb" aria-hidden="true">'+v+'</span></div>'+
+      '<div class="scale-nums" aria-hidden="true">'+NUMS.map(n=>'<button type="button" tabindex="-1" data-act="evoset" data-k="'+s.id+'" data-v="'+n+'" class="'+(n<=v?'on':'')+(n===v?' cur':'')+'"><span>'+n+'</span></button>').join('')+'</div>'+
+      '<div class="row" id="sd-'+s.id+'"><span><b>0</b> '+esc(s.lo)+'</span><span><b>10</b> '+esc(s.hi)+'</span></div></div>';
+  }).join('');
+  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(o[1])+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(dr[o[0]]!==undefined?dr[o[0]]:(cur[o[0]]||''))+'</textarea></div>').join('');
   const have=EVO_TIMES.filter(x=>e[x[0]]);
   let bars='';
-  if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}
-  return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+(t==='t1'?'Le questionnaire de départ':t==='t2'?'Le point à trois mois':'Le bilan à six mois')+'</span><h1 class="t1">Mon évolution</h1><p class="sub">Vous faites le point trois fois en six mois, au départ, à mi-parcours et au bilan. Il y a cinq curseurs et deux questions à chaque fois. Il n’y a pas de bonne réponse, seulement la vôtre aujourd’hui.</p></div>'+chips+bars+
-    '<div class="card">'+scales+opens+'<button type="button" class="btn primary" data-act="evosave" style="align-self:flex-start">'+I.check+'Enregistrer ce point</button></div></main>';
+  if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b><em>'+Number(e[x[0]][s.id]||0)+'</em></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Chaque barre va de 0 à 10. Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}
+  return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+(t==='t1'?'Le questionnaire de départ':t==='t2'?'Le point à trois mois':'Le bilan à six mois')+'</span><h1 class="t1">Mon évolution</h1><p class="sub">Vous faites le point trois fois en six mois, au départ, à mi-parcours et au bilan. Il y a cinq échelles de 0 à 10 et deux questions à chaque fois. Il n’y a pas de bonne réponse, seulement la vôtre aujourd’hui.</p></div>'+chips+bars+
+    '<div class="card"><p class="hint">Pour chaque ligne, faites glisser le rond ou touchez un chiffre.</p>'+scales+opens+'<button type="button" class="btn primary" data-act="evosave" style="align-self:flex-start">'+I.check+'Enregistrer ce point</button></div></main>';
 }
 /* ---------- photolangage ---------- */
+/* De vraies photos. On choisit d'abord (toutes les photos, à la même taille), puis la photo choisie s'affiche en grand, avec le champ pour écrire.
+   Le choix est enregistré par le nom de la photo. Un ancien choix (le numéro d'un pictogramme) retrouve la photo la plus proche. */
+const PHOTO_DIR=SITE?'img/photos/':'https://parent-ecoute.ch/img/photos/';
+function photoRec(){
+  const p=D().photo||{};let id=p.id;
+  if(!id&&typeof p.i==='number')id=PHOTOS_AVANT[p.i];
+  const x=id?PHOTOS.find(y=>y[0]===id):null;
+  return {id:x?x[0]:null,x:x,text:p.text||'',date:p.date||''};
+}
 function viewPhoto(){
-  const p=D().photo||{};
-  return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Photolangage</h1><p class="sub">Choisissez l’image qui dit le mieux votre vécu aujourd’hui. Puis écrivez ce qu’elle évoque, et pourquoi vous l’avez choisie. Une image dit souvent ce que les mots n’osent pas.</p></div>'+
-    '<div class="photos" role="group" aria-label="Images du photolangage">'+PHOTOS.map((x,i)=>'<button type="button" data-act="photopick" data-i="'+i+'" aria-pressed="'+(p.i===i)+'"><span>'+x[0]+'</span>'+x[1]+'</button>').join('')+'</div>'+
-    '<div class="card"><div class="field"><label for="ptext">Ce qu’elle évoque pour moi</label><textarea id="ptext" maxlength="'+LIM.photo+'" style="min-height:120px">'+esc(p.text||'')+'</textarea></div><button type="button" class="btn primary" data-act="photosave" style="align-self:flex-start">'+I.check+'Garder</button>'+(p.date?'<p class="hint">Choisi le '+esc(fmtDate(p.date))+'. Vous pourrez refaire l’exercice au bilan et comparer.</p>':'')+'</div></main>';
+  const p=photoRec();const grand=!!p.id&&!state.photoPick;
+  if(grand){
+    const txt=state.pdraft!==null&&state.pdraft!==undefined?state.pdraft:p.text;
+    return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Photolangage</h1><p class="sub">Prenez le temps de la regarder. Puis écrivez ce qu’elle évoque, et pourquoi vous l’avez choisie. Une image dit souvent ce que les mots n’osent pas.</p></div>'+
+      '<figure class="pstage"><img src="'+PHOTO_DIR+p.id+'-g.webp" alt="'+esc(p.x[2])+'" width="1120" height="840" decoding="async" style="background-image:url('+PHOTO_DIR+p.id+'.webp)"><figcaption>'+esc(p.x[1])+'</figcaption></figure>'+
+      '<div class="card"><div class="field"><label for="ptext">Ce qu’elle évoque pour moi</label><textarea id="ptext" maxlength="'+LIM.photo+'" style="min-height:120px">'+esc(txt)+'</textarea></div><div class="quick"><button type="button" class="btn primary" data-act="photosave">'+I.check+'Garder</button><button type="button" class="btn" data-act="photoback">'+I.image+'Choisir une autre photo</button></div>'+(p.date?'<p class="hint">Choisie le '+esc(fmtDate(p.date))+'. Vous pourrez refaire l’exercice au bilan et comparer.</p>':'')+'</div></main>';
+  }
+  return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Photolangage</h1><p class="sub">Voici quarante-huit photos. Choisissez celle qui dit le mieux votre vécu aujourd’hui, sans trop réfléchir. Vous écrirez ensuite ce qu’elle évoque pour vous.</p></div>'+
+    '<div class="photos" role="group" aria-label="Photos du photolangage">'+PHOTOS.map(x=>'<button type="button" data-act="photopick" data-id="'+x[0]+'" aria-pressed="'+(p.id===x[0])+'"><span>'+esc(x[1])+'</span><img src="'+PHOTO_DIR+x[0]+'.webp" alt="'+esc(x[2])+'" width="400" height="300" loading="lazy" decoding="async"></button>').join('')+'</div></main>';
 }
 
 /* ---------- boîte à outils ---------- */
@@ -1229,8 +1317,8 @@ function sheetOnboard(sheetIn){
 function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;for(const raw of lines){const l=raw.replace(/\*\*(.+?)\*\*/g,'$1');if(/^\s*[-•]\s+/.test(l)){if(!inl){out+='<ul class="list">';inl=true;}out+='<li>'+esc(l.replace(/^\s*[-•]\s+/,''))+'</li>';continue;}if(inl){out+='</ul>';inl=false;}if(/^#{1,3}\s/.test(l))out+='<p style="font-weight:800;margin-top:6px;color:var(--green)">'+esc(l.replace(/^#{1,3}\s*/,''))+'</p>';else if(l.trim())out+='<p>'+esc(l)+'</p>';}if(inl)out+='</ul>';return out;}
 
 /* ---------- actions ---------- */
-function nav(v){state.prev=state.view;state.view=v;state.sheet=null;state.confirmReset=false;}
-function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.letter,!!D().onboarded].join('|');}
+function nav(v){state.prev=state.view;state.view=v;state.sheet=null;state.confirmReset=false;state.photoPick=false;state.pdraft=null;}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;
   switch(act){
@@ -1258,9 +1346,11 @@ function handle(act,d,el){
     case 'step':{const i=Number(d.i);if(stepLocked(i)){openUpgrade('parcours');break;}state.step=i;nav('step');break;}
     case 'stepdone':data.steps[d.i]=!data.steps[d.i];save();if(data.steps[d.i])toast('Étape faite. Une par semaine, c’est le bon rythme.');break;
     case 'evotime':if(d.v!=='t1'&&!can('parcours')){openUpgrade('evo');break;}state.evoTime=d.v;break;
-    case 'evosave':{if(state.evoTime!=='t1'&&!can('parcours')){openUpgrade('evo');break;}const rec={date:todayIso()};EVO_SCALES.forEach(s=>{const x=document.querySelector('[data-evo="'+s.id+'"]');rec[s.id]=x?Number(x.value):5;});EVO_OPEN.forEach(o=>{const x=document.querySelector('[data-evoopen="'+o[0]+'"]');rec[o[0]]=x?clean(x.value,LIM.evo):'';});const first=state.evoTime==='t1'&&!data.evo.t1;data.evo[state.evoTime]=rec;save();if(first){nav('today');render();window.scrollTo(0,0);toast('Votre point de départ est enregistré, et votre dose vous attend.');return;}render();toast('Point enregistré. Ce qui bouge est à vous.');return;}
-    case 'photopick':data.photo=Object.assign({},data.photo||{},{i:Number(d.i)});save();break;
-    case 'photosave':{const t=document.getElementById('ptext');if(!data.photo||data.photo.i===undefined){toast('Choisissez d’abord une image, puis écrivez ce qu’elle évoque.');return;}data.photo=Object.assign({},data.photo,{text:t?clean(t.value,LIM.photo):'',date:todayIso()});save();render();toast('Gardé.');return;}
+    case 'evosave':{if(state.evoTime!=='t1'&&!can('parcours')){openUpgrade('evo');break;}const rec={date:todayIso()};EVO_SCALES.forEach(s=>{const x=document.querySelector('[data-evo="'+s.id+'"]');rec[s.id]=x?Number(x.value):5;});EVO_OPEN.forEach(o=>{const x=document.querySelector('[data-evoopen="'+o[0]+'"]');rec[o[0]]=x?clean(x.value,LIM.evo):'';});const first=state.evoTime==='t1'&&!data.evo.t1;data.evo[state.evoTime]=rec;if(state.evoDraft)delete state.evoDraft[state.evoTime];save();if(first){nav('today');render();window.scrollTo(0,0);toast('Votre point de départ est enregistré, et votre dose vous attend.');return;}render();toast('Point enregistré. Ce qui bouge est à vous.');return;}
+    case 'evoset':{const r=document.querySelector('[data-evo="'+d.k+'"]');if(r){r.value=d.v;evoSync(r);if(r.focus)r.focus({preventScroll:true});}return;}
+    case 'photopick':{const av=photoRec();data.photo={id:d.id,text:av.text,date:av.id===d.id?av.date:''};state.photoPick=false;state.lastKey=null;save();break;}
+    case 'photoback':state.photoPick=true;state.lastKey=null;break;
+    case 'photosave':{const t=document.getElementById('ptext');const av=photoRec();if(!av.id){toast('Choisissez d’abord une photo, puis écrivez ce qu’elle évoque.');return;}data.photo={id:av.id,text:t?clean(t.value,LIM.photo):'',date:todayIso()};state.pdraft=null;save();render();toast('Gardé.');return;}
     case 'tool':state.tool=d.v;if(d.v!=='timer')stopTimer();break;
     case 'tset':stopTimer();state.timer.total=Number(d.m)*60;state.timer.left=state.timer.total;break;
     case 'ttoggle':if(state.timer.running)stopTimer();else{if(state.timer.left===0)state.timer.left=state.timer.total;state.timer.running=true;state.timer.h=setInterval(tick,1000);}break;
@@ -1286,8 +1376,8 @@ function handle(act,d,el){
     case 'reset-yes':state.data=JSON.parse(JSON.stringify(DEF));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='today';state.prev=null;fxSync();render();window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
-  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','tier','ob-done'].includes(act);
-  if(navAct&&fxSig()!==sig0){fxGo(()=>{render();window.scrollTo(0,0);},act==='back'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
+  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','tier','ob-done','photopick','photoback'].includes(act);
+  if(navAct&&fxSig()!==sig0){fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
@@ -1301,6 +1391,9 @@ app.addEventListener('input',e=>{
   const t=e.target;clearErr(t);
   if(t.id==='draft'){state.draft=t.value;updCount(t);}
   if(t.id==='qdraft')state.qdraft=t.value;
+  if(t.id==='ptext')state.pdraft=t.value;
+  if(t.dataset&&t.dataset.evo)evoSync(t);
+  if(t.dataset&&t.dataset.evoopen){const k=state.evoTime;state.evoDraft=state.evoDraft||{};state.evoDraft[k]=state.evoDraft[k]||{};state.evoDraft[k][t.dataset.evoopen]=t.value;}
   if(t.id==='ob-me')D().me=String(t.value).slice(0,LIM.me);
   if(t.id==='q'){state.q=t.value;clearTimeout(typing);typing=setTimeout(()=>{const pos=t.selectionStart;render();const nq=document.getElementById('q');if(nq){nq.focus();try{nq.setSelectionRange(pos,pos);}catch(e){}}},250);}
 });

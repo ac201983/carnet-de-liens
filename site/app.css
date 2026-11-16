@@ -1,6 +1,6 @@
 html{box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}*,*::before,*::after{box-sizing:inherit}body{margin:0}
-@font-face{font-family:'Fraunces';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/fraunces.woff2) format('woff2')}
-@font-face{font-family:'Fraunces';font-style:italic;font-weight:100 900;font-display:swap;src:url(fonts/fraunces-italic.woff2) format('woff2')}
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:400 700;font-display:swap;src:url(fonts/newsreader.woff2) format('woff2')}
+@font-face{font-family:'Newsreader';font-style:italic;font-weight:400 600;font-display:swap;src:url(fonts/newsreader-italic.woff2) format('woff2')}
 @font-face{font-family:'Nunito';font-style:normal;font-weight:200 1000;font-display:swap;src:url(fonts/nunito.woff2) format('woff2')}
 @font-face{font-family:'Nunito';font-style:italic;font-weight:200 1000;font-display:swap;src:url(fonts/nunito-italic.woff2) format('woff2')}
 /* Design plan
@@ -8,7 +8,7 @@ html{box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}*
    Spirit (from Antonio's visual): a deep forest green, two hands on wood, sunlight through the trees, a cream
    serif title. One theme only, day and night: the forest is the room, the cream is the voice, the gold is the
    light that comes in. Gold belongs to « la dose de lumière », the sun mark and the current step; coral to SOS.
-   Type: Fraunces (soft, warm serif, close to the title of the visual) for the words that listen and the
+   Type: Newsreader (warm serif with classic capitals, close to the title of the visual; it replaced Fraunces on 16 Nov 2026 because of its J) for the words that listen and the
    headings, Nunito for the interface.
    Layout: phone-first column (max 640px), four tabs, bottom sheets; one bright moment a day: the dose. */
 :root{
@@ -21,7 +21,7 @@ html{box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}*
   --shadow:0 1px 2px rgba(0,0,0,.35),0 16px 40px rgba(0,0,0,.45);
   --shadow-sm:0 1px 2px rgba(0,0,0,.3),0 3px 10px rgba(0,0,0,.25);
   --font-ui:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --font-display:'Newsreader',Georgia,'Times New Roman',serif;
   color-scheme:dark;
 }
 @media (prefers-color-scheme: dark){
@@ -127,19 +127,53 @@ textarea{min-height:120px;resize:vertical}
 .lesson{font-family:var(--font-display);font-size:19px;line-height:1.45}
 .exo{background:var(--sun-soft);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
 .exo .label{color:var(--sun-fg)}
-.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.photos button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--muted)}
-.photos button span{font-size:34px;line-height:1}
-.photos button[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
-/* evolution */
-.scale{display:flex;flex-direction:column;gap:6px}
-.scale .row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
-.scale input[type=range]{width:100%;accent-color:var(--green)}
+/* photolangage : de vraies photos, toutes à la même taille, puis la photo choisie en grand */
+.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.photos button{position:relative;display:block;padding:0;border:0;border-radius:14px;overflow:hidden;background:var(--surface);aspect-ratio:4/3;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.photos img{display:block;width:100%;height:100%;object-fit:cover}
+.photos span{position:absolute;z-index:1;left:0;right:0;bottom:0;padding:22px 8px 7px;font-size:12px;font-weight:800;line-height:1.2;text-align:left;color:var(--cream);background:linear-gradient(to top,rgba(7,36,15,.95),rgba(7,36,15,.72) 50%,rgba(7,36,15,0));opacity:0;pointer-events:none}
+.photos button:hover span,.photos button:focus-visible span,.photos button[aria-pressed="true"] span{opacity:1}
+.photos button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--sun)}
+.photos button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+@media (min-width:560px){.photos{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.photos span{font-size:13px}}
+.pstage{position:relative;margin:0;width:100%;aspect-ratio:4/3;max-height:min(72vh,620px);border-radius:24px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.pstage img{display:block;width:100%;height:100%;object-fit:cover;background-size:cover;background-position:center}
+.pstage figcaption{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:64px 20px 16px;font-family:var(--font-display);font-weight:600;font-size:26px;line-height:1.1;letter-spacing:-.005em;color:var(--cream);background:linear-gradient(to top,rgba(7,36,15,.94) 0%,rgba(7,36,15,.66) 40%,rgba(7,36,15,0) 100%);text-shadow:0 2px 18px rgba(0,0,0,.5)}
+/* evolution : une échelle numérotée de 0 à 10. Le rond se glisse, les chiffres se touchent, et le rond porte le chiffre choisi. */
+.scale{display:flex;flex-direction:column;gap:4px;--p:.5;--th:44px;padding-block:6px 2px}
+.scale+.scale{border-top:1px solid var(--line);padding-top:16px}
+.scale-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.scale-top>b{font-size:16.5px;line-height:1.3}
+.scale-val{flex:none;font-size:13.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+.scale-val b{font-size:24px;font-weight:800;line-height:1;color:var(--cream);margin-right:3px;font-variant-numeric:tabular-nums}
+.scale-track{position:relative;height:var(--th);margin-top:2px}
+.scale-track::before{content:"";position:absolute;left:0;right:0;top:50%;height:12px;margin-top:-6px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.scale-track::after{content:"";position:absolute;left:0;top:50%;height:12px;margin-top:-6px;border-radius:999px;width:calc(var(--th)/2 + var(--p)*(100% - var(--th)));background:linear-gradient(90deg,var(--green-2),var(--green) 55%,var(--sun))}
+.scale input[type=range]{position:absolute;inset:0;z-index:2;width:100%;height:100%;margin:0;padding:0;border:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y;outline:none}
+.scale input[type=range]::-webkit-slider-runnable-track{height:var(--th);background:none;border:0}
+.scale input[type=range]::-moz-range-track{height:var(--th);background:none;border:0}
+.scale input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:var(--th);height:var(--th);border-radius:50%;background:transparent;border:0;box-shadow:none}
+.scale input[type=range]::-moz-range-thumb{width:var(--th);height:var(--th);border-radius:50%;background:transparent;border:0;box-shadow:none}
+.scale-thumb{position:absolute;z-index:1;top:0;left:calc(var(--p)*(100% - var(--th)));width:var(--th);height:var(--th);border-radius:50%;display:grid;place-items:center;background:var(--cream);color:var(--bg);font-weight:800;font-size:20px;line-height:1;font-variant-numeric:tabular-nums;box-shadow:0 2px 10px rgba(0,0,0,.45),0 0 0 5px rgba(244,239,216,.16);pointer-events:none}
+.scale-thumb::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.scale input[type=range]:focus-visible+.scale-thumb{box-shadow:0 2px 10px rgba(0,0,0,.45),0 0 0 4px var(--sun)}
+.scale-nums{display:flex;justify-content:space-between;padding-inline:calc(var(--th)/2)}
+.scale-nums button{flex:none;width:0;padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer}
+.scale-nums button::before{content:"";flex:none;width:2px;height:7px;border-radius:1px;background:currentColor;opacity:.6}
+.scale-nums button span{display:block;min-width:26px;padding:3px 0 5px;text-align:center}
+.scale-nums button.on{color:var(--green)}
+.scale-nums button.cur{color:var(--cream)}
+.scale-nums button.cur span{transform:scale(1.18)}
+.scale .row{display:flex;flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:14px;font-size:13.5px;line-height:1.35;color:var(--muted)}
+.scale .row span{flex:0 1 auto;max-width:48%}
+.scale .row span+span{text-align:right}
+.scale .row b{color:var(--fg)}
 .bars{display:flex;flex-direction:column;gap:10px}
 .barrow{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;font-size:14px}
-.bartrack{display:flex;flex-direction:column;gap:3px}
-.bartrack i{display:block;height:10px;border-radius:5px;background:var(--surface-2);position:relative}
-.bartrack i b{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--green)}
+.bartrack{display:flex;flex-direction:column;gap:5px;padding-right:28px}
+.bartrack i{display:block;height:12px;border-radius:6px;background:var(--surface-2);position:relative}
+.bartrack i b{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--green)}
+.bartrack i em{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);font-style:normal;font-size:12.5px;font-weight:800;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
 .bartrack i.t2 b{background:var(--green-2)}.bartrack i.t3 b{background:var(--sun)}
 .legend{display:flex;gap:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
 .legend span{font-size:12.5px;line-height:1.4}
@@ -256,7 +290,7 @@ textarea{min-height:120px;resize:vertical}
 .hero .btn{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.14);color:var(--green-fg)}
 .hero .btn.solid{background:var(--surface);color:var(--green);border-color:var(--surface)}
 .quote{font-family:var(--font-display);font-size:19px;line-height:1.4;font-style:italic;font-weight:400;color:var(--cream);border-left:3px solid var(--sun);padding-left:14px}
-@media (max-width:400px){.hero h1{font-size:30px}.dose p{font-size:21px}.ring{width:200px;height:200px}.ring .num{font-size:48px}.photos{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:400px){.hero h1{font-size:30px}.dose p{font-size:21px}.ring{width:200px;height:200px}.ring .num{font-size:48px}}
 
 /* ---- v2 : structure, formules, Antonio ---- */
 .lockline{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);font-weight:700;background:transparent;border:0;padding:0;text-align:left}
@@ -622,7 +656,8 @@ canvas.eau{display:none}
   .abc{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
   .routine,.log,.perm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .ft{max-width:640px;width:100%;align-self:center}
-  .photos{grid-template-columns:repeat(6,1fr);gap:12px}
+  .photos{gap:12px}
+  .pstage figcaption{font-size:32px;padding:80px 28px 22px}
 
   /* -- les formules, côte à côte -- */
   .plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
@@ -681,6 +716,20 @@ canvas.eau{display:none}
   html.fx .app{--fx-in:0px}   /* plus de barre d'onglets en bas : rien à laisser dégagé pour l'effet de lecture */
   html.fx::view-transition-new(rail):only-child{animation:fx-fade var(--fx-dur,1.2s) var(--fx-ease) both}   /* la colonne qui apparaît à l'inscription arrive doucement, avec l'onde */
   html.fx .v-intro .herofull>canvas.eau{left:24%;height:100%}
+}
+/* -- l'échelle et les photos, en mouvement : le rond glisse d'un chiffre à l'autre et laisse partir un cercle, la photo choisie se pose lentement et la lumière s'y lève une fois -- */
+@media (prefers-reduced-motion:no-preference){
+  html.fx .scale-thumb{transition:left .16s var(--fx-ease)}
+  html.fx .scale-track::after{transition:width .16s var(--fx-ease)}
+  html.fx .scale-nums button span{transition:transform .2s var(--fx-ease)}
+  html.fx .scale-thumb.pop::after{animation:sc-ring .8s ease-out}
+  @keyframes sc-ring{0%{box-shadow:0 0 0 3px rgba(216,223,126,.6)}100%{box-shadow:0 0 0 20px rgba(216,223,126,0)}}
+  html.fx .photos img{transition:transform .7s var(--fx-ease)}
+  html.fx .photos button:hover img,html.fx .photos button:focus-visible img{transform:scale(1.06)}
+  html.fx .photos span{transition:opacity .3s var(--fx-ease)}
+  html.fx .pstage img{animation:ps-zoom 4.6s cubic-bezier(.2,.6,.3,1) both}
+  @keyframes ps-zoom{from{transform:scale(1.07)}to{transform:scale(1)}}
+  html.fx .lum .pstage::before{content:"";position:absolute;z-index:1;inset:0;background:radial-gradient(ellipse 85% 82% at 53% 0%,rgba(255,247,190,.42),rgba(255,247,190,.14) 45%,rgba(255,247,190,0) 74%);opacity:0;pointer-events:none;animation:fx-sun 4.6s calc(var(--fx-age,0s)*-1) cubic-bezier(.37,0,.63,1) both}
 }
 
 /* ---- Espace Antonio (démonstration) ---- */

@@ -3,3 +3,8 @@
 
 # L'archive déposée à la main le 16 novembre 2026, qui ne sert plus.
 parent-ecoute-site-2.zip
+
+# L'ancienne police des titres, remplacée par Newsreader le 16 novembre 2026.
+fonts/fraunces.woff2
+fonts/fraunces-italic.woff2
+fonts/LICENSE-Fraunces.txt
