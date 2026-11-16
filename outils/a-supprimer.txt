@@ -8,3 +8,7 @@ parent-ecoute-site-2.zip
 fonts/fraunces.woff2
 fonts/fraunces-italic.woff2
 fonts/LICENSE-Fraunces.txt
+
+# Le tableau de bord vivait à la racine du site jusqu'au 16 novembre 2026. Il est maintenant dans le dossier antonio/.
+antonio.html
+antonio.js

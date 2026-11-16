@@ -1,7 +1,7 @@
 /* Espace Antonio : démonstration du tableau de bord d'Antonio. Données fictives : aucun parent réel. */
 (function(){
 'use strict';
-const HERO='img/hero.webp';
+const HERO='../img/hero.webp';
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=p=>'<svg class="i" aria-hidden="true" focusable="false" viewBox="0 0 24 24">'+p+'</svg>';
 const I={back:svg('<path d="M15 5l-7 7 7 7"/>'),chev:svg('<path d="M9 5l7 7-7 7"/>'),check:svg('<path d="M5 12l4 4 10-10"/>'),send:svg('<path d="M4 12l16-8-6 16-2-7z"/>')};

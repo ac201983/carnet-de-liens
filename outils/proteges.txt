@@ -1,0 +1,6 @@
+# Dossiers du site fermés par un mot de passe chez l'hébergeur (Manager d'Infomaniak, Sécurité, Protection de dossiers).
+# Un dossier par ligne, depuis le dossier du site. Le contrôle après mise en ligne vérifie qu'ils demandent bien un mot de passe.
+# Le mot de passe n'est écrit nulle part ici : il est choisi par Antonio dans le Manager.
+
+# Le tableau de bord d'Antonio (aujourd'hui une démonstration avec des parents inventés).
+antonio/

@@ -26,17 +26,38 @@ if [ "$depose" = 1 ] && [ -f site/version.txt ]; then
 fi
 
 # 2. Chaque fichier en ligne est-il identique à celui de site/ ?
-total=0; pareils=0; differents=""
+#    Les dossiers nommés dans outils/proteges.txt sont fermés par un mot de passe chez l'hébergeur : leurs fichiers ne peuvent pas
+#    être relus. On vérifie alors l'inverse, c'est-à-dire que le serveur demande bien un mot de passe (réponse 401).
+proteges=()
+if [ -f outils/proteges.txt ]; then
+  while IFS= read -r l || [ -n "$l" ]; do
+    l="$(printf '%s' "$l" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+    case "$l" in '' | '#'*) continue ;; esac
+    proteges+=("${l%/}/")
+  done < outils/proteges.txt
+fi
+est_protege() { local p; for p in "${proteges[@]:-}"; do [ -n "$p" ] && case "$1" in "$p"*) return 0 ;; esac; done; return 1; }
+
+total=0; pareils=0; differents=""; fermes=0; ouverts=""
 while IFS= read -r f; do
   total=$((total + 1))
   code="$(va -o "$tmp/recu" -w '%{http_code}' "$adresse/$f?c=$RANDOM" 2>/dev/null)" || true
-  if [ "$code" = 200 ] && [ "$(sha256sum < "$tmp/recu")" = "$(sha256sum < "site/$f")" ]; then
+  if est_protege "$f" && [ "$code" = 401 ]; then
+    fermes=$((fermes + 1))
+  elif [ "$code" = 200 ] && [ "$(sha256sum < "$tmp/recu")" = "$(sha256sum < "site/$f")" ]; then
     pareils=$((pareils + 1))
+    est_protege "$f" && ouverts="$ouverts $f"
   else
     differents="$differents $f($code)"
   fi
 done < <(cd site && find . -type f ! -name '.htaccess' -printf '%P\n' | LC_ALL=C sort)
 note "Fichiers en ligne" "$pareils fichiers sur $total sont identiques à ceux de site/. Différents :${differents:- aucun}"
+if [ "$fermes" -gt 0 ]; then
+  note "Dossier fermé" "$fermes fichier(s) d'un dossier protégé demandent un mot de passe (réponse 401). Ils ne sont pas relus."
+fi
+if [ -n "$ouverts" ]; then
+  echo "::warning title=Dossier pas encore fermé::Ces fichiers devraient demander un mot de passe et répondent sans :$ouverts. La protection se règle chez l'hébergeur (Sécurité, Protection de dossiers)."
+fi
 
 # 3. Quelques adresses : code de réponse, type annoncé, renvoi éventuel
 vue() {   # vue "nom" adresse [options de curl]
@@ -63,6 +84,8 @@ note "Adresses" \
   "$(vue "manifest" "$adresse/manifest.webmanifest")" \
   "$(vue "police" "$adresse/fonts/nunito.woff2")" \
   "$(vue "script" "$adresse/app.js")" \
+  "$(vue "tableau de bord" "$adresse/antonio/")" \
+  "$(vue "ancien tableau de bord" "$adresse/antonio.html")" \
   "$(vue "plan du site" "$adresse/sitemap.xml")" \
   "$(vue "robots" "$adresse/robots.txt")"
 
