@@ -1,0 +1,33 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>lab eau</title><style>
+:root{--bg:#07240f;--cream:#f4efd8}
+body{margin:0;background:var(--bg);font-family:system-ui,sans-serif;color:var(--cream)}
+.herofull{--ih:346px;position:relative;width:100%;max-width:430px;overflow:hidden;padding-top:calc(var(--ih)*.56);min-height:520px;box-sizing:border-box;padding-left:16px}
+.herofull::after{content:"";position:absolute;left:0;right:0;top:0;height:var(--ih);background:linear-gradient(to bottom,rgba(7,36,15,.10) 0%,rgba(7,36,15,0) 22%,rgba(7,36,15,.10) 42%,rgba(7,36,15,.64) 58%,rgba(7,36,15,.88) 76%,var(--bg) 100%)}
+.herofull>*{position:relative;z-index:1}
+.herofull .herobg{position:absolute;top:0;left:0;width:100%;height:var(--ih);object-fit:cover;object-position:center;z-index:0}
+.herofull>canvas.eau{position:absolute;top:0;left:0;width:100%;height:var(--ih);z-index:0;pointer-events:none}
+.herofull h1{font:700 44px/1 Georgia,serif;margin:0}
+.band{position:relative;background:url(hero.webp) center/cover no-repeat;overflow:hidden}
+.band.full{width:866px;height:470px}
+.band.auj{width:390px;height:212px;background-position:center 62%}
+.band.auj::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,36,15,.35) 0%,rgba(7,36,15,.05) 30%,rgba(7,36,15,.6) 62%,var(--bg) 100%)}
+.band>*{position:relative;z-index:1}
+.band>canvas.eau{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+</style></head><body>
+<div id="stage"></div>
+<script>
+const HERO='hero.webp';const state={};function fxOn(){return true;}
+window.EAU_O={};new URLSearchParams(location.search).forEach((v,k)=>{if(/^(c|lam|front|tail|tau|ax|ay|sh|gl|li|pw)$/.test(k))EAU_O[k]=+v;});
+const Q=new URLSearchParams(location.search);
+document.getElementById('stage').innerHTML=Q.get('host')==='full'?'<div class="band full"></div>':Q.get('host')==='auj'?'<div class="band auj"></div>':'<div class="herofull"><img class="herobg" src="hero.webp" width="866" height="470" alt=""><h1>Parent Écouté,<br>Parent Éclairé</h1></div>';
+</script>
+<script src="eau.js"></script>
+<script>
+/* banc d'essai : window.lab(t, [[ix,iy,force,naissance],...]) dessine l'instant t ; sans paramètre, on joue l'arrivée en vrai */
+window.lab=(t,rips)=>new Promise((res,rej)=>{
+  if(!eauInit())return rej(new Error('pas de WebGL'));
+  eauReady(()=>{const host=document.querySelector('.herofull,.band');EAU.fix=0;if(!eauHost(host))return rej(new Error('pas de boîte'));
+    EAU.rips=[];EAU.drop=null;rips.forEach(r=>{EAU.fix=r[3];eauAdd(r[0],r[1],r[2],0);});if(window.__bond!=null){EAU.fix=window.__bond;EAU.drop=null;eauBond();}EAU.fix=t;eauFrame();res(EAU.rips.length);});
+});
+if(Q.get('live')){eauArrive();document.addEventListener('pointerdown',eauTouch,{passive:true});}
+</script></body></html>

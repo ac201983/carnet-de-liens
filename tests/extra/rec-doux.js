@@ -1,0 +1,24 @@
+const { chromium } = require('playwright');
+const A = (act, extra = '') => `[data-act="${act}"]${extra}`;
+(async () => {
+  const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: 'no-preference', hasTouch: true, recordVideo: { dir: '/home/claude/build/doux/video', size: { width: 390, height: 844 } } });
+  await ctx.addInitScript(() => { window.__eauSansGarde = true; try { localStorage.setItem('pepe-consent', JSON.stringify({ v: 1, audience: false, date: '2026-11-16' })); } catch (e) { } });
+  const page = await ctx.newPage(); const w = ms => page.waitForTimeout(ms); page.on('pageerror', e => console.log('err', String(e).slice(0, 200)));
+  const t0 = Date.now(); const mark = n => console.log(n, ((Date.now() - t0) / 1000).toFixed(1));
+  const tap = async (x, y) => { await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.up(); };
+  const scroll = async (dy, steps = 30) => { for (let i = 0; i < steps; i++) { await page.mouse.wheel(0, dy / steps); await w(24); } };
+  await page.goto('https://localhost:8443/carnet-de-liens/parent-ecoute/'); mark('accueil'); await w(5600);
+  mark('toucher'); await tap(90, 190); await w(1500); await tap(300, 215); await w(3800);
+  await scroll(560); await w(500); await scroll(-560, 18); await w(500);
+  mark('histoire'); await page.click(A('peek-about')); await w(5200); await scroll(700, 44); await w(600); await scroll(-700, 20); await w(300);
+  mark('retour'); await page.click(A('back')); await w(1500);
+  mark('commencer'); await page.click('.herofull ' + A('onboard')); await w(1100); await page.fill('#ob-me', 'Camille'); await w(400);
+  mark('entree'); await page.click(A('ob-done')); await w(3600);
+  await scroll(430, 30); await w(400); await page.click('#draft'); await page.keyboard.type('Ce soir j’ai crié et je m’en veux.', { delay: 26 }); await w(500);
+  mark('depot'); await page.click(A('dsend')); await w(4600);
+  mark('onglet'); await page.click('.tab' + A('go', '[data-view="parcours"]')); await w(1800);
+  mark('etape'); await page.click(A('step', '[data-i="0"]')); await w(1700); await scroll(360, 26); await w(500);
+  mark('retour2'); await page.click(A('back')); await w(1500);
+  mark('fin'); await ctx.close(); await b.close();
+})().catch(e => { console.error(e); process.exit(1); });

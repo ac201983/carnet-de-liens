@@ -1,0 +1,719 @@
+
+Object.assign(I,{
+  drop:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>',
+  path:'<svg class="i" viewBox="0 0 24 24"><path d="M4 19c4-1 5-5 8-6s5 1 8-2"/><circle cx="4" cy="19" r="1.6" fill="currentColor"/><circle cx="20" cy="11" r="1.6" fill="currentColor"/><path d="M12 13v-3"/></svg>',
+  sun2:'<svg class="i" viewBox="0 0 24 24"><path d="M4 16h16M6 16a6 6 0 0 1 12 0"/><path d="M12 4v2M5.6 7.6l1.4 1.4M18.4 7.6L17 9M2 13h2M20 13h2"/></svg>',
+  chart:'<svg class="i" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>',
+  image:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>',
+  tag:'<svg class="i" viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.2" fill="currentColor"/></svg>',
+  lock:'<svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  user:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
+  mail:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  question:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><circle cx="12" cy="17" r=".9" fill="currentColor"/></svg>',
+  kit:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2M3 13h18"/></svg>',
+  shield:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9.5 12l2 2 3.5-4"/></svg>',
+  ext:'<svg class="i" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5"/></svg>'
+});
+Object.keys(I).forEach(k=>{I[k]=I[k].replace('<svg class="i"','<svg class="i" aria-hidden="true" focusable="false"');});
+
+/* ---------- formules ---------- */
+const TIERS={free:{t:'Découverte',p:'0',per:'gratuit',cls:''},parcours:{t:'Le parcours',p:'14',per:'par mois',cls:'parcours'},antonio:{t:'Avec Antonio',p:'49',per:'par mois',cls:'antonio'}};
+const FREE_DEPOTS=3, Q_PER_MONTH=2;
+const FEATURES=[
+  ['La dose du jour',true,true,true],
+  ['Boîte à outils et SOS',true,true,true],
+  ['Déposer avec la phrase-miroir','3 dépôts','Illimité','Illimité'],
+  ['« Et concrètement ? »','3 fois','Illimité','Illimité'],
+  ['Dose personnalisée',false,true,true],
+  ['Les 24 étapes','Étape 1',true,true],
+  ['Mon évolution','Départ',true,true],
+  ['Photolangage',false,true,true],
+  ['Mot mensuel d’Antonio',false,false,true],
+  ['2 questions par mois',false,false,true]
+];
+const UP={
+  depots:{t:'Déposer sans limite',s:'Vous avez utilisé vos trois dépôts Découverte. Avec Le parcours, vous déposez autant que nécessaire, avec la phrase-miroir à chaque fois.'},
+  dose:{t:'Votre dose, à vous',s:'Avec Le parcours, la dose du jour est écrite d’après ce que vous avez déposé ces derniers jours.'},
+  parcours:{t:'Les 24 étapes',s:'La première étape est offerte. Les vingt-trois suivantes, une par semaine pendant six mois, font partie du Parcours.'},
+  evo:{t:'Voir le chemin',s:'Le point de départ est offert. Le point à trois mois et le bilan à six mois font partie du Parcours.'},
+  photo:{t:'Le photolangage',s:'Choisir une image pour dire votre vécu, au départ puis au bilan, fait partie du Parcours.'},
+  antonio:{t:'Avec Antonio',s:'Chaque mois, Antonio lit les dépôts que vous choisissez de lui partager et vous écrit un mot personnel. Deux fois par mois, vous pouvez aussi lui poser une question, et il vous répond par écrit dans les 48 heures.'}
+};
+const LETTER_EXAMPLE='J’ai lu ce que vous avez déposé ce mois-ci. Ce que j’entends d’abord, c’est la fatigue des soirs, et aussi le fait que vous êtes là, malgré tout. Vous savez, les enfants retiennent moins nos cris que le fait qu’on soit revenu vers eux.\nJ’ai aussi vu quelque chose bouger. Vous avez commencé à mettre des mots sur ce qui se passe juste avant les crises, et c’est souvent par là qu’une porte s’ouvre.\nPour le mois qui vient, je vous propose une seule piste. Au moment du coucher, dites-lui à chaque fois ce qui vient en premier et ce qui vient juste après, par exemple « d’abord le pyjama, ensuite l’histoire ». Essayez dix soirs de suite, sans chercher à ce que ce soit parfait. On en reparle dans mon prochain mot.';
+const QA_EXAMPLE={q:'Mon fils de 9 ans refuse d’aller à l’école le matin, ça finit en cris. Je fais quoi ?',a:'Je commencerais par la veille plutôt que par le matin. Préparez sa tenue, fermez son sac et dites-lui au coucher, en une phrase courte, ce qui se passera demain. Le matin, parlez peu, proposez-lui un seul choix, par exemple « chaussures ou veste d’abord ? », et gardez le même ordre chaque jour. Si le refus dure plus de deux semaines, demandez un rendez-vous à son enseignant ou à son enseignante, parce qu’il se passe peut-être quelque chose à l’école que vous ne pouvez pas voir depuis la maison. Et gardez en tête que ce refus n’est pas dirigé contre vous.'};
+const WEIGHTS=[['solitude','La solitude'],['fatigue','La fatigue'],['culpa','La culpabilité'],['doutes','Les doutes'],['regard','Le regard des autres'],['pros','Les professionnels'],['charge','La charge mentale'],['couple','Le couple']];
+/* Tant que le serveur n'existe pas, les échanges avec Antonio sont une démonstration : rien n'est transmis. */
+const DEMO=true;
+const LIM={me:30,draft:4000,q:1500,line:240,phrase:140,three:120,photo:2000,evo:1500,search:60};
+const tel=(n,label)=>'<a class="tel" href="tel:'+String(n).replace(/[^0-9+]/g,'')+'">'+(label||n)+'</a>';
+const HELP=[
+  {t:'La Main Tendue',tel:'143',d:'Pour parler quand ça ne va pas, de jour comme de nuit.'},
+  {t:'Pro Juventute, conseils aux parents',tel:'058 261 61 61',d:'Gratuit et confidentiel, 24 heures sur 24, pour toutes les questions de parents.'},
+  {t:'Urgences',tel:'144',d:'En cas de danger immédiat pour la vie.'},
+  {t:'Pro Infirmis',url:'https://www.proinfirmis.ch/fr/a-propos/prestations.html',label:'proinfirmis.ch',d:'Consultation sociale gratuite et confidentielle, dans votre canton.'}
+];
+
+/* ---------- état ---------- */
+const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
+const state={data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
+let toastTimer=null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),d);}catch(e){}return JSON.parse(JSON.stringify(DEF));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state.data));}catch(e){}}
+function toast(m){state.toast=m;state.toastView=state.view;state.toastAt=Date.now();renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{
+  /* avec les effets, il s'efface en douceur avant d'être retiré */
+  const el=document.querySelector('.toast');
+  if(el&&fxOn()){el.style.animationDelay='0s';el.classList.add('out');toastTimer=setTimeout(()=>{state.toast='';renderToast();},420);}
+  else{state.toast='';renderToast();}
+},3000);}
+function renderToast(){const old=document.querySelector('.toast');if(old)old.remove();if(state.toast){const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=state.toast;
+  /* Si l'écran est redessiné pendant que le message est là, son apparition reprend où elle en était au lieu de rejouer. */
+  if(el.style)el.style.animationDelay='-'+Math.min(2000,Math.max(0,Date.now()-(state.toastAt||0)))+'ms';
+  document.getElementById('app').appendChild(el);}}
+const D=()=>state.data;
+const pad=n=>String(n).padStart(2,'0');
+const todayIso=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const fmtDate=iso=>{const p=iso.split('-');return p[2]+'.'+p[1]+'.'+p[0];};
+const MONTHS_FR=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const hm=t=>String(t||'').replace(':','h');
+function deMois(iso){const m=MONTHS_FR[Number(iso.slice(5,7))-1];return (/^[aeiouyàâéèêîôû]/i.test(m)?'d’':'de ')+m;}
+function liste(a){return a.length>1?a.slice(0,-1).join(', ')+' et '+a[a.length-1]:(a[0]||'');}
+/* La voix d'Antonio n'emploie ni deux-points, ni point-virgule, ni tiret long : filet de sécurité pour les textes écrits par le modèle. */
+function voix(t){return String(t||'').split('\n').map(l=>{l=l.replace(/^(\s*)[—–]\s+/,'$1- ').replace(/\s*[—–]\s*/g,', ').replace(/\s*;\s*(\S)/g,(m,c)=>'. '+c.toUpperCase()).replace(/\s*;\s*$/,'.').replace(/\s*:\s*(«)/g,' $1').replace(/([^\d\s])\s*:\s+(\S)/g,'$1, $2');return (/^\s*#/.test(l)?l.replace(/\s*:\s*$/,''):l.replace(/\s*:\s*$/,'.')).replace(/·[a-zàâéèêîôûç]+/gi,'').replace(/·/g,'').replace(/«[ ]/g,'«\u00a0').replace(/[ ]»/g,'\u00a0»');}).join('\n');}
+/* Quand un texte laisse penser à une détresse : une aide qui reste affichée, avec des numéros cliquables (le message bref, lui, disparaît). */
+function riskHtml(cls){return '<p class="'+cls+'">Si ce que vous vivez devient trop lourd, ne restez pas sans aide. Vous pouvez appeler La Main Tendue au '+tel('143')+', de jour comme de nuit, ou le '+tel('144')+' en cas d’urgence.</p>';}
+function monthKey(iso){return iso.slice(0,7);}
+function nextLetterDate(){const d=new Date();const n=new Date(d.getFullYear(),d.getMonth()+1,1);return '1er '+MONTHS_FR[n.getMonth()];}
+function dayIdx(n){const d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000)%n;}
+function greeting(){const h=new Date().getHours();return h<5?'Il est tard':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';}
+function weekNo(){const s=D().start||todayIso();const p=s.split('-').map(Number);const d0=new Date(p[0],p[1]-1,p[2]);return Math.max(0,Math.floor((Date.now()-d0.getTime())/(7*86400000)));}
+function allSteps(){const out=[];PARCOURS.forEach((m,mi)=>m.steps.forEach((s,si)=>out.push(Object.assign({mi,si,idx:out.length},s))));return out;}
+function currentStepIdx(){return Math.min(23,weekNo());}
+function doneCount(){return Object.keys(D().steps).filter(k=>D().steps[k]).length;}
+function curatedDose(){const n=DOSES.length-1;return new Date().getDay()===0?DOSES[n]:DOSES[dayIdx(n)];}
+function doseText(){const d=D();return d.doseDate===todayIso()&&d.doseText?d.doseText:curatedDose();}
+function lastDepot(){const l=D().depots;return l.length?l[l.length-1]:null;}
+function recentDepot(){const ld=lastDepot();return ld&&(Date.now()-new Date(ld.date).getTime())<4*86400000?ld:null;}
+/* ---------- formules : droits ---------- */
+const tier=()=>D().tier||'free';
+function can(f){const t=tier();if(f==='parcours')return t!=='free';if(f==='antonio')return t==='antonio';return true;}
+function depotsLeft(){return can('parcours')?Infinity:Math.max(0,FREE_DEPOTS-D().depots.length);}
+function questionsLeft(){const mk=monthKey(todayIso());return Math.max(0,Q_PER_MONTH-D().questions.filter(q=>monthKey(q.date)===mk).length);}
+function sharedThisMonth(){const mk=monthKey(todayIso());return D().depots.filter(x=>D().shared[x.id]&&monthKey(x.date)===mk).length;}
+function openUpgrade(f){state.upFeat=f;state.sheet='upgrade';}
+function badge(){const t=TIERS[tier()];return '<span class="tierbadge '+t.cls+'">'+(tier()==='free'?I.star:tier()==='parcours'?I.path:I.user)+esc(t.t)+'</span>';}
+function lockline(txt,f){return '<button type="button" class="lockline" data-act="upgrade" data-f="'+f+'">'+I.lock+'<span>'+esc(txt)+'</span></button>';}
+
+/* ---------- effets visuels : l'eau calme ---------- */
+/* Tout est lent et doux, et rien n'est dessiné par-dessus la photo.
+   Les écrans se fondent l'un dans l'autre, les blocs viennent se poser sans à-coup, la lumière se lève une fois sur la photo,
+   et l'eau de la photo bouge pour de bon, à l'arrivée et sous le doigt. Le texte n'est jamais estompé.
+   Rien ne joue si le téléphone demande moins d'animations ou si le parent coupe les effets dans « Moi ». */
+const FX_OK=!!(typeof window!=='undefined'&&window.requestAnimationFrame&&document.documentElement&&document.body);
+const FX_RM=FX_OK&&window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+/* Grand écran (ordinateur, tablette couchée) : le menu passe dans une colonne à gauche. La page est alors écrite dans l'ordre où on la voit,
+   la colonne d'abord (nom de l'espace, onglets, SOS), puis le contenu. Sur téléphone, l'ordre reste barre du haut, contenu, onglets. */
+const MQ_LARGE=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1024px)'):null;
+const large=()=>!!(MQ_LARGE&&MQ_LARGE.matches);
+/* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
+const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
+const FX_SEL='.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
+let fxIO=null,fxSeq=0,fxSkip=0,fxVT=null;
+function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
+function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
+/* Changer d'écran : une onde de lumière part de l'endroit touché et traverse l'écran. Le nouvel écran apparaît dans son sillage,
+   et l'ancien s'enfonce doucement dans l'ombre devant elle. Quand l'onde atteint la photo, la goutte saute (voir eauArrive).
+   « fade » : un simple fondu, pour une feuille qui se referme. Le SOS s'affiche tout de suite, sans effet.
+   Sans l'API du navigateur (View Transitions), le nouvel écran apparaît simplement en douceur. */
+const fxPt={x:0,y:0,t:0,id:null,vt:false,synth:0,el:null};
+const FX_TOUCHE='button,a[href],input,textarea,select,label,summary,[data-act]';
+function fxTap(e){
+  fxPt.x=e.clientX;fxPt.y=e.clientY;fxPt.t=Date.now();fxPt.id=e.pointerId;
+  /* Pendant qu'un écran en remplace un autre, le navigateur ne dit plus ce qu'il y a sous le doigt : il répond « la page entière ».
+     On s'en souvient, pour retrouver le bon bouton au moment où le doigt se lève (voir fxLeve). */
+  const t=e.target;fxPt.vt=!!fxVT&&!(e.button>0)&&(!t||t===document||t===document.documentElement||t===document.body);
+}
+/* Le doigt se lève alors qu'une onde traverse encore l'écran : l'application doit répondre quand même.
+   S'il y a un bouton à cet endroit, l'onde s'arrête là, l'écran est entier tout de suite, et le toucher est transmis au bouton.
+   S'il n'y a rien à toucher, l'onde continue. Sur la photo, l'eau répond comme d'habitude. */
+function fxLeve(e){
+  if(!fxPt.vt||e.pointerId!==fxPt.id)return;fxPt.vt=false;
+  const x=e.clientX,y=e.clientY;
+  if(Date.now()-fxPt.t>700||Math.hypot(x-fxPt.x,y-fxPt.y)>12)return;   /* un appui long ou un glissement : ce n'est pas un toucher */
+  const dedans=n=>{const r=n.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;};
+  if(![].some.call(document.querySelectorAll(FX_TOUCHE),dedans)){
+    const ph=[].find.call(document.querySelectorAll(EAU_ICI),dedans);if(ph)eauTouch({clientX:x,clientY:y,button:0,target:ph});
+    return;
+  }
+  try{if(fxVT&&fxVT.skipTransition)fxVT.skipTransition();}catch(err){}
+  let el=document.elementFromPoint(x,y);el=el&&el.closest?el.closest(FX_TOUCHE):null;
+  if(!el||el.disabled)return;
+  fxPt.synth=Date.now();fxPt.el=el;
+  if(el.matches('input,textarea,select')&&el.focus)el.focus();
+  el.click();
+}
+/* Un toucher déjà transmis à la main pendant une onde ne doit pas compter deux fois, si le navigateur finit par l'envoyer lui aussi au même bouton. */
+function fxDouble(e){if(e.isTrusted&&fxPt.el&&Date.now()-fxPt.synth<350&&e.target&&(e.target===fxPt.el||fxPt.el.contains(e.target))){e.stopPropagation();e.preventDefault();}}
+function fxAnneau(){let o=document.getElementById('onde');if(!o){o=document.createElement('div');o.id='onde';o.setAttribute('aria-hidden','true');o.appendChild(document.createElement('i'));document.body.appendChild(o);}return o;}
+function fxGo(update,kind,vtOnly){
+  /* Pas d'effet non plus quand le téléphone anime déjà lui-même le retour en arrière (geste de balayage). */
+  if(!fxOn()||state.view==='sos'||Date.now()-fxSkip<500){update();return;}
+  const de=document.documentElement;const id=++fxSeq;
+  if(typeof document.startViewTransition!=='function'){if(vtOnly){update();return;}de.classList.add('fx-nav');update();setTimeout(()=>{if(id===fxSeq)de.classList.remove('fx-nav');},620);return;}
+  let done=false;
+  if(kind==='fade'){
+    de.classList.remove('fx-onde','fx-ring');de.style.setProperty('--fx-dur','.5s');
+    const run=()=>{if(done)return;done=true;update();};
+    try{const vt=document.startViewTransition(run);fxVT=vt||null;const fin=()=>{if(fxVT===vt)fxVT=null;};if(vt){if(vt.ready)vt.ready.catch(()=>{});if(vt.finished)vt.finished.then(fin,fin);else fin();}}catch(e){fxVT=null;run();}
+    return;
+  }
+  const w=window.innerWidth,h=window.innerHeight;const fresh=Date.now()-fxPt.t<1500;
+  const x=fresh?fxPt.x:w/2,y=fresh?fxPt.y:h-40;
+  /* le rayon qu'il faut pour que l'ovale de l'onde (un peu plus large que haut) recouvre tout l'écran */
+  const R=Math.ceil(Math.max(Math.hypot(x/1.25,y),Math.hypot((w-x)/1.25,y),Math.hypot(x/1.25,h-y),Math.hypot((w-x)/1.25,h-y))*1.34)+30;
+  const dur=kind==='tab'?1.3:1.2;
+  de.style.setProperty('--fx-x',Math.round(x)+'px');de.style.setProperty('--fx-y',Math.round(y)+'px');de.style.setProperty('--fx-r',R+'px');de.style.setProperty('--fx-s',(R/120).toFixed(3));de.style.setProperty('--fx-dur',dur+'s');
+  state.onde={t:Date.now(),dur:dur,x:x,y:y,r:R};
+  /* Si une onde précédente court encore (deux onglets touchés coup sur coup), son anneau est retiré d'abord : celui de la nouvelle onde repart de zéro. */
+  de.classList.remove('fx-ring');fxAnneau();de.classList.add('fx-onde');
+  /* Le dessin de l'anneau n'arrive qu'avec le nouvel écran : on ne le voit donc jamais posé tel quel, seulement grandir avec l'onde. */
+  const run=()=>{if(done)return;done=true;update();de.classList.add('fx-ring');};
+  let vt=null;
+  const end=()=>{if(fxVT===vt)fxVT=null;if(id===fxSeq)de.classList.remove('fx-onde','fx-ring');};
+  try{vt=document.startViewTransition(run);fxVT=vt||null;if(vt&&vt.finished)vt.finished.then(end,end);else end();if(vt&&vt.ready)vt.ready.catch(()=>{});}catch(e){run();end();}
+}
+/* Après chaque rendu : les blocs déjà à l'écran remontent à la surface l'un après l'autre (classe fxe), et ceux qui sont plus bas
+   viendront se poser en arrivant à l'écran (classe fxr). Si l'écran est redessiné pendant l'arrivée, elle reprend où elle en était. */
+function fxMark(){
+  if(!fxOn()||!document.querySelectorAll)return;const vh=window.innerHeight;
+  if(!FX_SD&&!fxIO&&'IntersectionObserver' in window)fxIO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('fxs');fxIO.unobserve(e.target);}});},{rootMargin:'0px 0px -20px 0px'});
+  const age=state.enterAt?Date.now()-state.enterAt:1e9;let k=0;
+  const onde=!!(state.onde&&Date.now()-state.onde.t<1800);   /* l'onde dévoile l'écran entier : les blocs n'ont pas à arriver un par un */
+  document.querySelectorAll(FX_SEL).forEach(el=>{
+    const below=el.getBoundingClientRect().top>vh-100;
+    /* À la toute première ouverture du site, l'accueil est déjà écrit dans la page et joue sa propre arrivée : on n'y touche pas. */
+    if(el.classList.contains('reveal')){if(!below&&!state.enterAt)return;el.classList.remove('reveal','d1','d2','d3','d4');}
+    if(!below){
+      if(!onde&&age<1800&&!(el.parentElement&&el.parentElement.closest&&el.parentElement.closest('.reveal,.fxe'))){el.classList.add('fxe');if(el.style)el.style.animationDelay=(Math.min(k,6)*85-age)+'ms';k++;}
+      return;
+    }
+    el.classList.add('fxr');
+    if(!FX_SD&&fxIO){el.classList.add('fxw');fxIO.observe(el);}
+  });
+}
+/* Déposer : le texte se dissout doucement dans l'eau avant que la réponse remonte. */
+function fxSink(){
+  const el=document.getElementById('draft');if(!fxOn()||!el)return Promise.resolve();
+  return new Promise(res=>{el.classList.add('sink');setTimeout(res,720);});
+}
+/* ---------- l'eau de la photo : de vraies ondes, calculées dans l'image ---------- */
+/* La photo est redessinée par la carte graphique du téléphone, et chaque onde déplace vraiment les reflets de l'étang,
+   en suivant sa perspective (les cercles s'aplatissent au loin). Rien n'est dessiné par-dessus la photo.
+   Là où l'eau est calme, ce calque est transparent, et il s'enlève tout seul quand la dernière onde s'est éteinte.
+   Sans carte graphique utilisable, la photo reste simplement immobile. */
+const EAU={ok:null,cv:null,gl:null,u:null,tex:false,host:null,geo:null,rips:[],wait:[],raf:0,t0:0,fix:null,n:0,last:0,slow:0,weak:0,seq:0,lost:0,drop:null};
+const EAU_LIFE=3.2;
+const EAU_TC=1.2;   /* le moment où la goutte touche la pointe de la colonne, en secondes depuis le début de son rebond */
+const EAU_ICI='.herofull,.band';   /* toutes les photos : l'accueil, les quatre onglets et « Mon histoire » */
+const EAU_VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+/* Les réglages de l'onde, à un seul endroit. Les longueurs sont en points de la photo, à la profondeur de la goutte. */
+const EAU_P={c:120,lam:130,front:26,tail:170,tau:4.5,ax:13,ay:16,sh:.8,gl:.35,li:.6,pw:2};
+const EAU_FS=[
+'precision highp float;',
+'uniform sampler2D uTex;uniform vec2 uRes;uniform vec4 uMap;uniform float uT;uniform float uA;uniform vec4 uD;uniform vec4 uS;uniform vec4 uR[8];',
+'void main(){',
+' vec2 p=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);',
+' vec2 q=uMap.xy+p*uMap.zw;',                                  /* le point de la photo (866 x 470) */
+' float s=(q.y+26.)/285.;',                                    /* la perspective : 1 à la profondeur de la goutte, plus petit au loin */
+' vec2 w=vec2((q.x-434.)/s,1500./s);',                         /* le même point, posé à plat sur l'étang */
+' vec2 g=vec2(0.);float h=0.;float li=0.;',
+' for(int i=0;i<8;i++){',
+'  vec4 r=uR[i];float age=uT-r.z;',
+'  vec2 dv=w-r.xy;float d=length(dv)+.0001;',
+'  float x=@c@*max(age,0.)-d;',                                /* distance derrière le front de l onde, qui avance lentement */
+'  float e=x<0.?exp(-x*x/(@front@*@front@)):exp(-x/@tail@);',  /* un front doux, puis des rides de plus en plus faibles derrière lui */
+'  e*=r.w*step(0.,age)*smoothstep(0.,.7,age)*exp(-age/@tau@)*(1.-smoothstep(2.,3.2,age))*smoothstep(8.,60.,d)/sqrt(1.+d/400.);',
+'  float c=e*cos(x*6.2832/@lam@);',
+'  float cr=cos(x*6.2832/@lam@);',
+'  g+=dv/d*c;h+=c;li+=e*pow(max(cr,0.),@pw@)*(.55+.45*abs(dv.y)/d);',
+' }',
+' float m=smoothstep(104.,150.,q.y)*mix(smoothstep(150.,250.,q.x),1.,smoothstep(140.,178.,q.y));',   /* seulement sur l eau : ni la rive, ni la fougère */
+' vec2 pa=q-vec2(434.,160.);float hh=clamp(pa.y/90.,0.,1.);',
+' m*=smoothstep(14.,30.,length(pa-vec2(0.,90.)*hh));',                                              /* ni la goutte et sa colonne, qui sont devant l eau */
+' vec2 o=vec2(g.x*@ax@*s,-g.y*@ay@*s*s)*m*uA;',
+' float tilt=(h*.45-g.y*.55)*m*uA;',                                                                   /* la pente de la vague, vue d ici */
+' vec3 col=texture2D(uTex,(q+o)/vec2(866.,470.)).rgb;',
+' col*=1.+tilt*@sh@;',
+' float sx=(q.x-480.)/130.;float sun=exp(-sx*sx);',                                                       /* la lumière vient d en haut, un peu à droite de la goutte */
+' float lum=dot(col,vec3(.3,.6,.1));',
+' col+=vec3(.9,1.,.84)*li*m*uA*(@li@*(.35+lum)+@gl@*sun);',                                          /* une crête fine qui accroche la lumière, plus vive sous le soleil */
+' float a=clamp(length(o)*.8+abs(tilt)*2.5+li*m*uA*3.,0.,1.);',
+/* la goutte suspendue : uD = (descente en points de la photo, étirement en largeur, étirement en hauteur, présence de l effet) */
+' vec2 I=vec2(866.,470.);vec2 c0=vec2(434.8,167.5);vec2 ax=vec2(15.8,16.8);vec2 dq=q-c0;',
+' float hole=0.;float dr=0.;float ec=0.;float sp=0.;',
+' if(uD.w>.001&&abs(dq.x)<50.&&dq.y>-66.&&dq.y<50.){',                                              /* tout ceci ne se calcule qu autour de la goutte, et seulement pendant son rebond */
+'  hole=(1.-smoothstep(.72,1.,length(dq/(ax+vec2(9.,dq.y>0.?4.6:9.)))))*uD.w;',                     /* là où elle était : on rebouche le fond */
+'  vec2 lo=c0-ax-12.;vec2 hi=c0+ax+vec2(12.,5.);vec2 uv=clamp((q-lo)/(hi-lo),0.,1.);',              /* il se prolonge depuis les quatre côtés du cadre qui entoure la goutte */
+'  vec3 fx=mix(texture2D(uTex,vec2(lo.x,q.y)/I).rgb,texture2D(uTex,vec2(hi.x,q.y)/I).rgb,uv.x);',
+'  vec3 fy=mix(texture2D(uTex,vec2(q.x,lo.y)/I).rgb,texture2D(uTex,vec2(q.x,hi.y)/I).rgb,uv.y);',
+'  vec3 fc=mix(mix(texture2D(uTex,lo/I).rgb,texture2D(uTex,vec2(hi.x,lo.y)/I).rgb,uv.x),mix(texture2D(uTex,vec2(lo.x,hi.y)/I).rgb,texture2D(uTex,hi/I).rgb,uv.x),uv.y);',
+'  col=mix(col,fx+fy-fc,hole);',
+'  vec2 u=(dq-vec2(0.,uD.x))/uD.yz;',
+'  dr=(1.-smoothstep(.93,1.06,length(u/ax)))*uD.w;',                                                /* là où elle est maintenant : la goutte de la photo, telle quelle */
+'  col=mix(col,texture2D(uTex,(c0+u)/I).rgb,dr);',
+' }',
+/* au contact : uS = (secondes depuis le contact, force de l éclat, rayon de l éclat, présence des gouttelettes) */
+' vec2 tip=vec2(434.8,201.);vec2 dt=q-tip;',
+' if((uS.y>.001||uS.w>.001)&&dot(dt,dt)<8100.){',
+'  ec=uS.y*exp(-dot(dt,dt)/(uS.z*uS.z));',
+'  float tc=max(uS.x,0.);',
+'  for(int i=0;i<5;i++){float fi=float(i);float an=(fi-2.)*.42;float v=64.+fi*7.;vec2 pp=tip+vec2(sin(an)*v*tc*.9,-cos(an)*v*tc+85.*tc*tc);float rr=(1.5+.3*fi)*uA;vec2 e2=q-pp;sp+=exp(-dot(e2,e2)/(rr*rr));}',
+'  sp*=uS.w;',
+'  col+=vec3(1.,.98,.86)*(ec+sp*.85);',
+' }',
+' a=max(a,clamp(max(hole,dr)+ec*2.5+sp*2.,0.,1.));',
+' gl_FragColor=vec4(col*a,a);',
+'}'].join('\n').replace(/@(\w+)@/g,(m,k)=>(+EAU_P[k]).toFixed(4));
+function eauNow(){return EAU.fix!=null?EAU.fix:(performance.now()-EAU.t0)/1000;}
+function eauInit(){
+  if(EAU.ok!==null)return EAU.ok;
+  EAU.ok=false;
+  try{
+    const cv=document.createElement('canvas');cv.className='eau';cv.setAttribute('aria-hidden','true');
+    /* failIfMajorPerformanceCaveat : pas de calque si la carte graphique est émulée par le processeur, car l'eau serait saccadée. (__eauSansGarde : seulement pour les tests.) */
+    const gl=cv.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'low-power',failIfMajorPerformanceCaveat:!window.__eauSansGarde});
+    if(!gl)return false;
+    const hp=gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER,gl.HIGH_FLOAT);if(!hp||!hp.precision)return false;
+    /* Certains navigateurs émulent la carte graphique sans le dire : on le lit dans son nom, et là non plus on ne dessine pas l'eau. */
+    try{const di=gl.getExtension('WEBGL_debug_renderer_info');const nom=di?String(gl.getParameter(di.UNMASKED_RENDERER_WEBGL)):'';if(!window.__eauSansGarde&&/swiftshader|llvmpipe|software|basic render/i.test(nom))return false;}catch(e){}
+    const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error('eau');return o;};
+    const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,EAU_VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,EAU_FS));gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return false;
+    gl.useProgram(pr);
+    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    const a=gl.getAttribLocation(pr,'a');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+    EAU.u={res:gl.getUniformLocation(pr,'uRes'),map:gl.getUniformLocation(pr,'uMap'),t:gl.getUniformLocation(pr,'uT'),a:gl.getUniformLocation(pr,'uA'),d:gl.getUniformLocation(pr,'uD'),s:gl.getUniformLocation(pr,'uS'),r:gl.getUniformLocation(pr,'uR')};
+    gl.uniform1i(gl.getUniformLocation(pr,'uTex'),0);gl.clearColor(0,0,0,0);
+    cv.addEventListener('webglcontextlost',e=>{e.preventDefault();if(EAU.cv!==cv)return;eauStop();EAU.cv=null;EAU.gl=null;EAU.tex=false;EAU.ok=(++EAU.lost<4)?null:false;});
+    const im=new Image();im.decoding='async';
+    im.onload=()=>{
+      if(EAU.gl!==gl)return;
+      try{
+        gl.bindTexture(gl.TEXTURE_2D,gl.createTexture());
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
+        EAU.tex=true;const q=EAU.wait;EAU.wait=[];q.forEach(f=>{try{f();}catch(e){}});
+      }catch(e){EAU.ok=false;}
+    };
+    im.src=HERO;
+    EAU.cv=cv;EAU.gl=gl;EAU.ok=true;
+  }catch(e){EAU.ok=false;}
+  return EAU.ok;
+}
+/* Où la photo est-elle affichée, et quel morceau en voit-on ? (elle remplit sa boîte en étant rognée, comme « cover ») */
+function eauGeo(host){
+  const hero=host.classList.contains('herofull');const box=hero?host.querySelector('.herobg'):host;if(!box)return null;
+  const r=box.getBoundingClientRect();if(r.width<40||r.height<40)return null;
+  let px=.5,py=.5;
+  try{const cs=getComputedStyle(box);const m=String(hero?cs.objectPosition:cs.backgroundPosition).match(/(-?[\d.]+)%\s+(-?[\d.]+)%/);if(m){px=m[1]/100;py=m[2]/100;}}catch(e){}
+  const k=Math.max(r.width/866,r.height/470);
+  return {el:box,w:r.width,h:r.height,k:k,ox:-(r.width-866*k)*px/k,oy:-(r.height-470*k)*py/k};
+}
+function eauHost(host){
+  if(!EAU.ok||!host)return false;
+  if(EAU.host!==host||EAU.cv.parentNode!==host){
+    if(host.classList.contains('herofull')){const im=host.querySelector('.herobg');if(!im)return false;host.insertBefore(EAU.cv,im.nextSibling);}
+    else host.insertBefore(EAU.cv,host.firstChild);
+    EAU.host=host;EAU.geo=null;
+  }
+  if(!EAU.geo)EAU.geo=eauGeo(host);
+  return !!EAU.geo;
+}
+function eauStop(){
+  if(EAU.raf){cancelAnimationFrame(EAU.raf);EAU.raf=0;}
+  EAU.rips=[];EAU.wait=[];EAU.n=0;EAU.slow=0;EAU.host=null;EAU.geo=null;EAU.drop=null;
+  if(EAU.cv){try{EAU.gl.clear(EAU.gl.COLOR_BUFFER_BIT);}catch(e){}if(EAU.cv.parentNode)EAU.cv.parentNode.removeChild(EAU.cv);}
+}
+/* Une onde naît à cet endroit de la photo. */
+function eauAdd(ix,iy,force,delay){
+  if(!EAU.rips.length&&!EAU.raf)EAU.t0=performance.now();
+  const s=(iy+26)/285;
+  EAU.rips.push({x:(ix-434)/s,z:1500/s,t:eauNow()+(delay||0),s:force});
+  if(EAU.rips.length>8)EAU.rips.shift();
+  if(!EAU.raf&&EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);
+}
+/* Le rebond de la goutte, en ralenti : elle monte encore un peu, retombe sur la pointe de la colonne, s'y écrase à peine, puis rebondit et revient à sa place.
+   Rend ce qu'il faut au dessin : sa descente, ses étirements, et l'éclat et les gouttelettes du contact. */
+function eauGoutte(t){
+  const seg=(a,b)=>Math.min(1,Math.max(0,(t-a)/(b-a))),eo=p=>1-(1-p)*(1-p),eio=p=>p<.5?2*p*p:1-2*(1-p)*(1-p);
+  const T=EAU_TC;let dy=0,sx=1,sy=1;
+  if(t<.12){}
+  else if(t<.62)dy=-22*eo(seg(.12,.62));
+  else if(t<T){const p=seg(.62,T);dy=-22+40*p*p;sy=1+.07*p;sx=1-.045*p;}
+  else if(t<T+.3){const p=seg(T,T+.3),k=Math.sin(Math.PI*p);sy=1+.07*(1-p)*(1-k)-.16*k;sx=1-.045*(1-p)*(1-k)+.1*k;dy=18+(1-sy)*16.8;}
+  else if(t<T+.95)dy=18-23*eo(seg(T+.3,T+.95));
+  else dy=-5*(1-eio(seg(T+.95,T+1.75)));
+  const tc=t-T;const pres=Math.min(1,t/.08)*(1-seg(T+1.67,T+1.75));
+  const eclat=tc<0?0:(tc<.09?tc/.09:Math.exp(-(tc-.09)/.3))*.5;
+  const gouttes=tc<0?0:Math.min(1,tc/.05)*(1-Math.min(1,Math.max(0,(tc-.55)/.4)));
+  return {d:[dy,sx,sy,pres],s:[tc,eclat,12,gouttes]};
+}
+const EAU_GFIN=EAU_TC+1.75;
+/* La goutte rebondit, et l'onde part au moment où elle touche l'eau. */
+function eauBond(){
+  if(EAU.drop!=null)return;
+  eauAdd(434,259,1,EAU_TC);eauAdd(434,259,.55,EAU_TC+.3);
+  EAU.drop=eauNow();
+}
+function eauFrame(){
+  EAU.raf=0;const gl=EAU.gl,cv=EAU.cv;
+  if(!EAU.ok||!EAU.tex||!EAU.host||!cv.isConnected||!fxOn()){eauStop();return;}
+  const now=eauNow();
+  EAU.rips=EAU.rips.filter(r=>now-r.t<EAU_LIFE);
+  if(EAU.drop!=null&&now-EAU.drop>=EAU_GFIN)EAU.drop=null;
+  if(!EAU.rips.length&&EAU.drop==null){eauStop();return;}
+  if(!EAU.geo||EAU.n%30===29)EAU.geo=eauGeo(EAU.host);
+  const g=EAU.geo;if(!g){eauStop();return;}
+  /* Un téléphone qui peine vraiment (quatre images de suite trop lentes) : on arrête cette onde. La deuxième fois, la photo reste immobile pour toute la visite. */
+  const ms=performance.now();
+  if(EAU.fix==null&&!window.__eauSansGarde&&EAU.n>1){EAU.slow=ms-EAU.last>60?EAU.slow+1:0;if(EAU.slow>3){if(++EAU.weak>1)EAU.ok=false;eauStop();return;}}
+  EAU.last=ms;EAU.n++;
+  /* Sur un grand écran la photo est grande : on plafonne le nombre de points dessinés, pour que l'eau reste fluide même sur un ordinateur modeste. */
+  const dpr=Math.min(window.devicePixelRatio||1,2,Math.max(1,Math.sqrt(1.8e6/(g.w*g.h))));
+  const W=Math.max(2,Math.round(g.w*dpr)),H=Math.max(2,Math.round(g.h*dpr));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  gl.viewport(0,0,W,H);
+  gl.uniform2f(EAU.u.res,W,H);gl.uniform4f(EAU.u.map,g.ox,g.oy,g.w/(W*g.k),g.h/(H*g.k));gl.uniform1f(EAU.u.t,now);
+  gl.uniform1f(EAU.u.a,Math.max(1,Math.min(1.7,.8/g.k)));
+  const G=EAU.drop!=null?eauGoutte(now-EAU.drop):{d:[0,1,1,0],s:[-1,0,12,0]};
+  gl.uniform4f(EAU.u.d,G.d[0],G.d[1],G.d[2],G.d[3]);gl.uniform4f(EAU.u.s,G.s[0],G.s[1],G.s[2],G.s[3]);   /* photo affichée en petit (le bandeau) : l'onde est un peu plus marquée, pour rester visible */
+  const a=EAU.buf||(EAU.buf=new Float32Array(32));a.fill(0);EAU.rips.forEach((r,i)=>{a[i*4]=r.x;a[i*4+1]=r.z;a[i*4+2]=r.t;a[i*4+3]=r.s;});
+  gl.uniform4fv(EAU.u.r,a);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  if(EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);
+}
+/* Dès que la photo est prête pour la carte graphique. */
+function eauReady(f){if(!eauInit())return;if(EAU.tex)f();else EAU.wait.push(f);}
+/* À l'arrivée sur un écran qui montre la photo : la goutte rebondit, et l'onde part quand elle touche l'eau.
+   Avec la lumière qui se lève en même temps, tout ce qui bouge tout seul est redevenu calme en cinq secondes.
+   « first » : la toute première ouverture du site, où l'écran est déjà écrit dans la page. La lumière y attend l'eau, pour qu'elles partent ensemble. */
+function eauArrive(first){
+  const id=++EAU.seq;if(!fxOn())return;
+  /* Si une onde de lumière traverse l'écran, la goutte attend qu'elle arrive jusqu'à la photo : c'est l'onde qui la fait sauter. */
+  let attente=100;const o=state.onde;
+  if(o&&Date.now()-o.t<300){const ph=document.querySelector(EAU_ICI);if(ph){const r=ph.getBoundingClientRect();attente=Math.round(o.dur*1000*Math.min(1,.06+Math.hypot((r.left+r.width/2-o.x)/1.25,r.top+r.height*.5-o.y)/o.r)*.85);}}
+  const go=()=>setTimeout(()=>{
+    if(id!==EAU.seq||!fxOn())return;
+    if(first){const ap=document.getElementById('app');if(ap&&ap.classList){state.enterAt=Date.now();ap.classList.add('lum');}}
+    if(!document.querySelector(EAU_ICI))return;
+    eauReady(()=>{if(id!==EAU.seq)return;const host=document.querySelector(EAU_ICI);if(!host||!eauHost(host))return;eauBond();});
+  },attente);
+  /* On attend que la page ait fini de se charger : la première onde ne doit pas être saccadée. */
+  if(document.readyState==='complete')go();else window.addEventListener('load',go,{once:true});
+}
+/* Sous le doigt : on ne fait bouger l'eau que là où il y a de l'eau. */
+function eauTouch(e){
+  if(!fxOn()||e.button>0)return;const t=e.target&&e.target.closest?e.target:null;
+  if(!t||t.closest('button,a,input,textarea,select,label'))return;
+  const host=t.closest('.herofull,.band');if(!host)return;
+  const x=e.clientX,y=e.clientY;
+  eauReady(()=>{
+    if(!host.isConnected)return;const g=eauGeo(host);if(!g)return;const r=g.el.getBoundingClientRect();
+    const ix=g.ox+(x-r.left)/g.k,iy=g.oy+(y-r.top)/g.k;
+    if(Math.abs(ix-435)<30&&iy>140&&iy<262){if(eauHost(host))eauBond();return;}      /* la goutte ou sa colonne : elle rebondit */
+    if(iy<118||iy>470||ix<0||ix>866)return;      /* la rive, la forêt, ou plus bas que la photo : rien ne bouge */
+    if(eauHost(host))eauAdd(ix,iy,.8,0);
+  });
+}
+/* Après chaque rendu : en changeant d'écran l'eau redevient calme, et sur le même écran le calque retrouve sa photo. */
+function eauSync(entering){
+  if(!EAU.cv)return;
+  if(entering||!EAU.rips.length){eauStop();return;}
+  if(!EAU.cv.isConnected){const host=document.querySelector('.herofull,.band');if(!host||!eauHost(host))eauStop();else if(!EAU.raf&&EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);}
+}
+/* ---------- rendu ---------- */
+const TAB_VIEWS=['today','parcours','kit','me'];
+const BACK_VIEWS=['sit','exo','step','photo','data','about','plans','evo','depots','antonio','letter'];
+/* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
+function focusKey(el){
+  if(!el||!el.matches||!el.closest||!el.closest('#app'))return null;
+  if(el.matches('input[type=text],input[type=search],textarea'))return null;
+  if(el.id)return '#'+el.id;
+  const d=el.dataset||{};if(!d.act)return null;
+  let s='[data-act="'+d.act+'"]';
+  ['view','v','k','i','id','f','m'].forEach(a=>{if(d[a]!==undefined)s+='[data-'+a+'="'+String(d[a]).replace(/["\\]/g,'')+'"]';});
+  return s;
+}
+function render(){
+  const app=document.getElementById('app');let html='';let base='app';let key;
+  const fkey=focusKey(document.activeElement);
+  const oldSheet=app.querySelector('.sheet');const sheetTop=oldSheet?oldSheet.scrollTop:0;
+  if(!D().onboarded&&(state.view==='plans'||state.view==='about')){base='app nobar';key='peek-'+state.view;html='<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button></header>'+(state.view==='about'?viewAbout():viewPlans());}
+  else if(!D().onboarded){base='app nobar';key='intro';html=viewIntro();}
+  else if(state.view==='sos'){base='app nobar';key='sos';html=viewSOS();}
+  else{
+    key=state.view;html+=(large()?tabs():'')+bar();
+    switch(state.view){
+      case 'today':html+=viewToday();break;
+      case 'parcours':html+=viewParcours();break;
+      case 'step':html+=viewStep();break;
+      case 'evo':html+=viewEvo();break;
+      case 'photo':html+=viewPhoto();break;
+      case 'kit':html+=viewKit();break;
+      case 'sit':html+=viewSit();break;
+      case 'exo':html+=viewExo();break;
+      case 'me':html+=viewMe();break;
+      case 'plans':html+=viewPlans();break;
+      case 'depots':html+=viewDepots();break;
+      case 'antonio':html+=viewAntonio();break;
+      case 'letter':html+=viewLetter();break;
+      case 'data':html+=viewData();break;
+      case 'about':html+=viewAbout();break;
+      default:html+=viewToday();
+    }
+    if(!large())html+=tabs();
+  }
+  /* Les animations d'apparition ne jouent qu'en entrant sur un écran ou en ouvrant une feuille, pas à chaque appui. */
+  const entering=key!==state.lastKey;state.lastKey=key;
+  if(entering)state.enterAt=Date.now();
+  const age=(Date.now()-(state.enterAt||0))/1000;
+  const sheetIn=!!state.sheet&&state.sheet!==state.lastSheet;state.lastSheet=state.sheet;
+  if(state.sheet==='onboard')html+=sheetOnboard(sheetIn);
+  if(state.sheet==='upgrade')html+=sheetUpgrade(sheetIn);
+  /* « lum » : la lumière qui se lève une fois sur la photo. Si l'écran est redessiné entre-temps, elle reprend là où elle en était (--fx-age). */
+  /* « v-… » dit quel écran est affiché, et « wide » marque les quatre onglets : la mise en page pour grand écran s'appuie dessus. */
+  base+=' v-'+key+(TAB_VIEWS.includes(key)?' wide':'');
+  app.className=base+(entering?' enter':'')+(FX_OK&&age<4.8?' lum':'');
+  if(FX_OK&&age<4.8&&app.style&&app.style.setProperty)app.style.setProperty('--fx-age',age.toFixed(2)+'s');
+  app.removeAttribute('data-prerender');
+  app.innerHTML=html;
+  /* Un message bref survit au rendu suivant du même écran (sinon l'aide en cas de détresse disparaissait aussitôt), mais ne suit pas le parent sur un autre écran. */
+  if(state.toast){if(state.toastView===state.view)renderToast();else state.toast='';}
+  const sh=state.sheet?app.querySelector('.sheet'):null;
+  if(sh&&sheetIn){try{sh.focus({preventScroll:true});}catch(e){}}
+  else{
+    if(sh)sh.scrollTop=sheetTop;
+    if(fkey){
+      let el=null;try{el=app.querySelector(fkey);}catch(e){}
+      if(el){try{el.focus({preventScroll:true});}catch(e){}}
+      else if(entering){const m=document.getElementById('main');if(m){try{m.focus({preventScroll:true});}catch(e){}}}
+    }
+  }
+  if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
+  syncStory(entering);
+  fxMark();
+  eauSync(entering);if(entering)eauArrive();
+}
+/* ---------- « Mon histoire » : adresse partageable (#histoire, sur le site) et un seul moment d'animation ---------- */
+const STORY_HASH='#histoire';const TITLE0=document.title;
+function syncStory(entering){
+  const on=state.view==='about';
+  try{document.title=on?'Mon histoire, par Antonio Company, créateur de Parent Écouté, Parent Éclairé':TITLE0;}catch(e){}
+  if(SITE&&!on&&location.hash===STORY_HASH){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+  if(!on||!entering)return;
+  const el=document.querySelector('.avec');
+  if(!el||!('IntersectionObserver' in window)||!fxOn())return;
+  el.classList.add('arm');
+  const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){el.classList.add('seen');io.disconnect();}},{threshold:.35});
+  io.observe(el);
+}
+function openStory(){
+  if(SITE&&location.hash!==STORY_HASH){location.hash=STORY_HASH.slice(1);return;}
+  showStory();
+}
+function showStory(){if(state.view!=='about')state.prev=state.view;state.view='about';state.sheet=null;state.confirmReset=false;stopTimer();fxGo(()=>{render();window.scrollTo(0,0);},'open');}
+function bar(){
+  const back=BACK_VIEWS.includes(state.view)?'<button type="button" class="back" data-act="back">'+I.back+'Retour</button>':'';
+  /* Sur grand écran, le nom de l'espace et le SOS sont dans la colonne de gauche : il ne reste ici que le bouton Retour, quand il y en a un. */
+  if(large())return back?'<header class="bar sub">'+back+'</header>':'';
+  const wm=back?'':'<span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span>';
+  return '<header class="bar'+(back?' sub':'')+'">'+back+wm+'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
+}
+/* ---------- erreurs de saisie : affichées sous le champ, sans rien effacer ---------- */
+function fieldErr(id,msg){
+  const el=document.getElementById(id);if(!el)return;
+  let e=document.getElementById('err-'+id);
+  if(!e){e=document.createElement('p');e.id='err-'+id;e.className='err';e.setAttribute('role','alert');el.insertAdjacentElement('afterend',e);}
+  e.textContent=msg;el.setAttribute('aria-invalid','true');el.setAttribute('aria-describedby','err-'+id);
+  try{el.focus();}catch(x){}
+}
+function clearErr(el){
+  if(!el||!el.id||!el.hasAttribute('aria-invalid'))return;
+  const e=document.getElementById('err-'+el.id);if(e)e.remove();
+  el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby');
+}
+function clean(v,max){return String(v==null?'':v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'').trim().slice(0,max);}
+function updCount(t){
+  const c=document.getElementById('draft-count');if(!c)return;const n=t.value.length;
+  if(n>=LIM.draft*0.875){c.textContent=n+' / '+LIM.draft;c.className='count'+(n>=LIM.draft?' warn':'');}else c.textContent='';
+}
+/* ---------- accueil plein écran ---------- */
+function viewIntro(){
+  const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="onboard">'+I.sun2+'Commencer gratuitement</button>';
+  const priv=SITE?'Cette version de test est gratuite et tout ce que vous écrivez reste sur votre appareil. La phrase-miroir personnalisée arrivera avec la version complète. En attendant, chaque dépôt reçoit une question et une lumière.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0">'+
+    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer six mois à votre rythme.</p>'+cta(false)+'</div>'+
+    '<div class="pillars reveal d1">'+
+    '<div class="pillar"><span class="ic">'+I.drop+'</span><div><h2>Écouté</h2><span>Vous déposez par écrit ce qui vous pèse, sans donner de prénom. En retour, vous recevez une phrase-miroir, une question qui ouvre et une lumière.</span></div></div>'+
+    '<div class="pillar sun"><span class="ic">'+I.sun2+'</span><div><h2>Éclairé</h2><span>Vous recevez chaque matin la dose de lumière intérieure et vous suivez un parcours de six mois, à raison d’une étape par semaine.</span></div></div>'+
+    '<div class="pillar"><span class="ic">'+I.user+'</span><div><h2>Accompagné, si vous le voulez</h2><span>Antonio Company, travailleur social depuis ses 19 ans, vous écrit chaque mois dans la formule « Avec Antonio ».</span></div></div>'+
+    '</div>'+
+    '<section class="voice reveal d2" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à dix ans, je suis travailleur social depuis mes 19 ans et je suis père de trois enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></section>'+
+    '<div class="cta-stack reveal d3">'+cta(true)+'</div>'+
+    '<p class="hint" style="text-align:center">'+priv+'</p></main>'+
+    '<footer class="foot"><button type="button" class="linkbtn" data-act="peek-plans">Formules</button>'+(SITE?'<a href="confidentialite.html">Confidentialité</a><a href="conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="mentions-legales.html">Mentions légales</a>':''):'')+'</footer>';
+}
+/* ---------- aujourd’hui ---------- */
+function viewToday(){
+  const d=D();const t=todayIso();const m=d.moods[t];const st=allSteps()[currentStepIdx()];const rd=recentDepot();
+  let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+', semaine '+(weekNo()+1)+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
+  html+='<div class="duo"><div class="duo-a">';
+  if(can('antonio'))html+=letterCard();
+  if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq curseurs et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
+  html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p><span class="sig">'+(d.doseDate===t&&d.doseText?'Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio':'Antonio')+'</span>'+
+    (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
+  html+='</div><div class="duo-b">';
+  html+=depotBox();
+  html+='<button type="button" class="step now reveal d3" data-act="step" data-i="'+st.idx+'"><span class="n">'+(st.idx+1)+'</span><span class="tx"><span class="label">L’étape de la semaine</span><b>'+esc(st.t)+'</b></span><span class="chev">'+I.chev+'</span></button>';
+  html+='<div class="card reveal d4"><span class="label">Comment ça va, là, maintenant ?</span><div class="moodrow">'+MOODS.map((x,i)=>'<button type="button" data-act="mood" data-i="'+i+'" aria-pressed="'+(m===i)+'" aria-label="'+esc(x[1])+'">'+x[0]+'</button>').join('')+'</div>'+(m!==undefined?'<p style="font-family:var(--font-display);font-size:17px;line-height:1.4">'+esc(MOOD_WORDS[m])+'</p>':'')+'</div>';
+  return html+'</div></div></main>';
+}
+function letterCard(){
+  const L=D().letters;const l=L.length?L[L.length-1]:null;
+  const txt=l?l.text:LETTER_EXAMPLE;
+  return '<button type="button" class="letter reveal d1" data-act="letter" data-i="'+(l?L.length-1:-1)+'"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>'+(l?'Le mot d’Antonio '+esc(deMois(l.date)):'Le mot d’Antonio, un exemple')+'</b><span>'+(l?esc(fmtDate(l.date)):'Démonstration de ce qu’il sera')+'</span></div></div><p>'+esc(txt.split('\n')[0])+'</p><span class="hint">'+(l?'Lire ':'Lire l’exemple ')+I.chev+'</span></button>';
+}
+function depotBox(){
+  const left=depotsLeft();const today=todayIso();const td=D().depots.filter(x=>x.date===today).slice(-1)[0];
+  const head=lab=>'<div class="row" style="justify-content:space-between;align-items:center">'+lab+(left!==Infinity&&left>0?'<span class="pill">'+left+' dépôt'+(left>1?'s':'')+' offert'+(left>1?'s':'')+'</span>':'')+'</div>';
+  let html='<div class="card reveal d2">';
+  if(left===0){
+    html+=head('<span class="label">Déposer ce qui pèse</span>')+'<p class="lesson" style="font-size:18px">Vos trois dépôts Découverte sont utilisés.</p>'+lockline('Déposer sans limite, avec la phrase-miroir','depots')+'<button type="button" class="btn primary" data-act="upgrade" data-f="depots" style="align-self:flex-start">Passer au Parcours pour 14 CHF par mois</button>';
+  }else{
+    html+=head('<label class="label" for="draft">Déposer ce qui pèse</label>')+
+      '<textarea id="draft" maxlength="'+LIM.draft+'" placeholder="Qu’est-ce qui pèse, là, maintenant ? Écrivez comme ça vient, sans prénom." style="min-height:110px">'+esc(state.draft)+'</textarea>'+
+      '<div class="chips" role="group" aria-label="Ce que vous attendez"><button type="button" class="chip" data-act="dmode" data-v="listen" aria-pressed="'+(state.depotMode==='listen')+'">Écoutez-moi</button><button type="button" class="chip" data-act="dmode" data-v="advice" aria-pressed="'+(state.depotMode==='advice')+'">Et concrètement, je fais quoi ?</button></div>'+
+      '<div class="row" style="align-items:center">'+(state.busy?'<button type="button" class="btn" data-act="dstop">'+I.stop+'Arrêter</button>':'<button type="button" class="btn primary" data-act="dsend">'+I.drop+'Déposer</button>')+'<span class="count" id="draft-count" aria-hidden="true"></span></div>'+
+      (state.sample?'<p class="hint">La réponse est écrite par une intelligence artificielle, avec la méthode d’Antonio. Ce n’est pas Antonio qui vous répond ici.</p>':'')+
+      (state.sample===false?'<p class="hint">Dans cette version de test, votre texte ne quitte pas votre appareil. Vous recevez une question et une lumière choisies par l’application, et la phrase-miroir arrivera avec la version complète.</p>':'');
+  }
+  if(state.busy)html+='<div class="mirror"><div class="think" role="status"><span class="dotp"></span>Je vous lis…</div></div>';
+  if(td&&!state.busy)html+=depotHtml(td,true);
+  html+='</div>';return html;
+}
+function depotHtml(x,compact){
+  let out='<div class="mirror'+(x.id===state.fresh?' surface':'')+'"><span class="lbl">'+esc(fmtDate(x.date))+(x.time?' à '+esc(hm(x.time)):'')+'</span>'+(compact?'':'<p class="depot you">« '+esc(x.text.length>220?x.text.slice(0,220)+'…':x.text)+' »</p>');
+  if(x.risk)out+=riskHtml('q');
+  if(x.miroir)out+='<p class="m">'+esc(x.miroir)+'</p>';
+  if(x.question)out+='<p class="q">'+esc(x.question)+'</p>';
+  if(x.lumiere)out+='<p class="l">'+esc(x.lumiere)+'</p>';
+  if(x.conseil)out+='<div class="q">'+mdLite(x.conseil)+'</div>';
+  /* Une réponse écrite par le modèle le dit, partout où elle s'affiche. En mode local, il n'y a ni phrase-miroir ni conseil. */
+  if(x.miroir||x.conseil)out+='<p class="hint ia">Cette réponse a été écrite par une intelligence artificielle.</p>';
+  const row=[];
+  if(!x.conseil&&state.sample)row.push('<button type="button" class="btn small" data-act="dconcret" data-id="'+x.id+'">'+I.bulb+'Et concrètement ?</button>');
+  if(can('antonio'))row.push('<label class="share"><input type="checkbox" data-act="share" data-id="'+x.id+'"'+(D().shared[x.id]?' checked':'')+'> Partager ce dépôt avec Antonio'+(DEMO?' (démonstration)':'')+'</label>');
+  if(row.length)out+='<div class="row" style="align-items:center">'+row.join('')+'</div>';
+  return out+'</div>';
+}
+/* ---------- écoute ---------- */
+const LOCAL_Q=['Qu’est-ce qui, dans tout ça, dépend vraiment de vous ?','Si une amie vivait exactement cela, que lui diriez-vous ?','Qu’est-ce qui vous a tenu debout aujourd’hui, même un peu ?','De quoi auriez-vous besoin ce soir, en une phrase ?','Qu’est-ce que votre enfant a fait aujourd’hui que vous n’avez pas eu le temps de voir ?'];
+function ctx(){return 'enfant '+AGES[D().age].toLowerCase()+' ; ce qui pèse le plus pour ce parent : '+(D().weights.length?D().weights.map(w=>(WEIGHTS.find(x=>x[0]===w)||['',w])[1].toLowerCase()).join(', '):'non précisé');}
+function listenPrompt(text){
+  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », un espace d’écoute créé par Antonio Company, travailleur social depuis ses 19 ans (responsable d’une équipe socio-éducative, auprès de personnes en situation de handicap ou en difficulté et de leurs familles ; père de trois enfants ; il a lui-même connu la famille d’accueil dans son enfance). Un parent vient de déposer ce qui pèse. Ta tâche : l’écouter, pas le conseiller. Réponds UNIQUEMENT avec un objet JSON : {"miroir":"...","question":"...","lumiere":"..."}.\n'+
+  '« miroir » : une ou deux phrases qui reformulent ce que le parent vit, avec ses mots, en nommant l’émotion probable sans l’imposer (« on dirait que… »), sans aucun conseil, sans jugement, sans minimiser. « question » : une seule question ouverte, courte, qui aide le parent à voir plus clair ou à se reconnecter à ses ressources ; jamais « pourquoi ». « lumiere » : une phrase chaleureuse et vraie, jamais mièvre, qui reconnaît ce que le parent fait déjà, ou lui donne une permission (droit à la fatigue, à la colère, au repos). Français de Suisse romande, vouvoiement, aucun prénom, aucun diagnostic. Écris comme Antonio parle, avec des phrases simples et complètes, reliées par « et », « mais » ou « parce que ». N’utilise ni deux-points, ni point-virgule, ni tiret long, ni point médian, ni phrase sans verbe, ni formule du type « pas ceci, pas cela ». Si le message évoque un danger immédiat (idées suicidaires, violence grave), « lumiere » commence par inviter doucement à appeler le 143 (La Main Tendue) ou le 144.\n\nContexte : '+ctx()+'.\n\nDÉPÔT :\n"""\n'+text.slice(0,6000)+'\n"""';
+}
+function advicePrompt(){
+  return 'Tu es la voix de « Parent Écouté, Parent Éclairé », celle d’un travailleur social expérimenté (dans le métier depuis ses 19 ans, auprès d’enfants, d’adolescents et d’adultes en situation de handicap ou en difficulté, responsable d’une équipe socio-éducative, père). Tu parles à un parent, en français de Suisse romande, vouvoiement, chaleur, zéro jargon, zéro jugement. Aucun diagnostic, aucun trouble nommé, aucun médicament, aucun prénom. Contexte : '+ctx()+'.\n'+
+  'Structure en quatre parties courtes avec ces titres exacts précédés de « ## » : « Ce que j’entends » (deux phrases, sans juger, qui reconnaissent l’effort), « Ce que vous pouvez essayer » (trois pistes concrètes en liste à puces, réalistes ce soir ou cette semaine : prévisibilité, moins de mots, choix entre deux options, d’abord/ensuite, routines visuelles, sécurité d’abord, observer ce qui précède), « Pour vous » (une ou deux phrases pour le parent lui-même), « Si ça continue » (une phrase : quand et à qui demander de l’aide, sans dramatiser ; pédiatre ou médecin, l’équipe de l’institution ou de l’école, Pro Infirmis, associations de parents ; La Main Tendue 143 si le parent va très mal). Écris comme Antonio parle, avec des phrases simples et complètes, reliées par « et », « mais » ou « parce que ». N’utilise ni deux-points, ni point-virgule, ni tiret long, ni point médian, ni phrase sans verbe, ni formule du type « pas ceci, pas cela ». Maximum 200 mots. Pas de gras. Termine par une phrase simple et vraie.';
+}
+const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais le frapper|je vais la frapper)/i;
+async function sendDepot(){
+  if(state.busy||state.sinking)return;
+  const text=clean(state.draft,LIM.draft);if(text.length<5){fieldErr('draft','Écrivez quelques mots, comme ça vient (cinq caractères au moins).');return;}
+  if(depotsLeft()===0){openUpgrade('depots');render();return;}
+  const d=D();const n=new Date();const dep={id:'d'+Date.now(),date:todayIso(),time:pad(n.getHours())+':'+pad(n.getMinutes()),text,mode:state.depotMode};
+  if(RISK.test(text)){dep.risk=true;toast('Si c’est urgent, appelez le 143 (La Main Tendue) ou le 144, de jour comme de nuit.');}
+  state.sinking=true;await fxSink();state.sinking=false;
+  state.draft='';state.busy=true;render();
+  if(!state.sample){
+    dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+  }
+  state.ctl=new AbortController();
+  try{
+    if(state.depotMode==='advice'){
+      const res=await state.sample([{role:'user',content:advicePrompt()},{role:'user',content:text}],{signal:state.ctl.signal,cache:false});
+      dep.conseil=voix(res.text);
+    }else{
+      const r=await state.sample.json(listenPrompt(text),{signal:state.ctl.signal,cache:false});
+      dep.miroir=voix(String((r&&r.miroir)||'').trim());dep.question=voix(String((r&&r.question)||'').trim());dep.lumiere=voix(String((r&&r.lumiere)||'').trim());
+      if(!dep.miroir&&!dep.question)dep.question=LOCAL_Q[0];
+    }
+  }catch(e){
+    if(e&&e.code==='not_granted')state.sample=false;
+    dep.question=dep.question||LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=dep.lumiere||'C’est déposé. Même sans réponse, ce que vous avez écrit est maintenant en dehors de vous.';
+    if(e&&e.code!=='cancelled'&&e.code!=='not_granted')toast('La réponse n’est pas venue cette fois. Votre dépôt est gardé.');
+  }
+  d.depots.push(dep);state.busy=false;state.ctl=null;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1900);
+}
+async function concret(id){
+  const d=D();const dep=d.depots.find(x=>x.id===id);if(!dep||!state.sample)return;
+  if(!can('parcours')&&d.depots.filter(x=>x.conseil).length>=FREE_DEPOTS){openUpgrade('depots');render();return;}
+  state.busy=true;render();state.ctl=new AbortController();
+  try{const res=await state.sample([{role:'user',content:advicePrompt()},{role:'user',content:dep.text}],{signal:state.ctl.signal,cache:false});dep.conseil=voix(res.text);}
+  catch(e){if(e&&e.code!=='cancelled')toast('Pas de réponse cette fois. Réessayez dans un instant.');}
+  state.busy=false;state.ctl=null;save();render();
+}
+async function dosePerso(){
+  const ld=recentDepot();if(!ld||!state.sample)return;
+  if(!can('parcours')){openUpgrade('dose');render();return;}
+  state.doseBusy=true;render();
+  try{
+    const r=await state.sample('Tu écris « la dose de lumière intérieure » de « Parent Écouté, Parent Éclairé », créé par Antonio Company, travailleur social. Un parent a déposé ceci il y a peu : """'+ld.text.slice(0,1500)+'""" (le '+fmtDate(ld.date)+'). Écris pour lui, pour aujourd’hui '+fmtDate(todayIso())+', une dose de 45 à 70 mots : une phrase qui montre que tu as entendu ce qu’il a déposé (sans le répéter mot à mot), une phrase qui éclaire ou donne une permission, et une petite chose à faire ou à regarder aujourd’hui. Français de Suisse romande, vouvoiement, aucun prénom, aucun conseil médical, aucune mièvrerie, pas de titre, pas de guillemets, pas de signature. Écris comme Antonio parle, avec des phrases simples et complètes, reliées par « et », « mais » ou « parce que ». N’utilise ni deux-points, ni point-virgule, ni tiret long, ni point médian, ni phrase sans verbe, ni formule du type « pas ceci, pas cela ». Réponds avec le texte seul.',{cache:false,modelTier:'quick'});
+    D().doseDate=todayIso();D().doseText=voix(r.text.trim());save();
+  }catch(e){if(e&&e.code==='not_granted')state.sample=false;toast('La dose personnalisée n’est pas venue. Celle du jour reste là.');}
+  state.doseBusy=false;render();
+}
+/* ---------- parcours ---------- */
+function stepLocked(idx){return idx>0&&!can('parcours');}
+function viewParcours(){
+  const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours dure six mois, avec une étape par semaine. À chaque fois, vous avez deux minutes de lecture, une chose à essayer et une chose à observer.</p>'+
+    '<div class="card prog"><div class="kv"><span>Semaine '+(weekNo()+1)+'</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
+    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
+    '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!D().steps[st.idx];const lk=stepLocked(st.idx);return '<button type="button" class="step'+(st.idx===cur?' now':'')+(dn?' done':'')+(lk?' locked':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+(st.idx===cur?'Cette semaine':'Semaine '+(st.idx+1))+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
+    (can('parcours')?'<p class="hint">Vous pouvez avancer librement. Le parcours vous propose un rythme, mais vous restez libre du vôtre.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
+}
+function viewStep(){
+  const steps=allSteps();const s=steps[state.step];if(!s){state.view='parcours';return viewParcours();}
+  const dn=!!D().steps[s.idx];
+  const links={evo:['go','evo',I.chart,'Faire le point dans Mon évolution'],photo:['go','photo',I.image,'Ouvrir le photolangage'],breath:['exo','breath',I.wind,'Respirer 4-6 maintenant'],advice:['kit','sits',I.bulb,'Ouvrir les situations'],pros:['sit','pros',I.bulb,'Parler aux professionnels']};
+  const lk=s.link?links[s.link]:null;
+  return '<main id="main" tabindex="-1" class="view"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
+    '<div class="card"><span class="label">En deux minutes</span><p class="lesson">'+esc(s.lesson)+'</p><p class="hint" style="text-align:right">Antonio</p></div>'+
+    '<div class="exo"><span class="label">Cette semaine, j’essaie</span><p>'+esc(s.exo)+'</p></div>'+
+    '<div class="card green"><span class="label">À observer</span><p>'+esc(s.obs)+'</p></div>'+
+    (lk?'<button type="button" class="btn wide" data-act="'+lk[0]+'" data-view="'+lk[1]+'" data-id="'+lk[1]+'" data-v="'+lk[1]+'">'+lk[2]+lk[3]+'</button>':'')+
+    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-i="'+s.idx+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+(s.idx<23?'<button type="button" class="btn" data-act="step" data-i="'+(s.idx+1)+'">Étape suivante '+I.chev+'</button>':'<button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button>')+'</div></main>';
+}
+/* ---------- évolution ---------- */
+function viewEvo(){
+  const e=D().evo;const t=state.evoTime;const cur=e[t]||{};
+  const chips='<div class="chips">'+EVO_TIMES.map((x,i)=>{const lk=i>0&&!can('parcours');return '<button type="button" class="chip" data-act="evotime" data-v="'+x[0]+'" aria-pressed="'+(t===x[0])+'">'+(lk?I.lock+' ':'')+x[1]+(e[x[0]]?' ✓':'')+'</button>';}).join('')+'</div>';
+  const scales=EVO_SCALES.map(s=>'<div class="scale"><b>'+esc(s.t)+'</b><input type="range" min="0" max="10" step="1" value="'+(cur[s.id]!==undefined?cur[s.id]:5)+'" data-evo="'+s.id+'" aria-label="'+esc(s.t)+'"><div class="row"><span><b>0</b> '+esc(s.lo)+'</span><span><b>10</b> '+esc(s.hi)+'</span></div></div>').join('');
+  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(o[1])+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(cur[o[0]]||'')+'</textarea></div>').join('');
+  const have=EVO_TIMES.filter(x=>e[x[0]]);
+  let bars='';
+  if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}
+  return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+(t==='t1'?'Le questionnaire de départ':t==='t2'?'Le point à trois mois':'Le bilan à six mois')+'</span><h1 class="t1">Mon évolution</h1><p class="sub">Vous faites le point trois fois en six mois, au départ, à mi-parcours et au bilan. Il y a cinq curseurs et deux questions à chaque fois. Il n’y a pas de bonne réponse, seulement la vôtre aujourd’hui.</p></div>'+chips+bars+
+    '<div class="card">'+scales+opens+'<button type="button" class="btn primary" data-act="evosave" style="align-self:flex-start">'+I.check+'Enregistrer ce point</button></div></main>';
+}
+/* ---------- photolangage ---------- */
+function viewPhoto(){
+  const p=D().photo||{};
+  return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Photolangage</h1><p class="sub">Choisissez l’image qui dit le mieux votre vécu aujourd’hui. Puis écrivez ce qu’elle évoque, et pourquoi vous l’avez choisie. Une image dit souvent ce que les mots n’osent pas.</p></div>'+
+    '<div class="photos" role="group" aria-label="Images du photolangage">'+PHOTOS.map((x,i)=>'<button type="button" data-act="photopick" data-i="'+i+'" aria-pressed="'+(p.i===i)+'"><span>'+x[0]+'</span>'+x[1]+'</button>').join('')+'</div>'+
+    '<div class="card"><div class="field"><label for="ptext">Ce qu’elle évoque pour moi</label><textarea id="ptext" maxlength="'+LIM.photo+'" style="min-height:120px">'+esc(p.text||'')+'</textarea></div><button type="button" class="btn primary" data-act="photosave" style="align-self:flex-start">'+I.check+'Garder</button>'+(p.date?'<p class="hint">Choisi le '+esc(fmtDate(p.date))+'. Vous pourrez refaire l’exercice au bilan et comparer.</p>':'')+'</div></main>';
+}

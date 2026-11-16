@@ -1,0 +1,76 @@
+<style>
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat b{font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--green);line-height:1}
+.stat span{font-size:12px;color:var(--muted);font-weight:700;line-height:1.25}
+.stat.warn b{color:var(--sun-fg)}
+.parent{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;text-align:left;width:100%}
+.parent .av{width:42px;height:42px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-weight:800;flex:none}
+.parent .tx{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.parent .tx b{font-size:15.5px}
+.parent .tx span{font-size:12.5px;color:var(--muted);font-weight:700}
+.parent .st{font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--sun-soft);color:var(--sun-fg);flex:none}
+.parent .st.ok{background:var(--green-soft);color:var(--green)}
+.trame{display:flex;flex-direction:column;gap:10px}
+.trame label{font-size:13px;font-weight:800;color:var(--green)}
+.demo{background:var(--sun-soft);color:var(--sun-fg);font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;margin-left:auto;margin-right:8px}
+@media (max-width:360px){.stats{grid-template-columns:1fr 1fr}}
+</style>
+<div id="app" class="app nobar"></div>
+<script>
+(function(){
+'use strict';
+/*HERO*/
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const I={back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>',send:'<svg class="i" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-7z"/></svg>'};
+const LOGO='<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C24 5 15.5 15.5 15.5 21.5a8.5 8.5 0 0 0 17 0C32.5 15.5 24 5 24 5z" style="fill:var(--cream)"/><path d="M21 19.5c0-2 .9-4.3 2.2-6.2" style="fill:none;stroke:var(--surface-2);stroke-width:1.6;stroke-linecap:round"/><ellipse cx="24" cy="37" rx="7.5" ry="2.6" style="fill:none;stroke:var(--green);stroke-width:2.2"/><ellipse cx="24" cy="37.5" rx="16" ry="5.5" style="fill:none;stroke:var(--green);stroke-width:1.8;opacity:.55"/></svg>';
+/* Données fictives de démonstration : aucun parent réel. */
+const PARENTS=[
+  {id:'A',lbl:'Parent A',ctx:'enfant de 7 ans · handicap · semaine 9',moods:[1,1,2,1,0,2,2,3,2,1,2,3,3,2],steps:8,evo:{stress:8,comp:3,seul:7,regard:4,confiance:3},sent:'02.11.2026',
+   depots:[['28.10 · 21:14','Ce soir encore la crise au bain. J’ai tenu, mais j’ai crié après. Je me déteste quand je crie.'],['01.11 · 22:40','J’ai remarqué que ça part toujours quand je dis « on y va » sans prévenir. Je ne sais pas quoi faire de ça.'],['05.11 · 20:05','Première soirée calme depuis des semaines. J’ai utilisé le minuteur. Je n’ose pas y croire.']]},
+  {id:'B',lbl:'Parent B',ctx:'ado de 15 ans · période difficile · semaine 3',moods:[2,1,1,0,1,1,2,1,0,1,2,2,1,1],steps:2,evo:{stress:9,comp:2,seul:8,regard:3,confiance:2},sent:null,
+   depots:[['03.11 · 23:30','Il ne me parle plus. Il mange dans sa chambre. Je frappe à la porte et il monte le son. Je ne sais plus qui il est.'],['06.11 · 07:50','Ce matin il m’a dit « laisse-moi » et je l’ai laissé. Je ne sais pas si c’est bien.']],
+   question:{when:'hier, 19:40',deadline:'demain, 19:40',text:'Il refuse d’aller à l’école depuis deux semaines. L’école me convoque. Est-ce que je dois le forcer ?'}},
+  {id:'C',lbl:'Parent C',ctx:'adulte de 24 ans · handicap · semaine 17',moods:[3,3,2,3,4,3,2,3,3,4,3,3,4,3],steps:16,evo:{stress:5,comp:6,seul:4,regard:7,confiance:6},sent:null,
+   depots:[['30.10 · 19:00','Réunion de réseau. Pour la première fois j’ai dit ce que je pensais sans m’excuser. Ils ont écouté.'],['04.11 · 21:20','Il a dormi dans son appartement protégé trois nuits de suite. Je suis fier et j’ai le ventre noué.']]}
+];
+const state={view:'home',p:null,toast:'',answered:false,written:{}};
+let tt=null;
+function toast(m){state.toast=m;render();clearTimeout(tt);tt=setTimeout(()=>{state.toast='';render();},3000);}
+const dots=a=>'<div class="mooddots">'+a.map(m=>'<i class="m'+m+'"></i>').join('')+'</div>';
+function home(){
+  const pend=PARENTS.filter(p=>p.question&&!state.answered);
+  const todo=PARENTS.filter(p=>!p.sent&&!state.written[p.id]).length;
+  return '<header class="bar"><span class="wordmark">'+LOGO+'<span>Espace Antonio<small>Parent écouté, parent éclairé</small></span></span><span class="demo">Démo</span></header>'+
+    '<section class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+');background-position:center 40%"><span class="label">Novembre · parents et dépôts fictifs</span><h1 class="t1">Bonsoir Antonio.</h1></div>'+
+    '<div class="card" style="position:relative;z-index:2"><p class="sub" style="color:var(--fg)">Ce que les abonnés « Avec Antonio » attendent de vous ce mois-ci. Tout tient en une heure par semaine.</p>'+
+    '<div class="stats"><div class="stat"><b>'+PARENTS.length+'</b><span>abonnés Avec Antonio</span></div><div class="stat'+(todo?' warn':'')+'"><b>'+todo+'</b><span>mots à écrire avant le 1er déc.</span></div><div class="stat'+(pend.length?' warn':'')+'"><b>'+pend.length+'</b><span>question'+(pend.length>1?'s':'')+' en attente</span></div></div></div>'+
+    (pend.length?'<div><span class="label">Question en attente</span></div>'+pend.map(p=>'<div class="qa"><span class="st">'+esc(p.lbl)+' · '+esc(p.ctx.split(' · ')[0])+' · reçue '+esc(p.question.when)+' · <b style="color:var(--sun-fg)">répondre avant '+esc(p.question.deadline)+'</b></span><p class="q">'+esc(p.question.text)+'</p><textarea id="ans" placeholder="Votre réponse, en quelques phrases. Sans prénom, sans diagnostic." style="min-height:100px"></textarea><button type="button" class="btn primary" data-act="answer" style="align-self:flex-start">'+I.send+'Envoyer la réponse</button></div>').join(''):'<div class="card green"><b>Aucune question en attente.</b></div>')+
+    '<div><span class="label">Les mots de novembre</span></div>'+
+    PARENTS.map(p=>{const done=p.sent||state.written[p.id];return '<button type="button" class="parent" data-act="open" data-id="'+p.id+'"><span class="av">'+p.id+'</span><span class="tx"><b>'+esc(p.lbl)+' · '+esc(p.ctx)+'</b>'+dots(p.moods)+'<span>'+p.depots.length+' dépôts partagés · '+p.steps+' étapes faites</span></span><span class="st'+(done?' ok':'')+'">'+(done?'Envoyé':'À écrire')+'</span></button>';}).join('')+
+    '<p class="hint">Vous ne voyez que ce que chaque parent a choisi de partager : ses dépôts cochés, son humeur, ses étapes et ses points d’évolution. Jamais le prénom de l’enfant.</p></section>';
+}
+function detail(){
+  const p=PARENTS.find(x=>x.id===state.p);const done=p.sent||state.written[p.id];
+  const E=[['stress','Stress'],['comp','Compétence'],['seul','Solitude'],['regard','Regard sur l’enfant'],['confiance','Confiance']];
+  return '<header class="bar"><button type="button" class="back" data-act="home">'+I.back+'Retour</button></header>'+
+    '<section class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 60%"><span class="label">'+esc(p.ctx)+'</span><h1 class="t1">'+esc(p.lbl)+'</h1></div>'+
+    '<div class="card"><span class="label">Humeur, quatorze jours</span>'+dots(p.moods)+'<span class="label" style="margin-top:6px">Point de départ (0–10)</span><div class="bars">'+E.map(e=>'<div class="barrow"><span>'+e[1]+'</span><div class="bartrack"><i><b style="width:'+(p.evo[e[0]]*10)+'%"></b></i></div></div>').join('')+'</div></div>'+
+    '<div><span class="label">Dépôts partagés avec vous</span></div><div class="depots">'+p.depots.map(d=>'<div class="mirror"><span class="lbl">'+esc(d[0])+'</span><p class="depot you">« '+esc(d[1])+' »</p></div>').join('')+'</div>'+
+    (done?'<div class="card green"><b>'+I.check+' Mot de novembre envoyé'+(p.sent?' le '+esc(p.sent):'')+'.</b><p class="hint">Le parent le voit en haut de son écran d’accueil.</p></div>':
+    '<div class="card"><span class="label">Le mot de novembre</span><div class="trame"><div><label for="m1">Ce que j’entends</label><textarea id="m1" placeholder="Deux ou trois phrases : ce que ce parent vit, avec ses mots." style="min-height:70px"></textarea></div><div><label for="m2">Ce que je vois bouger</label><textarea id="m2" placeholder="Un progrès, même petit, repéré dans ses dépôts, ses étapes ou son humeur." style="min-height:70px"></textarea></div><div><label for="m3">Une piste pour le mois</label><textarea id="m3" placeholder="Une seule chose à essayer, concrète, réaliste." style="min-height:70px"></textarea></div></div><button type="button" class="btn primary" data-act="send" data-id="'+p.id+'" style="align-self:flex-start">'+I.send+'Envoyer le mot</button><p class="hint">Un quart d’heure par parent. Le mot arrive dans son application, signé de vous.</p></div>')+'</section>';
+}
+function render(){
+  const app=document.getElementById('app');
+  app.innerHTML=(state.view==='home'?home():detail())+(state.toast?'<div class="toast" role="status">'+esc(state.toast)+'</div>':'');
+}
+document.getElementById('app').addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act;
+  if(a==='open'){state.p=el.dataset.id;state.view='detail';render();window.scrollTo(0,0);}
+  else if(a==='home'){state.view='home';render();window.scrollTo(0,0);}
+  else if(a==='answer'){const t=document.getElementById('ans');if(!t||t.value.trim().length<10){toast('Écrivez votre réponse.');return;}state.answered=true;toast('Réponse envoyée. Le parent la lit dans « Mes échanges avec Antonio ».');}
+  else if(a==='send'){const ok=['m1','m2','m3'].some(id=>document.getElementById(id).value.trim());if(!ok){toast('Écrivez au moins une partie du mot.');return;}state.written[el.dataset.id]=true;state.view='home';toast('Mot envoyé. Il s’affiche en haut de l’accueil du parent.');window.scrollTo(0,0);}
+});
+render();
+})();
+</script>

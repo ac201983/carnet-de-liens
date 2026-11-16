@@ -1,0 +1,20 @@
+
+/* ---- Espace Antonio (démonstration) ---- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat b{font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--green);line-height:1}
+.stat span{font-size:12px;color:var(--muted);font-weight:700;line-height:1.25}
+.stat.warn b{color:var(--sun-fg)}
+.parent{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;text-align:left;width:100%}
+.parent .av{width:42px;height:42px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-weight:800;flex:none}
+.parent .tx{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.parent .tx b{font-size:15.5px}
+.parent .tx span{font-size:12.5px;color:var(--muted);font-weight:700}
+.parent .st{font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--sun-soft);color:var(--sun-fg);flex:none}
+.parent .st.ok{background:var(--green-soft);color:var(--green)}
+.trame{display:flex;flex-direction:column;gap:10px}
+.trame>div{display:flex;flex-direction:column;gap:6px}
+.trame label{font-size:13px;font-weight:800;color:var(--green)}
+.demo{background:var(--sun-soft);color:var(--sun-fg);font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;margin-left:auto}
+h2.label{font-family:var(--font-ui);margin:0;line-height:1.55}
+@media (max-width:360px){.stats{grid-template-columns:1fr 1fr}}
