@@ -107,3 +107,72 @@ fi
 arrivee="directement dans le dossier du site"
 [ "$base" != "/" ] && arrivee="à la racine de l'hébergement, puis dans $DOSSIER"
 echo "::notice title=Dépôt::${#ordre[@]} fichiers déposés. Le compte arrive $arrivee. Retirés du serveur :${retires:- rien}"
+
+# 5. Les réglages du serveur. Le fichier .htaccess appartient à Infomaniak : on n'y change rien, on ajoute seulement
+#    à la fin un bloc à nous, entre deux repères (outils/htaccess-bloc.txt). Si le site ne répond plus juste après,
+#    on remet aussitôt le fichier d'avant.
+[ -f ../outils/htaccess-bloc.txt ] || exit 0
+debut="# >>> parent-ecoute.ch : debut (gere par la mise en ligne automatique, ne pas modifier a la main)"
+fin="# <<< parent-ecoute.ch : fin"
+ht_avant=/tmp/ht.avant; ht_socle=/tmp/ht.socle; ht_nouveau=/tmp/ht.nouveau
+ht_url="ftp://$HOTE_FTP$base.htaccess"
+
+# shellcheck disable=SC2086
+curl "${commun[@]}" $mode -o "$ht_avant" "$ht_url" 2>/tmp/err; lu=$?
+if [ "$lu" = 78 ]; then
+  : > "$ht_avant"          # pas de .htaccess sur le serveur
+elif [ "$lu" != 0 ]; then
+  erreur "Réglages du serveur non lus" "Impossible de lire le .htaccess du serveur. Réponse : $(message). Il n'a pas été modifié."
+  exit 1
+fi
+
+# ce qu'il y avait avant nous : tout, sauf notre bloc s'il y est déjà
+sed '/^# >>> parent-ecoute\.ch/,/^# <<< parent-ecoute\.ch/d' "$ht_avant" > "$ht_socle"
+if [ -s "$ht_socle" ] && [ "$(tail -c 1 "$ht_socle" | wc -l)" = 0 ]; then echo >> "$ht_socle"; fi
+{ cat "$ht_socle"; echo "$debut"; tr -d '\r' < ../outils/htaccess-bloc.txt; echo "$fin"; } > "$ht_nouveau"
+
+if cmp -s "$ht_avant" "$ht_nouveau"; then
+  echo "::notice title=Réglages du serveur::Déjà en place, rien à changer."
+  exit 0
+fi
+
+# une copie du fichier d'Infomaniak, tel qu'il était avant notre premier passage (protégée comme tout fichier .ht*)
+if [ -s "$ht_avant" ] && ! grep -q '^# >>> parent-ecoute\.ch' "$ht_avant"; then
+  # shellcheck disable=SC2086
+  curl "${commun[@]}" $mode --upload-file "$ht_avant" "ftp://$HOTE_FTP$base.htaccess.avant-parent-ecoute" 2>/tmp/err \
+    || echo "::warning title=Copie de secours::La copie du .htaccess d'origine n'a pas pu être déposée. Réponse : $(message)."
+fi
+
+accueil_ok() {   # la page d'accueil répond-elle, identique à celle de site/ ?
+  local i code
+  for i in 1 2 3; do
+    code="$(curl --silent --show-error --max-time 20 -o /tmp/ht.accueil -w '%{http_code}' "${ADRESSE%/}/?c=$RANDOM" 2>/dev/null)" || true
+    if [ "$code" = 200 ] && [ "$(sha256sum < /tmp/ht.accueil)" = "$(sha256sum < index.html)" ]; then return 0; fi
+    sleep 2
+  done
+  echo "$code" > /tmp/ht.code
+  return 1
+}
+
+# shellcheck disable=SC2086
+if ! curl "${commun[@]}" $mode --upload-file "$ht_nouveau" "$ht_url" 2>/tmp/err; then
+  erreur "Réglages du serveur non déposés" "Le .htaccess n'a pas pu être envoyé. Réponse : $(message)."
+  exit 1
+fi
+sleep 2
+if accueil_ok; then
+  echo "::notice title=Réglages du serveur::Bloc ajouté à la fin du .htaccess ($(wc -l < ../outils/htaccess-bloc.txt) lignes). Ce qui précède n'a pas changé ($(wc -l < "$ht_socle") lignes)."
+else
+  # shellcheck disable=SC2086
+  if [ -s "$ht_avant" ]; then
+    curl "${commun[@]}" $mode --upload-file "$ht_avant" "$ht_url" 2>/tmp/err; remis=$?
+  else
+    curl "${commun[@]}" $mode --list-only -Q "DELE ${base#/}.htaccess" "ftp://$HOTE_FTP/" >/dev/null 2>/tmp/err; remis=$?
+  fi
+  suite="Le fichier d'avant a été remis"
+  if [ "$remis" != 0 ]; then suite="ATTENTION, le fichier d'avant n'a pas pu être remis"
+  elif accueil_ok; then suite="$suite et le site répond de nouveau"
+  else suite="$suite mais le site ne répond toujours pas comme attendu"; fi
+  erreur "Réglages du serveur refusés" "Avec le nouveau bloc, la page d'accueil a répondu $(cat /tmp/ht.code 2>/dev/null) au lieu de 200. $suite."
+  exit 1
+fi

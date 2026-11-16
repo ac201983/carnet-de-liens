@@ -11,6 +11,7 @@ Chaque fois que cette branche change, GitHub dépose le contenu du dossier `site
 - `outils/reglages.env` : l'adresse du serveur, le nom du compte, le dossier du site. Aucun mot de passe.
 - `outils/deposer.sh` : le dépôt, en FTP chiffré. Il ne touche pas aux fichiers d'Infomaniak (`.htaccess`, `.user.ini`, `.infomaniak-*`).
 - `outils/a-supprimer.txt` : les seuls fichiers que le dépôt retire du serveur, nommés un par un.
+- `outils/htaccess-bloc.txt` : nos réglages du serveur (page 404, type du manifest, en-têtes de sécurité, une seule adresse en https et sans www). Le dépôt les ajoute à la fin du `.htaccess` d'Infomaniak, entre deux repères, sans toucher à ce qui précède. Si la page d'accueil ne répond plus juste après, il remet le fichier d'avant. Une copie du fichier d'origine reste sur le serveur sous le nom `.htaccess.avant-parent-ecoute`.
 - `outils/verifier.sh` : le contrôle du site en ligne.
 - `.github/workflows/mise-en-ligne.yml` : ce qui lance les deux scripts.
 

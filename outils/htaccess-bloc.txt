@@ -1,0 +1,26 @@
+# La page affichee quand une adresse n'existe pas
+ErrorDocument 404 /404.html
+
+# Le type du fichier qui decrit l'application
+<IfModule mod_mime.c>
+AddType application/manifest+json .webmanifest
+</IfModule>
+
+# Trois consignes de securite pour les navigateurs
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set X-Frame-Options "DENY"
+</IfModule>
+
+# Une seule adresse : https://parent-ecoute.ch, sans www et toujours avec le cadenas
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{REQUEST_URI} !^/\.well-known/
+RewriteRule (.*) https://parent-ecoute.ch/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteCond %{REQUEST_URI} !^/\.well-known/
+RewriteRule (.*) https://parent-ecoute.ch/$1 [R=301,L]
+</IfModule>

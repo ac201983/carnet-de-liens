@@ -71,7 +71,19 @@ entetes="$(va -D - -o /dev/null -H 'Accept-Encoding: gzip, br' -w 'http %{http_v
   | tr -d '\r' | grep -i -E '^(http|content-type|content-encoding|cache-control|expires|strict-transport-security|x-frame-options|x-content-type-options|referrer-policy|content-security-policy|server|last-modified|etag|alt-svc|vary)' )" || true
 note "En-têtes de l'accueil" "${entetes:-aucun en-tête lu}"
 
-# 5. Verdict
+# 5. Le courrier du nom de domaine : où il arrive, et qui a le droit d'en envoyer (lu dans le DNS public)
+dns() {
+  va -H 'accept: application/dns-json' "https://cloudflare-dns.com/dns-query?name=$1&type=$2" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(" ; ".join(a.get("data", "") for a in d.get("Answer", [])) or "rien")
+except Exception:
+    print("pas de réponse")' 2>/dev/null || echo "pas de réponse"
+}
+note "Courrier" "MX : $(dns "$hote" MX)" "TXT : $(dns "$hote" TXT)" "DMARC : $(dns "_dmarc.$hote" TXT)"
+
+# 6. Verdict
 if [ "$depose" = 1 ]; then
   if [ "$version_ok" != 1 ]; then
     echo "::error title=Ancienne version::Le dépôt s'est bien passé, mais $adresse/version.txt ne montre pas la nouvelle version."
