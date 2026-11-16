@@ -428,16 +428,37 @@ const FX_SEL='main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.v
 let fxIO=null,fxSeq=0,fxSkip=0;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
 function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
-/* Changer d'écran : un fondu lent. Ce qui ne change pas d'un écran à l'autre (la barre du haut, les onglets) reste en place.
-   Le SOS s'affiche tout de suite, sans effet. Sans l'API du navigateur, le nouvel écran apparaît simplement en douceur. */
+/* Changer d'écran : une onde de lumière part de l'endroit touché et traverse l'écran. Le nouvel écran apparaît dans son sillage,
+   et l'ancien s'enfonce doucement dans l'ombre devant elle. Quand l'onde atteint la photo, la goutte saute (voir eauArrive).
+   « fade » : un simple fondu, pour une feuille qui se referme. Le SOS s'affiche tout de suite, sans effet.
+   Sans l'API du navigateur (View Transitions), le nouvel écran apparaît simplement en douceur. */
+const fxPt={x:0,y:0,t:0};
+function fxTap(e){fxPt.x=e.clientX;fxPt.y=e.clientY;fxPt.t=Date.now();}
+function fxAnneau(){let o=document.getElementById('onde');if(!o){o=document.createElement('div');o.id='onde';o.setAttribute('aria-hidden','true');o.appendChild(document.createElement('i'));document.body.appendChild(o);}return o;}
 function fxGo(update,kind,vtOnly){
   /* Pas d'effet non plus quand le téléphone anime déjà lui-même le retour en arrière (geste de balayage). */
   if(!fxOn()||state.view==='sos'||Date.now()-fxSkip<500){update();return;}
   const de=document.documentElement;const id=++fxSeq;
-  if(typeof document.startViewTransition!=='function'){if(vtOnly){update();return;}de.classList.add('fx-nav');update();setTimeout(()=>{if(id===fxSeq)de.classList.remove('fx-nav');},560);return;}
-  de.style.setProperty('--fx-dur',(kind==='tab'?.5:kind==='back'?.5:.6)+'s');
-  let done=false;const run=()=>{if(done)return;done=true;update();};
-  try{const vt=document.startViewTransition(run);if(vt){if(vt.ready)vt.ready.catch(()=>{});if(vt.finished)vt.finished.catch(()=>{});}}catch(e){run();}
+  if(typeof document.startViewTransition!=='function'){if(vtOnly){update();return;}de.classList.add('fx-nav');update();setTimeout(()=>{if(id===fxSeq)de.classList.remove('fx-nav');},620);return;}
+  let done=false;
+  if(kind==='fade'){
+    de.classList.remove('fx-onde','fx-ring');de.style.setProperty('--fx-dur','.5s');
+    const run=()=>{if(done)return;done=true;update();};
+    try{const vt=document.startViewTransition(run);if(vt){if(vt.ready)vt.ready.catch(()=>{});if(vt.finished)vt.finished.catch(()=>{});}}catch(e){run();}
+    return;
+  }
+  const w=window.innerWidth,h=window.innerHeight;const fresh=Date.now()-fxPt.t<1500;
+  const x=fresh?fxPt.x:w/2,y=fresh?fxPt.y:h-40;
+  /* le rayon qu'il faut pour que l'ovale de l'onde (un peu plus large que haut) recouvre tout l'écran */
+  const R=Math.ceil(Math.max(Math.hypot(x/1.25,y),Math.hypot((w-x)/1.25,y),Math.hypot(x/1.25,h-y),Math.hypot((w-x)/1.25,h-y))*1.34)+30;
+  const dur=kind==='tab'?1.3:1.2;
+  de.style.setProperty('--fx-x',Math.round(x)+'px');de.style.setProperty('--fx-y',Math.round(y)+'px');de.style.setProperty('--fx-r',R+'px');de.style.setProperty('--fx-s',(R/120).toFixed(3));de.style.setProperty('--fx-dur',dur+'s');
+  state.onde={t:Date.now(),dur:dur,x:x,y:y,r:R};
+  de.classList.add('fx-onde');
+  /* L'anneau de lumière n'est ajouté qu'avec le nouvel écran : on ne le voit donc jamais posé tel quel, seulement grandir avec l'onde. */
+  const run=()=>{if(done)return;done=true;update();fxAnneau();de.classList.add('fx-ring');};
+  const end=()=>{if(id===fxSeq)de.classList.remove('fx-onde','fx-ring');};
+  try{const vt=document.startViewTransition(run);if(vt&&vt.finished)vt.finished.then(end,end);else end();if(vt&&vt.ready)vt.ready.catch(()=>{});}catch(e){run();end();}
 }
 /* Après chaque rendu : les blocs déjà à l'écran remontent à la surface l'un après l'autre (classe fxe), et ceux qui sont plus bas
    viendront se poser en arrivant à l'écran (classe fxr). Si l'écran est redessiné pendant l'arrivée, elle reprend où elle en était. */
@@ -445,12 +466,13 @@ function fxMark(){
   if(!fxOn()||!document.querySelectorAll)return;const vh=window.innerHeight;
   if(!FX_SD&&!fxIO&&'IntersectionObserver' in window)fxIO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('fxs');fxIO.unobserve(e.target);}});},{rootMargin:'0px 0px -20px 0px'});
   const age=state.enterAt?Date.now()-state.enterAt:1e9;let k=0;
+  const onde=!!(state.onde&&Date.now()-state.onde.t<1800);   /* l'onde dévoile l'écran entier : les blocs n'ont pas à arriver un par un */
   document.querySelectorAll(FX_SEL).forEach(el=>{
     const below=el.getBoundingClientRect().top>vh-100;
     /* À la toute première ouverture du site, l'accueil est déjà écrit dans la page et joue sa propre arrivée : on n'y touche pas. */
     if(el.classList.contains('reveal')){if(!below&&!state.enterAt)return;el.classList.remove('reveal','d1','d2','d3','d4');}
     if(!below){
-      if(age<1800&&!(el.parentElement&&el.parentElement.closest&&el.parentElement.closest('.reveal,.fxe'))){el.classList.add('fxe');if(el.style)el.style.animationDelay=(Math.min(k,6)*85-age)+'ms';k++;}
+      if(!onde&&age<1800&&!(el.parentElement&&el.parentElement.closest&&el.parentElement.closest('.reveal,.fxe'))){el.classList.add('fxe');if(el.style)el.style.animationDelay=(Math.min(k,6)*85-age)+'ms';k++;}
       return;
     }
     el.classList.add('fxr');
@@ -468,9 +490,9 @@ function fxSink(){
    Là où l'eau est calme, ce calque est transparent, et il s'enlève tout seul quand la dernière onde s'est éteinte.
    Sans carte graphique utilisable, la photo reste simplement immobile. */
 const EAU={ok:null,cv:null,gl:null,u:null,tex:false,host:null,geo:null,rips:[],wait:[],raf:0,t0:0,fix:null,n:0,last:0,slow:0,weak:0,seq:0,lost:0,drop:null};
-const EAU_LIFE=3.4;
+const EAU_LIFE=3.2;
 const EAU_TC=1.2;   /* le moment où la goutte touche la pointe de la colonne, en secondes depuis le début de son rebond */
-const EAU_ICI='.herofull,.band:not(.thin)';   /* les photos où l'on voit la goutte : l'accueil, « Aujourd'hui » et « Mon histoire » */
+const EAU_ICI='.herofull,.band';   /* toutes les photos : l'accueil, les quatre onglets et « Mon histoire » */
 const EAU_VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
 /* Les réglages de l'onde, à un seul endroit. Les longueurs sont en points de la photo, à la profondeur de la goutte. */
 const EAU_P={c:120,lam:130,front:26,tail:170,tau:4.5,ax:13,ay:16,sh:.8,gl:.35,li:.6,pw:2};
@@ -488,7 +510,7 @@ const EAU_FS=[
 '  vec2 dv=w-r.xy;float d=length(dv)+.0001;',
 '  float x=@c@*max(age,0.)-d;',                                /* distance derrière le front de l onde, qui avance lentement */
 '  float e=x<0.?exp(-x*x/(@front@*@front@)):exp(-x/@tail@);',  /* un front doux, puis des rides de plus en plus faibles derrière lui */
-'  e*=r.w*step(0.,age)*smoothstep(0.,.7,age)*exp(-age/@tau@)*(1.-smoothstep(2.2,3.4,age))*smoothstep(8.,60.,d)/sqrt(1.+d/400.);',
+'  e*=r.w*step(0.,age)*smoothstep(0.,.7,age)*exp(-age/@tau@)*(1.-smoothstep(2.,3.2,age))*smoothstep(8.,60.,d)/sqrt(1.+d/400.);',
 '  float c=e*cos(x*6.2832/@lam@);',
 '  float cr=cos(x*6.2832/@lam@);',
 '  g+=dv/d*c;h+=c;li+=e*pow(max(cr,0.),@pw@)*(.55+.45*abs(dv.y)/d);',
@@ -650,17 +672,20 @@ function eauFrame(){
 }
 /* Dès que la photo est prête pour la carte graphique. */
 function eauReady(f){if(!eauInit())return;if(EAU.tex)f();else EAU.wait.push(f);}
-/* À l'arrivée sur l'accueil, sur « Aujourd'hui » ou sur « Mon histoire » : la goutte rebondit, et l'onde part quand elle touche l'eau.
+/* À l'arrivée sur un écran qui montre la photo : la goutte rebondit, et l'onde part quand elle touche l'eau.
    Avec la lumière qui se lève en même temps, tout ce qui bouge tout seul est redevenu calme en cinq secondes.
    « first » : la toute première ouverture du site, où l'écran est déjà écrit dans la page. La lumière y attend l'eau, pour qu'elles partent ensemble. */
 function eauArrive(first){
   const id=++EAU.seq;if(!fxOn())return;
+  /* Si une onde de lumière traverse l'écran, la goutte attend qu'elle arrive jusqu'à la photo : c'est l'onde qui la fait sauter. */
+  let attente=100;const o=state.onde;
+  if(o&&Date.now()-o.t<300){const ph=document.querySelector(EAU_ICI);if(ph){const r=ph.getBoundingClientRect();attente=Math.round(o.dur*1000*Math.min(1,.06+Math.hypot((r.left+r.width/2-o.x)/1.25,r.top+r.height*.5-o.y)/o.r)*.85);}}
   const go=()=>setTimeout(()=>{
     if(id!==EAU.seq||!fxOn())return;
     if(first){const ap=document.getElementById('app');if(ap&&ap.classList){state.enterAt=Date.now();ap.classList.add('lum');}}
     if(!document.querySelector(EAU_ICI))return;
     eauReady(()=>{if(id!==EAU.seq)return;const host=document.querySelector(EAU_ICI);if(!host||!eauHost(host))return;eauBond();});
-  },100);
+  },attente);
   /* On attend que la page ait fini de se charger : la première onde ne doit pas être saccadée. */
   if(document.readyState==='complete')go();else window.addEventListener('load',go,{once:true});
 }
@@ -1219,7 +1244,7 @@ function handle(act,d,el){
   const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','tier','ob-done'].includes(act);
   if(navAct&&fxSig()!==sig0){fxGo(()=>{render();window.scrollTo(0,0);},act==='back'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
-  if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'tab',true);return;}
+  if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
   if(navAct)window.scrollTo(0,0);
 }
@@ -1240,11 +1265,11 @@ app.addEventListener('keydown',e=>{
   if(t.id==='ph'){e.preventDefault();handle('phadd',{},t);}
   else if(t.id==='ob-me'){e.preventDefault();handle('ob-done',{},t);}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;fxGo(render,'tab',true);}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;fxGo(render,'fade',true);}});
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
 fxSync();
-if(FX_OK){document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
+if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:true});document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, « Mon histoire » a sa propre adresse (…/#histoire) : on peut l'envoyer telle quelle, et le bouton Retour du téléphone fonctionne. */
 const storyFirst=SITE&&location.hash===STORY_HASH;
 if(storyFirst)state.view='about';
