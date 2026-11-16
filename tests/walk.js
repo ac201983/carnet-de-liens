@@ -25,7 +25,13 @@ async function walk(page, visit) {
   // ----- parcours (Découverte)
   await tab('parcours'); await w(100); await visit('parcours');
   await page.click(A('step', '[data-i="5"]')); await w(100); await visit('feuille-formule'); await page.keyboard.press('Escape');
-  await page.click(A('step', '[data-i="0"]')); await w(100); await visit('etape'); await page.click(A('back'));
+  await page.click(A('step', '[data-i="0"]')); await w(100); await visit('etape');
+  // le schéma avance à la demande, puis le carnet de route se remplit
+  for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); }
+  await visit('etape-schema');
+  await page.fill('#note', 'Je commence ce parcours parce que je veux souffler un peu.'); await w(500); await visit('etape-carnet');
+  await page.click(A('back'));
+  await page.click('.quick ' + A('go', '[data-view="carnet"]')); await w(80); await visit('carnet'); await page.click(A('back'));
   await page.click('.quick ' + A('go', '[data-view="evo"]')); await w(80); await visit('evolution-chemin'); await page.click(A('back'));
   // ----- boîte à outils
   await tab('kit'); await w(100); await visit('outils-situations');
@@ -57,7 +63,18 @@ async function walk(page, visit) {
   // ----- formule « Le parcours »
   await page.click(A('tier', '[data-v="parcours"]')); await w(120); await visit('formules-parcours');
   await tab('parcours'); await w(80); await visit('parcours-ouvert');
+  // une étape qui n'est pas encore ouverte : un message, et l'écran ne change pas
+  await page.click(A('step', '[data-i="1"]')); await w(80); await visit('parcours-attente');
+  // l'aperçu d'Antonio (cinq touches sur le titre « Moi ») ouvre tout
+  await tab('me'); await w(80); for (let k = 0; k < 5; k++) await page.click('h1' + A('atelier')); await w(80); await visit('moi-apercu');
+  await tab('parcours'); await w(80); await visit('parcours-apercu');
+  await page.click(A('step', '[data-i="1"]')); await w(80); await visit('etape-vecu');
+  for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); }
+  await visit('etape-vecu-schema'); await page.click(A('back'));
+  for (const i of [2, 3]) { await page.click(A('step', `[data-i="${i}"]`)); await w(80); for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); } await visit('etape-schema-' + (i + 1)); await page.click(A('back')); }
   await page.click(A('step', '[data-i="5"]')); await w(80); await visit('etape-ouverte'); await page.click(A('back'));
+  await page.click(A('step', '[data-i="11"]')); await w(80); await visit('etape-rappel'); await page.click(A('back'));
+  await page.click(A('step', '[data-i="23"]')); await w(80); await visit('etape-derniere'); await page.click(A('back'));
   await page.click('.quick ' + A('go', '[data-view="photo"]')); await w(80); await visit('photolangage-choix');
   await page.click(A('photopick', '[data-id="chemin"]')); await w(250); await visit('photolangage-photo');
   await page.fill('#ptext', 'Un chemin qui monte, mais avec de la lumière au bout.'); await page.click(A('photosave')); await w(80); await visit('photolangage');

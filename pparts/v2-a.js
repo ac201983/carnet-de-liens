@@ -44,7 +44,7 @@ const QA_EXAMPLE={q:'Mon fils de 9 ans refuse d’aller à l’école le matin, 
 const WEIGHTS=[['solitude','La solitude'],['fatigue','La fatigue'],['culpa','La culpabilité'],['doutes','Les doutes'],['regard','Le regard des autres'],['pros','Les professionnels'],['charge','La charge mentale'],['couple','Le couple']];
 /* Tant que le serveur n'existe pas, les échanges avec Antonio sont une démonstration : rien n'est transmis. */
 const DEMO=true;
-const LIM={me:30,draft:4000,q:1500,line:240,phrase:140,three:120,photo:2000,evo:1500,search:60};
+const LIM={me:30,draft:4000,q:1500,line:240,phrase:140,three:120,photo:2000,evo:1500,note:2000,search:60};
 const tel=(n,label)=>'<a class="tel" href="tel:'+String(n).replace(/[^0-9+]/g,'')+'">'+(label||n)+'</a>';
 const HELP=[
   {t:'La Main Tendue',tel:'143',d:'Pour parler quand ça ne va pas, de jour comme de nuit.'},
@@ -54,11 +54,27 @@ const HELP=[
 ];
 
 /* ---------- état ---------- */
-const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
+const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
 const state={photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),d);}catch(e){}return JSON.parse(JSON.stringify(DEF));}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
+/* Avant le 16 novembre 2026, les étapes faites étaient rangées par leur numéro. Elles le sont maintenant par leur nom.
+   Un parent venu avant garde ouvertes autant d'étapes que de semaines écoulées depuis son arrivée, et celles qu'il avait faites. */
+function migre(d){
+  if(d.pv>=2)return d;
+  const faits={},vus=(d.seen&&typeof d.seen==='object')?d.seen:{};
+  const jour=(iso,n)=>{const p=String(iso).split('-').map(Number);const x=new Date(p[0],p[1]-1,p[2]+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());};
+  Object.keys(d.steps||{}).forEach(k=>{if(!d.steps[k])return;const id=/^\d+$/.test(k)?PARCOURS_AVANT[Number(k)]:k;if(id)faits[id]=true;});
+  if(d.onboarded&&d.start){
+    const ids=[];PARCOURS.forEach(m=>m.steps.forEach(s=>ids.push(s.id)));
+    const p=String(d.start).split('-').map(Number);const sem=Math.max(0,Math.floor((Date.now()-new Date(p[0],p[1]-1,p[2]).getTime())/(7*86400000)));
+    const n=d.tier&&d.tier!=='free'?Math.min(ids.length-1,sem):0;
+    for(let i=0;i<=n;i++)if(!vus[ids[i]])vus[ids[i]]=jour(d.start,7*i);
+    Object.keys(faits).forEach(id=>{if(!vus[id])vus[id]=d.start;});
+  }
+  d.steps=faits;d.seen=vus;if(!d.notes||typeof d.notes!=='object')d.notes={};d.pv=2;return d;
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state.data));}catch(e){}}
 function toast(m){state.toast=m;state.toastView=state.view;state.toastAt=Date.now();renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{
   /* avec les effets, il s'efface en douceur avant d'être retiré */
@@ -88,8 +104,26 @@ function dayIdx(n){const d=new Date();return Math.floor((d.getTime()-d.getTimezo
 function greeting(){const h=new Date().getHours();return h<5?'Il est tard':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';}
 function weekNo(){const s=D().start||todayIso();const p=s.split('-').map(Number);const d0=new Date(p[0],p[1]-1,p[2]);return Math.max(0,Math.floor((Date.now()-d0.getTime())/(7*86400000)));}
 function allSteps(){const out=[];PARCOURS.forEach((m,mi)=>m.steps.forEach((s,si)=>out.push(Object.assign({mi,si,idx:out.length},s))));return out;}
-function currentStepIdx(){return Math.min(23,weekNo());}
-function doneCount(){return Object.keys(D().steps).filter(k=>D().steps[k]).length;}
+/* L'étape du moment : la dernière qui est ouverte. Dans l'aperçu d'Antonio, où tout est ouvert, la première qui n'est pas faite. */
+function currentStepIdx(){const S=allSteps();if(D().tout){const f=S.findIndex(s=>!D().steps[s.id]);return f<0?S.length-1:f;}let c=0;for(let i=1;i<S.length;i++){if(stepEtat(i).k==='open')c=i;else break;}return c;}
+function doneCount(){return allSteps().filter(s=>D().steps[s.id]).length;}
+/* Nombre de jours du calendrier entre une date et aujourd'hui. */
+function joursDepuis(iso){const p=String(iso).split('-').map(Number);const n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime()-new Date(p[0],p[1]-1,p[2]).getTime())/86400000);}
+/* Où en est une étape : ouverte, bientôt (dans n jours), plus tard, ou réservée à la formule Le parcours.
+   Une étape s'ouvre sept jours après l'ouverture de la précédente. Une étape déjà ouverte le reste. Rien ne s'accumule en cas d'absence. */
+function stepEtat(i){
+  const S=allSteps(),s=S[i];if(!s)return {k:'tard'};
+  if(D().tout)return {k:'open'};
+  if(i>0&&!can('parcours'))return {k:'formule'};
+  if(i===0||D().seen[s.id])return {k:'open'};
+  const d0=D().seen[S[i-1].id];if(!d0)return {k:'tard'};
+  const n=PAS_JOURS-joursDepuis(d0);
+  return n<=0?{k:'open'}:{k:'bientot',n:n};
+}
+function stepLocked(i){return stepEtat(i).k!=='open';}
+const dansJours=n=>n<=1?'demain':'dans '+n+' jours';
+function noteDe(id){const n=D().notes[id];return n&&n.t&&String(n.t).trim()?n:null;}
+function nbNotes(){return allSteps().filter(s=>noteDe(s.id)).length;}
 function curatedDose(){const n=DOSES.length-1;return new Date().getDay()===0?DOSES[n]:DOSES[dayIdx(n)];}
 function doseText(){const d=D();return d.doseDate===todayIso()&&d.doseText?d.doseText:curatedDose();}
 function lastDepot(){const l=D().depots;return l.length?l[l.length-1]:null;}
@@ -434,7 +468,7 @@ function eauSync(entering){
 }
 /* ---------- rendu ---------- */
 const TAB_VIEWS=['today','parcours','kit','me'];
-const BACK_VIEWS=['sit','exo','step','photo','data','about','plans','evo','depots','antonio','letter'];
+const BACK_VIEWS=['sit','exo','step','carnet','photo','data','about','plans','evo','depots','antonio','letter'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
 function focusKey(el){
   if(!el||!el.matches||!el.closest||!el.closest('#app'))return null;
@@ -458,6 +492,7 @@ function render(){
       case 'today':html+=viewToday();break;
       case 'parcours':html+=viewParcours();break;
       case 'step':html+=viewStep();break;
+      case 'carnet':html+=viewCarnet();break;
       case 'evo':html+=viewEvo();break;
       case 'photo':html+=viewPhoto();break;
       case 'kit':html+=viewKit();break;
@@ -567,7 +602,7 @@ function viewIntro(){
 /* ---------- aujourd’hui ---------- */
 function viewToday(){
   const d=D();const t=todayIso();const m=d.moods[t];const st=allSteps()[currentStepIdx()];const rd=recentDepot();
-  let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+', semaine '+(weekNo()+1)+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
+  let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
   html+='<div class="duo"><div class="duo-a">';
   if(can('antonio'))html+=letterCard();
   if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq échelles de 0 à 10 et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
@@ -575,7 +610,9 @@ function viewToday(){
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
   html+='</div><div class="duo-b">';
   html+=depotBox();
-  html+='<button type="button" class="step now reveal d3" data-act="step" data-i="'+st.idx+'"><span class="n">'+(st.idx+1)+'</span><span class="tx"><span class="label">L’étape de la semaine</span><b>'+esc(st.t)+'</b></span><span class="chev">'+I.chev+'</span></button>';
+  const stFait=!!d.steps[st.id];const stAp=st.idx<23?stepEtat(st.idx+1):null;
+  const stLab=!stFait?'L’étape de la semaine':(stAp&&stAp.k==='bientot'?'Étape faite. La suivante s’ouvre '+dansJours(stAp.n)+'.':'Étape faite');
+  html+='<button type="button" class="step now'+(stFait?' done':'')+' reveal d3" data-act="step" data-i="'+st.idx+'"><span class="n">'+(stFait?I.check:(st.idx+1))+'</span><span class="tx"><span class="label">'+stLab+'</span><b>'+esc(st.t)+'</b></span><span class="chev">'+I.chev+'</span></button>';
   html+='<div class="card reveal d4"><span class="label">Comment ça va, là, maintenant ?</span><div class="moodrow">'+MOODS.map((x,i)=>'<button type="button" data-act="mood" data-i="'+i+'" aria-pressed="'+(m===i)+'" aria-label="'+esc(x[1])+'">'+x[0]+'</button>').join('')+'</div>'+(m!==undefined?'<p style="font-family:var(--font-display);font-size:17px;line-height:1.4">'+esc(MOOD_WORDS[m])+'</p>':'')+'</div>';
   return html+'</div></div></main>';
 }
@@ -677,26 +714,83 @@ async function dosePerso(){
   state.doseBusy=false;render();
 }
 /* ---------- parcours ---------- */
-function stepLocked(idx){return idx>0&&!can('parcours');}
+const NOTE_OUI='Gardé dans votre carnet, sur cet appareil.',NOTE_NON='Ce que vous écrivez ici reste sur votre appareil.';
+const nl2=t=>esc(t).replace(/\n/g,'<br>');
 function viewParcours(){
-  const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours dure six mois, avec une étape par semaine. À chaque fois, vous avez deux minutes de lecture, une chose à essayer et une chose à observer.</p>'+
-    '<div class="card prog"><div class="kv"><span>Semaine '+(weekNo()+1)+'</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
-    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
-    '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!D().steps[st.idx];const lk=stepLocked(st.idx);return '<button type="button" class="step'+(st.idx===cur?' now':'')+(dn?' done':'')+(lk?' locked':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+(st.idx===cur?'Cette semaine':'Semaine '+(st.idx+1))+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
-    (can('parcours')?'<p class="hint">Vous pouvez avancer librement. Le parcours vous propose un rythme, mais vous restez libre du vôtre.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
+  const d=D();const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);const nn=nbNotes();
+  const sous=(st,e,dn)=>dn?'Faite':(st.idx===cur&&e.k==='open')?'Cette semaine':e.k==='open'?'Ouverte':e.k==='bientot'?'S’ouvre '+dansJours(e.n):e.k==='tard'?'Plus tard':'Étape '+(st.idx+1);
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours compte vingt-quatre étapes, sur six mois. Chaque semaine, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.</p>'+
+    (d.tout?'<span class="pill sun apercu">Aperçu d’Antonio, tout est ouvert</span>':'')+
+    '<div class="card prog"><div class="kv"><span>Votre parcours</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
+    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet'+(nn?' ('+nn+')':'')+'</button><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
+    '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';return '<button type="button" class="step'+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
+    (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre sept jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
 }
+/* Les boutons d'une étape vers un autre écran : « Mon évolution », le photolangage, la respiration, les situations, ou une situation précise (« sit_nom »). */
+function stepLiens(s){
+  const L={evo:['go','evo',I.chart,'Faire le point dans Mon évolution'],photo:['go','photo',I.image,'Ouvrir le photolangage'],breath:['exo','breath',I.wind,'Respirer 4-6 maintenant'],advice:['kit','sits',I.bulb,'Ouvrir les situations']};
+  const ks=!s.link?[]:(Array.isArray(s.link)?s.link:[s.link]);
+  return ks.map(k=>{
+    if(k.indexOf('sit_')===0){const id=k.slice(4);const x=SITS.find(y=>y.id===id);return x?'<button type="button" class="btn wide" data-act="sit" data-id="'+id+'">'+I.bulb+'<span>« '+esc(x.t)+' », dans la boîte à outils</span></button>':'';}
+    const l=L[k];return l?'<button type="button" class="btn wide" data-act="'+l[0]+'" data-view="'+l[1]+'" data-id="'+l[1]+'" data-v="'+l[1]+'">'+l[2]+l[3]+'</button>':'';
+  }).join('');
+}
+/* Une étape : comprendre (l'idée et son schéma), ce qu'Antonio a vécu, un exemple, essayer, observer, puis écrire dans le carnet de route. */
 function viewStep(){
   const steps=allSteps();const s=steps[state.step];if(!s){state.view='parcours';return viewParcours();}
-  const dn=!!D().steps[s.idx];
-  const links={evo:['go','evo',I.chart,'Faire le point dans Mon évolution'],photo:['go','photo',I.image,'Ouvrir le photolangage'],breath:['exo','breath',I.wind,'Respirer 4-6 maintenant'],advice:['kit','sits',I.bulb,'Ouvrir les situations'],pros:['sit','pros',I.bulb,'Parler aux professionnels']};
-  const lk=s.link?links[s.link]:null;
-  return '<main id="main" tabindex="-1" class="view"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
-    '<div class="card"><span class="label">En deux minutes</span><p class="lesson">'+esc(s.lesson)+'</p><p class="hint" style="text-align:right">Antonio</p></div>'+
+  const d=D();const dn=!!d.steps[s.id];const nt=d.notes[s.id];const txt=nt&&nt.t?nt.t:'';
+  const paras=(Array.isArray(s.idee)?s.idee:[s.idee]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('');
+  let rap='';
+  if(s.rap){const r=steps.find(x=>x.id===s.rap);const rn=r?noteDe(r.id):null;
+    if(r)rap='<div class="card rap"><span class="label">Ce que vous aviez écrit à l’étape '+(r.idx+1)+'</span>'+(rn?'<p class="lesson">'+nl2(rn.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(rn.d))+'</span>':'<p class="hint">Vous n’aviez rien écrit à cette étape, qui s’appelle « '+esc(r.t)+' ». Vous pouvez encore le faire.</p><button type="button" class="btn small" data-act="step" data-i="'+r.idx+'" style="align-self:flex-start">Ouvrir cette étape</button>')+'</div>';}
+  const sv=s.idx<steps.length-1?steps[s.idx+1]:null;const ap=sv?stepEtat(sv.idx):null;
+  const suite=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':
+    (ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Étape suivante '+I.chev+'</button>':'';
+  const attente=sv&&ap.k==='bientot'?'<p class="hint attente">L’étape suivante, « '+esc(sv.t)+' », s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez une semaine pour essayer.</p>':'';
+  return '<main id="main" tabindex="-1" class="view etape"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
+    '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En deux minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
+    (s.sch?schHtml(s.sch):'')+
+    (s.vecu?'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div>'+(Array.isArray(s.vecu)?s.vecu:[s.vecu]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'</div>':'')+
+    (s.ex?'<div class="card exemple"><span class="label">Un exemple</span><p>'+esc(s.ex)+'</p></div>':'')+
+    rap+
     '<div class="exo"><span class="label">Cette semaine, j’essaie</span><p>'+esc(s.exo)+'</p></div>'+
     '<div class="card green"><span class="label">À observer</span><p>'+esc(s.obs)+'</p></div>'+
-    (lk?'<button type="button" class="btn wide" data-act="'+lk[0]+'" data-view="'+lk[1]+'" data-id="'+lk[1]+'" data-v="'+lk[1]+'">'+lk[2]+lk[3]+'</button>':'')+
-    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-i="'+s.idx+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+(s.idx<23?'<button type="button" class="btn" data-act="step" data-i="'+(s.idx+1)+'">Étape suivante '+I.chev+'</button>':'<button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button>')+'</div></main>';
+    stepLiens(s)+
+    '<div class="card carnet"><span class="label">Mon carnet de route</span><label class="lesson" for="note">'+esc(s.ecr)+'</label><textarea id="note" data-note="'+s.id+'" maxlength="'+LIM.note+'" placeholder="'+esc(s.ph||'Écrivez ici, avec vos mots.')+'">'+esc(txt)+'</textarea><p class="hint" id="note-etat" aria-live="polite">'+(txt?NOTE_OUI:NOTE_NON)+'</p></div>'+
+    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-id="'+s.id+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+suite+'</div>'+attente+'</main>';
+}
+/* Le carnet de route : ce que le parent a écrit à chaque étape, mois par mois. Tout reste sur son appareil. */
+function viewCarnet(){
+  const S=allSteps();const n=nbNotes();
+  let h='<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mon carnet de route</h1><p class="sub">Vous retrouvez ici ce que vous avez écrit à chaque étape du parcours. Tout reste sur votre appareil.</p></div>';
+  if(!n)return h+'<div class="card"><p>Votre carnet est encore vide. Il se remplira avec ce que vous écrirez à la fin de chaque étape.</p><button type="button" class="btn primary" data-act="step" data-i="'+currentStepIdx()+'" style="align-self:flex-start">'+I.path+'Ouvrir mon étape</button></div></main>';
+  PARCOURS.forEach((m,mi)=>{
+    const L=S.filter(s=>s.mi===mi&&noteDe(s.id));if(!L.length)return;
+    h+='<section class="carnet-mois"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+L.map(s=>{const nt=noteDe(s.id);
+      return '<article class="card page"><span class="label">Étape '+(s.idx+1)+', '+esc(s.t)+'</span><p class="q">'+esc(s.ecr)+'</p><p class="lesson">'+nl2(nt.t)+'</p><div class="row" style="align-items:center;justify-content:space-between"><span class="hint">Écrit le '+esc(fmtDate(nt.d))+'</span><button type="button" class="btn small" data-act="step" data-i="'+s.idx+'">Rouvrir l’étape</button></div></article>';}).join('')+'</section>';
+  });
+  return h+'</main>';
+}
+/* ---------- Les schémas du parcours ----------
+   Le dessin avance d'un moment à chaque « Voir la suite ». Rien ne démarre tout seul, et le dessin n'est pas redessiné
+   quand l'écran l'est : seul le morceau qui vient d'apparaître est animé (classe « neuf »). */
+function schK(S){return Math.max(1,Math.min(S.caps.length,state.sch||1));}
+function schHtml(key){
+  const S=SCHEMAS[key];if(!S)return '';
+  const n=S.caps.length,k=schK(S);
+  return '<div class="card sch" data-sch="'+key+'"><span class="label">Le schéma</span>'+
+    '<svg class="sch-svg" viewBox="'+S.vb+'" role="img" aria-label="'+esc(S.alt)+'">'+S.base+S.l.map(x=>'<g class="sp'+(x[0]<=k?' on':'')+'" data-p="'+x[0]+'">'+x[1]+'</g>').join('')+'</svg>'+
+    '<ol class="sch-caps" aria-live="polite">'+S.caps.map((c,i)=>'<li class="'+(i<k?'on':'')+(i===k-1?' cur':'')+'">'+esc(c)+'</li>').join('')+'</ol>'+
+    '<div class="sch-nav"><span class="sch-pos">'+k+' sur '+n+'</span><button type="button" class="btn small'+(k<n?' primary':'')+'" data-act="'+(k<n?'schnext':'schagain')+'">'+(k<n?'Voir la suite'+I.chev:'Revoir depuis le début')+'</button></div></div>';
+}
+function schSync(neuf){
+  const box=document.querySelector('.sch');if(!box)return;const S=SCHEMAS[box.dataset.sch];if(!S)return;
+  const n=S.caps.length,k=schK(S);
+  [].forEach.call(box.querySelectorAll('.sp'),g=>{const p=Number(g.dataset.p);g.classList.toggle('on',p<=k);g.classList.toggle('neuf',!!neuf&&p===k);});
+  [].forEach.call(box.querySelectorAll('.sch-caps li'),(li,i)=>{li.classList.toggle('on',i<k);li.classList.toggle('cur',i===k-1);li.classList.toggle('neuf',!!neuf&&i===k-1);});
+  const pos=box.querySelector('.sch-pos');if(pos)pos.textContent=k+' sur '+n;
+  const b=box.querySelector('.sch-nav button');
+  if(b){b.dataset.act=k<n?'schnext':'schagain';b.className='btn small'+(k<n?' primary':'');b.innerHTML=k<n?'Voir la suite'+I.chev:'Revoir depuis le début';}
 }
 /* ---------- évolution ---------- */
 /* Une échelle numérotée de 0 à 10 : le rond se glisse, les chiffres se touchent, et le rond porte le chiffre choisi.
