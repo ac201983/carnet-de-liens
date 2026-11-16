@@ -63,7 +63,10 @@ else
   exit 1
 fi
 
-# 3. Déposer : d'abord les images, les polices, les styles et les scripts, puis les pages, puis version.txt
+# 3. Déposer : d'abord les images, les polices, les styles et les scripts, puis les pages, puis version.txt.
+#    Un fichier déjà identique en ligne n'est pas renvoyé (les photos et les polices ne changent presque jamais) :
+#    on le relit par son adresse publique et on le compare octet par octet. Si le site ne répond pas, tout est renvoyé.
+#    version.txt est toujours renvoyé, en dernier. Le contrôle qui suit (verifier.sh) compare de toute façon chaque fichier.
 cd site
 mapfile -t tous < <(find . -type f ! -name '.htaccess' ! -name '.user.ini' ! -name '.infomaniak*' -printf '%P\n' | LC_ALL=C sort)
 ordre=()
@@ -71,13 +74,41 @@ for f in "${tous[@]}"; do case "$f" in *.html|version.txt) ;; *) ordre+=("$f") ;
 for f in "${tous[@]}"; do case "$f" in *.html) ordre+=("$f") ;; esac; done
 [ -f version.txt ] && ordre+=(version.txt)
 
-envoi=()
-for f in "${ordre[@]}"; do envoi+=(--upload-file "$f" "ftp://$HOTE_FTP$base$f"); done
+a_envoyer=(); identiques=0
+for f in "${ordre[@]}"; do
+  if [ "$f" != version.txt ] \
+     && curl --silent --fail --max-time 30 -o /tmp/en-ligne "${ADRESSE%/}/$f?c=$RANDOM$RANDOM" 2>/dev/null \
+     && cmp -s /tmp/en-ligne "$f"; then
+    identiques=$((identiques + 1))
+  else
+    a_envoyer+=("$f")
+  fi
+done
 
-# shellcheck disable=SC2086
-if ! curl "${commun[@]}" $mode --fail-early --ftp-create-dirs "${envoi[@]}" 2>/tmp/err; then
-  erreur "Dépôt interrompu" "L'envoi s'est arrêté en route. Réponse : $(message). Le site peut être dans un état intermédiaire : relancer la mise en ligne."
-  exit 1
+envoi=()
+for f in "${a_envoyer[@]}"; do envoi+=(--upload-file "$f" "ftp://$HOTE_FTP$base$f"); done
+
+if [ "${#envoi[@]}" -gt 0 ]; then
+  # shellcheck disable=SC2086
+  if ! curl "${commun[@]}" $mode --fail-early --ftp-create-dirs "${envoi[@]}" 2>/tmp/err; then
+    erreur "Dépôt interrompu" "L'envoi s'est arrêté en route. Réponse : $(message). Le site peut être dans un état intermédiaire : relancer la mise en ligne."
+    exit 1
+  fi
+  # Relire ce qui vient d'être envoyé : un fichier arrivé incomplet est renvoyé une fois.
+  refaire=()
+  for f in "${a_envoyer[@]}"; do
+    [ "$f" = version.txt ] && continue
+    if curl --silent --fail --max-time 30 -o /tmp/en-ligne "${ADRESSE%/}/$f?c=$RANDOM$RANDOM" 2>/dev/null && ! cmp -s /tmp/en-ligne "$f"; then
+      refaire+=("$f")
+    fi
+  done
+  if [ "${#refaire[@]}" -gt 0 ]; then
+    envoi=()
+    for f in "${refaire[@]}"; do envoi+=(--upload-file "$f" "ftp://$HOTE_FTP$base$f"); done
+    # shellcheck disable=SC2086
+    curl "${commun[@]}" $mode --ftp-create-dirs "${envoi[@]}" 2>/tmp/err || true
+    echo "::notice title=Envoi refait::${#refaire[@]} fichier(s) arrivé(s) incomplet(s), renvoyé(s) une fois : ${refaire[*]}"
+  fi
 fi
 touch /tmp/depose
 
@@ -106,7 +137,7 @@ fi
 
 arrivee="directement dans le dossier du site"
 [ "$base" != "/" ] && arrivee="à la racine de l'hébergement, puis dans $DOSSIER"
-echo "::notice title=Dépôt::${#ordre[@]} fichiers déposés. Le compte arrive $arrivee. Retirés du serveur :${retires:- rien}"
+echo "::notice title=Dépôt::${#a_envoyer[@]} fichiers déposés, $identiques déjà identiques en ligne et laissés tels quels. Le compte arrive $arrivee. Retirés du serveur :${retires:- rien}"
 
 # 5. Les réglages du serveur. Le fichier .htaccess appartient à Infomaniak : on n'y change rien, on ajoute seulement
 #    à la fin un bloc à nous, entre deux repères (outils/htaccess-bloc.txt). Si le site ne répond plus juste après,

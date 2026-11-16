@@ -19,7 +19,7 @@ jobs:
   mise-en-ligne:
     name: parent-ecoute.ch
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Récupérer les fichiers
         run: |
