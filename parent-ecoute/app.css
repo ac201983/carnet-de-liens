@@ -475,8 +475,10 @@ canvas.eau{display:none}
   ::view-transition{pointer-events:none}
   html.fx{--fx-wave:cubic-bezier(.42,.04,.3,1)}
   html.fx::view-transition-old(root),html.fx::view-transition-new(root){animation-duration:var(--fx-dur,.5s);animation-timing-function:var(--fx-ease)} /* sans onde (une feuille qui se referme) : un simple fondu */
+  /* l'eau sombre derrière l'écran qui s'efface : posée ici, pour ne pas dépendre de ce que chaque navigateur peint derrière */
+  html.fx.fx-onde::view-transition,html.fx.fx-onde::view-transition-group(root){background:var(--bg,#07240F)}
   html.fx.fx-onde::view-transition-old(root){animation:fx-fond var(--fx-dur,1.2s) linear both;mix-blend-mode:normal}
-  html.fx.fx-onde::view-transition-new(root){animation:fx-onde var(--fx-dur,1.2s) var(--fx-wave) both;mix-blend-mode:normal}
+  html.fx.fx-onde::view-transition-new(root){animation:fx-onde var(--fx-dur,1.2s) var(--fx-wave,cubic-bezier(.42,.04,.3,1)) both;mix-blend-mode:normal}
   @keyframes fx-fond{0%{opacity:1;animation-timing-function:cubic-bezier(.3,0,.4,1)}34%{opacity:.13}100%{opacity:.13}}
   @keyframes fx-onde{from{clip-path:ellipse(0px 0px at var(--fx-x,50%) var(--fx-y,100%))}to{clip-path:ellipse(calc(var(--fx-r,150vmax)*1.25) var(--fx-r,150vmax) at var(--fx-x,50%) var(--fx-y,100%))}}
   /* le bord de l'onde : une image fixe (un fondu vers le vert sombre de la page, et un liseré de lumière juste à l'intérieur),
@@ -489,7 +491,7 @@ canvas.eau{display:none}
   @keyframes fx-vie{to{opacity:0}}
   html.fx::view-transition-group(onde){animation:none}
   html.fx::view-transition-old(onde){display:none}
-  html.fx::view-transition-new(onde){transform-origin:var(--fx-x,50%) var(--fx-y,100%);animation:fx-anneau var(--fx-dur,1.2s) var(--fx-wave) both;mix-blend-mode:normal}
+  html.fx::view-transition-new(onde){transform-origin:var(--fx-x,50%) var(--fx-y,100%);animation:fx-anneau var(--fx-dur,1.2s) var(--fx-wave,cubic-bezier(.42,.04,.3,1)) both;mix-blend-mode:normal}
   @keyframes fx-anneau{0%{transform:scale(0);opacity:0}5%{opacity:1}94%{opacity:1}100%{transform:scale(var(--fx-s,10));opacity:0}}
   html.fx.fx-nav main.view{animation:fx-fade .6s var(--fx-ease) backwards} /* navigateur sans cette fonction : le nouvel écran apparaît en fondu */
   @keyframes fx-fade{from{opacity:0}}

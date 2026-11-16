@@ -425,15 +425,42 @@ const FX_RM=FX_OK&&window.matchMedia?window.matchMedia('(prefers-reduced-motion:
 /* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
 const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
 const FX_SEL='main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
-let fxIO=null,fxSeq=0,fxSkip=0;
+let fxIO=null,fxSeq=0,fxSkip=0,fxVT=null;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
 function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
 /* Changer d'écran : une onde de lumière part de l'endroit touché et traverse l'écran. Le nouvel écran apparaît dans son sillage,
    et l'ancien s'enfonce doucement dans l'ombre devant elle. Quand l'onde atteint la photo, la goutte saute (voir eauArrive).
    « fade » : un simple fondu, pour une feuille qui se referme. Le SOS s'affiche tout de suite, sans effet.
    Sans l'API du navigateur (View Transitions), le nouvel écran apparaît simplement en douceur. */
-const fxPt={x:0,y:0,t:0};
-function fxTap(e){fxPt.x=e.clientX;fxPt.y=e.clientY;fxPt.t=Date.now();}
+const fxPt={x:0,y:0,t:0,id:null,vt:false,synth:0,el:null};
+const FX_TOUCHE='button,a[href],input,textarea,select,label,summary,[data-act]';
+function fxTap(e){
+  fxPt.x=e.clientX;fxPt.y=e.clientY;fxPt.t=Date.now();fxPt.id=e.pointerId;
+  /* Pendant qu'un écran en remplace un autre, le navigateur ne dit plus ce qu'il y a sous le doigt : il répond « la page entière ».
+     On s'en souvient, pour retrouver le bon bouton au moment où le doigt se lève (voir fxLeve). */
+  const t=e.target;fxPt.vt=!!fxVT&&!(e.button>0)&&(!t||t===document||t===document.documentElement||t===document.body);
+}
+/* Le doigt se lève alors qu'une onde traverse encore l'écran : l'application doit répondre quand même.
+   S'il y a un bouton à cet endroit, l'onde s'arrête là, l'écran est entier tout de suite, et le toucher est transmis au bouton.
+   S'il n'y a rien à toucher, l'onde continue. Sur la photo, l'eau répond comme d'habitude. */
+function fxLeve(e){
+  if(!fxPt.vt||e.pointerId!==fxPt.id)return;fxPt.vt=false;
+  const x=e.clientX,y=e.clientY;
+  if(Date.now()-fxPt.t>700||Math.hypot(x-fxPt.x,y-fxPt.y)>12)return;   /* un appui long ou un glissement : ce n'est pas un toucher */
+  const dedans=n=>{const r=n.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;};
+  if(![].some.call(document.querySelectorAll(FX_TOUCHE),dedans)){
+    const ph=[].find.call(document.querySelectorAll(EAU_ICI),dedans);if(ph)eauTouch({clientX:x,clientY:y,button:0,target:ph});
+    return;
+  }
+  try{if(fxVT&&fxVT.skipTransition)fxVT.skipTransition();}catch(err){}
+  let el=document.elementFromPoint(x,y);el=el&&el.closest?el.closest(FX_TOUCHE):null;
+  if(!el||el.disabled)return;
+  fxPt.synth=Date.now();fxPt.el=el;
+  if(el.matches('input,textarea,select')&&el.focus)el.focus();
+  el.click();
+}
+/* Un toucher déjà transmis à la main pendant une onde ne doit pas compter deux fois, si le navigateur finit par l'envoyer lui aussi au même bouton. */
+function fxDouble(e){if(e.isTrusted&&fxPt.el&&Date.now()-fxPt.synth<350&&e.target&&(e.target===fxPt.el||fxPt.el.contains(e.target))){e.stopPropagation();e.preventDefault();}}
 function fxAnneau(){let o=document.getElementById('onde');if(!o){o=document.createElement('div');o.id='onde';o.setAttribute('aria-hidden','true');o.appendChild(document.createElement('i'));document.body.appendChild(o);}return o;}
 function fxGo(update,kind,vtOnly){
   /* Pas d'effet non plus quand le téléphone anime déjà lui-même le retour en arrière (geste de balayage). */
@@ -444,7 +471,7 @@ function fxGo(update,kind,vtOnly){
   if(kind==='fade'){
     de.classList.remove('fx-onde','fx-ring');de.style.setProperty('--fx-dur','.5s');
     const run=()=>{if(done)return;done=true;update();};
-    try{const vt=document.startViewTransition(run);if(vt){if(vt.ready)vt.ready.catch(()=>{});if(vt.finished)vt.finished.catch(()=>{});}}catch(e){run();}
+    try{const vt=document.startViewTransition(run);fxVT=vt||null;const fin=()=>{if(fxVT===vt)fxVT=null;};if(vt){if(vt.ready)vt.ready.catch(()=>{});if(vt.finished)vt.finished.then(fin,fin);else fin();}}catch(e){fxVT=null;run();}
     return;
   }
   const w=window.innerWidth,h=window.innerHeight;const fresh=Date.now()-fxPt.t<1500;
@@ -454,11 +481,13 @@ function fxGo(update,kind,vtOnly){
   const dur=kind==='tab'?1.3:1.2;
   de.style.setProperty('--fx-x',Math.round(x)+'px');de.style.setProperty('--fx-y',Math.round(y)+'px');de.style.setProperty('--fx-r',R+'px');de.style.setProperty('--fx-s',(R/120).toFixed(3));de.style.setProperty('--fx-dur',dur+'s');
   state.onde={t:Date.now(),dur:dur,x:x,y:y,r:R};
-  de.classList.add('fx-onde');
+  /* Si une onde précédente court encore (deux onglets touchés coup sur coup), son anneau est retiré d'abord : celui de la nouvelle onde repart de zéro. */
+  de.classList.remove('fx-ring');de.classList.add('fx-onde');
   /* L'anneau de lumière n'est ajouté qu'avec le nouvel écran : on ne le voit donc jamais posé tel quel, seulement grandir avec l'onde. */
   const run=()=>{if(done)return;done=true;update();fxAnneau();de.classList.add('fx-ring');};
-  const end=()=>{if(id===fxSeq)de.classList.remove('fx-onde','fx-ring');};
-  try{const vt=document.startViewTransition(run);if(vt&&vt.finished)vt.finished.then(end,end);else end();if(vt&&vt.ready)vt.ready.catch(()=>{});}catch(e){run();end();}
+  let vt=null;
+  const end=()=>{if(fxVT===vt)fxVT=null;if(id===fxSeq)de.classList.remove('fx-onde','fx-ring');};
+  try{vt=document.startViewTransition(run);fxVT=vt||null;if(vt&&vt.finished)vt.finished.then(end,end);else end();if(vt&&vt.ready)vt.ready.catch(()=>{});}catch(e){run();end();}
 }
 /* Après chaque rendu : les blocs déjà à l'écran remontent à la surface l'un après l'autre (classe fxe), et ceux qui sont plus bas
    viendront se poser en arrivant à l'écran (classe fxr). Si l'écran est redessiné pendant l'arrivée, elle reprend où elle en était. */
@@ -1269,7 +1298,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
 fxSync();
-if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:true});document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
+if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:true});document.addEventListener('pointerup',fxLeve,{passive:true,capture:true});document.addEventListener('pointercancel',()=>{fxPt.vt=false;},{passive:true,capture:true});document.addEventListener('click',fxDouble,true);document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, « Mon histoire » a sa propre adresse (…/#histoire) : on peut l'envoyer telle quelle, et le bouton Retour du téléphone fonctionne. */
 const storyFirst=SITE&&location.hash===STORY_HASH;
 if(storyFirst)state.view='about';
