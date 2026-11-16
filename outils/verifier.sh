@@ -83,6 +83,7 @@ note "Adresses" \
   "$(vue "page de maintenance" "$adresse/.infomaniak-maintenance.html")" \
   "$(vue "manifest" "$adresse/manifest.webmanifest")" \
   "$(vue "police" "$adresse/fonts/nunito.woff2")" \
+  "$(vue "image d'une carte" "$adresse/img/pictos/dents.svg")" \
   "$(vue "script" "$adresse/app.js")" \
   "$(vue "tableau de bord" "$adresse/antonio/")" \
   "$(vue "ancien tableau de bord" "$adresse/antonio.html")" \
@@ -93,6 +94,10 @@ note "Adresses" \
 entetes="$(va -D - -o /dev/null -H 'Accept-Encoding: gzip, br' -w 'http %{http_version}\n' "$adresse/" 2>/dev/null \
   | tr -d '\r' | grep -i -E '^(http|content-type|content-encoding|cache-control|expires|strict-transport-security|x-frame-options|x-content-type-options|referrer-policy|content-security-policy|server|last-modified|etag|alt-svc|vary)' )" || true
 note "En-têtes de l'accueil" "${entetes:-aucun en-tête lu}"
+# Les cartes-images sont des dessins SVG : le navigateur ne les affiche que si le serveur annonce le bon type (image/svg+xml).
+carte="$(va -D - -o /dev/null -H 'Accept-Encoding: gzip, br' "$adresse/img/pictos/dents.svg" 2>/dev/null \
+  | tr -d '\r' | grep -i -E '^(content-type|content-encoding|content-length|cache-control|x-content-type-options)' )" || true
+note "En-têtes d'une carte-image" "${carte:-aucun en-tête lu}"
 
 # 5. Le courrier du nom de domaine : où il arrive, et qui a le droit d'en envoyer (lu dans le DNS public)
 dns() {

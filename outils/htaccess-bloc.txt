@@ -1,9 +1,10 @@
 # La page affichee quand une adresse n'existe pas
 ErrorDocument 404 /404.html
 
-# Le type du fichier qui decrit l'application
+# Le type du fichier qui decrit l'application, et celui des images dessinees (cartes de l'outil D'abord, ensuite)
 <IfModule mod_mime.c>
 AddType application/manifest+json .webmanifest
+AddType image/svg+xml .svg
 </IfModule>
 
 # Trois consignes de securite pour les navigateurs

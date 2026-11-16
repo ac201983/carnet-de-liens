@@ -224,19 +224,42 @@ textarea{min-height:120px;resize:vertical}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-size:56px;color:var(--green)}
 .bigrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.ft{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.ftcard{background:var(--surface);border:3px solid var(--green);border-radius:24px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-height:190px;justify-content:center}
+/* « D'abord, ensuite » et la routine : des cartes-images blanches, comme les cartes de communication. Une seule chose par carte, le mot dessous, rien qui bouge. */
+.ft{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
+.ft .puis{width:22px;height:22px;color:var(--muted);flex:none}
+.ftcard{background:var(--surface-2);border:3px solid var(--green);border-radius:22px;padding:9px 9px 10px;display:flex;flex-direction:column;align-items:stretch;gap:7px;text-align:center;min-width:0;align-self:stretch;container-type:inline-size}
 .ftcard.then{border-color:var(--sun)}
-.ftcard .lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.ftcard .big{font-size:64px;line-height:1}
-.ftcard .txt{font-size:20px;font-weight:800}
-.picto{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.picto button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--muted)}
-.picto button span{font-size:30px;line-height:1}
-.picto button[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.ftcard .lbl{font-size:16px;font-weight:800;color:var(--green);line-height:1.2}
+.ftcard.then .lbl{color:var(--sun)}
+.ftcard[aria-pressed="true"]{box-shadow:0 0 0 4px rgba(244,239,216,.3),var(--shadow)}
+.ftcard .vide{aspect-ratio:1 / 1.24;border:2px dashed rgba(200,232,180,.55);border-radius:14px;display:grid;place-items:center;padding:10px;color:var(--muted);font-size:14.5px;line-height:1.3}
+.pcarte{background:#FFFEFA;border-radius:14px;color:#10291A;font-weight:800;line-height:1.15;display:flex;flex-direction:column;align-items:center;min-width:0;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:anywhere}
+.pcarte img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain}
+/* Le mot du tableau prend la plus grande taille qui tient sur une ligne (la carte sert de mesure). Sans cette mesure, il reste à 17 px. */
+.ftcard .pcarte{flex:1;padding:8px 8px 11px;gap:4px;font-size:17px;font-size:clamp(13px,min(calc((100cqi - var(--pp,18px)) / (var(--l,8) * .62)),16cqi),26px)}
+/* Sur un téléphone tenu debout, le tableau reste en vue pendant qu'on fait défiler les images : on voit tout de suite ce qu'on vient de poser. */
+@media (max-width:560px) and (min-height:640px){
+  .ft{position:sticky;top:calc(env(safe-area-inset-top,0px) + 68px);z-index:2}
+  /* un fond de la couleur de la carte, pour que les images passent derrière le tableau sans se voir à travers */
+  .ft::before{content:"";position:absolute;inset:-6px -8px -8px -8px;background:var(--surface);z-index:-1;border-radius:0 0 14px 14px}
+}
+/* Sur un très petit écran, les marges du tableau se resserrent pour laisser la place aux mots. */
+@media (max-width:340px){.ftcard{padding:6px 5px 7px;border-width:2px;--pp:6px}.ftcard .pcarte{padding:6px 2px 9px}.ft{gap:3px}.ft .puis{width:18px;height:18px}}
+#ft-dit:empty,#r-fin:empty{display:none}
+/* Le navigateur ne rattrape pas lui-même les déplacements dans cette carte : le tableau s'en charge, pour un résultat identique partout. */
+.ftool{overflow-anchor:none}
+#ft-vide[hidden]{display:none}
+.picto{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.picto button{border:0;padding:5px 5px 9px;gap:2px;font-size:13.5px;position:relative;text-align:center}
+.picto button[aria-pressed="true"]{box-shadow:inset 0 0 0 3px #1F6B33}
+/* L'étiquette d'une image déjà posée dans le tableau : « D'abord » ou « Ensuite », en haut à gauche de sa carte. */
+.picto .ou{position:absolute;top:0;left:0;padding:3px 9px 4px 8px;border-radius:14px 0 10px 0;background:#1F6B33;color:#fff;font-size:12px;font-weight:800;line-height:1.2}
+.pcredit{font-size:13px;color:var(--muted)}
+.pcredit a{color:inherit}
 .routine{display:flex;flex-direction:column;gap:8px}
 .rstep{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;width:100%;text-align:left}
-.rstep .e{font-size:34px;line-height:1;width:48px;text-align:center;flex:none}
+.rstep .e{width:58px;height:58px;flex:none;background:#FFFEFA;border-radius:12px;padding:3px}
+.rstep .e img{display:block;width:100%;height:100%;object-fit:contain}
 .rstep .t{flex:1;font-size:20px;font-weight:800}
 .rstep .ck{width:34px;height:34px;border-radius:50%;border:3px solid rgba(200,232,180,.45);display:grid;place-items:center;color:var(--green-fg);flex:none}
 .rstep.done{background:var(--green-soft);border-color:transparent}
@@ -714,10 +737,11 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
   .sits .sit,.ex .sit{align-items:flex-start;padding:15px 16px}
   .sits .sit .chev,.ex .sit .chev{align-self:center}
   #draft{min-height:150px !important}
-  .picto{grid-template-columns:repeat(8,1fr)}
+  .picto{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .picto button{font-size:14.5px}
   .abc{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
   .routine,.log,.perm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  .ft{max-width:640px;width:100%;align-self:center}
+  .ft{max-width:520px;width:100%;align-self:center}
   .photos{gap:12px}
   .pstage figcaption{font-size:32px;padding:80px 28px 22px}
 
