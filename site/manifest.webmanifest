@@ -1,0 +1,36 @@
+{
+  "name": "Parent Écouté, Parent Éclairé",
+  "short_name": "Parent écouté",
+  "id": "/",
+  "description": "Un espace d’écoute pour tout parent en chemin, avec la dose de lumière intérieure, Déposer, le parcours de six mois et les conseils et outils d’un travailleur social.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07240F",
+  "theme_color": "#07240F",
+  "categories": [
+    "lifestyle",
+    "health",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

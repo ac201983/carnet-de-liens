@@ -1,0 +1,34 @@
+# Dépose le site sur parent-ecoute.ch chaque fois que cette branche change.
+# Tout le travail est fait par outils/deposer.sh et outils/verifier.sh : ce fichier n'a pas besoin de changer.
+# Le mot de passe du compte FTP n'est écrit nulle part ici. Il vit dans les secrets du dépôt, sous le nom FTP_PASSWORD.
+name: Mise en ligne
+
+on:
+  push:
+    branches: [infomaniak]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mise-en-ligne
+  cancel-in-progress: false
+
+jobs:
+  mise-en-ligne:
+    name: parent-ecoute.ch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Récupérer les fichiers
+        run: |
+          git init -q .
+          git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
+          git checkout -q FETCH_HEAD
+      - name: Déposer le site
+        env:
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: bash outils/deposer.sh
+      - name: Vérifier le site en ligne
+        run: bash outils/verifier.sh

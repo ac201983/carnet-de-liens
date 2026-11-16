@@ -1,0 +1,5 @@
+# Parent Écouté, Parent Éclairé
+User-agent: *
+Allow: /
+
+Sitemap: https://parent-ecoute.ch/sitemap.xml
