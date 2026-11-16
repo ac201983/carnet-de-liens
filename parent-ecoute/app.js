@@ -422,9 +422,13 @@ function lockline(txt,f){return '<button type="button" class="lockline" data-act
    Rien ne joue si le téléphone demande moins d'animations ou si le parent coupe les effets dans « Moi ». */
 const FX_OK=!!(typeof window!=='undefined'&&window.requestAnimationFrame&&document.documentElement&&document.body);
 const FX_RM=FX_OK&&window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+/* Grand écran (ordinateur, tablette couchée) : le menu passe dans une colonne à gauche. La page est alors écrite dans l'ordre où on la voit,
+   la colonne d'abord (nom de l'espace, onglets, SOS), puis le contenu. Sur téléphone, l'ordre reste barre du haut, contenu, onglets. */
+const MQ_LARGE=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1024px)'):null;
+const large=()=>!!(MQ_LARGE&&MQ_LARGE.matches);
 /* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
 const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
-const FX_SEL='main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
+const FX_SEL='.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
 let fxIO=null,fxSeq=0,fxSkip=0,fxVT=null;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
 function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
@@ -482,9 +486,9 @@ function fxGo(update,kind,vtOnly){
   de.style.setProperty('--fx-x',Math.round(x)+'px');de.style.setProperty('--fx-y',Math.round(y)+'px');de.style.setProperty('--fx-r',R+'px');de.style.setProperty('--fx-s',(R/120).toFixed(3));de.style.setProperty('--fx-dur',dur+'s');
   state.onde={t:Date.now(),dur:dur,x:x,y:y,r:R};
   /* Si une onde précédente court encore (deux onglets touchés coup sur coup), son anneau est retiré d'abord : celui de la nouvelle onde repart de zéro. */
-  de.classList.remove('fx-ring');de.classList.add('fx-onde');
-  /* L'anneau de lumière n'est ajouté qu'avec le nouvel écran : on ne le voit donc jamais posé tel quel, seulement grandir avec l'onde. */
-  const run=()=>{if(done)return;done=true;update();fxAnneau();de.classList.add('fx-ring');};
+  de.classList.remove('fx-ring');fxAnneau();de.classList.add('fx-onde');
+  /* Le dessin de l'anneau n'arrive qu'avec le nouvel écran : on ne le voit donc jamais posé tel quel, seulement grandir avec l'onde. */
+  const run=()=>{if(done)return;done=true;update();de.classList.add('fx-ring');};
   let vt=null;
   const end=()=>{if(fxVT===vt)fxVT=null;if(id===fxSeq)de.classList.remove('fx-onde','fx-ring');};
   try{vt=document.startViewTransition(run);fxVT=vt||null;if(vt&&vt.finished)vt.finished.then(end,end);else end();if(vt&&vt.ready)vt.ready.catch(()=>{});}catch(e){run();end();}
@@ -686,7 +690,8 @@ function eauFrame(){
   const ms=performance.now();
   if(EAU.fix==null&&!window.__eauSansGarde&&EAU.n>1){EAU.slow=ms-EAU.last>60?EAU.slow+1:0;if(EAU.slow>3){if(++EAU.weak>1)EAU.ok=false;eauStop();return;}}
   EAU.last=ms;EAU.n++;
-  const dpr=Math.min(window.devicePixelRatio||1,2);
+  /* Sur un grand écran la photo est grande : on plafonne le nombre de points dessinés, pour que l'eau reste fluide même sur un ordinateur modeste. */
+  const dpr=Math.min(window.devicePixelRatio||1,2,Math.max(1,Math.sqrt(1.8e6/(g.w*g.h))));
   const W=Math.max(2,Math.round(g.w*dpr)),H=Math.max(2,Math.round(g.h*dpr));
   if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
   gl.viewport(0,0,W,H);
@@ -739,6 +744,7 @@ function eauSync(entering){
   if(!EAU.cv.isConnected){const host=document.querySelector('.herofull,.band');if(!host||!eauHost(host))eauStop();else if(!EAU.raf&&EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);}
 }
 /* ---------- rendu ---------- */
+const TAB_VIEWS=['today','parcours','kit','me'];
 const BACK_VIEWS=['sit','exo','step','photo','data','about','plans','evo','depots','antonio','letter'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
 function focusKey(el){
@@ -758,7 +764,7 @@ function render(){
   else if(!D().onboarded){base='app nobar';key='intro';html=viewIntro();}
   else if(state.view==='sos'){base='app nobar';key='sos';html=viewSOS();}
   else{
-    key=state.view;html+=bar();
+    key=state.view;html+=(large()?tabs():'')+bar();
     switch(state.view){
       case 'today':html+=viewToday();break;
       case 'parcours':html+=viewParcours();break;
@@ -777,7 +783,7 @@ function render(){
       case 'about':html+=viewAbout();break;
       default:html+=viewToday();
     }
-    html+=tabs();
+    if(!large())html+=tabs();
   }
   /* Les animations d'apparition ne jouent qu'en entrant sur un écran ou en ouvrant une feuille, pas à chaque appui. */
   const entering=key!==state.lastKey;state.lastKey=key;
@@ -787,6 +793,8 @@ function render(){
   if(state.sheet==='onboard')html+=sheetOnboard(sheetIn);
   if(state.sheet==='upgrade')html+=sheetUpgrade(sheetIn);
   /* « lum » : la lumière qui se lève une fois sur la photo. Si l'écran est redessiné entre-temps, elle reprend là où elle en était (--fx-age). */
+  /* « v-… » dit quel écran est affiché, et « wide » marque les quatre onglets : la mise en page pour grand écran s'appuie dessus. */
+  base+=' v-'+key+(TAB_VIEWS.includes(key)?' wide':'');
   app.className=base+(entering?' enter':'')+(FX_OK&&age<4.8?' lum':'');
   if(FX_OK&&age<4.8&&app.style&&app.style.setProperty)app.style.setProperty('--fx-age',age.toFixed(2)+'s');
   app.removeAttribute('data-prerender');
@@ -828,8 +836,10 @@ function openStory(){
 function showStory(){if(state.view!=='about')state.prev=state.view;state.view='about';state.sheet=null;state.confirmReset=false;stopTimer();fxGo(()=>{render();window.scrollTo(0,0);},'open');}
 function bar(){
   const back=BACK_VIEWS.includes(state.view)?'<button type="button" class="back" data-act="back">'+I.back+'Retour</button>':'';
+  /* Sur grand écran, le nom de l'espace et le SOS sont dans la colonne de gauche : il ne reste ici que le bouton Retour, quand il y en a un. */
+  if(large())return back?'<header class="bar sub">'+back+'</header>':'';
   const wm=back?'':'<span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span>';
-  return '<header class="bar">'+back+wm+'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
+  return '<header class="bar'+(back?' sub':'')+'">'+back+wm+'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
 }
 /* ---------- erreurs de saisie : affichées sous le champ, sans rien effacer ---------- */
 function fieldErr(id,msg){
@@ -869,14 +879,16 @@ function viewIntro(){
 function viewToday(){
   const d=D();const t=todayIso();const m=d.moods[t];const st=allSteps()[currentStepIdx()];const rd=recentDepot();
   let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+', semaine '+(weekNo()+1)+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
+  html+='<div class="duo"><div class="duo-a">';
   if(can('antonio'))html+=letterCard();
   if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq curseurs et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
   html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p><span class="sig">Antonio</span>'+
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
+  html+='</div><div class="duo-b">';
   html+=depotBox();
   html+='<button type="button" class="step now reveal d3" data-act="step" data-i="'+st.idx+'"><span class="n">'+(st.idx+1)+'</span><span class="tx"><span class="label">L’étape de la semaine</span><b>'+esc(st.t)+'</b></span><span class="chev">'+I.chev+'</span></button>';
   html+='<div class="card reveal d4"><span class="label">Comment ça va, là, maintenant ?</span><div class="moodrow">'+MOODS.map((x,i)=>'<button type="button" data-act="mood" data-i="'+i+'" aria-pressed="'+(m===i)+'" aria-label="'+esc(x[1])+'">'+x[0]+'</button>').join('')+'</div>'+(m!==undefined?'<p style="font-family:var(--font-display);font-size:17px;line-height:1.4">'+esc(MOOD_WORDS[m])+'</p>':'')+'</div>';
-  return html+'</main>';
+  return html+'</div></div></main>';
 }
 function letterCard(){
   const L=D().letters;const l=L.length?L[L.length-1]:null;
@@ -977,7 +989,7 @@ function stepLocked(idx){return idx>0&&!can('parcours');}
 function viewParcours(){
   const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);
   return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours dure six mois, avec une étape par semaine. À chaque fois, vous avez deux minutes de lecture, une chose à essayer et une chose à observer.</p>'+
-    '<div class="card"><div class="kv"><span>Semaine '+(weekNo()+1)+'</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
+    '<div class="card prog"><div class="kv"><span>Semaine '+(weekNo()+1)+'</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
     '<div class="quick"><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
     '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!D().steps[st.idx];const lk=stepLocked(st.idx);return '<button type="button" class="step'+(st.idx===cur?' now':'')+(dn?' done':'')+(lk?' locked':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+(st.idx===cur?'Cette semaine':'Semaine '+(st.idx+1))+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
     (can('parcours')?'<p class="hint">Vous pouvez avancer librement. Le parcours vous propose un rythme, mais vous restez libre du vôtre.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
@@ -1019,7 +1031,7 @@ function viewKit(){
   const seg='<div class="seg" role="group" aria-label="Rubriques de la boîte à outils"><button type="button" data-act="kit" data-v="sits" aria-pressed="'+(state.kit==='sits')+'">Situations</button><button type="button" data-act="kit" data-v="tools" aria-pressed="'+(state.kit==='tools')+'">Outils</button><button type="button" data-act="kit" data-v="me" aria-pressed="'+(state.kit==='me')+'">Pour moi</button></div>';
   let body='';
   if(state.kit==='sits')body=kitSits();else if(state.kit==='tools')body=kitTools();else body=kitMe();
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">La boîte à outils</h1></div><p class="sub">'+(state.kit==='sits'?'Vous trouverez ici vingt-deux situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.':state.kit==='tools'?'Ce sont les outils que les éducateurs utilisent tous les jours, et vous pouvez les poser sur la table de la cuisine.':'Deux minutes rien que pour vous, parce que vous êtes aussi une personne et pas seulement un parent.')+'</p>'+seg+body+'</main>';
+  return '<main id="main" tabindex="-1" class="view k-'+state.kit+'" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">La boîte à outils</h1></div><p class="sub">'+(state.kit==='sits'?'Vous trouverez ici vingt-deux situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.':state.kit==='tools'?'Ce sont les outils que les éducateurs utilisent tous les jours, et vous pouvez les poser sur la table de la cuisine.':'Deux minutes rien que pour vous, parce que vous êtes aussi une personne et pas seulement un parent.')+'</p>'+seg+body+'</main>';
 }
 function kitSits(){
   let list=SITS.filter(s=>(state.theme==='all'||s.th===state.theme)&&(state.age==='all'||s.ages.includes(state.age)));
@@ -1087,14 +1099,14 @@ function moodDots(){const d=D();const out=[];for(let i=13;i>=0;i--){const dt=new
 function viewMe(){
   const d=D();const T=TIERS[tier()];const ld=lastDepot();const ql=questionsLeft();
   return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1">Moi</h1></div><p class="sub">Vous retrouvez ici votre formule, vos dépôts, votre humeur et vos réglages.</p>'+
-    '<div class="card"><span class="label">Ma formule</span><div class="row" style="align-items:center;justify-content:space-between">'+badge()+'<span class="price" style="font-family:var(--font-display);font-size:22px">'+esc(T.p)+' CHF <small style="font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700">'+esc(T.per)+'</small></span></div>'+
+    '<div class="duo"><div class="duo-a"><div class="card"><span class="label">Ma formule</span><div class="row" style="align-items:center;justify-content:space-between">'+badge()+'<span class="price" style="font-family:var(--font-display);font-size:22px">'+esc(T.p)+' CHF <small style="font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700">'+esc(T.per)+'</small></span></div>'+
     (tier()==='free'?'<p class="hint">Vous avez la dose, la boîte à outils, le SOS, trois dépôts écoutés et la première étape. Il vous reste '+depotsLeft()+' dépôt'+(depotsLeft()>1?'s':'')+'.</p>':tier()==='parcours'?'<p class="hint">Vous avez les dépôts sans limite, la dose personnalisée, les 24 étapes, Mon évolution et le photolangage.</p>':'<p class="hint">Vous avez tout Le parcours, le mot d’Antonio chaque mois et deux questions par mois.</p>')+
     '<button type="button" class="btn'+(tier()==='free'?' primary':'')+'" data-act="go" data-view="plans" style="align-self:flex-start">'+I.tag+(tier()==='free'?'Voir les formules':'Changer de formule')+'</button></div>'+
     (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration avec un exemple de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+', il vous reste '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot par mois et deux questions</span></span><span class="chev">'+I.chev+'</span></button>')+
     '<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+(d.depots.length?d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+', le dernier le '+esc(fmtDate(ld.date)):'Aucun dépôt pour l’instant')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
-    '<div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
-    '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre téléphone':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
-    (SITE?'<a href="confidentialite.html">'+I.shield+'<span>Politique de confidentialité</span><span class="chev">'+I.chev+'</span></a><a href="conditions.html">'+I.note+'<span>Conditions générales</span><span class="chev">'+I.chev+'</span></a>':'')+'</div></main>';
+    '</div><div class="duo-b"><div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
+    '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre appareil':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
+    (SITE?'<a href="confidentialite.html">'+I.shield+'<span>Politique de confidentialité</span><span class="chev">'+I.chev+'</span></a><a href="conditions.html">'+I.note+'<span>Conditions générales</span><span class="chev">'+I.chev+'</span></a>':'')+'</div></div></div></main>';
 }
 function viewDepots(){
   const list=D().depots.slice().reverse();
@@ -1108,7 +1120,7 @@ function viewPlans(){
   const btn=k=>{
     const name=TIERS[k].t;
     if(peek)return k==='free'?'<button type="button" class="btn wide" data-act="onboard">Commencer gratuitement</button>':'<button type="button" class="btn'+(k==='parcours'?' primary':'')+' wide" data-act="tier" data-v="'+k+'" aria-label="Choisir la formule '+esc(name)+'">Choisir</button>';
-    return t===k?'<button type="button" class="btn wide" disabled>'+I.check+'Votre formule</button>':'<button type="button" class="btn'+(k==='parcours'?' primary':'')+' wide" data-act="tier" data-v="'+k+'" aria-label="'+(k==='free'?'Revenir à la formule Découverte':'Choisir la formule '+esc(name))+'">'+(k==='free'?'Revenir à Découverte':'Choisir')+'</button>';
+    return t===k?'<button type="button" class="btn wide" disabled>'+I.check+'Votre formule</button>':'<button type="button" class="btn'+(k==='parcours'?' primary':'')+' wide" data-act="tier" data-v="'+k+'" aria-label="'+(k==='free'?'Revenir à Découverte, la formule gratuite':'Choisir la formule '+esc(name))+'">'+(k==='free'?'Revenir à Découverte':'Choisir')+'</button>';
   };
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Les formules</h1><p class="sub">Les formules sont sans engagement et vous pouvez arrêter à tout moment. Voici ce que chacune vous donne concrètement.</p></div>'+
     '<div class="card"><table class="cmp"><caption class="sr">Ce que comprend chaque formule</caption><thead><tr><th scope="col"><span class="sr">Ce qui est compris</span></th><th scope="col">Découverte<br>0</th><th scope="col" class="best">Parcours<br>14/mois</th><th scope="col">Antonio<br>49/mois</th></tr></thead><tbody>'+FEATURES.map(f=>'<tr><th scope="row">'+esc(f[0])+'</th>'+cell(f[1])+cell(f[2])+cell(f[3])+'</tr>').join('')+'</tbody></table></div>'+
@@ -1154,8 +1166,8 @@ function consentCard(){
 function viewData(){
   const where=state.sample?'Quand vous déposez, votre texte est envoyé sans votre nom pour écrire la réponse, et l’application ne le garde nulle part ailleurs que sur cet appareil.':'Dans cette version, rien de ce que vous écrivez n’est envoyé, ni à un serveur ni à Antonio.';
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Vos données</h1><p class="sub">Vos dépôts, vos points et vos notes restent sur cet appareil. '+where+'</p></div>'+
-    '<div class="card green"><span class="label">Bon à savoir</span><p class="hint">Vos dépôts ne sont pas protégés par un mot de passe. Si vous prêtez ce téléphone, verrouillez-le ou effacez d’abord vos notes. Sachez aussi que si vous effacez les données de votre navigateur, vos notes sont perdues, parce qu’il n’en existe aucune copie ailleurs.</p></div>'+
-    '<div class="card"><span class="label">Recommencer depuis le début</span><p class="hint">Ce bouton efface tout ce qui est sur cet appareil, c’est-à-dire votre prénom, vos dépôts, vos étapes et vos points, puis il rouvre l’écran d’accueil et le questionnaire de départ. C’est utile pour faire tester l’application à une autre personne sur votre téléphone.</p>'+(state.confirmReset?'<div class="confirm" role="alert"><span>Effacer tout le contenu sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, effacer</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>':'<button type="button" class="btn danger" data-act="reset" style="align-self:flex-start">'+I.trash+'Tout effacer et recommencer</button>')+'</div>'+
+    '<div class="card green"><span class="label">Bon à savoir</span><p class="hint">Vos dépôts ne sont pas protégés par un mot de passe. Si vous prêtez cet appareil, verrouillez-le ou effacez d’abord vos notes. Sachez aussi que si vous effacez les données de votre navigateur, vos notes sont perdues, parce qu’il n’en existe aucune copie ailleurs.</p></div>'+
+    '<div class="card"><span class="label">Recommencer depuis le début</span><p class="hint">Ce bouton efface tout ce qui est sur cet appareil, c’est-à-dire votre prénom, vos dépôts, vos étapes et vos points, puis il rouvre l’écran d’accueil et le questionnaire de départ. C’est utile pour faire tester l’application à une autre personne sur votre appareil.</p>'+(state.confirmReset?'<div class="confirm" role="alert"><span>Effacer tout le contenu sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, effacer</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>':'<button type="button" class="btn danger" data-act="reset" style="align-self:flex-start">'+I.trash+'Tout effacer et recommencer</button>')+'</div>'+
     consentCard()+
     '<div class="card"><span class="label">Pour les tests</span><p class="hint">Vous pouvez aussi ajouter <b>?nouveau</b> à la fin de l’adresse. L’application repart alors de zéro sur cet appareil.</p></div></main>';
 }
@@ -1197,7 +1209,7 @@ function viewAbout(){
 function tabs(){
   const grp={today:['today'],parcours:['parcours','step','evo','photo'],kit:['kit','sit','exo'],me:['me','plans','depots','antonio','letter','data','about']};
   const cur=v=>grp[v].includes(state.view)?' aria-current="page"':'';
-  return '<nav class="tabs" aria-label="Navigation"><div class="tabs-in"><button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div></nav>';
+  return '<nav class="tabs" aria-label="Navigation"><span class="rail-brand">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><div class="tabs-in"><button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
 }
 function sheetOnboard(sheetIn){
   const d=D();const opt=(k,v,l)=>'<button type="button" class="chip" data-act="ob" data-k="'+k+'" data-v="'+v+'" aria-pressed="'+(d[k]===v)+'">'+esc(l)+'</button>';
@@ -1298,6 +1310,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
 fxSync();
+/* La fenêtre passe d'un format à l'autre (fenêtre agrandie ou réduite, tablette qu'on tourne) : l'écran est réécrit dans le bon ordre, sans perdre ce qui est en cours de saisie. */
+if(MQ_LARGE){const relayout=()=>{const keep={};document.querySelectorAll('#app input[id],#app textarea[id]').forEach(el=>{if(el.type!=='range'&&el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value;});render();Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id])el.value=keep[id];});};if(MQ_LARGE.addEventListener)MQ_LARGE.addEventListener('change',relayout);else if(MQ_LARGE.addListener)MQ_LARGE.addListener(relayout);}
 if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:true});document.addEventListener('pointerup',fxLeve,{passive:true,capture:true});document.addEventListener('pointercancel',()=>{fxPt.vt=false;},{passive:true,capture:true});document.addEventListener('click',fxDouble,true);document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, « Mon histoire » a sa propre adresse (…/#histoire) : on peut l'envoyer telle quelle, et le bouton Retour du téléphone fonctionne. */
 const storyFirst=SITE&&location.hash===STORY_HASH;

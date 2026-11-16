@@ -483,7 +483,8 @@ canvas.eau{display:none}
   @keyframes fx-onde{from{clip-path:ellipse(0px 0px at var(--fx-x,50%) var(--fx-y,100%))}to{clip-path:ellipse(calc(var(--fx-r,150vmax)*1.25) var(--fx-r,150vmax) at var(--fx-x,50%) var(--fx-y,100%))}}
   /* le bord de l'onde : une image fixe (un fondu vers le vert sombre de la page, et un liseré de lumière juste à l'intérieur),
      agrandie par le téléphone au même rythme que l'onde. Elle reste donc exactement sur son bord, et on ne voit jamais de coupure nette. */
-  html.fx.fx-ring #onde{display:block;position:fixed;inset:0;z-index:80;pointer-events:none;overflow:hidden;view-transition-name:onde}
+  /* Le calque de l'anneau est là dès le départ de l'onde, encore vide : sur grand écran, cela le range sous la colonne de gauche, qui ne bouge pas. */
+  html.fx.fx-onde #onde{display:block;position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden;view-transition-name:onde}
   html.fx.fx-ring #onde i{position:absolute;left:var(--fx-x,50%);top:var(--fx-y,100%);width:320px;height:256px;margin:-128px 0 0 -160px;border-radius:50%;
     background:radial-gradient(ellipse closest-side,rgba(255,250,215,0) 40%,rgba(255,250,215,.07) 50%,rgba(255,250,215,0) 58%,rgba(255,250,215,.1) 71%,rgba(255,251,224,.5) 83%,rgba(255,250,215,.12) 89%,rgba(255,250,215,0) 93%),
                radial-gradient(ellipse closest-side,rgba(7,36,15,0) 68%,rgba(7,36,15,.5) 83%,rgba(7,36,15,.93) 91%,rgba(7,36,15,.97) 95%,rgba(7,36,15,0) 100%);
@@ -534,6 +535,151 @@ canvas.eau{display:none}
   html.fx .mirror.surface>*:nth-child(4){animation-delay:.42s}
   html.fx .mirror.surface>*:nth-child(n+5){animation-delay:.56s}
   @keyframes fx-surface{from{opacity:0;transform:translateY(10px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
+}
+/* ================= Grand écran : ordinateur, tablette couchée =================
+   Le même espace, mis en page pour un écran large. Le menu passe dans une colonne à gauche, avec le SOS toujours au même endroit,
+   les quatre onglets s'étalent sur la largeur, les écrans de lecture gardent une colonne confortable, et les feuilles s'ouvrent au centre.
+   En dessous de 1024 px de large, rien de tout cela ne s'applique : le téléphone ne change pas. */
+.duo,.duo-a,.duo-b{display:contents}
+.v-today .duo-a>:first-child,.duo .dose{position:relative;z-index:2}   /* comme le premier bloc sous la photo et la dose, depuis toujours */
+.rail-brand{display:none}
+@media (min-width:1024px){
+  :root{--rail:248px;--pad:44px;--page:1080px;--lire:760px}
+  body{padding-inline:0}
+  .app{max-width:none;margin:0;padding-bottom:64px}
+  .app.nobar{padding-bottom:40px}
+  .app:not(.nobar){padding-left:var(--rail)}
+  .app>main.view,.app>.foot{width:100%;max-width:calc(var(--lire) + 2*var(--pad));margin-inline:auto;padding-inline:var(--pad)}
+  .app.wide>main.view{max-width:calc(var(--page) + 2*var(--pad))}
+  .app.v-plans>main.view,.app.v-peek-plans>main.view{max-width:calc(1000px + 2*var(--pad))}
+  .app>main.view{padding-top:30px;gap:18px}
+  .app.wide>main.view{padding-top:28px !important}
+  .t1{font-size:38px}
+  .sub{font-size:16.5px;max-width:64ch}
+  .bleed{margin-inline:0;padding-inline:0}
+
+  /* -- la colonne de gauche : le nom de l'espace, les quatre onglets, et le SOS en bas -- */
+  .tabs{left:0;top:0;bottom:0;right:auto;width:var(--rail);z-index:6;padding:26px 16px 22px;border-top:0;border-right:1px solid var(--line);background:#06200D;-webkit-backdrop-filter:none;backdrop-filter:none;display:flex;flex-direction:column;gap:28px;overflow-y:auto}
+  .rail-brand{display:flex;align-items:center;gap:10px;padding:2px 8px;font-family:var(--font-display);font-weight:700;font-size:21px;color:var(--cream);line-height:1.05}
+  .rail-brand small{display:block;font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700;margin-top:2px}
+  .tabs-in{max-width:none;margin:0;display:flex;flex-direction:column;gap:4px}
+  .tab{flex-direction:row;justify-content:flex-start;gap:13px;padding:12px 14px;border-radius:14px;font-size:16.5px}
+  .tab .i{width:22px;height:22px}
+  .tab:hover{color:var(--cream);background:rgba(244,239,216,.05)}
+  .tab[aria-current="page"]:hover{color:var(--sun-fg);background:var(--sun-soft)}
+  .tabs .sos{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--coral-strong);color:#fff;border:0;border-radius:14px;padding:13px 14px;font-weight:800;font-size:16px;box-shadow:var(--shadow-sm)}
+  .tabs .sos:hover{filter:brightness(1.08)}
+  /* la barre du haut ne porte plus que le bouton Retour, sur les écrans où il existe */
+  .app:not(.nobar)>.bar{position:sticky;top:0;z-index:5;width:auto;max-width:none;margin:0;min-height:60px;padding:16px max(var(--pad),calc((100vw - var(--rail) - var(--lire))/2)) 14px;background:linear-gradient(to bottom,var(--bg) 0,rgba(7,36,15,.94) 62%,rgba(7,36,15,0) 100%);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .app.v-plans>.bar.sub{padding-inline:max(var(--pad),calc((100vw - var(--rail) - 1000px)/2))}
+  .app:not(.nobar):not(.wide)>main.view{padding-top:8px}
+  .bar .back{font-size:16.5px;padding:8px 10px 8px 0}
+  /* sans colonne de gauche (accueil, pages de texte, aperçus avant l'inscription) : la barre court sur toute la largeur */
+  .app.nobar>.bar{max-width:none;margin:0;padding-inline:max(var(--pad),calc((100vw - var(--lire))/2))}
+  .app.v-peek-plans>.bar{padding-inline:max(var(--pad),calc((100vw - 1000px)/2))}
+  .sosview .bar{margin-inline:0;padding-inline:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+
+  /* -- la photo en haut des onglets : une fenêtre sur l'étang, qui se fond dans la page par le bas -- */
+  .band{height:auto;aspect-ratio:4/1;max-height:290px;margin-top:0;margin-bottom:-40px;padding:0 34px 64px;border-radius:30px 30px 0 0;background-position:center 44% !important}
+  .band h1{font-size:46px}
+  .band.thin{height:auto;aspect-ratio:4.3/1;padding-bottom:26px;margin-bottom:0}
+  .band.thin h1{font-size:42px}
+  .band .label{font-size:14px;padding:4px 12px}
+  .band.story{aspect-ratio:auto;max-height:none;padding:170px 34px 22px}
+  .band.story h1{font-size:38px}
+  .doc .band.thin{padding-inline:28px}
+  .app.wide>main.view>.sub{margin-top:-4px}
+
+  /* -- Aujourd'hui et Moi : deux pages d'un carnet -- */
+  .duo-a,.duo-b{gap:18px}
+  .card{padding:20px 22px}
+  .dose{padding:28px 28px 26px}
+  .dose p{font-size:25px}
+
+  /* -- le parcours : les six mois d'un seul regard -- */
+  .card.prog{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 30px;align-items:center}
+  .card.prog .kv,.card.prog .progress{grid-column:1}
+  .card.prog .quick{grid-column:2;grid-row:1 / span 2;flex-wrap:nowrap}
+  .card.prog .quick .btn{flex:none;padding-inline:18px}
+  .months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 26px;align-items:start;margin-top:6px}
+  .month h2{min-height:2.3em;align-items:flex-start}
+  .month h2 .n{flex:none;margin-top:-2px}
+
+  /* -- la boîte à outils -- */
+  .v-kit .seg{align-self:flex-start;width:min(460px,100%)}
+  .seg button{font-size:15px;padding-block:10px}
+  .search{max-width:460px}
+  .chips.scroll{flex-wrap:wrap;overflow:visible}
+  .chip{font-size:15px;padding:8px 14px}
+  .sits,.ex{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .sits>.hint{grid-column:1 / -1}
+  .sits .sit .tx span,.ex .sit .tx span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .sits .sit,.ex .sit{align-items:flex-start;padding:15px 16px}
+  .sits .sit .chev,.ex .sit .chev{align-self:center}
+  #draft{min-height:150px !important}
+  .picto{grid-template-columns:repeat(8,1fr)}
+  .abc{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .routine,.log,.perm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .ft{max-width:640px;width:100%;align-self:center}
+  .photos{grid-template-columns:repeat(6,1fr);gap:12px}
+
+  /* -- les formules, côte à côte -- */
+  .plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+  .plan{padding:22px;gap:12px}
+  .plan .btn{margin-top:auto}
+  .cmp{font-size:15px}.cmp thead th{font-size:14px}.cmp tbody th{font-size:15px}.cmp td.tx{font-size:13.5px}
+  .cmp th,.cmp td{padding:12px 8px}
+
+  /* -- l'accueil : la forêt à droite, les mots à gauche -- */
+  .app.v-intro>main.view{max-width:calc(1120px + 2*var(--pad));gap:30px;padding-top:28px !important}
+  .v-intro .herofull{--ih:100%;min-height:min(620px,calc(100vh - 170px));padding:64px 56px 60px 24px;justify-content:center;gap:14px;border-radius:34px;margin-top:0}
+  .v-intro .herofull .herobg{left:24%;width:100%;height:100%;object-position:center 44%}
+  .v-intro .herofull::after{height:100%;background:linear-gradient(90deg,var(--bg) 0%,var(--bg) 22%,rgba(7,36,15,.93) 32%,rgba(7,36,15,.76) 46%,rgba(7,36,15,.28) 59%,rgba(7,36,15,0) 76%),linear-gradient(to bottom,rgba(7,36,15,.28) 0%,rgba(7,36,15,0) 26%,rgba(7,36,15,0) 72%,rgba(7,36,15,.5) 100%)}
+  .v-intro .herofull .pill.test{top:26px;left:24px}
+  .v-intro .herofull h1{font-size:clamp(54px,5.4vw,76px);line-height:.98}
+  .v-intro .herofull .by{font-size:21px;margin-top:6px}
+  .v-intro .herofull .tag{font-size:20px;line-height:1.5;max-width:23.5em;margin-bottom:12px}
+  .v-intro .herofull .btn.primary{padding:15px 22px;font-size:17.5px}
+  .v-intro .pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .v-intro .pillar{flex-direction:column;gap:14px;padding:22px 22px 24px}
+  .v-intro .pillar h2{font-size:23px;margin-bottom:6px}
+  .v-intro .pillar span{font-size:16px;line-height:1.5}
+  .v-intro .voice{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:10px 44px;padding:6px 0 6px 28px;margin-block:26px 12px;align-items:start}
+  .v-intro .voice .say{grid-column:1;grid-row:1 / span 4;font-size:38px;line-height:1.12}
+  .v-intro .voice>p:not(.say),.v-intro .voice .who{grid-column:2}
+  .v-intro .voice p{font-size:17px;line-height:1.6}
+  .v-intro .cta-stack{align-items:center}
+  .v-intro .cta-stack .btn.wide{width:auto;min-width:340px;padding:15px 22px;font-size:17.5px}
+  .v-intro main.view>.hint{max-width:62ch;margin-inline:auto}
+
+  /* -- les feuilles deviennent des fenêtres au centre -- */
+  .sheet{inset:0;margin:auto;width:min(580px,calc(100vw - 48px));height:fit-content;max-height:min(88vh,880px);border:1px solid var(--line);border-radius:26px;padding:28px 30px 28px}
+  .sheet-in{max-width:none}
+  .grab{display:none}
+  .toast{bottom:34px}
+  .app:not(.nobar) .toast{left:var(--rail)}
+  body:has(.tabs) .consent{left:var(--rail);bottom:0;padding-bottom:16px}
+  .consent-in{max-width:760px}
+
+  /* -- quelques respirations -- */
+  .quick .btn{flex:0 1 auto;padding-inline:20px}
+  .sosview{gap:16px}
+  .story>p,.story .avec>p,.places p{font-size:19.5px}
+  .notfound h1{font-size:54px}
+}
+@media (min-width:1200px){
+  .duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.14fr);gap:22px 26px;align-items:start}
+  .duo-a,.duo-b{display:flex;flex-direction:column;min-width:0}
+}
+@media (min-width:1280px){
+  .months,.sits,.ex{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:1024px) and (prefers-reduced-motion:no-preference){
+  /* Pendant qu'une onde change l'écran, la colonne de gauche et le SOS restent en place : seul le contenu ondule. */
+  html.fx .tabs{view-transition-name:rail}
+  html.fx .app{--fx-in:0px}   /* plus de barre d'onglets en bas : rien à laisser dégagé pour l'effet de lecture */
+  html.fx::view-transition-new(rail):only-child{animation:fx-fade var(--fx-dur,1.2s) var(--fx-ease) both}   /* la colonne qui apparaît à l'inscription arrive doucement, avec l'onde */
+  html.fx .v-intro .herofull>canvas.eau{left:24%;height:100%}
 }
 
 /* ---- Espace Antonio (démonstration) ---- */
