@@ -1,5 +1,5 @@
 /* Parent Écouté, Parent Éclairé : script commun à toutes les pages du site.
-   - force HTTPS (filet de sécurité : GitHub Pages redirige déjà côté serveur) ;
+   - force HTTPS (filet de sécurité, au cas où le serveur ne redirigerait pas lui-même) ;
    - bandeau de consentement : la mesure d'audience ne se charge QUE si le visiteur l'accepte ;
    - aucun cookie : le choix est gardé dans le stockage local du navigateur ;
    - adresse de contact assemblée à l'affichage (illisible pour les robots qui aspirent les pages). */
