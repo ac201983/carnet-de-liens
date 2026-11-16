@@ -1715,6 +1715,8 @@ if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:tr
 const storyFirst=SITE&&location.hash===STORY_HASH;
 if(storyFirst)state.view='about';
 if(SITE)window.addEventListener('hashchange',()=>{
+  /* L'adresse …/#atelier, tapée alors que l'espace est déjà ouvert, allume l'aperçu d'Antonio sans recharger la page. */
+  if(location.hash==='#atelier'){const d=D();d.atelier=true;d.tout=true;save();try{if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);}catch(e){}if(d.onboarded)render();toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');return;}
   if(location.hash===STORY_HASH){if(state.view!=='about')showStory();}
   else if(state.view==='about')handle('back',{},null);
 });
