@@ -58,9 +58,10 @@ async function walk(page, visit) {
   await page.click(A('tier', '[data-v="parcours"]')); await w(120); await visit('formules-parcours');
   await tab('parcours'); await w(80); await visit('parcours-ouvert');
   await page.click(A('step', '[data-i="5"]')); await w(80); await visit('etape-ouverte'); await page.click(A('back'));
-  await page.click('.quick ' + A('go', '[data-view="photo"]')); await w(80);
-  await page.click(A('photopick', '[data-i="2"]')); await page.click(A('photosave')); await visit('photolangage-erreur');
+  await page.click('.quick ' + A('go', '[data-view="photo"]')); await w(80); await visit('photolangage-choix');
+  await page.click(A('photopick', '[data-id="chemin"]')); await w(250); await visit('photolangage-photo');
   await page.fill('#ptext', 'Un chemin qui monte, mais avec de la lumière au bout.'); await page.click(A('photosave')); await w(80); await visit('photolangage');
+  await page.click(A('photoback')); await w(250); await visit('photolangage-changer'); await page.click(A('photopick', '[data-id="chemin"]')); await w(250);
   if (await page.$(A('back'))) await page.click(A('back'));
   // ----- formule « Avec Antonio »
   await tab('me'); await page.click(A('go', '[data-view="plans"]')); await page.click(A('tier', '[data-v="antonio"]')); await w(120);

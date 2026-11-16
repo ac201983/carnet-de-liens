@@ -2,7 +2,7 @@
 // usage : node ordi.js
 const { chromium } = require('playwright');
 const A = (act, extra = '') => `[data-act="${act}"]${extra}`;
-const U = 'https://localhost:8443/carnet-de-liens/parent-ecoute/';
+const U = (process.env.PEPE_ORIGIN || 'https://localhost:8443') + (process.env.PEPE_BASE || '/carnet-de-liens/') + (process.env.PEPE_APPDIR !== undefined ? process.env.PEPE_APPDIR : 'parent-ecoute/');
 let pass = 0, fail = 0; const ok = (c, m) => { if (c) pass++; else { fail++; console.log('  ÉCHEC : ' + m); } };
 (async () => {
   const b = await chromium.launch();

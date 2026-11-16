@@ -23,7 +23,7 @@ const DOSES=[
 /* ---------- Le parcours en 24 étapes (6 mois) ---------- */
 const PARCOURS=[
   {m:'Accueil, point de départ et changement de regard',steps:[
-    {t:'D’où je pars',lesson:'Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger mais d’avoir un point de comparaison dans trois mois, puis dans six. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru. Aujourd’hui, vous faites donc votre premier point sur votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.',exo:'Faites votre point de départ dans « Mon évolution ». Il y a cinq curseurs et cela prend trois minutes. Écrivez ensuite une phrase qui commence par « Je commence ce parcours parce que… ».',obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',link:'evo'},
+    {t:'D’où je pars',lesson:'Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger mais d’avoir un point de comparaison dans trois mois, puis dans six. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru. Aujourd’hui, vous faites donc votre premier point sur votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.',exo:'Faites votre point de départ dans « Mon évolution ». Il y a cinq échelles de 0 à 10 et cela prend trois minutes. Écrivez ensuite une phrase qui commence par « Je commence ce parcours parce que… ».',obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',link:'evo'},
     {t:'L’effet Pygmalion',lesson:'Ce qu’on attend d’une personne finit souvent par arriver, parce que nos attentes changent notre façon de l’encourager, de lui laisser du temps et de remarquer ses essais. On appelle cela l’effet Pygmalion. Il ne s’agit pas de croire aux miracles. Il s’agit de regarder ce que nos gestes disent à notre enfant de ce que nous pensons de lui. Un enfant qui sent qu’on le croit capable essaie plus longtemps.',exo:'Choisissez une petite chose que votre enfant pourrait réussir cette semaine. Dites-lui une fois par jour que vous l’en croyez capable, et laissez-lui le temps d’essayer.',obs:'Notez ce qui change dans sa façon d’essayer, plutôt que dans le résultat.'},
     {t:'Les croyances qui freinent',lesson:'Vous vous êtes peut-être déjà dit « il ne pourra jamais », « avec son handicap, c’est inutile » ou « je dois tout faire à sa place ». Ces phrases ne sont pas des faits. Ce sont des croyances, que nous avons souvent héritées ou qu’un professionnel pressé nous a dites il y a dix ans. Une croyance qui aide n’a rien d’un mensonge optimiste. C’est une phrase tout aussi vraie, mais qui ouvre une porte au lieu de la fermer. « Il apprend à son rythme » est aussi vrai que « il est lent », et pourtant ces deux phrases ne vous emmènent pas au même endroit.',exo:'Écrivez trois phrases que vous vous dites sur votre enfant quand c’est difficile. Pour chacune, cherchez une phrase aussi vraie qui ouvre une porte.',obs:'Repérez la croyance qui revient le plus souvent dans votre tête.'},
     {t:'Mes objectifs à moi',lesson:'Un parcours sans objectif ressemble à une promenade. C’est agréable, mais on ne sait pas vraiment si l’on avance. Les objectifs dont je parle ici ne concernent pas votre enfant, ils vous concernent vous. Cela peut être dormir, souffler, mieux comprendre, oser demander ou arrêter de vous excuser. Choisissez-les petits et concrets, avec une date. Un objectif que vous pouvez tenir une semaine vaut mieux qu’un idéal pour toute l’année.',exo:'Écrivez un seul objectif pour le mois, en commençant par « D’ici un mois, je… ». Puis parlez-en à une personne.',obs:'Chaque soir, faites une croix si vous avez fait un pas vers cet objectif. Un soir sans croix n’est pas un échec, il vous renseigne simplement sur votre journée.'}
@@ -70,7 +70,61 @@ const EVO_SCALES=[
 const EVO_OPEN=[['avant','Que connaissiez-vous du handicap avant qu’il entre dans votre vie de famille ?'],['change','Votre regard a-t-il changé depuis ? Qu’est-ce qui a changé, et comment l’expliquez-vous ?']];
 const EVO_TIMES=[['t1','Point de départ'],['t2','Mi-parcours (3 mois)'],['t3','Bilan (6 mois)']];
 /* ---------- Photolangage ---------- */
-const PHOTOS=[['🌄','Une aube'],['🌊','Une mer agitée'],['🧗','Une paroi'],['🌳','Un arbre'],['🚪','Une porte'],['🧭','Une boussole'],['🌧️','La pluie'],['🔥','Un feu'],['🪢','Un nœud'],['🌱','Une pousse'],['🏔️','Un col'],['🤲','Des mains']];
+/* Quarante-huit photos du domaine public (licence CC0). Elles viennent de la collection de fonds d'écran d'Ubuntu Budgie,
+   qui indique l'auteur et la source de chacune (la liste est dans site-src/credits-photos.md).
+   Chaque ligne : le nom du fichier, le libellé, la description lue par les lecteurs d'écran. */
+const PHOTOS=[
+  ['aube','Une aube','Les premiers rayons du soleil traversent une forêt.'],
+  ['mer','Une mer agitée','Une mer grise et agitée, avec des vagues courtes.'],
+  ['calme','Une mer calme','Une mer parfaitement calme sous un ciel pâle.'],
+  ['ciel','Un ciel chargé','Des nuages sombres au-dessus de la mer, au coucher du soleil.'],
+  ['bouteille','Une bouteille à la mer','Une bouteille fermée, avec un message dedans, posée sur le sable.'],
+  ['barques','Deux barques','Deux barques posées au bord d’un lac, au coucher du soleil.'],
+  ['amarre','Une barque amarrée','Une barque en bois attachée à un ponton par une chaîne.'],
+  ['goutte','Une goutte','Une goutte rebondit sur une eau calme.'],
+  ['eau','Une eau claire','Une eau verte et transparente au pied de rochers et de sapins.'],
+  ['arcenciel','Un arc-en-ciel','Une personne, les bras ouverts, devant une cascade et un arc-en-ciel.'],
+  ['cascade','Une cascade','Une personne de dos, toute petite, devant une grande cascade.'],
+  ['crete','Une crête dans les nuages','Une crête rocheuse à moitié cachée par les nuages.'],
+  ['col','Un col de montagne','Une vallée entre deux montagnes, avec un lac où elles se reflètent.'],
+  ['cordee','Une cordée','Une file de marcheurs traverse une grande étendue de neige.'],
+  ['echelle','Une échelle','Une échelle en bois posée contre une pente, qui monte vers la brume.'],
+  ['chemin','Un chemin','Un chemin de terre qui tourne dans une forêt, sous un rayon de soleil.'],
+  ['tunnel','Un tunnel','Une longue passerelle couverte, avec la lumière au bout.'],
+  ['escalier','Un escalier','Un escalier en colimaçon qui monte vers la lumière.'],
+  ['depart','Une ligne de départ','Les couloirs numérotés d’une piste de course.'],
+  ['cloture','Une clôture','Un long grillage qui traverse une forêt.'],
+  ['passants','Des passants','Des silhouettes de voyageurs marchent devant de grandes fenêtres.'],
+  ['soleil','Le soleil qui perce','Le soleil apparaît entre deux montagnes et se reflète dans un lac.'],
+  ['trouee','Une trouée de lumière','Le soleil passe entre les troncs d’une forêt sombre.'],
+  ['etoiles','Une nuit étoilée','Un ciel de nuit rempli d’étoiles, avec la Voie lactée.'],
+  ['lune','Un croissant de lune','Un fin croissant de lune dans un ciel noir.'],
+  ['ampoule','Une lumière dans le noir','Une ampoule allumée dans l’obscurité.'],
+  ['fenetre','Une fenêtre','Une fenêtre sans vitre dans un mur de bois, qui donne sur une prairie.'],
+  ['volets','Des volets fermés','De vieux volets en bois fermés sur une façade claire.'],
+  ['porte','Une porte','Une porte rouge avec un heurtoir ancien.'],
+  ['banc','Un banc','Un banc blanc vide devant une maison.'],
+  ['balancoire','Une balançoire','Un pneu suspendu à une corde, dans l’herbe haute.'],
+  ['doudou','Un doudou','Un ours en peluche couché sur un lit.'],
+  ['plume','Une plume','Une plume posée sur le rebord d’une vieille fenêtre.'],
+  ['temps','Le temps','Les aiguilles d’une montre, vues de très près.'],
+  ['livre','Un livre ouvert','Un livre ouvert avec une paire de lunettes posée dessus.'],
+  ['pliage','Un pliage de papier','Un petit pliage en papier posé sur le sol.'],
+  ['cadeau','Un cadeau','Un paquet cadeau bleu, fermé par un ruban.'],
+  ['pause','Une pause','Une tasse de café posée sur un banc en bois.'],
+  ['envol','Un envol','Une mouette en plein vol au-dessus de l’eau.'],
+  ['herbes','Des herbes dans le vent','Des herbes sèches penchées par le vent.'],
+  ['fleur','Une fleur','Une rose jaune qui s’ouvre dans l’ombre.'],
+  ['repos','Le repos','Un jeune lion blanc endormi sur un rocher.'],
+  ['duo','À deux','La silhouette d’une personne et de son chien, sur des rochers au bord de l’eau.'],
+  ['saut','Un saut dans le vide','Trois parachutes ouverts au-dessus des montagnes.'],
+  ['filet','Un filet lancé','Un pêcheur debout sur sa barque lance son filet, au coucher du soleil.'],
+  ['ensemble','Marcher ensemble','Quatre personnes vues de haut marchent sur une plage claire.'],
+  ['jumelles','Des jumelles','Des jumelles d’observation tournées vers une ville.'],
+  ['koala','Un koala endormi','Un koala endormi, accroché à une branche.']
+];
+/* Les douze pictogrammes de la première version : un choix déjà enregistré retrouve la photo la plus proche. */
+const PHOTOS_AVANT=['aube','mer','crete','trouee','porte','jumelles','ciel','ampoule','amarre','fleur','col','ensemble'];
 /* ---------- Formules ---------- */
 const PLANS=[
   {t:'Découverte',p:'0',per:'7 jours',best:false,items:['La dose de lumière chaque jour','Les conseils et les outils','Déposer, trois fois']},

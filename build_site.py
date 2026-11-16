@@ -85,8 +85,8 @@ def node_check(path):
 
 # ------------------------------------------------------------------ CSS
 RESET = 'html{box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}*,*::before,*::after{box-sizing:inherit}body{margin:0}\n'
-FONTS = ("@font-face{font-family:'Fraunces';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/fraunces.woff2) format('woff2')}\n"
-         "@font-face{font-family:'Fraunces';font-style:italic;font-weight:100 900;font-display:swap;src:url(fonts/fraunces-italic.woff2) format('woff2')}\n"
+FONTS = ("@font-face{font-family:'Newsreader';font-style:normal;font-weight:400 700;font-display:swap;src:url(fonts/newsreader.woff2) format('woff2')}\n"
+         "@font-face{font-family:'Newsreader';font-style:italic;font-weight:400 600;font-display:swap;src:url(fonts/newsreader-italic.woff2) format('woff2')}\n"
          "@font-face{font-family:'Nunito';font-style:normal;font-weight:200 1000;font-display:swap;src:url(fonts/nunito.woff2) format('woff2')}\n"
          "@font-face{font-family:'Nunito';font-style:italic;font-weight:200 1000;font-display:swap;src:url(fonts/nunito-italic.woff2) format('woff2')}\n")
 
@@ -167,7 +167,7 @@ def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=
     if hero:  # l'image du haut de page est l'élément le plus grand : on la demande tout de suite
         out.append('<link rel="preload" href="%simg/hero.webp" as="image" type="image/webp" fetchpriority="high">' % a)
     out += ['<link rel="preload" href="%sfonts/nunito.woff2" as="font" type="font/woff2" crossorigin>' % a,
-            '<link rel="preload" href="%sfonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>' % a,
+            '<link rel="preload" href="%sfonts/newsreader.woff2" as="font" type="font/woff2" crossorigin>' % a,
             '<link rel="stylesheet" href="%sapp.css?v=%s">' % (a, v['css'])]
     if inline:
         out.append('<script>%s</script>' % inline)
@@ -255,10 +255,11 @@ def text_page(fname, h1, title, desc, body, v, band='center 45%'):
 def build_site():
     os.makedirs(OUT, exist_ok=True)
     # --- fichiers statiques
+    # Les dossiers sont recopiés à l'identique (sous-dossiers compris) : un fichier retiré des sources disparaît aussi du site fabriqué.
     for d in ('fonts', 'img'):
-        os.makedirs(OUT + '/' + d, exist_ok=True)
-        for f in sorted(os.listdir(SRC + '/' + d)):
-            shutil.copy2(SRC + '/' + d + '/' + f, OUT + '/' + d + '/' + f)
+        if os.path.isdir(OUT + '/' + d):
+            shutil.rmtree(OUT + '/' + d)
+        shutil.copytree(SRC + '/' + d, OUT + '/' + d)
     for f in sorted(os.listdir(SRC + '/icons')):
         shutil.copy2(SRC + '/icons/' + f, OUT + '/' + f)
     shutil.copy2(SRC + '/favicon.svg', OUT + '/favicon.svg')

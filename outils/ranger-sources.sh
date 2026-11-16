@@ -15,6 +15,7 @@ cp build_site.py "$BRANCHE/"
 find pparts site-src tests -type f ! -name '*.bak' ! -path '*/node_modules/*' -print0 | tar --null -cf - -T - | tar -xf - -C "$BRANCHE"
 cp eparts/p2-content.js "$BRANCHE/eparts/"
 cp outils/*.sh "$BRANCHE/outils/"
+cp outils/*.py "$BRANCHE/outils/" 2>/dev/null || true
 # Le banc d'essai de l'eau et de la goutte
 cp build/doux/lab.html build/doux/eau.js "$BRANCHE/outils/eau/" 2>/dev/null || true
 
