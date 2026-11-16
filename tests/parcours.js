@@ -173,6 +173,26 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await ctx.close();
   }
 
+  {
+    // l'adresse simple …/atelier, et le mot ajouté à l'adresse d'une page déjà ouverte
+    const { ctx, page, errs } = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(0), steps: {}, pv: 2, seen: {}, notes: {} }));
+    await parcours(page);
+    ok((await page.$$('.step.locked')).length === 23, 'avant : la vue d’un parent');
+    await page.evaluate(() => { location.hash = 'atelier'; }); await page.waitForTimeout(250);
+    let d = await store(page);
+    ok(d.atelier === true && d.tout === true && /Aperçu d’Antonio activé/.test(await toast(page)), '« #atelier » ajouté à l’adresse d’une page ouverte : aperçu activé sans recharger');
+    ok((await page.$$('.step.locked')).length === 0 && !/#atelier/.test(page.url()), 'l’écran du parcours s’ouvre aussitôt, et le mot est retiré de l’adresse');
+    await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(150); await page.click(A('tout')); await page.waitForTimeout(150);
+    ok((await store(page)).tout === false, 'aperçu éteint depuis « Moi »');
+    await page.goto(APP + 'atelier/'); await page.waitForTimeout(900);
+    d = await store(page);
+    ok(d.tout === true && !/atelier/.test(page.url()) && !!(await page.$('#app')), 'adresse …/atelier : renvoie vers l’espace, aperçu rallumé');
+    await page.goto(APP + 'atelier'); await page.waitForTimeout(900);
+    ok(!/atelier/.test(page.url()) && (await store(page)).tout === true, 'adresse …/atelier sans barre finale : même résultat');
+    ok(errs.length === 0, 'aucune erreur (adresse simple) ' + errs.slice(0, 2).join(' | '));
+    await ctx.close();
+  }
+
   // ---------- 4. Reprise des données d'avant (étapes rangées par numéro) ----------
   {
     const { ctx, page, errs } = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(-22), steps: { 0: true, 1: true, 8: true, 12: true, 19: true, 5: false } }));

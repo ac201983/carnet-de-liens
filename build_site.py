@@ -339,6 +339,17 @@ def build_site():
                + '<script src="../site.js?v=' + v['site'] + '" defer></script>\n<script src="antonio.js?v=' + v['ant'] + '" defer></script>\n</body>\n</html>\n')
         write(OUT + '/antonio/index.html', ant)
 
+    # --- L'adresse simple qui allume l'aperçu d'Antonio (tout le parcours ouvert sur son appareil) : …/atelier renvoie vers …/#atelier.
+    #     Ce n'est pas un verrou : dans la version de test tout est gratuit. Voir « L'aperçu d'Antonio » dans v2-b.js.
+    if not MOVED:
+        os.makedirs(OUT + '/atelier', exist_ok=True)
+        write(OUT + '/atelier/index.html',
+              '<!doctype html>\n<html lang="fr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+              '<meta name="robots" content="noindex,nofollow">\n<meta name="color-scheme" content="dark">\n<title>Aperçu d’Antonio, ' + html.escape(NAME) + '</title>\n'
+              '<meta http-equiv="refresh" content="0; url=../#atelier">\n'
+              '<style>body{background:#07240F;color:#F4EFD8;font:17px/1.5 system-ui,sans-serif;padding:32px 20px}a{color:#B4DE9C}</style>\n</head>\n'
+              '<body>\n<p>Un instant, l’espace s’ouvre avec l’aperçu d’Antonio.</p>\n<p><a href="../#atelier">Ouvrir l’espace</a></p>\n</body>\n</html>\n')
+
     # --- 404 (à la racine du dépôt : GitHub Pages la sert pour toute adresse inconnue du projet)
     home = MOVED or APP_PATH   # après le déménagement, la page 404 de l'ancienne adresse ramène à la nouvelle
     nf = (head('Page introuvable sur ' + NAME, 'Cette page n’existe pas ou plus.', '', APP_PATH, v, robots='noindex', social=False, hero=False)
