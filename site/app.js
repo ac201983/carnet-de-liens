@@ -250,45 +250,224 @@ const DOSES=[
   'Imaginez qu’un ami très proche vive exactement ce que vous vivez. Dites-vous ce que vous lui diriez, et essayez d’y croire autant que lui vous croirait.',
   'Le dimanche, vous n’avez rien à réussir. Vous pouvez faire une promenade, boire un café tranquillement ou profiter d’un moment de silence. Les familles qui tiennent dans la durée sont souvent celles qui savent s’arrêter de temps en temps.'
 ];
-/* ---------- Le parcours en 24 étapes (6 mois) ---------- */
+/* ---------- Le parcours : six mois, vingt-quatre étapes ----------
+   Le fil : moi aujourd'hui, ce que je ressens, mon regard, mon enfant et ses forces, autour de nous, la suite.
+   Chaque étape a un nom stable (id). C'est lui qui range ce que le parent a fait et écrit,
+   pour que l'ordre des étapes puisse changer sans rien perdre.
+   idee : ce qu'on comprend (une chaîne, ou plusieurs paragraphes) ; sch : le schéma (voir SCHEMAS) ;
+   vecu : ce qu'Antonio a vécu, avec ses mots à lui, jamais inventé (une chaîne, ou plusieurs paragraphes) ; ex : un exemple de tous les jours ;
+   exo : ce qu'on essaie ; obs : ce qu'on observe ; ecr : ce qu'on écrit dans le carnet de route (ph : l'amorce) ;
+   rap : l'étape dont on relit la note ; link : un ou plusieurs boutons (evo, photo, breath, advice, ou « sit_nom » pour une situation). */
 const PARCOURS=[
-  {m:'Accueil, point de départ et changement de regard',steps:[
-    {t:'D’où je pars',lesson:'Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger mais d’avoir un point de comparaison dans trois mois, puis dans six. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru. Aujourd’hui, vous faites donc votre premier point sur votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.',exo:'Faites votre point de départ dans « Mon évolution ». Il y a cinq échelles de 0 à 10 et cela prend trois minutes. Écrivez ensuite une phrase qui commence par « Je commence ce parcours parce que… ».',obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',link:'evo'},
-    {t:'L’effet Pygmalion',lesson:'Ce qu’on attend d’une personne finit souvent par arriver, parce que nos attentes changent notre façon de l’encourager, de lui laisser du temps et de remarquer ses essais. On appelle cela l’effet Pygmalion. Il ne s’agit pas de croire aux miracles. Il s’agit de regarder ce que nos gestes disent à notre enfant de ce que nous pensons de lui. Un enfant qui sent qu’on le croit capable essaie plus longtemps.',exo:'Choisissez une petite chose que votre enfant pourrait réussir cette semaine. Dites-lui une fois par jour que vous l’en croyez capable, et laissez-lui le temps d’essayer.',obs:'Notez ce qui change dans sa façon d’essayer, plutôt que dans le résultat.'},
-    {t:'Les croyances qui freinent',lesson:'Vous vous êtes peut-être déjà dit « il ne pourra jamais », « avec son handicap, c’est inutile » ou « je dois tout faire à sa place ». Ces phrases ne sont pas des faits. Ce sont des croyances, que nous avons souvent héritées ou qu’un professionnel pressé nous a dites il y a dix ans. Une croyance qui aide n’a rien d’un mensonge optimiste. C’est une phrase tout aussi vraie, mais qui ouvre une porte au lieu de la fermer. « Il apprend à son rythme » est aussi vrai que « il est lent », et pourtant ces deux phrases ne vous emmènent pas au même endroit.',exo:'Écrivez trois phrases que vous vous dites sur votre enfant quand c’est difficile. Pour chacune, cherchez une phrase aussi vraie qui ouvre une porte.',obs:'Repérez la croyance qui revient le plus souvent dans votre tête.'},
-    {t:'Mes objectifs à moi',lesson:'Un parcours sans objectif ressemble à une promenade. C’est agréable, mais on ne sait pas vraiment si l’on avance. Les objectifs dont je parle ici ne concernent pas votre enfant, ils vous concernent vous. Cela peut être dormir, souffler, mieux comprendre, oser demander ou arrêter de vous excuser. Choisissez-les petits et concrets, avec une date. Un objectif que vous pouvez tenir une semaine vaut mieux qu’un idéal pour toute l’année.',exo:'Écrivez un seul objectif pour le mois, en commençant par « D’ici un mois, je… ». Puis parlez-en à une personne.',obs:'Chaque soir, faites une croix si vous avez fait un pas vers cet objectif. Un soir sans croix n’est pas un échec, il vous renseigne simplement sur votre journée.'}
+  {m:'Mon point de départ',steps:[
+    {id:'depart',t:'D’où je pars',
+     idee:['Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger. Il est d’avoir un point de comparaison pour plus tard, parce que la fatigue joue un mauvais tour à la mémoire. Les jours difficiles, elle nous fait croire que rien n’a changé, alors que nous avons parfois beaucoup avancé. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru.',
+       'Aujourd’hui, vous faites donc votre premier point sur cinq choses qui pèsent dans la vie d’un parent, à savoir votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Vous le referez au milieu du parcours, puis à la fin. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.'],
+     sch:'points',
+     ex:'Prenons un parent qui met 8 sur 10 à son stress aujourd’hui. Au milieu du parcours, il met 6. Sans le premier chiffre, il aurait dit que rien n’avait changé. Avec lui, il voit que son stress a baissé de deux points, et il sait que ses efforts servent à quelque chose.',
+     exo:'Faites votre point de départ dans « Mon évolution ». Il y a cinq échelles de 0 à 10 et cela prend trois minutes.',
+     obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',
+     ecr:'Terminez cette phrase avec vos mots. Je commence ce parcours parce que…',ph:'Je commence ce parcours parce que…',link:'evo'},
+    {id:'croire',t:'Croire en lui, l’effet Pygmalion',
+     idee:['Ce que nous attendons d’une personne finit souvent par arriver. Cela n’a rien de magique. Quand je crois qu’un enfant peut y arriver, je lui laisse plus de temps, je l’encourage davantage et je remarque ses essais. Lui le sent, et il ose essayer plus longtemps. Comme il essaie, il progresse, et je crois encore plus en lui.',
+       'L’inverse est vrai aussi. Si je pense qu’il n’y arrivera pas, je fais à sa place pour aller plus vite, et il finit par ne plus essayer.',
+       'On appelle cela l’effet Pygmalion, du nom d’un sculpteur de la mythologie grecque qui aimait tant sa statue qu’elle a fini par prendre vie. Dans les années 1960, le psychologue américain Robert Rosenthal a fait croire à des enseignants que certains de leurs élèves, en réalité tirés au sort, allaient beaucoup progresser. À la fin de l’année, ces élèves avaient en moyenne davantage progressé que les autres, surtout les plus jeunes. La seule chose qui avait changé, c’était le regard de leurs enseignants. Cette expérience a été beaucoup discutée depuis, et d’autres chercheurs ont mesuré un effet plus modeste. Il n’est pas nul pour autant, parce que ce que nous attendons d’un enfant change notre façon d’agir avec lui.'],
+     sch:'boucle',
+     vecu:['Je l’ai vécu moi-même. Enfant, je pensais ne pas être au niveau. J’étais très médiocre à l’école, je ne comprenais pas et mon langage était très limité. À dix ans, d’après les professionnels qui m’avaient rencontré, je ne parlais qu’avec cent cinquante mots.',
+       'Mes parents d’accueil ont cru en moi. Ils m’ont dit que j’étais intelligent. Ils m’ont appris la discipline, avec cinq minutes de lecture et dix minutes d’instrument par jour, et on me félicitait à chaque réussite. Il m’a fallu du temps pour croire en moi, environ deux mois. Ensuite, je me suis dit que j’allais y arriver, et j’ai étudié davantage.',
+       'Plus tard, ma femme a cru en moi à son tour, et cela m’a donné la force d’entreprendre plusieurs formations. Aujourd’hui, je forme à mon tour des apprentis. Imaginez le progrès entre mon enfance et aujourd’hui.'],
+     ex:'Prenons le moment des chaussures. Si vous pensez qu’il n’y arrivera pas, vous les lui mettez pour partir plus vite, et il n’apprend pas. Si vous pensez qu’il peut y arriver, vous prévoyez cinq minutes de plus, vous le laissez chercher et vous lui dites ce que vous voyez, par exemple « tu as trouvé le bon pied ». Il n’y arrivera peut-être pas tout de suite, mais il aura essayé, et c’est par là que tout commence.',
+     exo:'Choisissez une petite chose que votre enfant pourrait réussir cette semaine. Dites-lui une fois par jour que vous l’en croyez capable, et laissez-lui le temps d’essayer.',
+     obs:'Notez ce qui change dans sa façon d’essayer, plutôt que dans le résultat.',
+     ecr:'Pensez à une personne qui a cru en vous. Qu’est-ce que cela a changé pour vous ?'},
+    {id:'croyances',t:'Les croyances qui freinent',
+     idee:['Vous vous êtes peut-être déjà dit « il ne pourra jamais », « avec son handicap, c’est inutile » ou « je dois tout faire à sa place ». Ces phrases ne sont pas des faits. Ce sont des croyances, que nous avons souvent héritées ou qu’un professionnel pressé nous a dites il y a dix ans.',
+       'Une croyance fonctionne comme une paire de lunettes. Elle choisit ce que nous remarquons. Si je pense qu’il est lent, je vois chaque retard et j’oublie les matins où il était prêt à l’heure.',
+       'Une croyance qui aide n’a rien d’un mensonge optimiste. C’est une phrase tout aussi vraie, mais qui ouvre une porte au lieu de la fermer. « Il apprend à son rythme » est aussi vrai que « il est lent », et pourtant ces deux phrases ne vous emmènent pas au même endroit.'],
+     sch:'chemins',
+     vecu:'Un professeur m’a dit un jour « tu n’y arriveras jamais ». On m’a aussi traité d’idiot. Plus tard, c’est d’un de mes fils qu’un professionnel a dit qu’il avait peu de chances de progresser dans son langage. Il lui avait collé une étiquette, alors que d’autres spécialistes disaient le contraire. Nous avons choisi de croire en notre fils plutôt qu’en cette étiquette. Depuis qu’il est dans son école actuelle, il a fait un bond énorme.',
+     ex:'Voici deux autres exemples. « Elle ne parle pas » peut devenir « elle se fait comprendre autrement ». « Il fait des crises » peut devenir « il n’a pas encore d’autre moyen de dire que c’est trop ».',
+     exo:'Repérez trois phrases que vous vous dites sur votre enfant quand c’est difficile. Pour chacune, cherchez une phrase aussi vraie qui ouvre une porte.',
+     obs:'Repérez la croyance qui revient le plus souvent dans votre tête.',
+     ecr:'Écrivez la phrase qui revient le plus souvent dans votre tête. Puis écrivez une phrase aussi vraie, qui ouvre une porte.'},
+    {id:'objectifs',t:'Mes objectifs à moi',
+     idee:['Un parcours sans objectif ressemble à une promenade. C’est agréable, mais on ne sait pas vraiment si l’on avance. Les objectifs dont je parle ici ne concernent pas votre enfant, ils vous concernent vous. Cela peut être dormir, souffler, mieux comprendre, oser demander ou arrêter de vous excuser.',
+       '« Me reposer » est un souhait, et un souhait reste flou. Il devient un objectif quand vous pouvez dire quoi exactement, quand, et avec l’aide de qui. Choisissez-le petit. Un objectif que vous pouvez tenir une semaine vaut mieux qu’un idéal pour toute l’année.'],
+     sch:'marches',
+     vecu:'Comme père, j’ai des objectifs et je veux les atteindre, comme évoluer dans mon métier et me former. Je le fais pour moi, pour montrer à mes enfants que tout est possible, et pour offrir à ma famille une sécurité, dans tous les sens du terme. Je crée aussi ce projet pour avoir plus de temps pour ma famille. Vous qui me lisez, je suis sûr que vous y arriverez aussi. Vous êtes de bons parents, j’en suis certain.',
+     ex:'Voici un autre exemple. « Mieux comprendre mon fils » devient « samedi matin, je relis pendant une demi-heure le dernier rapport que j’ai reçu, et je note mes trois questions ».',
+     exo:'Choisissez un seul objectif pour le mois et écrivez-le dans votre carnet, plus bas. Puis parlez-en à une personne.',
+     obs:'Chaque soir, faites une croix si vous avez fait un pas vers cet objectif. Un soir sans croix n’est pas un échec, il vous renseigne simplement sur votre journée.',
+     ecr:'Écrivez votre objectif pour ce mois, en commençant par « D’ici un mois, je… ».',ph:'D’ici un mois, je…'}
   ]},
-  {m:'Représentations du handicap et inclusion',steps:[
-    {t:'Le handicap selon les époques',lesson:'Le regard sur le handicap a beaucoup changé avec le temps. On l’a d’abord caché, puis on a voulu le soigner, le réparer et l’intégrer. Aujourd’hui, la Convention de l’ONU le décrit comme la rencontre entre une personne et un environnement plus ou moins accessible. Savoir cela change quelque chose, parce que ce que votre enfant ne peut pas faire dépend aussi de ce que le monde met ou ne met pas à sa portée. Ses limites ne reposent donc pas uniquement sur vos épaules, et vous pouvez agir sur ce qui l’entoure.',exo:'Ouvrez le photolangage, choisissez l’image qui dit le mieux ce que vous vivez avec le handicap aujourd’hui, et écrivez pourquoi.',obs:'Repérez une situation où la difficulté venait de l’environnement plutôt que de votre enfant.',link:'photo'},
-    {t:'Ce que ces croyances font à mon regard',lesson:'Les idées que la société se fait du handicap s’invitent jusque dans notre cuisine. Elles nous font voir les difficultés avant la personne, et le diagnostic avant le prénom. Cette semaine, je vous propose d’inverser l’ordre et de regarder d’abord qui est votre enfant, puis ce dont il a besoin. Vous ne niez pas le handicap en faisant cela. Vous lui redonnez sa vraie place, celle d’une partie de sa vie et non de sa vie entière.',exo:'Décrivez votre enfant en dix lignes sans utiliser un seul mot de son dossier. Parlez de ses goûts, de son caractère, de son humour et de ses petites manières.',obs:'Quand vous présentez votre enfant à quelqu’un, remarquez si vous commencez par son prénom ou par son diagnostic.'},
-    {t:'L’inclusion, concrètement',lesson:'L’inclusion, c’est d’abord quelque chose de très concret. C’est un enfant qui a sa place à table, à l’école, au club ou au magasin, avec les adaptations dont il a besoin. Elle réussit quand quelqu’un prépare le terrain, et beaucoup moins quand on jette l’enfant dans le grand bain. Ce quelqu’un, c’est souvent vous. Vous avez aussi le droit de choisir vos combats, parce que certains lieux méritent votre énergie et d’autres non.',exo:'Choisissez un lieu où vous aimeriez que votre enfant ait davantage sa place. Écrivez ce qui rendrait cela possible, que ce soit une personne, une adaptation ou une habitude.',obs:'Observez un lieu où l’inclusion marche déjà. Qu’est-ce qui fait que ça marche ?'},
-    {t:'Une vision de l’avenir qui donne envie',lesson:'L’avenir fait peur surtout parce qu’il est flou. Un avenir que l’on souhaite, même imparfait, peut se construire. Il ne s’agit pas de faire un plan de carrière, mais d’avoir une image en tête. Où vit-il, avec qui, que fait-il le matin et qu’est-ce qui le fait rire ? Les parents qui ont cette image avancent vers elle, alors que les autres subissent souvent celle que d’autres ont choisie pour leur enfant.',exo:'Écrivez une journée de votre enfant dans dix ans, du réveil au coucher, la plus belle possible tout en restant réaliste.',obs:'Dans la semaine, remarquez un petit pas qui va déjà dans cette direction.'}
+  {m:'Ce que je ressens',steps:[
+    {id:'emotions',t:'Mes émotions, mes signaux',
+     idee:'La colère, la tristesse, la honte, la peur et l’épuisement sont des émotions très fortes chez les parents d’un enfant différent, et on se les interdit souvent. Pourtant, ce sont des signaux et non des fautes. La colère vous dit que quelque chose est injuste, la tristesse que vous avez perdu quelque chose, et la peur que vous tenez à votre enfant. Quand on nomme une émotion, elle baisse d’un cran. Quand on la nie, elle ressort ailleurs, et souvent sur la mauvaise personne.',
+     exo:'Pour commencer, ouvrez le photolangage et choisissez l’image qui dit le mieux ce que vous ressentez ces jours-ci. Ensuite, trois fois cette semaine, quand l’émotion monte, nommez-la à voix basse. Dites par exemple « là, c’est de la colère », « là, c’est de la peur » ou « là, c’est de la tristesse », sans rien faire d’autre.',
+     obs:'Repérez l’émotion que vous vous interdisez le plus.',
+     ecr:'Quelle émotion vous interdisez-vous le plus ? Que vous dirait-elle si vous l’écoutiez ?',link:'photo'},
+    {id:'culpa',t:'La culpabilité',
+     idee:'La culpabilité est sans doute l’émotion la plus répandue chez les parents. Elle dit « j’aurais dû le voir plus tôt », « je n’en fais pas assez » ou « je me suis encore énervé ». Elle se présente comme de la lucidité, mais elle mélange deux choses très différentes. Il y a ce qui dépendait de vous, et que vous pouvez réparer par un mot ou par un geste. Et il y a tout ce qui ne dépendait pas de vous, comme la différence de votre enfant, la fatigue ou le manque de relais, et que vous portez quand même. La culpabilité utile dure le temps de réparer. Celle qui s’installe pendant des années ne répare rien, elle vous use. Si vous la ressentez, c’est d’abord parce que vous tenez à votre enfant.',
+     vecu:'Comme papa, je me suis senti coupable de ne pas offrir assez de temps à mes enfants, pris par le quotidien, le travail et les obligations. Il faut agender du temps pour la famille et les enfants, et ce temps doit être non négociable. Ce n’est pas tant le temps que je passe avec ma famille qui compte, c’est la qualité de ma présence quand je suis là. Cela fait la différence. La famille, la santé et vous, c’est ce qu’il y a de plus important, et les trois sont liés.',
+     exo:'Prenez une feuille et faites deux colonnes. À gauche, écrivez ce qui dépendait vraiment de vous. À droite, écrivez ce qui n’en dépendait pas. Pour la colonne de gauche, choisissez une seule réparation, comme un mot d’excuse ou un moment à deux. La colonne de droite, vous pouvez la déposer.',
+     obs:'Remarquez à quel moment de la journée la culpabilité parle le plus fort, et ce qu’elle dit toujours en premier.',
+     ecr:'Quelle phrase votre culpabilité répète-t-elle le plus souvent ? Que diriez-vous à un ami qui se dirait la même chose ?',link:'sit_culpa'},
+    {id:'reguler',t:'Me calmer, puis lâcher prise',
+     idee:'On ne choisit pas ce qu’on ressent, mais on peut choisir ce qu’on en fait. Respirer plus lentement que l’émotion, sortir trente secondes, poser les mains à plat ou dire une phrase apprise par cœur sont des gestes qui calment le corps avant la tête. Lâcher prise ne veut pas dire renoncer. Cela veut dire arrêter de porter ce qui ne dépend pas de vous.',
+     exo:'Choisissez un seul geste pour vous calmer, comme la respiration 4-6, les mains à plat, sortir un instant ou une phrase. Utilisez-le chaque fois que l’émotion monte, pendant une semaine.',
+     obs:'Parmi vos soucis de la semaine, repérez ce qui ne dépend pas de vous. Écrivez-le, puis laissez-le de côté.',
+     ecr:'Quel geste vous calme le mieux ? Écrivez-le ici, pour le retrouver un jour de tempête.',link:'breath'},
+    {id:'appuis',t:'Mes appuis pour tenir',
+     idee:'On appelle résilience la capacité de tenir debout quand la vie secoue, et de se relever ensuite. Ce n’est pas une qualité qu’on a ou qu’on n’a pas. Elle se construit avec des appuis, comme une personne qui écoute, un lieu qui apaise, une activité qui vous fait du bien ou une phrase qui vous tient debout. Je vous invite à trouver vos appuis, à les nommer et à aller vers eux volontairement.',
+     vecu:'J’ai été placé en famille d’accueil à dix ans. Ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier.',
+     exo:'Trouvez vos quatre appuis, c’est-à-dire une personne, un lieu, une activité et une phrase, et notez-les dans votre carnet, plus bas. Prévoyez ensuite un rendez-vous avec chacun d’eux dans le mois.',
+     obs:'Remarquez ce qui vous recharge vraiment, et ce qui vous aide seulement à ne plus rien sentir.',
+     ecr:'Écrivez vos quatre appuis, une personne, un lieu, une activité et une phrase.'}
   ]},
-  {m:'Émotions et résilience parentale',steps:[
-    {t:'Mes émotions, mes signaux',lesson:'La colère, la tristesse, la honte, la peur et l’épuisement sont des émotions très fortes chez les parents d’un enfant différent, et on se les interdit souvent. Pourtant, ce sont des signaux et non des fautes. La colère vous dit que quelque chose est injuste, la tristesse que vous avez perdu quelque chose, et la peur que vous tenez à votre enfant. Quand on nomme une émotion, elle baisse d’un cran. Quand on la nie, elle ressort ailleurs, et souvent sur la mauvaise personne.',exo:'Trois fois cette semaine, quand l’émotion monte, nommez-la à voix basse. Dites par exemple « là, c’est de la colère », « là, c’est de la peur » ou « là, c’est de la tristesse », sans rien faire d’autre.',obs:'Repérez l’émotion que vous vous interdisez le plus.'},
-    {t:'Réguler et lâcher',lesson:'On ne choisit pas ce qu’on ressent, mais on peut choisir ce qu’on en fait. Respirer plus lentement que l’émotion, sortir trente secondes, poser les mains à plat ou dire une phrase apprise par cœur sont des gestes qui calment le corps avant la tête. Lâcher prise ne veut pas dire renoncer. Cela veut dire arrêter de porter ce qui ne dépend pas de vous.',exo:'Choisissez un seul geste pour vous calmer, comme la respiration 4-6, les mains à plat, sortir un instant ou une phrase. Utilisez-le chaque fois que l’émotion monte, pendant une semaine.',obs:'Parmi vos soucis de la semaine, repérez ce qui ne dépend pas de vous. Écrivez-le, puis laissez-le de côté.',link:'breath'},
-    {t:'Mes ressources de résilience',lesson:'La résilience n’est pas une qualité qu’on a ou qu’on n’a pas. Elle se construit avec des appuis, comme une personne qui écoute, un lieu qui apaise, une activité qui vous fait du bien ou une phrase qui vous tient debout. J’ai été placé en famille d’accueil à dix ans, et ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier. Je vous invite à trouver vos appuis, à les nommer et à aller vers eux volontairement.',exo:'Écrivez vos quatre appuis, c’est-à-dire une personne, un lieu, une activité et une phrase. Prévoyez ensuite un rendez-vous avec chacun d’eux dans le mois.',obs:'Remarquez ce qui vous recharge vraiment, et ce qui vous aide seulement à ne plus rien sentir.'},
-    {t:'Bilan de mi-parcours',lesson:'Vous êtes à trois mois. C’est le moment de regarder le chemin que vous avez fait plutôt que la montagne qu’il reste à gravir. Refaites le point sur votre stress, votre sentiment de compétence, votre solitude, votre regard et votre confiance, puis comparez avec le départ sans vous juger. Ce qui a bougé vous appartient, et ce qui n’a pas bougé vous montre où porter vos efforts pendant les trois prochains mois. Vous pouvez aussi ajuster votre objectif, parce qu’il a le droit d’avoir changé.',exo:'Refaites le point dans « Mon évolution ». Relisez votre première phrase « Je commence ce parcours parce que… ».',obs:'Qu’est-ce que vous faites aujourd’hui que vous ne faisiez pas il y a trois mois ?',link:'evo'}
+  {m:'Mon regard',steps:[
+    {id:'regard',t:'D’où vient notre regard sur le handicap',
+     idee:'Le regard sur le handicap a beaucoup changé avec le temps. On l’a d’abord caché, puis on a voulu le soigner, le réparer et l’intégrer. Aujourd’hui, la Convention de l’ONU le décrit comme la rencontre entre une personne et un environnement plus ou moins accessible. Savoir cela change quelque chose, parce que ce que votre enfant ne peut pas faire dépend aussi de ce que le monde met ou ne met pas à sa portée. Ses limites ne reposent donc pas uniquement sur vos épaules, et vous pouvez agir sur ce qui l’entoure.',
+     exo:'Repérez cette semaine une situation où la difficulté venait de l’environnement plutôt que de votre enfant, comme un lieu trop bruyant, une consigne trop longue ou un horaire trop serré. Demandez-vous ce qu’on pourrait y changer.',
+     obs:'Écoutez comment on parle du handicap autour de vous, à la télévision, à l’école ou en famille.',
+     ecr:'Racontez une situation où c’est l’environnement qui a mis votre enfant en difficulté. Qu’est-ce qui aurait pu l’aider ?'},
+    {id:'enfant',t:'Voir mon enfant avant son diagnostic',
+     idee:'Les idées que la société se fait du handicap s’invitent jusque dans notre cuisine. Elles nous font voir les difficultés avant la personne, et le diagnostic avant le prénom. Pourtant, chaque enfant est d’abord une personne unique, avec ses goûts, son humour, ses peurs et ses talents. Le handicap décrit une partie de son fonctionnement, mais il ne dit pas qui il est. Cette semaine, je vous propose d’inverser l’ordre et de regarder d’abord qui est votre enfant, puis ce dont il a besoin. Vous ne niez pas le handicap en faisant cela. Vous lui redonnez sa vraie place, celle d’une partie de sa vie et non de sa vie entière.',
+     exo:'Dans votre carnet, plus bas, décrivez votre enfant en dix lignes sans utiliser un seul mot de son dossier. Faites aussi la liste de cinq choses qu’il fait mieux que la plupart des gens. Cherchez bien, parce qu’il y en a.',
+     obs:'Quand vous présentez votre enfant à quelqu’un, remarquez si vous commencez par son prénom ou par son diagnostic.',
+     ecr:'Décrivez votre enfant sans un seul mot de son dossier. Parlez de ses goûts, de son caractère, de son humour et de ses petites manières.'},
+    {id:'avenir',t:'Une vision de l’avenir qui donne envie',
+     idee:'L’avenir fait peur surtout parce qu’il est flou. Un avenir que l’on souhaite, même imparfait, peut se construire. Il ne s’agit pas de faire un plan de carrière, mais d’avoir une image en tête. Où vit-il, avec qui, que fait-il le matin et qu’est-ce qui le fait rire ? Les parents qui ont cette image avancent vers elle, alors que les autres subissent souvent celle que d’autres ont choisie pour leur enfant.',
+     exo:'Cette semaine, l’exercice est d’écrire. Prenez un moment au calme et racontez cette journée dans votre carnet, plus bas.',
+     obs:'Dans la semaine, remarquez un petit pas qui va déjà dans cette direction.',
+     ecr:'Écrivez une journée de votre enfant dans dix ans, du réveil au coucher, la plus belle possible tout en restant réaliste.'},
+    {id:'mi',t:'Le bilan de mi-parcours',
+     idee:'Vous êtes à la moitié du parcours. C’est le moment de regarder le chemin que vous avez fait plutôt que la montagne qu’il reste à gravir. Refaites le point sur votre stress, votre sentiment de compétence, votre solitude, votre regard et votre confiance, puis comparez avec le départ sans vous juger. Ce qui a bougé vous appartient, et ce qui n’a pas bougé vous montre où porter vos efforts pendant la seconde moitié. Vous pouvez aussi ajuster votre objectif, parce qu’il a le droit d’avoir changé.',
+     exo:'Refaites le point dans « Mon évolution », puis choisissez une nouvelle photo dans le photolangage. Relisez ensuite la phrase que vous aviez écrite en commençant le parcours. Elle est sur cette page.',
+     obs:'Remarquez ce qui a bougé sans que vous l’ayez décidé.',
+     ecr:'Qu’est-ce que vous faites aujourd’hui que vous ne faisiez pas en commençant ?',rap:'depart',link:['evo','photo']}
   ]},
-  {m:'Changer de perspective et reconnaître les forces',steps:[
-    {t:'Sa singularité',lesson:'Chaque personne en situation de handicap est d’abord une personne unique, avec ses goûts, son humour, ses peurs et ses talents. Le handicap décrit une partie de son fonctionnement, mais il ne dit pas qui elle est. Cette semaine, je vous propose de regarder votre enfant sans passer par le diagnostic, en vous intéressant à ce qu’il aime, à ce qu’il sait et à ce qu’il fait mieux que vous.',exo:'Faites la liste de cinq choses que votre enfant fait mieux que la plupart des gens. Cherchez bien, parce qu’il y en a.',obs:'Observez un moment où il est pleinement lui-même, sans effort. Que fait-il ?'},
-    {t:'Ses talents, ses compétences',lesson:'Un talent n’a pas besoin d’être spectaculaire. Remarquer les détails, bien mémoriser, persévérer, sentir l’humeur des autres, rire aux éclats ou être fidèle sont de vraies compétences, et elles se cultivent. Quand on nomme une compétence, elle se renforce. Quand on ne la remarque pas, elle finit par s’éteindre.',exo:'Choisissez une compétence de votre enfant et créez une occasion de l’exercer cette semaine. Dites-lui ce que vous avez vu.',obs:'Comptez les fois où vous nommez une compétence, et les fois où vous nommez une difficulté.'},
-    {t:'Encourager juste',lesson:'Encourager ne veut pas dire féliciter tout le temps. Il s’agit plutôt de trouver le bon dosage, parce que trop d’aide étouffe et que trop peu d’aide décourage. Un bon encouragement vise le pas suivant, celui que votre enfant peut atteindre avec un peu d’effort, et il parle de l’effort plutôt que du résultat. « Tu as essayé trois fois » porte plus loin que « bravo ».',exo:'Cette semaine, remplacez « bravo » par la description de ce que vous avez vu, par exemple « tu as attendu », « tu as demandé » ou « tu as réessayé ».',obs:'Repérez un moment où vous aidez par habitude alors que votre enfant pourrait essayer.'},
-    {t:'Des solutions pour le quotidien',lesson:'Les problèmes concrets ont souvent des solutions concrètes. On peut prévenir avant un changement d’activité, montrer en images, proposer deux choix, simplifier une consigne ou préparer une sortie. Les outils de l’application sont là pour cela. Choisissez une seule difficulté du quotidien et essayez de la résoudre avec une méthode, plutôt qu’en y mettant encore plus de volonté.',exo:'Dans la boîte à outils, choisissez la situation que vous vivez le plus souvent et essayez une seule des pistes pendant sept jours.',obs:'Notez chaque soir si c’était mieux, pareil ou moins bien. Au bout de sept jours, vous pourrez décider de continuer ou de changer.',link:'advice'}
+  {m:'Mon enfant et ses forces',steps:[
+    {id:'talents',t:'Ses talents, ses compétences',
+     idee:'Un talent n’a pas besoin d’être spectaculaire. Remarquer les détails, bien mémoriser, persévérer, sentir l’humeur des autres, rire aux éclats ou être fidèle sont de vraies compétences, et elles se cultivent. Quand on nomme une compétence, elle se renforce. Quand on ne la remarque pas, elle finit par s’éteindre.',
+     exo:'Choisissez une compétence de votre enfant et créez une occasion de l’exercer cette semaine. Dites-lui ce que vous avez vu.',
+     obs:'Comptez les fois où vous nommez une compétence, et les fois où vous nommez une difficulté.',
+     ecr:'Quelle compétence de votre enfant avez-vous choisie ? Qu’avez-vous vu quand il l’a exercée ?'},
+    {id:'encourager',t:'Encourager juste',
+     idee:'Encourager ne veut pas dire féliciter tout le temps. Il s’agit plutôt de trouver le bon dosage, parce que trop d’aide étouffe et que trop peu d’aide décourage. Un bon encouragement vise le pas suivant, celui que votre enfant peut atteindre avec un peu d’effort, et il parle de l’effort plutôt que du résultat. « Tu as essayé trois fois » porte plus loin que « bravo ».',
+     exo:'Cette semaine, remplacez « bravo » par la description de ce que vous avez vu, par exemple « tu as attendu », « tu as demandé » ou « tu as réessayé ».',
+     obs:'Repérez un moment où vous aidez par habitude alors que votre enfant pourrait essayer.',
+     ecr:'Écrivez trois phrases qui décrivent ce que vous avez vu cette semaine, à la place de « bravo ».'},
+    {id:'solutions',t:'Des solutions pour le quotidien',
+     idee:'Les problèmes concrets ont souvent des solutions concrètes. On peut prévenir avant un changement d’activité, montrer en images, proposer deux choix, simplifier une consigne ou préparer une sortie. Les outils de l’application sont là pour cela. Choisissez une seule difficulté du quotidien et essayez de la résoudre avec une méthode, plutôt qu’en y mettant encore plus de volonté.',
+     exo:'Dans la boîte à outils, choisissez la situation que vous vivez le plus souvent et essayez une seule des pistes pendant sept jours.',
+     obs:'Notez chaque soir si c’était mieux, pareil ou moins bien. Au bout de sept jours, vous pourrez décider de continuer ou de changer.',
+     ecr:'Quelle situation avez-vous choisie, quelle piste avez-vous essayée, et qu’est-ce que cela a donné au bout de sept jours ?',link:'advice'},
+    {id:'place',t:'Sa place parmi les autres',
+     idee:'On parle d’inclusion quand un enfant a sa place à table, à l’école, au club ou au magasin, avec les adaptations dont il a besoin. C’est donc quelque chose de très concret. Elle peut être scolaire, professionnelle, sociale ou liée au lieu de vie, et il existe beaucoup de possibilités entre la classe ordinaire et l’institution spécialisée. Celle qui convient à votre enfant peut d’ailleurs changer avec l’âge. L’inclusion réussit quand quelqu’un prépare le terrain, et beaucoup moins quand on jette l’enfant dans le grand bain. Ce quelqu’un, c’est souvent vous. Vous avez aussi le droit de choisir vos combats, parce que certains lieux méritent votre énergie et d’autres non.',
+     exo:'Choisissez un lieu où vous aimeriez que votre enfant ait davantage sa place, et notez dans votre carnet ce qui rendrait cela possible. Parlez-en ensuite à une personne de ce lieu.',
+     obs:'Observez un lieu où l’inclusion marche déjà. Qu’est-ce qui fait que ça marche ?',
+     ecr:'Dans quel lieu aimeriez-vous que votre enfant ait davantage sa place ? Qu’est-ce qui rendrait cela possible, une personne, une adaptation ou une habitude ?'}
   ]},
-  {m:'Les clés de l’inclusion au quotidien',steps:[
-    {t:'Les formes de l’inclusion',lesson:'L’inclusion peut être scolaire, professionnelle, sociale ou liée au lieu de vie. Ce n’est pas une case à cocher, et il existe beaucoup de possibilités entre la classe ordinaire et l’institution spécialisée. Celle qui convient à votre enfant peut d’ailleurs changer avec l’âge. Quand vous connaissez les formes qui existent, vous pouvez choisir au lieu de subir.',exo:'Dessinez une ligne, avec « tout ordinaire » à gauche et « tout spécialisé » à droite. Placez-y l’endroit où se trouve votre enfant aujourd’hui, et celui où vous aimeriez qu’il soit dans deux ans.',obs:'Repérez une forme d’inclusion que vous ne connaissiez pas.'},
-    {t:'Collaborer avec les professionnels',lesson:'Les professionnels savent des choses que vous ne savez pas, et vous savez des choses qu’ils ne sauront jamais. La collaboration commence quand chacun apporte sa part sans défendre son territoire. Si vous arrivez avec trois points écrits et des questions simples, et que vous repartez avec des décisions notées, vous devenez un vrai partenaire.',exo:'Préparez votre prochaine rencontre en écrivant trois points, à savoir ce qui va bien, ce qui vous inquiète et ce que vous demandez.',obs:'Pendant la rencontre, remarquez si l’on vous écoute vraiment. Si ce n’est pas le cas, redemandez calmement.',link:'pros'},
-    {t:'Ma place dans mon entourage',lesson:'Vous avez changé, et votre regard sur la différence aussi. Autour de vous, il y a des personnes qui n’ont pas fait ce chemin et qui disent parfois des choses maladroites. Si vous le souhaitez, et quand vous en avez la force, vous pouvez faire évoluer un regard à la fois. Vous n’avez pas besoin de militer pour cela, il suffit de montrer votre enfant tel qu’il est.',exo:'Choisissez une personne de votre entourage et racontez-lui une chose de votre enfant qu’elle ne connaît pas et qui le montre tel qu’il est.',obs:'Observez ce qui change dans la façon dont cette personne parle de lui ensuite.'},
-    {t:'Avant la dernière ligne droite',lesson:'Vous en êtes à cinq mois. Prenez un moment pour regarder ce que vous avez mis en place, ce qui tient tout seul maintenant et ce qui a encore un peu besoin de vous. Dans cette dernière phase, il ne s’agit pas d’en faire plus. Il s’agit de consolider ce qui marche et de décider ce que vous continuerez une fois le parcours terminé.',exo:'Relisez vos notes et vos dépôts. Écrivez trois choses qui ont changé et une qui résiste.',obs:'Cette semaine, n’ajoutez rien de nouveau et contentez-vous de maintenir ce qui est en place.'}
+  {m:'Autour de nous',steps:[
+    {id:'couple',t:'À deux, ou seul',
+     idee:'Un enfant différent bouscule aussi la vie à deux. Souvent, l’un des parents porte les rendez-vous et l’organisation pendant que l’autre porte l’inquiétude en silence, et chacun croit que l’autre ne voit pas ce qu’il fait. On ne vit pas non plus les choses au même rythme. L’un a besoin d’en parler, l’autre a besoin de ne pas y penser, et aucun des deux n’a tort. Ce qui protège un couple, c’est un moment régulier où l’on se parle d’autre chose que de l’organisation. Si vous élevez votre enfant seul ou seule, la question se pose autrement. Il vous faut une personne avec qui partager les décisions, pour ne pas tout porter dans votre tête.',
+     exo:'Cette semaine, prenez vingt minutes avec l’autre parent, ou avec la personne qui compte pour vous, et posez-lui une seule question, « qu’est-ce qui est le plus lourd pour toi en ce moment ? ». Écoutez la réponse jusqu’au bout, sans chercher de solution.',
+     obs:'Remarquez ce que l’autre fait déjà et que vous ne voyiez plus.',
+     ecr:'Qu’avez-vous entendu que vous ne saviez pas ?',link:'sit_couple'},
+    {id:'fratrie',t:'Les frères et sœurs',
+     idee:'Quand un enfant demande beaucoup, ses frères et sœurs apprennent vite à ne pas en rajouter. Ils deviennent sages et serviables, parfois trop. Ils peuvent ressentir de la jalousie, de la honte devant les copains ou de l’inquiétude, et se sentir coupables de ressentir tout cela. Ils n’ont pas besoin que tout soit égal. Ils ont besoin de savoir ce qui se passe, avec des mots à leur hauteur, d’avoir le droit de se plaindre, et d’avoir de temps en temps un parent pour eux seuls. Si votre enfant n’a ni frère ni sœur, cette étape peut vous servir pour ses cousins ou pour ses amis proches.',
+     exo:'Offrez à chaque frère ou sœur vingt minutes seul avec vous cette semaine, pour une activité qu’il choisit. Pendant ce moment, on ne parle pas de son frère ou de sa sœur, sauf s’il en a envie.',
+     obs:'Écoutez comment ils parlent de leur frère ou de leur sœur devant leurs amis.',
+     ecr:'Qu’a choisi de faire chaque enfant pendant son moment avec vous ? Qu’avez-vous remarqué ?',link:'sit_fratrie'},
+    {id:'entourage',t:'Ma place dans mon entourage',
+     idee:'Vous avez changé, et votre regard sur la différence aussi. Autour de vous, il y a des personnes qui n’ont pas fait ce chemin et qui disent parfois des choses maladroites. Si vous le souhaitez, et quand vous en avez la force, vous pouvez faire évoluer un regard à la fois. Vous n’avez pas besoin de militer pour cela, il suffit de montrer votre enfant tel qu’il est.',
+     exo:'Choisissez une personne de votre entourage et racontez-lui une chose de votre enfant qu’elle ne connaît pas et qui le montre tel qu’il est.',
+     obs:'Observez ce qui change dans la façon dont cette personne parle de lui ensuite.',
+     ecr:'À qui avez-vous parlé de votre enfant ? Qu’est-ce qui a changé dans sa façon d’en parler ?',link:'sit_regard'},
+    {id:'pros',t:'Collaborer avec les professionnels',
+     idee:'Les professionnels savent des choses que vous ne savez pas, et vous savez des choses qu’ils ne sauront jamais. La collaboration commence quand chacun apporte sa part sans défendre son territoire. Si vous arrivez avec trois points écrits et des questions simples, et que vous repartez avec des décisions notées, vous devenez un vrai partenaire.',
+     exo:'Préparez votre prochaine rencontre en écrivant trois points, à savoir ce qui va bien, ce qui vous inquiète et ce que vous demandez.',
+     obs:'Pendant la rencontre, remarquez si l’on vous écoute vraiment. Si ce n’est pas le cas, redemandez calmement.',
+     ecr:'Écrivez vos trois points pour la prochaine rencontre, ce qui va bien, ce qui vous inquiète et ce que vous demandez.',link:'sit_pros'}
   ]},
-  {m:'Consolider et devenir autonome',steps:[
-    {t:'Le bilan des six mois',lesson:'Refaites le point une dernière fois et comparez vos trois moments, le départ, la mi-parcours et aujourd’hui. Ce qui a bougé est à vous. Ce qui n’a pas bougé n’est pas un échec, parce que certaines choses demandent plus de temps ou d’autres appuis. Ce que vous avez gagné ne se résume pas à des chiffres. Vous avez aujourd’hui des réflexes que vous n’aviez pas il y a six mois.',exo:'Faites le point final dans « Mon évolution ». Écrivez trois réflexes que vous avez acquis.',obs:'Remarquez une situation que vous gérez aujourd’hui sans y penser.',link:'evo'},
-    {t:'Mes prochaines étapes',lesson:'La suite peut très bien exister sans parcours. Ce dont elle a besoin, c’est d’un rythme, avec un moment pour vous chaque semaine, des rencontres préparées, un dépôt quand cela pèse et une dose de lumière quand vous en avez besoin. Choisissez ce que vous voulez garder et laissez le reste.',exo:'Écrivez vos trois rituels pour les six prochains mois et notez-les dans votre agenda.',obs:'Essayez-les pendant une semaine et gardez ceux qui tiennent.'},
-    {t:'Une vision à long terme',lesson:'Reprenez la journée dans dix ans que vous aviez écrite et relisez-la. Qu’est-ce qui a déjà avancé, et qu’est-ce qui manque encore ? Les grandes questions, comme ce qui se passera quand vous ne serez plus là, le logement ou les proches qui prendront le relais, se préparent par petites décisions, une par saison. Vous vous entraînez depuis six mois à faire des petits pas, alors continuez sur ce rythme.',exo:'Choisissez une seule décision à prendre dans les six prochains mois pour préparer l’avenir, et fixez-lui une date.',obs:'Nommez une personne à qui vous en parlerez.'},
-    {t:'Le chemin parcouru',lesson:'Vous voilà au bout des vingt-quatre étapes, avec un enfant qui n’a pas attendu que vous ayez fini pour grandir. Vous avez regardé où vous en étiez, changé une partie de votre regard, appris à nommer vos émotions et trouvé vos appuis. Vous avez aussi vu les forces de votre enfant, préparé vos rencontres et choisi vos rituels. Vous n’êtes pas pour autant un parent parfait, et personne ne l’est. Vous êtes un parent plus éclairé qu’il y a six mois. C’est vous qui avez fait ce chemin, et vous pouvez en être fier ou fière.',exo:'Écrivez une lettre à la personne que vous étiez il y a six mois, et dites-lui ce que vous savez maintenant.',obs:'Gardez cette lettre et relisez-la un jour où tout vous paraît gris.'}
+  {m:'La suite',steps:[
+    {id:'tenir',t:'Tenir dans la durée',
+     idee:'Accompagner un enfant différent demande de tenir longtemps, et personne ne tient longtemps sans se ravitailler. Demander un relais ne veut pas dire abandonner. C’est ce qui vous permettra d’être encore là dans dix ans. La suite peut très bien exister sans parcours. Ce dont elle a besoin, c’est d’un rythme, avec un moment pour vous chaque semaine, des rencontres préparées, un dépôt quand cela pèse et une dose de lumière quand vous en avez besoin. Choisissez ce que vous voulez garder et laissez le reste.',
+     vecu:'Je cours régulièrement et j’aime comparer la vie de parent à un marathon. On ne peut pas le courir au sprint et on a besoin de ravitaillements pour tenir.',
+     exo:'Choisissez vos trois rituels pour les six prochains mois et notez-les dans votre agenda. Choisissez aussi une personne ou un service à qui vous demanderez un relais, même pour deux heures.',
+     obs:'Essayez vos rituels pendant une semaine et gardez ceux qui tiennent.',
+     ecr:'Écrivez vos trois rituels pour les six prochains mois, et le relais que vous allez demander.',link:'sit_aide'},
+    {id:'demain',t:'Préparer l’avenir, pas à pas',
+     idee:'Reprenez la journée dans dix ans que vous aviez écrite et relisez-la. Qu’est-ce qui a déjà avancé, et qu’est-ce qui manque encore ? Les grandes questions, comme ce qui se passera quand vous ne serez plus là, le logement ou les proches qui prendront le relais, se préparent par petites décisions, une par saison. Vous vous entraînez depuis le début du parcours à faire des petits pas, alors continuez sur ce rythme.',
+     exo:'Choisissez une seule décision à prendre dans les six prochains mois pour préparer l’avenir, et fixez-lui une date.',
+     obs:'Nommez une personne à qui vous en parlerez.',
+     ecr:'Quelle décision allez-vous prendre dans les six prochains mois pour préparer l’avenir ? À quelle date ?',rap:'avenir',link:'sit_grandir'},
+    {id:'bilan',t:'Le bilan du parcours',
+     idee:'Refaites le point une dernière fois et comparez vos trois moments, le départ, la mi-parcours et aujourd’hui. Ce qui a bougé est à vous. Ce qui n’a pas bougé n’est pas un échec, parce que certaines choses demandent plus de temps ou d’autres appuis. Prenez aussi un moment pour regarder ce que vous avez mis en place, ce qui tient tout seul maintenant et ce qui a encore un peu besoin de vous. Ce que vous avez gagné ne se résume pas à des chiffres. Vous avez aujourd’hui des réflexes que vous n’aviez pas en commençant.',
+     exo:'Faites le point final dans « Mon évolution » et choisissez une dernière photo dans le photolangage. Relisez ensuite votre carnet de route.',
+     obs:'Remarquez une situation que vous gérez aujourd’hui sans y penser.',
+     ecr:'Écrivez trois choses qui ont changé, et une qui résiste encore.',rap:'mi',link:['evo','photo']},
+    {id:'chemin',t:'Le chemin parcouru',
+     idee:'Vous voilà au bout des vingt-quatre étapes, avec un enfant qui n’a pas attendu que vous ayez fini pour grandir. Vous avez regardé où vous en étiez, appris à nommer vos émotions et trouvé vos appuis. Vous avez changé une partie de votre regard, vu les forces de votre enfant, préparé vos rencontres et choisi vos rituels. Vous n’êtes pas pour autant un parent parfait, et personne ne l’est. Vous êtes un parent plus éclairé qu’au premier jour. C’est vous qui avez fait ce chemin, et vous pouvez en être fier ou fière.',
+     exo:'Cette semaine, l’exercice est d’écrire une lettre à la personne que vous étiez en commençant ce parcours. Vous pouvez l’écrire dans votre carnet, plus bas.',
+     obs:'Gardez cette lettre et relisez-la un jour où tout vous paraît gris.',
+     ecr:'Écrivez à la personne que vous étiez en commençant ce parcours, et dites-lui ce que vous savez maintenant.',rap:'depart'}
   ]}
 ];
+/* L'ordre d'avant le 16 novembre 2026 : à la place n se trouvait l'étape qui porte aujourd'hui ce nom.
+   Sert une seule fois, à ranger sous leur nom les étapes déjà faites par un parent venu avant. */
+const PARCOURS_AVANT=['depart','croire','croyances','objectifs','regard','enfant','place','avenir','emotions','reguler','appuis','mi','enfant','talents','encourager','solutions','place','pros','entourage',null,'bilan','tenir','demain','chemin'];
+/* Une étape s'ouvre sept jours après que la précédente a été ouverte : une semaine pour essayer, et jamais de retard qui s'accumule. */
+const PAS_JOURS=7;
+
+/* ---------- Les schémas du parcours ----------
+   Un schéma se construit morceau par morceau, à la demande (« Voir la suite »). vb : le cadre du dessin ;
+   alt : ce que le dessin montre, pour les lecteurs d'écran ; base : ce qui est toujours là ;
+   l : les morceaux, dans l'ordre où ils sont dessinés, chacun avec le numéro du moment où il apparaît ;
+   caps : une phrase par moment. Les mots du dessin restent très courts, la phrase complète est dessous. */
+const sFleche=k=>'<defs><marker id="fl-'+k+'" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="s-tete" d="M2 1.5 L8 5 L2 8.5"/></marker><marker id="flr-'+k+'" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="s-tete rose" d="M2 1.5 L8 5 L2 8.5"/></marker></defs>';
+const sBulle=(cx,cy,w,lignes,cls,num,haut)=>{const h=haut||(lignes.length>1?46:36),x=cx-w/2,y=cy-h/2,dx=num?11:0;
+  return '<rect class="s-bulle'+(cls?' '+cls:'')+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(h>40?16:18)+'"/>'+
+    (num?'<circle class="s-num" cx="'+(x+19)+'" cy="'+cy+'" r="10.5"/><text class="s-numt" x="'+(x+19)+'" y="'+(cy+4.6)+'" text-anchor="middle">'+num+'</text>':'')+
+    lignes.map((l,i)=>'<text class="s-t" x="'+(cx+dx)+'" y="'+(cy+4.6+(i-(lignes.length-1)/2)*16)+'" text-anchor="middle">'+l+'</text>').join('');};
+const sTrait=(d,k,cls)=>'<path class="s-a'+(cls?' '+cls:'')+'" d="'+d+'" marker-end="url(#fl'+(cls==='rose'?'r':'')+'-'+k+')"/>';
+const SCHEMAS={
+  points:{vb:'0 0 340 200',
+    alt:'Un chemin qui monte, avec trois points. Le premier est posé aujourd’hui, le deuxième au milieu du parcours et le troisième à la fin. Une ligne relie les trois points.',
+    base:'<path class="s-route" d="M30 152 C 95 152, 105 98, 170 98 S 250 44, 310 44"/>',
+    l:[[4,'<path class="s-trace" pathLength="1" d="M30 152 C 95 152, 105 98, 170 98 S 250 44, 310 44"/>'],
+       [1,'<circle class="s-halo" cx="30" cy="152" r="16"/><circle class="s-point" cx="30" cy="152" r="9"/><text class="s-t" x="16" y="186" text-anchor="start">Aujourd’hui</text>'],
+       [2,'<circle class="s-halo" cx="170" cy="98" r="16"/><circle class="s-point" cx="170" cy="98" r="9"/><text class="s-t" x="170" y="132" text-anchor="middle">Au milieu</text>'],
+       [3,'<circle class="s-halo" cx="310" cy="44" r="16"/><circle class="s-point" cx="310" cy="44" r="9"/><text class="s-t" x="324" y="20" text-anchor="end">À la fin</text>']],
+    caps:['Aujourd’hui, vous posez votre premier point.','Au milieu du parcours, vous en posez un deuxième.','À la fin, vous posez le troisième.','C’est en reliant ces trois points que vous verrez votre chemin.']},
+  boucle:{vb:'0 0 340 300',
+    alt:'Une boucle en quatre moments. Je crois en lui, alors je lui laisse du temps, alors il ose essayer, alors je vois ses essais, et j’y crois encore plus. Une flèche ramène du dernier moment au premier.',
+    base:sFleche('boucle'),
+    l:[[1,sBulle(160,36,214,['Je crois en lui'],'',1)],
+       [2,sTrait('M160 57 L160 85','boucle')+sBulle(160,108,214,['Je lui laisse du temps'],'',2)],
+       [3,sTrait('M160 129 L160 157','boucle')+sBulle(160,180,214,['Il ose essayer'],'',3)],
+       [4,sTrait('M160 201 L160 229','boucle')+sBulle(160,252,214,['Je vois ses essais'],'',4)],
+       [5,'<path class="s-a s-retour" pathLength="1" d="M267 252 C 330 252, 330 36, 271 36"/><path class="s-tete s-fin" d="M280 30 L271 36 L280 42"/>']],
+    caps:['Je crois qu’il peut y arriver.','Alors je l’encourage et je lui laisse du temps.','Il le sent, et il ose essayer plus longtemps.','Je vois ses essais, et j’y crois encore plus.','La boucle est lancée. Elle tourne aussi dans l’autre sens, quand on cesse d’y croire.']},
+  chemins:{vb:'0 0 340 300',
+    alt:'Un même fait, il lui faut vingt minutes pour s’habiller, et deux chemins. À gauche, je me dis qu’il est lent, je fais à sa place et il ne s’exerce plus. À droite, je me dis qu’il apprend à son rythme, je commence plus tôt et il s’exerce chaque matin.',
+    base:sFleche('chemins'),
+    l:[[1,sBulle(170,28,250,['Vingt minutes pour s’habiller'],'fait')],
+       [4,'<rect class="s-anneau" x="39" y="4" width="262" height="48" rx="24"/>'],
+       [2,sTrait('M150 48 C 150 66, 88 62, 88 80','chemins','rose')+sBulle(88,108,156,['« Il est lent »'],'rose',0,46)+sTrait('M88 133 L88 147','chemins','rose')+sBulle(88,174,156,['Je fais','à sa place'],'rose')+sTrait('M88 199 L88 213','chemins','rose')+sBulle(88,240,156,['Il ne s’exerce','plus'],'rose')+'<path class="s-bout" d="M66 280 L110 280"/><path class="s-a rose nu" d="M88 265 L88 278"/>'],
+       [3,sTrait('M190 48 C 190 66, 252 62, 252 80','chemins')+sBulle(252,108,156,['« Il apprend','à son rythme »'],'vert')+sTrait('M252 133 L252 147','chemins')+sBulle(252,174,156,['Je commence','plus tôt'],'vert')+sTrait('M252 199 L252 213','chemins')+sBulle(252,240,156,['Il s’exerce','chaque matin'],'vert')+sTrait('M252 265 L252 290','chemins')]],
+    caps:['Voici un fait. Il lui faut vingt minutes pour s’habiller.','Si je me dis « il est lent », je fais à sa place, et il ne s’exerce plus.','Si je me dis « il apprend à son rythme », je commence plus tôt, et il s’exerce chaque matin.','Le fait est le même. C’est la phrase que je choisis qui décide du chemin.']},
+  marches:{vb:'0 0 340 240',
+    alt:'Un escalier de quatre marches qui mène à un drapeau. La première marche est un souhait. Les suivantes disent quoi exactement, quand, et avec l’aide de qui. En haut, le souhait est devenu un objectif.',
+    base:'<path class="s-sol" d="M8 214 L332 214"/>',
+    l:[[1,'<rect class="s-marche" x="14" y="178" width="78" height="36"/><text class="s-t" x="53" y="201" text-anchor="middle">un souhait</text>'],
+       [2,'<rect class="s-marche" x="92" y="142" width="78" height="72"/><text class="s-t" x="131" y="165" text-anchor="middle">quoi ?</text>'],
+       [3,'<rect class="s-marche" x="170" y="106" width="78" height="108"/><text class="s-t" x="209" y="129" text-anchor="middle">quand ?</text>'],
+       [4,'<rect class="s-marche" x="248" y="70" width="78" height="144"/><text class="s-t" x="287" y="93" text-anchor="middle">avec qui ?</text>'],
+       [5,'<path class="s-mat" d="M300 70 L300 18"/><path class="s-drapeau" d="M300 18 L270 29 L300 40 Z"/><text class="s-t fort" x="262" y="34" text-anchor="end">un objectif</text>']],
+    caps:['Au départ, il y a un souhait. Je voudrais souffler.','Je dis quoi exactement. Je veux marcher vingt minutes.','Je dis quand. Ce sera jeudi soir.','Je dis avec l’aide de qui. Ma sœur gardera les enfants.','Mon souhait est devenu un objectif que je peux tenir.']}
+};
+
 /* ---------- Mon évolution (questionnaire) ---------- */
 const EVO_SCALES=[
   {id:'stress',t:'Mon niveau de stress',lo:'calme',hi:'à bout'},
@@ -410,7 +589,7 @@ const QA_EXAMPLE={q:'Mon fils de 9 ans refuse d’aller à l’école le matin, 
 const WEIGHTS=[['solitude','La solitude'],['fatigue','La fatigue'],['culpa','La culpabilité'],['doutes','Les doutes'],['regard','Le regard des autres'],['pros','Les professionnels'],['charge','La charge mentale'],['couple','Le couple']];
 /* Tant que le serveur n'existe pas, les échanges avec Antonio sont une démonstration : rien n'est transmis. */
 const DEMO=true;
-const LIM={me:30,draft:4000,q:1500,line:240,phrase:140,three:120,photo:2000,evo:1500,search:60};
+const LIM={me:30,draft:4000,q:1500,line:240,phrase:140,three:120,photo:2000,evo:1500,note:2000,search:60};
 const tel=(n,label)=>'<a class="tel" href="tel:'+String(n).replace(/[^0-9+]/g,'')+'">'+(label||n)+'</a>';
 const HELP=[
   {t:'La Main Tendue',tel:'143',d:'Pour parler quand ça ne va pas, de jour comme de nuit.'},
@@ -420,11 +599,27 @@ const HELP=[
 ];
 
 /* ---------- état ---------- */
-const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
+const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,abc:[],phrases:[],routineDone:{},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
 const state={photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{first:null,then:null,pick:'first'},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),d);}catch(e){}return JSON.parse(JSON.stringify(DEF));}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
+/* Avant le 16 novembre 2026, les étapes faites étaient rangées par leur numéro. Elles le sont maintenant par leur nom.
+   Un parent venu avant garde ouvertes autant d'étapes que de semaines écoulées depuis son arrivée, et celles qu'il avait faites. */
+function migre(d){
+  if(d.pv>=2)return d;
+  const faits={},vus=(d.seen&&typeof d.seen==='object')?d.seen:{};
+  const jour=(iso,n)=>{const p=String(iso).split('-').map(Number);const x=new Date(p[0],p[1]-1,p[2]+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());};
+  Object.keys(d.steps||{}).forEach(k=>{if(!d.steps[k])return;const id=/^\d+$/.test(k)?PARCOURS_AVANT[Number(k)]:k;if(id)faits[id]=true;});
+  if(d.onboarded&&d.start){
+    const ids=[];PARCOURS.forEach(m=>m.steps.forEach(s=>ids.push(s.id)));
+    const p=String(d.start).split('-').map(Number);const sem=Math.max(0,Math.floor((Date.now()-new Date(p[0],p[1]-1,p[2]).getTime())/(7*86400000)));
+    const n=d.tier&&d.tier!=='free'?Math.min(ids.length-1,sem):0;
+    for(let i=0;i<=n;i++)if(!vus[ids[i]])vus[ids[i]]=jour(d.start,7*i);
+    Object.keys(faits).forEach(id=>{if(!vus[id])vus[id]=d.start;});
+  }
+  d.steps=faits;d.seen=vus;if(!d.notes||typeof d.notes!=='object')d.notes={};d.pv=2;return d;
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state.data));}catch(e){}}
 function toast(m){state.toast=m;state.toastView=state.view;state.toastAt=Date.now();renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{
   /* avec les effets, il s'efface en douceur avant d'être retiré */
@@ -454,8 +649,26 @@ function dayIdx(n){const d=new Date();return Math.floor((d.getTime()-d.getTimezo
 function greeting(){const h=new Date().getHours();return h<5?'Il est tard':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';}
 function weekNo(){const s=D().start||todayIso();const p=s.split('-').map(Number);const d0=new Date(p[0],p[1]-1,p[2]);return Math.max(0,Math.floor((Date.now()-d0.getTime())/(7*86400000)));}
 function allSteps(){const out=[];PARCOURS.forEach((m,mi)=>m.steps.forEach((s,si)=>out.push(Object.assign({mi,si,idx:out.length},s))));return out;}
-function currentStepIdx(){return Math.min(23,weekNo());}
-function doneCount(){return Object.keys(D().steps).filter(k=>D().steps[k]).length;}
+/* L'étape du moment : la dernière qui est ouverte. Dans l'aperçu d'Antonio, où tout est ouvert, la première qui n'est pas faite. */
+function currentStepIdx(){const S=allSteps();if(D().tout){const f=S.findIndex(s=>!D().steps[s.id]);return f<0?S.length-1:f;}let c=0;for(let i=1;i<S.length;i++){if(stepEtat(i).k==='open')c=i;else break;}return c;}
+function doneCount(){return allSteps().filter(s=>D().steps[s.id]).length;}
+/* Nombre de jours du calendrier entre une date et aujourd'hui. */
+function joursDepuis(iso){const p=String(iso).split('-').map(Number);const n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime()-new Date(p[0],p[1]-1,p[2]).getTime())/86400000);}
+/* Où en est une étape : ouverte, bientôt (dans n jours), plus tard, ou réservée à la formule Le parcours.
+   Une étape s'ouvre sept jours après l'ouverture de la précédente. Une étape déjà ouverte le reste. Rien ne s'accumule en cas d'absence. */
+function stepEtat(i){
+  const S=allSteps(),s=S[i];if(!s)return {k:'tard'};
+  if(D().tout)return {k:'open'};
+  if(i>0&&!can('parcours'))return {k:'formule'};
+  if(i===0||D().seen[s.id])return {k:'open'};
+  const d0=D().seen[S[i-1].id];if(!d0)return {k:'tard'};
+  const n=PAS_JOURS-joursDepuis(d0);
+  return n<=0?{k:'open'}:{k:'bientot',n:n};
+}
+function stepLocked(i){return stepEtat(i).k!=='open';}
+const dansJours=n=>n<=1?'demain':'dans '+n+' jours';
+function noteDe(id){const n=D().notes[id];return n&&n.t&&String(n.t).trim()?n:null;}
+function nbNotes(){return allSteps().filter(s=>noteDe(s.id)).length;}
 function curatedDose(){const n=DOSES.length-1;return new Date().getDay()===0?DOSES[n]:DOSES[dayIdx(n)];}
 function doseText(){const d=D();return d.doseDate===todayIso()&&d.doseText?d.doseText:curatedDose();}
 function lastDepot(){const l=D().depots;return l.length?l[l.length-1]:null;}
@@ -800,7 +1013,7 @@ function eauSync(entering){
 }
 /* ---------- rendu ---------- */
 const TAB_VIEWS=['today','parcours','kit','me'];
-const BACK_VIEWS=['sit','exo','step','photo','data','about','plans','evo','depots','antonio','letter'];
+const BACK_VIEWS=['sit','exo','step','carnet','photo','data','about','plans','evo','depots','antonio','letter'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
 function focusKey(el){
   if(!el||!el.matches||!el.closest||!el.closest('#app'))return null;
@@ -824,6 +1037,7 @@ function render(){
       case 'today':html+=viewToday();break;
       case 'parcours':html+=viewParcours();break;
       case 'step':html+=viewStep();break;
+      case 'carnet':html+=viewCarnet();break;
       case 'evo':html+=viewEvo();break;
       case 'photo':html+=viewPhoto();break;
       case 'kit':html+=viewKit();break;
@@ -933,7 +1147,7 @@ function viewIntro(){
 /* ---------- aujourd’hui ---------- */
 function viewToday(){
   const d=D();const t=todayIso();const m=d.moods[t];const st=allSteps()[currentStepIdx()];const rd=recentDepot();
-  let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+', semaine '+(weekNo()+1)+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
+  let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(fmtDate(t))+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1></div>';
   html+='<div class="duo"><div class="duo-a">';
   if(can('antonio'))html+=letterCard();
   if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq échelles de 0 à 10 et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
@@ -941,7 +1155,9 @@ function viewToday(){
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
   html+='</div><div class="duo-b">';
   html+=depotBox();
-  html+='<button type="button" class="step now reveal d3" data-act="step" data-i="'+st.idx+'"><span class="n">'+(st.idx+1)+'</span><span class="tx"><span class="label">L’étape de la semaine</span><b>'+esc(st.t)+'</b></span><span class="chev">'+I.chev+'</span></button>';
+  const stFait=!!d.steps[st.id];const stAp=st.idx<23?stepEtat(st.idx+1):null;
+  const stLab=!stFait?'L’étape de la semaine':(stAp&&stAp.k==='bientot'?'Étape faite. La suivante s’ouvre '+dansJours(stAp.n)+'.':'Étape faite');
+  html+='<button type="button" class="step now'+(stFait?' done':'')+' reveal d3" data-act="step" data-i="'+st.idx+'"><span class="n">'+(stFait?I.check:(st.idx+1))+'</span><span class="tx"><span class="label">'+stLab+'</span><b>'+esc(st.t)+'</b></span><span class="chev">'+I.chev+'</span></button>';
   html+='<div class="card reveal d4"><span class="label">Comment ça va, là, maintenant ?</span><div class="moodrow">'+MOODS.map((x,i)=>'<button type="button" data-act="mood" data-i="'+i+'" aria-pressed="'+(m===i)+'" aria-label="'+esc(x[1])+'">'+x[0]+'</button>').join('')+'</div>'+(m!==undefined?'<p style="font-family:var(--font-display);font-size:17px;line-height:1.4">'+esc(MOOD_WORDS[m])+'</p>':'')+'</div>';
   return html+'</div></div></main>';
 }
@@ -1043,26 +1259,83 @@ async function dosePerso(){
   state.doseBusy=false;render();
 }
 /* ---------- parcours ---------- */
-function stepLocked(idx){return idx>0&&!can('parcours');}
+const NOTE_OUI='Gardé dans votre carnet, sur cet appareil.',NOTE_NON='Ce que vous écrivez ici reste sur votre appareil.';
+const nl2=t=>esc(t).replace(/\n/g,'<br>');
 function viewParcours(){
-  const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours dure six mois, avec une étape par semaine. À chaque fois, vous avez deux minutes de lecture, une chose à essayer et une chose à observer.</p>'+
-    '<div class="card prog"><div class="kv"><span>Semaine '+(weekNo()+1)+'</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
-    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
-    '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!D().steps[st.idx];const lk=stepLocked(st.idx);return '<button type="button" class="step'+(st.idx===cur?' now':'')+(dn?' done':'')+(lk?' locked':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+(st.idx===cur?'Cette semaine':'Semaine '+(st.idx+1))+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
-    (can('parcours')?'<p class="hint">Vous pouvez avancer librement. Le parcours vous propose un rythme, mais vous restez libre du vôtre.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
+  const d=D();const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);const nn=nbNotes();
+  const sous=(st,e,dn)=>dn?'Faite':(st.idx===cur&&e.k==='open')?'Cette semaine':e.k==='open'?'Ouverte':e.k==='bientot'?'S’ouvre '+dansJours(e.n):e.k==='tard'?'Plus tard':'Étape '+(st.idx+1);
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours compte vingt-quatre étapes, sur six mois. Chaque semaine, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.</p>'+
+    (d.tout?'<span class="pill sun apercu">Aperçu d’Antonio, tout est ouvert</span>':'')+
+    '<div class="card prog"><div class="kv"><span>Votre parcours</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
+    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet'+(nn?' ('+nn+')':'')+'</button><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
+    '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';return '<button type="button" class="step'+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
+    (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre sept jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
 }
+/* Les boutons d'une étape vers un autre écran : « Mon évolution », le photolangage, la respiration, les situations, ou une situation précise (« sit_nom »). */
+function stepLiens(s){
+  const L={evo:['go','evo',I.chart,'Faire le point dans Mon évolution'],photo:['go','photo',I.image,'Ouvrir le photolangage'],breath:['exo','breath',I.wind,'Respirer 4-6 maintenant'],advice:['kit','sits',I.bulb,'Ouvrir les situations']};
+  const ks=!s.link?[]:(Array.isArray(s.link)?s.link:[s.link]);
+  return ks.map(k=>{
+    if(k.indexOf('sit_')===0){const id=k.slice(4);const x=SITS.find(y=>y.id===id);return x?'<button type="button" class="btn wide" data-act="sit" data-id="'+id+'">'+I.bulb+'<span>« '+esc(x.t)+' », dans la boîte à outils</span></button>':'';}
+    const l=L[k];return l?'<button type="button" class="btn wide" data-act="'+l[0]+'" data-view="'+l[1]+'" data-id="'+l[1]+'" data-v="'+l[1]+'">'+l[2]+l[3]+'</button>':'';
+  }).join('');
+}
+/* Une étape : comprendre (l'idée et son schéma), ce qu'Antonio a vécu, un exemple, essayer, observer, puis écrire dans le carnet de route. */
 function viewStep(){
   const steps=allSteps();const s=steps[state.step];if(!s){state.view='parcours';return viewParcours();}
-  const dn=!!D().steps[s.idx];
-  const links={evo:['go','evo',I.chart,'Faire le point dans Mon évolution'],photo:['go','photo',I.image,'Ouvrir le photolangage'],breath:['exo','breath',I.wind,'Respirer 4-6 maintenant'],advice:['kit','sits',I.bulb,'Ouvrir les situations'],pros:['sit','pros',I.bulb,'Parler aux professionnels']};
-  const lk=s.link?links[s.link]:null;
-  return '<main id="main" tabindex="-1" class="view"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
-    '<div class="card"><span class="label">En deux minutes</span><p class="lesson">'+esc(s.lesson)+'</p><p class="hint" style="text-align:right">Antonio</p></div>'+
+  const d=D();const dn=!!d.steps[s.id];const nt=d.notes[s.id];const txt=nt&&nt.t?nt.t:'';
+  const paras=(Array.isArray(s.idee)?s.idee:[s.idee]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('');
+  let rap='';
+  if(s.rap){const r=steps.find(x=>x.id===s.rap);const rn=r?noteDe(r.id):null;
+    if(r)rap='<div class="card rap"><span class="label">Ce que vous aviez écrit à l’étape '+(r.idx+1)+'</span>'+(rn?'<p class="lesson">'+nl2(rn.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(rn.d))+'</span>':'<p class="hint">Vous n’aviez rien écrit à cette étape, qui s’appelle « '+esc(r.t)+' ». Vous pouvez encore le faire.</p><button type="button" class="btn small" data-act="step" data-i="'+r.idx+'" style="align-self:flex-start">Ouvrir cette étape</button>')+'</div>';}
+  const sv=s.idx<steps.length-1?steps[s.idx+1]:null;const ap=sv?stepEtat(sv.idx):null;
+  const suite=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':
+    (ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Étape suivante '+I.chev+'</button>':'';
+  const attente=sv&&ap.k==='bientot'?'<p class="hint attente">L’étape suivante, « '+esc(sv.t)+' », s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez une semaine pour essayer.</p>':'';
+  return '<main id="main" tabindex="-1" class="view etape"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
+    '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En deux minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
+    (s.sch?schHtml(s.sch):'')+
+    (s.vecu?'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div>'+(Array.isArray(s.vecu)?s.vecu:[s.vecu]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'</div>':'')+
+    (s.ex?'<div class="card exemple"><span class="label">Un exemple</span><p>'+esc(s.ex)+'</p></div>':'')+
+    rap+
     '<div class="exo"><span class="label">Cette semaine, j’essaie</span><p>'+esc(s.exo)+'</p></div>'+
     '<div class="card green"><span class="label">À observer</span><p>'+esc(s.obs)+'</p></div>'+
-    (lk?'<button type="button" class="btn wide" data-act="'+lk[0]+'" data-view="'+lk[1]+'" data-id="'+lk[1]+'" data-v="'+lk[1]+'">'+lk[2]+lk[3]+'</button>':'')+
-    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-i="'+s.idx+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+(s.idx<23?'<button type="button" class="btn" data-act="step" data-i="'+(s.idx+1)+'">Étape suivante '+I.chev+'</button>':'<button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button>')+'</div></main>';
+    stepLiens(s)+
+    '<div class="card carnet"><span class="label">Mon carnet de route</span><label class="lesson" for="note">'+esc(s.ecr)+'</label><textarea id="note" data-note="'+s.id+'" maxlength="'+LIM.note+'" placeholder="'+esc(s.ph||'Écrivez ici, avec vos mots.')+'">'+esc(txt)+'</textarea><p class="hint" id="note-etat" aria-live="polite">'+(txt?NOTE_OUI:NOTE_NON)+'</p></div>'+
+    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-id="'+s.id+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+suite+'</div>'+attente+'</main>';
+}
+/* Le carnet de route : ce que le parent a écrit à chaque étape, mois par mois. Tout reste sur son appareil. */
+function viewCarnet(){
+  const S=allSteps();const n=nbNotes();
+  let h='<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mon carnet de route</h1><p class="sub">Vous retrouvez ici ce que vous avez écrit à chaque étape du parcours. Tout reste sur votre appareil.</p></div>';
+  if(!n)return h+'<div class="card"><p>Votre carnet est encore vide. Il se remplira avec ce que vous écrirez à la fin de chaque étape.</p><button type="button" class="btn primary" data-act="step" data-i="'+currentStepIdx()+'" style="align-self:flex-start">'+I.path+'Ouvrir mon étape</button></div></main>';
+  PARCOURS.forEach((m,mi)=>{
+    const L=S.filter(s=>s.mi===mi&&noteDe(s.id));if(!L.length)return;
+    h+='<section class="carnet-mois"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+L.map(s=>{const nt=noteDe(s.id);
+      return '<article class="card page"><span class="label">Étape '+(s.idx+1)+', '+esc(s.t)+'</span><p class="q">'+esc(s.ecr)+'</p><p class="lesson">'+nl2(nt.t)+'</p><div class="row" style="align-items:center;justify-content:space-between"><span class="hint">Écrit le '+esc(fmtDate(nt.d))+'</span><button type="button" class="btn small" data-act="step" data-i="'+s.idx+'">Rouvrir l’étape</button></div></article>';}).join('')+'</section>';
+  });
+  return h+'</main>';
+}
+/* ---------- Les schémas du parcours ----------
+   Le dessin avance d'un moment à chaque « Voir la suite ». Rien ne démarre tout seul, et le dessin n'est pas redessiné
+   quand l'écran l'est : seul le morceau qui vient d'apparaître est animé (classe « neuf »). */
+function schK(S){return Math.max(1,Math.min(S.caps.length,state.sch||1));}
+function schHtml(key){
+  const S=SCHEMAS[key];if(!S)return '';
+  const n=S.caps.length,k=schK(S);
+  return '<div class="card sch" data-sch="'+key+'"><span class="label">Le schéma</span>'+
+    '<svg class="sch-svg" viewBox="'+S.vb+'" role="img" aria-label="'+esc(S.alt)+'">'+S.base+S.l.map(x=>'<g class="sp'+(x[0]<=k?' on':'')+'" data-p="'+x[0]+'">'+x[1]+'</g>').join('')+'</svg>'+
+    '<ol class="sch-caps" aria-live="polite">'+S.caps.map((c,i)=>'<li class="'+(i<k?'on':'')+(i===k-1?' cur':'')+'">'+esc(c)+'</li>').join('')+'</ol>'+
+    '<div class="sch-nav"><span class="sch-pos">'+k+' sur '+n+'</span><button type="button" class="btn small'+(k<n?' primary':'')+'" data-act="'+(k<n?'schnext':'schagain')+'">'+(k<n?'Voir la suite'+I.chev:'Revoir depuis le début')+'</button></div></div>';
+}
+function schSync(neuf){
+  const box=document.querySelector('.sch');if(!box)return;const S=SCHEMAS[box.dataset.sch];if(!S)return;
+  const n=S.caps.length,k=schK(S);
+  [].forEach.call(box.querySelectorAll('.sp'),g=>{const p=Number(g.dataset.p);g.classList.toggle('on',p<=k);g.classList.toggle('neuf',!!neuf&&p===k);});
+  [].forEach.call(box.querySelectorAll('.sch-caps li'),(li,i)=>{li.classList.toggle('on',i<k);li.classList.toggle('cur',i===k-1);li.classList.toggle('neuf',!!neuf&&i===k-1);});
+  const pos=box.querySelector('.sch-pos');if(pos)pos.textContent=k+' sur '+n;
+  const b=box.querySelector('.sch-nav button');
+  if(b){b.dataset.act=k<n?'schnext':'schagain';b.className='btn small'+(k<n?' primary':'');b.innerHTML=k<n?'Voir la suite'+I.chev:'Revoir depuis le début';}
 }
 /* ---------- évolution ---------- */
 /* Une échelle numérotée de 0 à 10 : le rond se glisse, les chiffres se touchent, et le rond porte le chiffre choisi.
@@ -1196,14 +1469,15 @@ function viewSOS(){
 function moodDots(){const d=D();const out=[];for(let i=13;i>=0;i--){const dt=new Date(Date.now()-i*86400000);const k=dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());const m=d.moods[k];out.push('<i class="'+(m!==undefined?'m'+m:'')+'"></i>');}const n=out.filter(x=>x.indexOf('class="m')>0).length;return '<div class="mooddots" role="img" aria-label="Humeur notée '+n+' jour'+(n>1?'s':'')+' sur les quatorze derniers">'+out.join('')+'</div>';}
 function viewMe(){
   const d=D();const T=TIERS[tier()];const ld=lastDepot();const ql=questionsLeft();
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1">Moi</h1></div><p class="sub">Vous retrouvez ici votre formule, vos dépôts, votre humeur et vos réglages.</p>'+
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1" data-act="atelier">Moi</h1></div><p class="sub">Vous retrouvez ici votre formule, vos dépôts, votre carnet, votre humeur et vos réglages.</p>'+
     '<div class="duo"><div class="duo-a"><div class="card"><span class="label">Ma formule</span><div class="row" style="align-items:center;justify-content:space-between">'+badge()+'<span class="price" style="font-family:var(--font-display);font-size:22px">'+esc(T.p)+' CHF <small style="font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700">'+esc(T.per)+'</small></span></div>'+
     (tier()==='free'?'<p class="hint">Vous avez la dose, la boîte à outils, le SOS, trois dépôts écoutés et la première étape. Il vous reste '+depotsLeft()+' dépôt'+(depotsLeft()>1?'s':'')+'.</p>':tier()==='parcours'?'<p class="hint">Vous avez les dépôts sans limite, la dose personnalisée, les 24 étapes, Mon évolution et le photolangage.</p>':'<p class="hint">Vous avez tout Le parcours, le mot d’Antonio chaque mois et deux questions par mois.</p>')+
     '<button type="button" class="btn'+(tier()==='free'?' primary':'')+'" data-act="go" data-view="plans" style="align-self:flex-start">'+I.tag+(tier()==='free'?'Voir les formules':'Changer de formule')+'</button></div>'+
     (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration avec un exemple de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+', il vous reste '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot par mois et deux questions</span></span><span class="chev">'+I.chev+'</span></button>')+
     '<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+(d.depots.length?d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+', le dernier le '+esc(fmtDate(ld.date)):'Aucun dépôt pour l’instant')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
+    '<button type="button" class="sit" data-act="go" data-view="carnet"><span class="e">'+I.note+'</span><span class="tx"><b>Mon carnet de route</b><span>'+(nbNotes()?nbNotes()+' page'+(nbNotes()>1?'s':'')+' écrite'+(nbNotes()>1?'s':''):'Ce que vous écrivez à chaque étape')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
     '</div><div class="duo-b"><div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
-    '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre appareil':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button><button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
+    '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre appareil':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button>'+(d.atelier?'<button type="button" data-act="tout" aria-pressed="'+(!!d.tout)+'">'+I.path+'<span>Tout voir, l’aperçu d’Antonio</span><span class="state">'+(d.tout?'Activé':'Désactivé')+'</span></button>':'')+'<button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
     (SITE?'<a href="confidentialite.html">'+I.shield+'<span>Politique de confidentialité</span><span class="chev">'+I.chev+'</span></a><a href="conditions.html">'+I.note+'<span>Conditions générales</span><span class="chev">'+I.chev+'</span></a>'+(MENTIONS?'<a href="mentions-legales.html">'+I.info+'<span>Mentions légales</span><span class="chev">'+I.chev+'</span></a>':''):'')+'</div></div></div></main>';
 }
 function viewDepots(){
@@ -1265,7 +1539,7 @@ function viewData(){
   const where=state.sample?'Quand vous déposez, votre texte est envoyé sans votre nom à une intelligence artificielle, qui écrit la réponse. L’application, elle, ne le garde que sur cet appareil.':'Dans cette version, rien de ce que vous écrivez n’est envoyé, ni à un serveur ni à Antonio.';
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Vos données</h1><p class="sub">Vos dépôts, vos points et vos notes restent sur cet appareil. '+where+'</p></div>'+
     '<div class="card green"><span class="label">Bon à savoir</span><p class="hint">Vos dépôts ne sont pas protégés par un mot de passe. Si vous prêtez cet appareil, verrouillez-le ou effacez d’abord vos notes. Sachez aussi que si vous effacez les données de votre navigateur, vos notes sont perdues, parce qu’il n’en existe aucune copie ailleurs.</p></div>'+
-    '<div class="card"><span class="label">Recommencer depuis le début</span><p class="hint">Ce bouton efface tout ce qui est sur cet appareil, c’est-à-dire votre prénom, vos dépôts, vos étapes et vos points, puis il rouvre l’écran d’accueil et le questionnaire de départ. C’est utile pour faire tester l’application à une autre personne sur votre appareil.</p>'+(state.confirmReset?'<div class="confirm" role="alert"><span>Effacer tout le contenu sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, effacer</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>':'<button type="button" class="btn danger" data-act="reset" style="align-self:flex-start">'+I.trash+'Tout effacer et recommencer</button>')+'</div>'+
+    '<div class="card"><span class="label">Recommencer depuis le début</span><p class="hint">Ce bouton efface tout ce qui est sur cet appareil, c’est-à-dire votre prénom, vos dépôts, vos étapes, votre carnet et vos points, puis il rouvre l’écran d’accueil et le questionnaire de départ. C’est utile pour faire tester l’application à une autre personne sur votre appareil.</p>'+(state.confirmReset?'<div class="confirm" role="alert"><span>Effacer tout le contenu sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, effacer</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>':'<button type="button" class="btn danger" data-act="reset" style="align-self:flex-start">'+I.trash+'Tout effacer et recommencer</button>')+'</div>'+
     consentCard()+
     '<div class="card"><span class="label">Pour les tests</span><p class="hint">Vous pouvez aussi ajouter <b>?nouveau</b> à la fin de l’adresse. L’application repart alors de zéro sur cet appareil.</p></div></main>';
 }
@@ -1305,7 +1579,7 @@ function viewAbout(){
 }
 /* ---------- onglets, feuilles ---------- */
 function tabs(){
-  const grp={today:['today'],parcours:['parcours','step','evo','photo'],kit:['kit','sit','exo'],me:['me','plans','depots','antonio','letter','data','about']};
+  const grp={today:['today'],parcours:['parcours','step','carnet','evo','photo'],kit:['kit','sit','exo'],me:['me','plans','depots','antonio','letter','data','about']};
   const cur=v=>grp[v].includes(state.view)?' aria-current="page"':'';
   return '<nav class="tabs" aria-label="Navigation"><span class="rail-brand">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><div class="tabs-in"><button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
 }
@@ -1335,7 +1609,7 @@ function handle(act,d,el){
     case 'obw':{const i=data.weights.indexOf(d.v);if(i>=0)data.weights.splice(i,1);else data.weights.push(d.v);save();break;}
     case 'ob-done':{const m=document.getElementById('ob-me');data.me=clean(m?m.value:data.me,LIM.me);if(!data.start)data.start=todayIso();const first=!data.onboarded;data.onboarded=true;state.sheet=null;save();if(first)state.view='today';break;}
     case 'go':if(d.view==='about'){openStory();return;}if(d.view==='photo'&&!can('parcours')){openUpgrade('photo');break;}nav(d.view);if(d.view!=='kit'&&d.view!=='exo')stopTimer();break;
-    case 'back':{if(!data.onboarded){state.view='today';break;}const v=state.view;let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
+    case 'back':{if(!data.onboarded){state.view='today';break;}const v=state.view;let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
     case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
     case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();break;
     case 'sit':state.sit=d.id;nav('sit');break;
@@ -1349,8 +1623,19 @@ function handle(act,d,el){
     case 'share':data.shared[d.id]=!!(el&&el.checked);save();return;
     case 'upgrade':openUpgrade(d.f);break;
     case 'tier':if(!TIERS[d.v])return;data.tier=d.v;state.sheet=null;save();if(!data.onboarded){state.view='today';state.sheet='onboard';break;}toast('La formule « '+TIERS[d.v].t+' » est activée, sans paiement dans cette version de test.');break;
-    case 'step':{const i=Number(d.i);if(stepLocked(i)){openUpgrade('parcours');break;}state.step=i;nav('step');break;}
-    case 'stepdone':data.steps[d.i]=!data.steps[d.i];save();if(data.steps[d.i])toast('Étape faite. Une par semaine, c’est le bon rythme.');break;
+    case 'step':{const i=Number(d.i);const e=stepEtat(i);
+      if(e.k==='formule'){openUpgrade('parcours');break;}
+      if(e.k==='bientot'){toast('Cette étape s’ouvrira '+dansJours(e.n)+'. Chaque étape demande une semaine de pratique.');return;}
+      if(e.k!=='open'){toast('Cette étape s’ouvrira plus tard, quand vous aurez ouvert celles qui la précèdent.');return;}
+      const s=allSteps()[i];if(!data.tout&&!data.seen[s.id]){data.seen[s.id]=todayIso();save();}
+      state.step=i;state.sch=1;nav('step');break;}
+    case 'stepdone':{const id=d.id;if(!id)return;data.steps[id]=!data.steps[id];save();if(data.steps[id])toast('Étape faite. Une par semaine, c’est le bon rythme.');break;}
+    /* Le schéma avance d'un moment, sans redessiner l'écran. */
+    case 'schnext':{const bx=document.querySelector('.sch');const S=bx?SCHEMAS[bx.dataset.sch]:null;if(!S)return;state.sch=Math.min(S.caps.length,(state.sch||1)+1);schSync(true);return;}
+    case 'schagain':state.sch=1;schSync(false);return;
+    /* L'aperçu d'Antonio : cinq touches sur le titre « Moi » le font apparaître sur l'appareil, puis une ligne de « Moi » l'allume et l'éteint. */
+    case 'atelier':{const now=Date.now();state.atTaps=(state.atTaps||[]).filter(x=>now-x<4000);state.atTaps.push(now);if(state.atTaps.length<5)return;state.atTaps=[];if(data.atelier)return;data.atelier=true;data.tout=true;save();toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');break;}
+    case 'tout':if(!data.atelier)return;data.tout=!data.tout;save();toast(data.tout?'Aperçu activé. Tout le parcours est ouvert sur cet appareil.':'Aperçu désactivé. Vous voyez le parcours comme un parent.');break;
     case 'evotime':if(d.v!=='t1'&&!can('parcours')){openUpgrade('evo');break;}state.evoTime=d.v;break;
     case 'evosave':{if(state.evoTime!=='t1'&&!can('parcours')){openUpgrade('evo');break;}const rec={date:todayIso()};EVO_SCALES.forEach(s=>{const x=document.querySelector('[data-evo="'+s.id+'"]');rec[s.id]=x?Number(x.value):5;});EVO_OPEN.forEach(o=>{const x=document.querySelector('[data-evoopen="'+o[0]+'"]');rec[o[0]]=x?clean(x.value,LIM.evo):'';});const first=state.evoTime==='t1'&&!data.evo.t1;data.evo[state.evoTime]=rec;if(state.evoDraft)delete state.evoDraft[state.evoTime];save();if(first){nav('today');render();window.scrollTo(0,0);toast('Votre point de départ est enregistré, et votre dose vous attend.');return;}render();toast('Point enregistré. Ce qui bouge est à vous.');return;}
     case 'evoset':{const r=document.querySelector('[data-evo="'+d.k+'"]');if(r){r.value=d.v;evoSync(r);if(r.focus)r.focus({preventScroll:true});}return;}
@@ -1391,10 +1676,15 @@ function handle(act,d,el){
 }
 const app=document.getElementById('app');
 app.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.tagName==='A'||el.tagName==='INPUT'||el.tagName==='LABEL')return;handle(el.dataset.act,el.dataset,el);});
-app.addEventListener('change',e=>{const el=e.target;if(el.tagName==='INPUT'&&el.dataset.act==='share')handle('share',el.dataset,el);});
-let typing=null;
+app.addEventListener('change',e=>{const el=e.target;if(el.tagName==='INPUT'&&el.dataset.act==='share')handle('share',el.dataset,el);if(el.dataset&&el.dataset.note&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
+/* Si l'on quitte la page pendant qu'on écrit dans le carnet, les derniers mots sont gardés tout de suite. Rien n'est écrit s'il n'y a rien en attente,
+   pour ne pas écraser ce qu'un autre onglet aurait enregistré entre-temps. */
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
+let typing=null,noteT=null,noteAttend=false;
 app.addEventListener('input',e=>{
   const t=e.target;clearErr(t);
+  /* Le carnet de route se garde tout seul, pendant qu'on écrit. */
+  if(t.dataset&&t.dataset.note){const id=t.dataset.note;const v=String(t.value).slice(0,LIM.note);if(v.trim())D().notes[id]={t:v,d:todayIso()};else delete D().notes[id];clearTimeout(noteT);noteAttend=true;noteT=setTimeout(()=>{noteAttend=false;save();},400);const st=document.getElementById('note-etat');if(st){const m=v.trim()?NOTE_OUI:NOTE_NON;if(st.textContent!==m)st.textContent=m;}}
   if(t.id==='draft'){state.draft=t.value;updCount(t);}
   if(t.id==='qdraft')state.qdraft=t.value;
   if(t.id==='ptext')state.pdraft=t.value;
@@ -1412,6 +1702,9 @@ app.addEventListener('keydown',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;fxGo(render,'fade',true);}});
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
+/* L'aperçu d'Antonio s'active aussi par l'adresse …/#atelier. Ce n'est pas un verrou : il sert à tout relire sans attendre les sept jours. */
+let atelierMsg=false;
+try{if(location.hash==='#atelier'){state.data.atelier=true;state.data.tout=true;save();atelierMsg=true;if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
 fxSync();
 /* La fenêtre passe d'un format à l'autre (fenêtre agrandie ou réduite, tablette qu'on tourne) : l'écran est réécrit dans le bon ordre, sans perdre ce qui est en cours de saisie. */
 if(MQ_LARGE){const relayout=()=>{const keep={};document.querySelectorAll('#app input[id],#app textarea[id]').forEach(el=>{if(el.type!=='range'&&el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value;});render();Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id])el.value=keep[id];});};if(MQ_LARGE.addEventListener)MQ_LARGE.addEventListener('change',relayout);else if(MQ_LARGE.addListener)MQ_LARGE.addListener(relayout);}
@@ -1428,5 +1721,6 @@ if(SITE)state.sample=false;
 /* Sur le site, l'accueil est déjà écrit dans la page (affichage immédiat, lisible sans JavaScript par les moteurs) : on le garde tel quel. */
 if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');fxMark();eauArrive(true);}
 else render();
+if(atelierMsg)toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');
 if(!SITE)(async()=>{try{if(state.inClaude){const s=await window.claude.use('sample');state.sample=s||false;}else state.sample=false;}catch(e){state.sample=false;}if(D().onboarded||state.view==='plans')render();})();
 })();
