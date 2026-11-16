@@ -198,7 +198,7 @@ function sheetOnboard(sheetIn){
 function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;for(const raw of lines){const l=raw.replace(/\*\*(.+?)\*\*/g,'$1');if(/^\s*[-•]\s+/.test(l)){if(!inl){out+='<ul class="list">';inl=true;}out+='<li>'+esc(l.replace(/^\s*[-•]\s+/,''))+'</li>';continue;}if(inl){out+='</ul>';inl=false;}if(/^#{1,3}\s/.test(l))out+='<p style="font-weight:800;margin-top:6px;color:var(--green)">'+esc(l.replace(/^#{1,3}\s*/,''))+'</p>';else if(l.trim())out+='<p>'+esc(l)+'</p>';}if(inl)out+='</ul>';return out;}
 
 /* ---------- actions ---------- */
-function nav(v){state.prev=state.view;state.view=v;state.sheet=null;state.confirmReset=false;state.photoPick=false;state.pdraft=null;}
+function nav(v){state.prev=state.view;state.view=v;state.sheet=null;state.confirmReset=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;}
 function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;

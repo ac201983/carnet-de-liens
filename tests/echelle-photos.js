@@ -35,6 +35,9 @@ let pass = 0, fail = 0; const ok = (c, m) => { if (c) pass++; else { fail++; con
     await p.screenshot({ path: `${OUT}/${nom}-anim-onde.png` });   // en pleine onde
     await p.waitForTimeout(1500);
     ok(await p.evaluate(() => document.querySelectorAll('.photos button').length === 48 && document.querySelector('.photos [aria-pressed="true"]').dataset.id === 'porte'), nom + ' : retour aux 48 photos, « Une porte » marquée');
+    const ordre = () => p.evaluate(() => [...document.querySelectorAll('.photos button')].map(x => x.dataset.id).join(','));
+    const o1 = await ordre();
+    ok(new Set(o1.split(',')).size === 48, nom + ' : les 48 photos sont toutes là, une fois chacune');
     const bt = await p.$(A('photopick', '[data-id="etoiles"]')); await bt.scrollIntoViewIfNeeded(); await bt.click(); await p.waitForTimeout(450);
     await p.screenshot({ path: `${OUT}/${nom}-anim-onde2.png` });
     await p.waitForTimeout(1600);
@@ -42,6 +45,14 @@ let pass = 0, fail = 0; const ok = (c, m) => { if (c) pass++; else { fail++; con
     ok(st.cap === 'Une nuit étoilée' && st.txt === 'Un texte pas encore gardé.' && st.y === 0 && st.ok > 0 && !st.onde, nom + ' : la photo choisie s’affiche en grand, en haut, avec le texte en cours (' + JSON.stringify(st) + ')');
     await p.screenshot({ path: `${OUT}/${nom}-anim-photo.png` });
     await p.click(A('photosave')); await p.waitForTimeout(400);
+    // revenir choisir une autre photo pendant la même visite : l'ordre n'a pas bougé. Quitter l'écran et y revenir : il a changé.
+    await p.click(A('photoback')); await p.waitForTimeout(1700);
+    ok(await ordre() === o1, nom + ' : pendant la visite, l’ordre des photos ne bouge pas');
+    await p.click(A('back')); await p.waitForTimeout(1600);
+    await p.click('.quick ' + A('go', '[data-view="photo"]')); await p.waitForTimeout(1600);
+    await p.click(A('photoback')); await p.waitForTimeout(1700);
+    const o2 = await ordre();
+    ok(o2 !== o1 && new Set(o2.split(',')).size === 48, nom + ' : à la visite suivante, l’ordre a changé');
     const rec = await p.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).photo);
     ok(rec.id === 'etoiles' && rec.i === undefined && rec.text === 'Un texte pas encore gardé.' && !!rec.date, nom + ' : enregistré par le nom de la photo (' + JSON.stringify(rec) + ')');
     ok(errs.length === 0, nom + ' : aucune erreur (' + errs.slice(0, 3).join(' | ') + ')');
