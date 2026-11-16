@@ -371,8 +371,16 @@ let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),d);}catch(e){}return JSON.parse(JSON.stringify(DEF));}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state.data));}catch(e){}}
-function toast(m){state.toast=m;state.toastView=state.view;renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{state.toast='';renderToast();},3000);}
-function renderToast(){const old=document.querySelector('.toast');if(old)old.remove();if(state.toast){const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=state.toast;document.getElementById('app').appendChild(el);}}
+function toast(m){state.toast=m;state.toastView=state.view;state.toastAt=Date.now();renderToast();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{
+  /* avec les effets, il s'efface en douceur avant d'être retiré */
+  const el=document.querySelector('.toast');
+  if(el&&fxOn()){el.style.animationDelay='0s';el.classList.add('out');toastTimer=setTimeout(()=>{state.toast='';renderToast();},420);}
+  else{state.toast='';renderToast();}
+},3000);}
+function renderToast(){const old=document.querySelector('.toast');if(old)old.remove();if(state.toast){const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=state.toast;
+  /* Si l'écran est redessiné pendant que le message est là, son apparition reprend où elle en était au lieu de rejouer. */
+  if(el.style)el.style.animationDelay='-'+Math.min(2000,Math.max(0,Date.now()-(state.toastAt||0)))+'ms';
+  document.getElementById('app').appendChild(el);}}
 const D=()=>state.data;
 const pad=n=>String(n).padStart(2,'0');
 const todayIso=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
@@ -407,46 +415,31 @@ function openUpgrade(f){state.upFeat=f;state.sheet='upgrade';}
 function badge(){const t=TIERS[tier()];return '<span class="tierbadge '+t.cls+'">'+(tier()==='free'?I.star:tier()==='parcours'?I.path:I.user)+esc(t.t)+'</span>';}
 function lockline(txt,f){return '<button type="button" class="lockline" data-act="upgrade" data-f="'+f+'">'+I.lock+'<span>'+esc(txt)+'</span></button>';}
 
-/* ---------- effets visuels : tout part d'une goutte ---------- */
+/* ---------- effets visuels : l'eau calme ---------- */
+/* Tout est lent et doux, et rien n'est dessiné par-dessus la photo.
+   Les écrans se fondent l'un dans l'autre, les blocs viennent se poser sans à-coup, la lumière se lève une fois sur la photo,
+   et l'eau de la photo bouge pour de bon, à l'arrivée et sous le doigt. Le texte n'est jamais estompé.
+   Rien ne joue si le téléphone demande moins d'animations ou si le parent coupe les effets dans « Moi ». */
 const FX_OK=!!(typeof window!=='undefined'&&window.requestAnimationFrame&&document.documentElement&&document.body);
 const FX_RM=FX_OK&&window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
-/* Les textes qui s'éclairent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils apparaissent une fois, à leur arrivée. */
-const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 150px)'));
+/* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
+const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 220px)'));
 const FX_SEL='main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
-const fxPt={x:0,y:0,t:0};let fxIO=null,fxSeq=0,fxSkip=0;
+let fxIO=null,fxSeq=0,fxSkip=0;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
-function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);}
-function fxHost(){let h=document.getElementById('fx');if(!h){h=document.createElement('div');h.id='fx';h.setAttribute('aria-hidden','true');document.body.appendChild(h);}return h;}
-function fxAdd(cls,x,y,d,life){const el=document.createElement('i');el.className=cls;el.style.setProperty('--x',Math.round(x)+'px');el.style.setProperty('--y',Math.round(y)+'px');if(d)el.style.setProperty('--d',Math.round(d)+'px');fxHost().appendChild(el);setTimeout(()=>{el.remove();},life||1200);}
-/* Chaque geste fait un cercle sur l'eau : rond sur un bouton, aplati comme sur l'étang quand on touche la photo. */
-function fxTap(e){
-  if(!fxOn()||e.button>0)return;fxPt.x=e.clientX;fxPt.y=e.clientY;fxPt.t=Date.now();
-  const t=e.target&&e.target.closest?e.target:null;if(!t)return;
-  const act=t.closest('button,a,[data-act],label.share');const water=!act&&t.closest('.herofull,.band');
-  if(!act&&!water)return;
-  const d=water?280:Math.max(110,Math.min(200,act.getBoundingClientRect().width));
-  fxAdd('rip'+(water?' flat':''),e.clientX,e.clientY,d,950);fxAdd('rip b'+(water?' flat':''),e.clientX,e.clientY,d*1.3,1300);
-}
-/* Changer d'écran : le nouvel écran s'ouvre en cercle depuis l'endroit touché (ou l'ancien se referme vers lui pour un retour).
-   Le SOS s'affiche tout de suite, sans effet. Sans l'API du navigateur, on change d'écran comme avant. */
-function fxGo(update,kind){
+function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
+/* Changer d'écran : un fondu lent. Ce qui ne change pas d'un écran à l'autre (la barre du haut, les onglets) reste en place.
+   Le SOS s'affiche tout de suite, sans effet. Sans l'API du navigateur, le nouvel écran apparaît simplement en douceur. */
+function fxGo(update,kind,vtOnly){
   /* Pas d'effet non plus quand le téléphone anime déjà lui-même le retour en arrière (geste de balayage). */
-  if(!fxOn()||typeof document.startViewTransition!=='function'||state.view==='sos'||Date.now()-fxSkip<500){update();return;}
-  const fresh=Date.now()-fxPt.t<1200;const w=window.innerWidth,h=window.innerHeight;
-  const x=fresh?fxPt.x:w/2,y=fresh?fxPt.y:h*.4;
-  const r=Math.ceil(Math.hypot(Math.max(x,w-x),Math.max(y,h-y)))+12;
-  const de=document.documentElement;const dur=kind==='tab'?.44:kind==='back'?.46:.62;const id=++fxSeq;
-  de.style.setProperty('--fx-x',Math.round(x)+'px');de.style.setProperty('--fx-y',Math.round(y)+'px');de.style.setProperty('--fx-r',r+'px');de.style.setProperty('--fx-dur',dur+'s');
-  de.classList.toggle('fx-back',kind==='back');
+  if(!fxOn()||state.view==='sos'||Date.now()-fxSkip<500){update();return;}
+  const de=document.documentElement;const id=++fxSeq;
+  if(typeof document.startViewTransition!=='function'){if(vtOnly){update();return;}de.classList.add('fx-nav');update();setTimeout(()=>{if(id===fxSeq)de.classList.remove('fx-nav');},560);return;}
+  de.style.setProperty('--fx-dur',(kind==='tab'?.42:kind==='back'?.46:.54)+'s');
   let done=false;const run=()=>{if(done)return;done=true;update();};
-  const end=()=>{if(id===fxSeq)de.classList.remove('fx-back');};
-  try{
-    const vt=document.startViewTransition(run);
-    vt.ready.then(()=>{fxAdd('wave'+(kind==='back'?' in':''),x,y,0,dur*1000+200);},()=>{});
-    vt.finished.then(end,end);
-  }catch(e){run();end();}
+  try{const vt=document.startViewTransition(run);if(vt){if(vt.ready)vt.ready.catch(()=>{});if(vt.finished)vt.finished.catch(()=>{});}}catch(e){run();}
 }
-/* Après chaque rendu : repérer les blocs de texte qui s'éclaireront en arrivant à l'écran. */
+/* Après chaque rendu : repérer les blocs qui viendront se poser en arrivant à l'écran. */
 function fxMark(){
   if(!fxOn()||!document.querySelectorAll)return;const vh=window.innerHeight;
   if(!FX_SD&&!fxIO&&'IntersectionObserver' in window)fxIO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('fxs');fxIO.unobserve(e.target);}});},{rootMargin:'0px 0px -20px 0px'});
@@ -457,12 +450,179 @@ function fxMark(){
     if(!FX_SD&&below&&fxIO){el.classList.add('fxw');fxIO.observe(el);}
   });
 }
-/* Déposer : le texte s'enfonce dans l'eau avant que la réponse remonte. */
+/* Déposer : le texte se dissout doucement dans l'eau avant que la réponse remonte. */
 function fxSink(){
   const el=document.getElementById('draft');if(!fxOn()||!el)return Promise.resolve();
-  return new Promise(res=>{const r=el.getBoundingClientRect();const x=r.left+r.width/2,y=r.top+r.height/2;el.classList.add('sink');fxAdd('rip flat',x,y,r.width*1.05,1000);fxAdd('rip b flat',x,y,r.width*1.5,1400);setTimeout(res,440);});
+  return new Promise(res=>{el.classList.add('sink');setTimeout(res,720);});
 }
-
+/* ---------- l'eau de la photo : de vraies ondes, calculées dans l'image ---------- */
+/* La photo est redessinée par la carte graphique du téléphone, et chaque onde déplace vraiment les reflets de l'étang,
+   en suivant sa perspective (les cercles s'aplatissent au loin). Rien n'est dessiné par-dessus la photo.
+   Là où l'eau est calme, ce calque est transparent, et il s'enlève tout seul quand la dernière onde s'est éteinte.
+   Sans carte graphique utilisable, la photo reste simplement immobile. */
+const EAU={ok:null,cv:null,gl:null,u:null,tex:false,host:null,geo:null,rips:[],wait:[],raf:0,t0:0,fix:null,n:0,last:0,slow:0,weak:0,seq:0,lost:0};
+const EAU_LIFE=4;
+const EAU_VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+/* Les réglages de l'onde, à un seul endroit. Les longueurs sont en points de la photo, à la profondeur de la goutte. */
+const EAU_P={c:120,lam:130,front:26,tail:170,tau:4.5,ax:13,ay:16,sh:.8,gl:.35,li:.6,pw:2};
+const EAU_FS=[
+'precision highp float;',
+'uniform sampler2D uTex;uniform vec2 uRes;uniform vec4 uMap;uniform float uT;uniform vec4 uR[8];',
+'void main(){',
+' vec2 p=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);',
+' vec2 q=uMap.xy+p*uMap.zw;',                                  /* le point de la photo (866 x 470) */
+' float s=(q.y+26.)/285.;',                                    /* la perspective : 1 à la profondeur de la goutte, plus petit au loin */
+' vec2 w=vec2((q.x-434.)/s,1500./s);',                         /* le même point, posé à plat sur l'étang */
+' vec2 g=vec2(0.);float h=0.;float li=0.;',
+' for(int i=0;i<8;i++){',
+'  vec4 r=uR[i];float age=uT-r.z;',
+'  vec2 dv=w-r.xy;float d=length(dv)+.0001;',
+'  float x=@c@*max(age,0.)-d;',                                /* distance derrière le front de l onde, qui avance lentement */
+'  float e=x<0.?exp(-x*x/(@front@*@front@)):exp(-x/@tail@);',  /* un front doux, puis des rides de plus en plus faibles derrière lui */
+'  e*=r.w*step(0.,age)*smoothstep(0.,.7,age)*exp(-age/@tau@)*(1.-smoothstep(2.6,4.,age))*smoothstep(8.,60.,d)/sqrt(1.+d/400.);',
+'  float c=e*cos(x*6.2832/@lam@);',
+'  float cr=cos(x*6.2832/@lam@);',
+'  g+=dv/d*c;h+=c;li+=e*pow(max(cr,0.),@pw@)*(.55+.45*abs(dv.y)/d);',
+' }',
+' float m=smoothstep(104.,150.,q.y)*mix(smoothstep(150.,250.,q.x),1.,smoothstep(140.,178.,q.y));',   /* seulement sur l eau : ni la rive, ni la fougère */
+' vec2 pa=q-vec2(434.,160.);float hh=clamp(pa.y/90.,0.,1.);',
+' m*=smoothstep(14.,30.,length(pa-vec2(0.,90.)*hh));',                                              /* ni la goutte et sa colonne, qui sont devant l eau */
+' vec2 o=vec2(g.x*@ax@*s,-g.y*@ay@*s*s)*m;',
+' float tilt=(h*.45-g.y*.55)*m;',                                                                   /* la pente de la vague, vue d ici */
+' vec3 col=texture2D(uTex,(q+o)/vec2(866.,470.)).rgb;',
+' col*=1.+tilt*@sh@;',
+' float sx=(q.x-480.)/130.;float sun=exp(-sx*sx);',                                                       /* la lumière vient d en haut, un peu à droite de la goutte */
+' float lum=dot(col,vec3(.3,.6,.1));',
+' col+=vec3(.9,1.,.84)*li*m*(@li@*(.35+lum)+@gl@*sun);',                                          /* une crête fine qui accroche la lumière, plus vive sous le soleil */
+' float a=clamp(length(o)*.8+abs(tilt)*2.5+li*m*3.,0.,1.);',
+' gl_FragColor=vec4(col*a,a);',
+'}'].join('\n').replace(/@(\w+)@/g,(m,k)=>(+EAU_P[k]).toFixed(4));
+function eauNow(){return EAU.fix!=null?EAU.fix:(performance.now()-EAU.t0)/1000;}
+function eauInit(){
+  if(EAU.ok!==null)return EAU.ok;
+  EAU.ok=false;
+  try{
+    const cv=document.createElement('canvas');cv.className='eau';cv.setAttribute('aria-hidden','true');
+    /* failIfMajorPerformanceCaveat : pas de calque si la carte graphique est émulée par le processeur, car l'eau serait saccadée. (__eauSansGarde : seulement pour les tests.) */
+    const gl=cv.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'low-power',failIfMajorPerformanceCaveat:!window.__eauSansGarde});
+    if(!gl)return false;
+    const hp=gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER,gl.HIGH_FLOAT);if(!hp||!hp.precision)return false;
+    /* Certains navigateurs émulent la carte graphique sans le dire : on le lit dans son nom, et là non plus on ne dessine pas l'eau. */
+    try{const di=gl.getExtension('WEBGL_debug_renderer_info');const nom=di?String(gl.getParameter(di.UNMASKED_RENDERER_WEBGL)):'';if(!window.__eauSansGarde&&/swiftshader|llvmpipe|software|basic render/i.test(nom))return false;}catch(e){}
+    const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error('eau');return o;};
+    const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,EAU_VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,EAU_FS));gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return false;
+    gl.useProgram(pr);
+    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    const a=gl.getAttribLocation(pr,'a');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+    EAU.u={res:gl.getUniformLocation(pr,'uRes'),map:gl.getUniformLocation(pr,'uMap'),t:gl.getUniformLocation(pr,'uT'),r:gl.getUniformLocation(pr,'uR')};
+    gl.uniform1i(gl.getUniformLocation(pr,'uTex'),0);gl.clearColor(0,0,0,0);
+    cv.addEventListener('webglcontextlost',e=>{e.preventDefault();if(EAU.cv!==cv)return;eauStop();EAU.cv=null;EAU.gl=null;EAU.tex=false;EAU.ok=(++EAU.lost<4)?null:false;});
+    const im=new Image();im.decoding='async';
+    im.onload=()=>{
+      if(EAU.gl!==gl)return;
+      try{
+        gl.bindTexture(gl.TEXTURE_2D,gl.createTexture());
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
+        EAU.tex=true;const q=EAU.wait;EAU.wait=[];q.forEach(f=>{try{f();}catch(e){}});
+      }catch(e){EAU.ok=false;}
+    };
+    im.src=HERO;
+    EAU.cv=cv;EAU.gl=gl;EAU.ok=true;
+  }catch(e){EAU.ok=false;}
+  return EAU.ok;
+}
+/* Où la photo est-elle affichée, et quel morceau en voit-on ? (elle remplit sa boîte en étant rognée, comme « cover ») */
+function eauGeo(host){
+  const hero=host.classList.contains('herofull');const box=hero?host.querySelector('.herobg'):host;if(!box)return null;
+  const r=box.getBoundingClientRect();if(r.width<40||r.height<40)return null;
+  let px=.5,py=.5;
+  try{const cs=getComputedStyle(box);const m=String(hero?cs.objectPosition:cs.backgroundPosition).match(/(-?[\d.]+)%\s+(-?[\d.]+)%/);if(m){px=m[1]/100;py=m[2]/100;}}catch(e){}
+  const k=Math.max(r.width/866,r.height/470);
+  return {el:box,w:r.width,h:r.height,k:k,ox:-(r.width-866*k)*px/k,oy:-(r.height-470*k)*py/k};
+}
+function eauHost(host){
+  if(!EAU.ok||!host)return false;
+  if(EAU.host!==host||EAU.cv.parentNode!==host){
+    if(host.classList.contains('herofull')){const im=host.querySelector('.herobg');if(!im)return false;host.insertBefore(EAU.cv,im.nextSibling);}
+    else host.insertBefore(EAU.cv,host.firstChild);
+    EAU.host=host;EAU.geo=null;
+  }
+  if(!EAU.geo)EAU.geo=eauGeo(host);
+  return !!EAU.geo;
+}
+function eauStop(){
+  if(EAU.raf){cancelAnimationFrame(EAU.raf);EAU.raf=0;}
+  EAU.rips=[];EAU.wait=[];EAU.n=0;EAU.slow=0;EAU.host=null;EAU.geo=null;
+  if(EAU.cv){try{EAU.gl.clear(EAU.gl.COLOR_BUFFER_BIT);}catch(e){}if(EAU.cv.parentNode)EAU.cv.parentNode.removeChild(EAU.cv);}
+}
+/* Une onde naît à cet endroit de la photo. */
+function eauAdd(ix,iy,force,delay){
+  if(!EAU.rips.length&&!EAU.raf)EAU.t0=performance.now();
+  const s=(iy+26)/285;
+  EAU.rips.push({x:(ix-434)/s,z:1500/s,t:eauNow()+(delay||0),s:force});
+  if(EAU.rips.length>8)EAU.rips.shift();
+  if(!EAU.raf&&EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);
+}
+function eauFrame(){
+  EAU.raf=0;const gl=EAU.gl,cv=EAU.cv;
+  if(!EAU.ok||!EAU.tex||!EAU.host||!cv.isConnected||!fxOn()){eauStop();return;}
+  const now=eauNow();
+  EAU.rips=EAU.rips.filter(r=>now-r.t<EAU_LIFE);
+  if(!EAU.rips.length){eauStop();return;}
+  if(!EAU.geo||EAU.n%30===29)EAU.geo=eauGeo(EAU.host);
+  const g=EAU.geo;if(!g){eauStop();return;}
+  /* Un téléphone qui peine vraiment (quatre images de suite trop lentes) : on arrête cette onde. La deuxième fois, la photo reste immobile pour toute la visite. */
+  const ms=performance.now();
+  if(EAU.fix==null&&!window.__eauSansGarde&&EAU.n>1){EAU.slow=ms-EAU.last>60?EAU.slow+1:0;if(EAU.slow>3){if(++EAU.weak>1)EAU.ok=false;eauStop();return;}}
+  EAU.last=ms;EAU.n++;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const W=Math.max(2,Math.round(g.w*dpr)),H=Math.max(2,Math.round(g.h*dpr));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  gl.viewport(0,0,W,H);
+  gl.uniform2f(EAU.u.res,W,H);gl.uniform4f(EAU.u.map,g.ox,g.oy,g.w/(W*g.k),g.h/(H*g.k));gl.uniform1f(EAU.u.t,now);
+  const a=EAU.buf||(EAU.buf=new Float32Array(32));a.fill(0);EAU.rips.forEach((r,i)=>{a[i*4]=r.x;a[i*4+1]=r.z;a[i*4+2]=r.t;a[i*4+3]=r.s;});
+  gl.uniform4fv(EAU.u.r,a);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  if(EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);
+}
+/* Dès que la photo est prête pour la carte graphique. */
+function eauReady(f){if(!eauInit())return;if(EAU.tex)f();else EAU.wait.push(f);}
+/* À l'arrivée sur l'accueil ou sur « Mon histoire » : une goutte, et son écho. Avec la lumière qui se lève en même temps,
+   tout ce qui bouge tout seul est redevenu calme en moins de cinq secondes.
+   « first » : la toute première ouverture du site, où l'écran est déjà écrit dans la page. La lumière y attend l'eau, pour qu'elles partent ensemble. */
+function eauArrive(first){
+  const id=++EAU.seq;if(!fxOn())return;
+  const go=()=>setTimeout(()=>{
+    if(id!==EAU.seq||!fxOn())return;
+    if(first){const ap=document.getElementById('app');if(ap&&ap.classList){state.enterAt=Date.now();ap.classList.add('lum');}}
+    if(!document.querySelector('.herofull,.band.story'))return;
+    eauReady(()=>{if(id!==EAU.seq)return;const host=document.querySelector('.herofull,.band.story');if(!host||!eauHost(host))return;eauAdd(434,259,1,0);eauAdd(434,259,.55,.6);});
+  },250);
+  /* On attend que la page ait fini de se charger : la première onde ne doit pas être saccadée. */
+  if(document.readyState==='complete')go();else window.addEventListener('load',go,{once:true});
+}
+/* Sous le doigt : on ne fait bouger l'eau que là où il y a de l'eau. */
+function eauTouch(e){
+  if(!fxOn()||e.button>0)return;const t=e.target&&e.target.closest?e.target:null;
+  if(!t||t.closest('button,a,input,textarea,select,label'))return;
+  const host=t.closest('.herofull,.band');if(!host)return;
+  const x=e.clientX,y=e.clientY;
+  eauReady(()=>{
+    if(!host.isConnected)return;const g=eauGeo(host);if(!g)return;const r=g.el.getBoundingClientRect();
+    const ix=g.ox+(x-r.left)/g.k,iy=g.oy+(y-r.top)/g.k;
+    if(iy<118||iy>470||ix<0||ix>866)return;      /* la rive, la forêt, ou plus bas que la photo : rien ne bouge */
+    if(eauHost(host))eauAdd(ix,iy,.8,0);
+  });
+}
+/* Après chaque rendu : en changeant d'écran l'eau redevient calme, et sur le même écran le calque retrouve sa photo. */
+function eauSync(entering){
+  if(!EAU.cv)return;
+  if(entering||!EAU.rips.length){eauStop();return;}
+  if(!EAU.cv.isConnected){const host=document.querySelector('.herofull,.band');if(!host||!eauHost(host))eauStop();else if(!EAU.raf&&EAU.fix==null)EAU.raf=requestAnimationFrame(eauFrame);}
+}
 /* ---------- rendu ---------- */
 const BACK_VIEWS=['sit','exo','step','photo','data','about','plans','evo','depots','antonio','letter'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
@@ -506,10 +666,14 @@ function render(){
   }
   /* Les animations d'apparition ne jouent qu'en entrant sur un écran ou en ouvrant une feuille, pas à chaque appui. */
   const entering=key!==state.lastKey;state.lastKey=key;
+  if(entering)state.enterAt=Date.now();
+  const age=(Date.now()-(state.enterAt||0))/1000;
   const sheetIn=!!state.sheet&&state.sheet!==state.lastSheet;state.lastSheet=state.sheet;
   if(state.sheet==='onboard')html+=sheetOnboard(sheetIn);
   if(state.sheet==='upgrade')html+=sheetUpgrade(sheetIn);
-  app.className=base+(entering?' enter':'');
+  /* « lum » : la lumière qui se lève une fois sur la photo. Si l'écran est redessiné entre-temps, elle reprend là où elle en était (--fx-age). */
+  app.className=base+(entering?' enter':'')+(FX_OK&&age<4.8?' lum':'');
+  if(FX_OK&&age<4.8&&app.style&&app.style.setProperty)app.style.setProperty('--fx-age',age.toFixed(2)+'s');
   app.removeAttribute('data-prerender');
   app.innerHTML=html;
   /* Un message bref survit au rendu suivant du même écran (sinon l'aide en cas de détresse disparaissait aussitôt), mais ne suit pas le parent sur un autre écran. */
@@ -527,6 +691,7 @@ function render(){
   if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
   syncStory(entering);
   fxMark();
+  eauSync(entering);if(entering)eauArrive();
 }
 /* ---------- « Mon histoire » : adresse partageable (#histoire, sur le site) et un seul moment d'animation ---------- */
 const STORY_HASH='#histoire';const TITLE0=document.title;
@@ -536,7 +701,7 @@ function syncStory(entering){
   if(SITE&&!on&&location.hash===STORY_HASH){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
   if(!on||!entering)return;
   const el=document.querySelector('.avec');
-  if(!el||!('IntersectionObserver' in window)||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches))return;
+  if(!el||!('IntersectionObserver' in window)||!fxOn())return;
   el.classList.add('arm');
   const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){el.classList.add('seen');io.disconnect();}},{threshold:.35});
   io.observe(el);
@@ -574,7 +739,7 @@ function viewIntro(){
   const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="onboard">'+I.sun2+'Commencer gratuitement</button>';
   const priv=SITE?'Cette version de test est gratuite et tout ce que vous écrivez reste sur votre appareil. La phrase-miroir personnalisée arrivera avec la version complète. En attendant, chaque dépôt reçoit une question et une lumière.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom pour recevoir une réponse.';
   return '<main id="main" tabindex="-1" class="view" style="padding-top:0">'+
-    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="beam" aria-hidden="true"></span><span class="pond" aria-hidden="true"><i></i><i></i><i></i></span><span class="glint" aria-hidden="true"></span><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer six mois à votre rythme.</p>'+cta(false)+'</div>'+
+    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer six mois à votre rythme.</p>'+cta(false)+'</div>'+
     '<div class="pillars reveal d1">'+
     '<div class="pillar"><span class="ic">'+I.drop+'</span><div><h2>Écouté</h2><span>Vous déposez par écrit ce qui vous pèse, sans donner de prénom. En retour, vous recevez une phrase-miroir, une question qui ouvre et une lumière.</span></div></div>'+
     '<div class="pillar sun"><span class="ic">'+I.sun2+'</span><div><h2>Éclairé</h2><span>Vous recevez chaque matin la dose de lumière intérieure et vous suivez un parcours de six mois, à raison d’une étape par semaine.</span></div></div>'+
@@ -655,7 +820,7 @@ async function sendDepot(){
   state.draft='';state.busy=true;render();
   if(!state.sample){
     dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
-    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1200);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
   }
   state.ctl=new AbortController();
   try{
@@ -672,7 +837,7 @@ async function sendDepot(){
     dep.question=dep.question||LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=dep.lumiere||'C’est déposé. Même sans réponse, ce que vous avez écrit est maintenant en dehors de vous.';
     if(e&&e.code!=='cancelled'&&e.code!=='not_granted')toast('La réponse n’est pas venue cette fois. Votre dépôt est gardé.');
   }
-  d.depots.push(dep);state.busy=false;state.ctl=null;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1200);
+  d.depots.push(dep);state.busy=false;state.ctl=null;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1900);
 }
 async function concret(id){
   const d=D();const dep=d.depots.find(x=>x.id===id);if(!dep||!state.sample)return;
@@ -936,7 +1101,7 @@ function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;fo
 function nav(v){state.prev=state.view;state.view=v;state.sheet=null;state.confirmReset=false;}
 function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.letter,!!D().onboarded].join('|');}
 function handle(act,d,el){
-  const data=D();const sig0=fxSig();
+  const data=D();const sig0=fxSig();const sheet0=state.sheet;
   switch(act){
     case 'peek-plans':state.prev=null;state.sheet=null;state.view='plans';break;
     case 'peek-about':openStory();return;
@@ -979,7 +1144,7 @@ function handle(act,d,el){
     case 'phdel':data.phrases.splice(Number(d.i),1);save();break;
     case 'exo':state.exo=d.id;nav('exo');break;
     case 'threeadd':{const items=['t1','t2','t3'].map(id=>clean(document.getElementById(id).value,LIM.three)).filter(Boolean);if(!items.length){fieldErr('t1','Une seule chose suffit, écrivez-la ici.');return;}data.three.push({date:todayIso(),items});save();render();toast('Gardé.');return;}
-    case 'depose':{const t=document.getElementById('dep');if(t&&t.value&&fxOn()){t.classList.add('ink');setTimeout(()=>{t.value='';t.classList.remove('ink');},700);}else if(t)t.value='';toast('C’est déposé, vous n’avez plus à le garder en vous.');return;}
+    case 'depose':{const t=document.getElementById('dep');if(t&&t.value&&fxOn()){t.classList.add('ink');setTimeout(()=>{t.value='';t.classList.remove('ink');},1150);}else if(t)t.value='';toast('C’est déposé, vous n’avez plus à le garder en vous.');return;}
     case 'letter':state.letter=Number(d.i);nav('letter');break;
     case 'qsend':{const t=clean(state.qdraft,LIM.q);if(t.length<10){fieldErr('qdraft','Écrivez votre question en une phrase ou deux (dix caractères au moins).');return;}if(questionsLeft()===0){toast('Vos deux questions du mois sont posées.');return;}const risk=RISK.test(t);data.questions.push(risk?{id:'q'+Date.now(),date:todayIso(),text:t,risk:true}:{id:'q'+Date.now(),date:todayIso(),text:t});state.qdraft='';save();render();toast(risk?'Si c’est urgent, n’attendez pas et appelez le 143 ou le 144 maintenant.':(DEMO?'Votre question est gardée sur votre appareil. Dans cette version de test, elle n’est pas transmise à Antonio.':'Votre question est envoyée. Antonio répond par écrit sous 48 heures.'));return;}
     case 'sheet-close':state.sheet=null;break;
@@ -992,6 +1157,8 @@ function handle(act,d,el){
   }
   const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','tier','ob-done'].includes(act);
   if(navAct&&fxSig()!==sig0){fxGo(()=>{render();window.scrollTo(0,0);},act==='back'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
+  /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
+  if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'tab',true);return;}
   render();
   if(navAct)window.scrollTo(0,0);
 }
@@ -1012,11 +1179,11 @@ app.addEventListener('keydown',e=>{
   if(t.id==='ph'){e.preventDefault();handle('phadd',{},t);}
   else if(t.id==='ob-me'){e.preventDefault();handle('ob-done',{},t);}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet&&state.sheet!=='onboard'){state.sheet=null;fxGo(render,'tab',true);}});
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
 fxSync();
-if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
+if(FX_OK){document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, « Mon histoire » a sa propre adresse (…/#histoire) : on peut l'envoyer telle quelle, et le bouton Retour du téléphone fonctionne. */
 const storyFirst=SITE&&location.hash===STORY_HASH;
 if(storyFirst)state.view='about';
@@ -1027,7 +1194,7 @@ if(SITE)window.addEventListener('hashchange',()=>{
 state.inClaude=!SITE&&!!(window.claude&&typeof window.claude.use==='function');
 if(SITE)state.sample=false;
 /* Sur le site, l'accueil est déjà écrit dans la page (affichage immédiat, lisible sans JavaScript par les moteurs) : on le garde tel quel. */
-if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');fxMark();}
+if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');fxMark();eauArrive(true);}
 else render();
 if(!SITE)(async()=>{try{if(state.inClaude){const s=await window.claude.use('sample');state.sample=s||false;}else state.sample=false;}catch(e){state.sample=false;}if(D().onboarded||state.view==='plans')render();})();
 })();
