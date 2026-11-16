@@ -52,7 +52,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok(await page.evaluate(() => document.querySelector('main').dataset.temoin === '1'), 'schéma : l’écran n’est pas redessiné');
     await page.click(A('schnext')); await page.click(A('schnext')); await page.waitForTimeout(60);
     ok((await page.$$('.sp.on')).length === 4 && !(await page.$(A('schnext'))) && !!(await page.$(A('schagain'))), 'schéma : au bout, le bouton propose de revoir');
-    ok((await page.$$eval('.sch-caps li.cur', L => L.length)) === 1 && /reliant ces trois points/.test(await page.textContent('.sch-caps li.cur')), 'schéma : la dernière phrase est mise en avant');
+    ok((await page.$$eval('.sch-caps li.cur', L => L.length)) === 1 && /reliant ces 3 points/.test(await page.textContent('.sch-caps li.cur')), 'schéma : la dernière phrase est mise en avant');
     await page.click(A('schagain')); await page.waitForTimeout(60);
     ok((await page.$$('.sp.on')).length === 1 && !!(await page.$(A('schnext'))), 'schéma : « Revoir » repart du début');
     // le carnet se garde tout seul
@@ -106,7 +106,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await parcours(page);
     ok((await sous(page, 1)) === 'Cette semaine' && (await sous(page, 2)) === 'Plus tard', 'sept jours après : étape 2 ouverte, étape 3 « Plus tard »');
     await page.click(A('step', '[data-i="1"]')); await page.waitForTimeout(150);
-    ok(!!(await page.$('.card.vecu')) && /Mes parents d’accueil ont cru en moi/.test(await page.textContent('.card.vecu')) && /cent cinquante mots/.test(await page.textContent('.card.vecu')), 'étape 2 : « Ce que j’ai vécu », avec les mots d’Antonio');
+    ok(!!(await page.$('.card.vecu')) && /parents d’accueil ont cru en moi/.test(await page.textContent('.card.vecu')) && /150 mots/.test(await page.textContent('.card.vecu')), 'étape 2 : « Ce que j’ai vécu », avec les mots d’Antonio');
     ok((await store(page)).seen.croire === iso(0), 'étape 2 : ouverture datée d’aujourd’hui');
     ok((await page.$$('.sch-caps li')).length === 5, 'étape 2 : la boucle a cinq moments');
     // une longue absence : rien ne s'accumule

@@ -277,9 +277,17 @@ def build_site():
     sjs = re.sub(r'/\*CFG\*/.*?/\*CFG\*/', lambda m: json.dumps(site_cfg, ensure_ascii=False), sjs, flags=re.S)
     write(OUT + '/site.js', sjs)
     node_check(OUT + '/site.js')
+    # L'Espace Antonio vit dans son propre dossier (antonio/), pour pouvoir être fermé par un mot de passe chez l'hébergeur,
+    # qui protège un dossier entier et non une page. À l'ancienne adresse (MOVED), il n'en reste qu'un renvoi.
     ajs = typo(read(SRC + '/antonio.js'))
-    write(OUT + '/antonio.js', ajs)
-    node_check(OUT + '/antonio.js')
+    ant_js = OUT + ('/antonio.js' if MOVED else '/antonio/antonio.js')
+    os.makedirs(os.path.dirname(ant_js), exist_ok=True)
+    write(ant_js, ajs)
+    node_check(ant_js)
+    if not MOVED:   # l'ancien emplacement, à la racine du site
+        for f in ('antonio.html', 'antonio.js'):
+            if os.path.exists(OUT + '/' + f):
+                os.remove(OUT + '/' + f)
     v = {'css': sha8(css), 'js': sha8(js), 'site': sha8(sjs), 'ant': sha8(ajs)}
     djs = ''
     if MOVED:   # la fenêtre « Cet espace a déménagé », pour qui a déjà écrit à cette adresse
@@ -326,10 +334,10 @@ def build_site():
     if MOVED:
         moved_page('antonio.html', robots='noindex,nofollow')
     else:
-        ant = (head('Espace Antonio, démonstration de ' + NAME, 'Démonstration du tableau de bord d’Antonio. Parents et dépôts fictifs.', '', '', v, robots='noindex,nofollow', social=False, noconsent=True)
+        ant = (head('Espace Antonio, démonstration de ' + NAME, 'Démonstration du tableau de bord d’Antonio. Parents et dépôts fictifs.', '', '../', v, robots='noindex,nofollow', social=False, noconsent=True)
                + '<body>\n<div id="app" class="app nobar"></div>\n<noscript><p class="noscript">Cette page a besoin de JavaScript.</p></noscript>\n'
-               + '<script src="site.js?v=' + v['site'] + '" defer></script>\n<script src="antonio.js?v=' + v['ant'] + '" defer></script>\n</body>\n</html>\n')
-        write(OUT + '/antonio.html', ant)
+               + '<script src="../site.js?v=' + v['site'] + '" defer></script>\n<script src="antonio.js?v=' + v['ant'] + '" defer></script>\n</body>\n</html>\n')
+        write(OUT + '/antonio/index.html', ant)
 
     # --- 404 (à la racine du dépôt : GitHub Pages la sert pour toute adresse inconnue du projet)
     home = MOVED or APP_PATH   # après le déménagement, la page 404 de l'ancienne adresse ramène à la nouvelle
@@ -403,7 +411,7 @@ def build_artifact():
 
 if __name__ == '__main__':
     v = build_site()
-    sizes = {f: os.path.getsize(OUT + '/' + f) for f in ('index.html', 'app.css', 'app.js', 'site.js', 'confidentialite.html', 'conditions.html', 'antonio.html', 'antonio.js')}
+    sizes = {f: os.path.getsize(OUT + '/' + f) for f in ('index.html', 'app.css', 'app.js', 'site.js', 'confidentialite.html', 'conditions.html') + (('antonio.html', 'antonio.js') if MOVED else ('antonio/index.html', 'antonio/antonio.js'))}
     print('site ->', OUT, v, '(%s, %s)' % (HOST, APP_URL))
     print('  ' + ' · '.join('%s %.1f Ko' % (k, s / 1024) for k, s in sizes.items()))
     if os.environ.get('PEPE_SITE_ONLY'):   # fabrication d'une autre version du site : on ne touche pas à l'artefact

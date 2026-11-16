@@ -56,7 +56,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     ok(!/fonts\.googleapis|gstatic/.test(raw), 'plus aucun appel à Google Fonts');
     ok(/class="voice[^>]*>.*accueilli dans une famille\..*travailleur social depuis mes 19 ans.*Lire mon histoire/s.test(raw), 'le mot d’Antonio est écrit dans la page (lisible sans JavaScript)');
     ok(!/[:;—]/.test((raw.match(/<section class="voice[\s\S]*?<\/section>/) || ['x:'])[0].replace(/<[^>]+>/g, ' ')), 'le mot d’Antonio se lit comme on parle, sans deux-points, point-virgule ni tiret long');
-    for (const f of ['', 'app.js', 'confidentialite.html', 'conditions.html', 'antonio.html', 'manifest.webmanifest']) ok(!/éducateur social/.test(await (await ctx.request.get(APP + f)).text()), '« éducateur social » ne figure plus dans ' + (f || 'index.html'));
+    for (const f of ['', 'app.js', 'confidentialite.html', 'conditions.html', 'antonio/', 'antonio/antonio.js', 'manifest.webmanifest']) ok(!/éducateur social/.test(await (await ctx.request.get(APP + f)).text()), '« éducateur social » ne figure plus dans ' + (f || 'index.html'));
     await page.goto(APP); await page.waitForTimeout(300);
     ok(await has(page, '#consent'), 'bandeau de consentement affiché à la première visite');
     ok((await page.$$('#consent button')).length === 2, 'bandeau : deux boutons de même poids');
@@ -245,7 +245,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.evaluate(() => { const b = document.getElementById('consent'); if (b) b.remove(); });
     await audit(page, '404');
     await page.click('main .btn'); await page.waitForTimeout(200); ok(await has(page, '.herofull'), '404 : le bouton ramène à l’accueil');
-    await page.goto(APP + 'antonio.html'); await page.waitForTimeout(200);
+    await page.goto(APP + 'antonio/'); await page.waitForTimeout(200);
     ok(!(await has(page, '#consent')) && await has(page, 'meta[name="robots"][content*="noindex"]'), 'Espace Antonio : ni bandeau ni indexation');
     await audit(page, 'espace-antonio');
     await page.fill('#ans', 'court'); await page.click(A('answer')); ok(await has(page, '#err-ans') && (await page.$eval('#ans', e => e.value)) === 'court', 'Espace Antonio : réponse trop courte signalée sans effacer la saisie');
@@ -284,7 +284,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.click('.tab' + A('go', '[data-view="kit"]')); await audit(page, 'outils-' + w);
     await page.click('.tab' + A('go', '[data-view="me"]')); await audit(page, 'moi-' + w);
     await page.goto(APP + 'confidentialite.html'); await page.waitForTimeout(100); await audit(page, 'confidentialite-' + w);
-    await page.goto(APP + 'antonio.html'); await page.waitForTimeout(100); await audit(page, 'espace-antonio-' + w);
+    await page.goto(APP + 'antonio/'); await page.waitForTimeout(100); await audit(page, 'espace-antonio-' + w);
     await ctx.close();
   }
 

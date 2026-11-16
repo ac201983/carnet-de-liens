@@ -719,12 +719,12 @@ const nl2=t=>esc(t).replace(/\n/g,'<br>');
 function viewParcours(){
   const d=D();const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);const nn=nbNotes();
   const sous=(st,e,dn)=>dn?'Faite':(st.idx===cur&&e.k==='open')?'Cette semaine':e.k==='open'?'Ouverte':e.k==='bientot'?'S’ouvre '+dansJours(e.n):e.k==='tard'?'Plus tard':'Étape '+(st.idx+1);
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours compte vingt-quatre étapes, sur six mois. Chaque semaine, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.</p>'+
+  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours compte 24 étapes, sur 6 mois. Chaque semaine, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.</p>'+
     (d.tout?'<span class="pill sun apercu">Aperçu d’Antonio, tout est ouvert</span>':'')+
     '<div class="card prog"><div class="kv"><span>Votre parcours</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
     '<div class="quick"><button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet'+(nn?' ('+nn+')':'')+'</button><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
     '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';return '<button type="button" class="step'+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
-    (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre sept jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
+    (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre 7 jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
 }
 /* Les boutons d'une étape vers un autre écran : « Mon évolution », le photolangage, la respiration, les situations, ou une situation précise (« sit_nom »). */
 function stepLiens(s){
@@ -748,7 +748,7 @@ function viewStep(){
     (ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Étape suivante '+I.chev+'</button>':'';
   const attente=sv&&ap.k==='bientot'?'<p class="hint attente">L’étape suivante, « '+esc(sv.t)+' », s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez une semaine pour essayer.</p>':'';
   return '<main id="main" tabindex="-1" class="view etape"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
-    '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En deux minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
+    '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En 2 minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
     (s.sch?schHtml(s.sch):'')+
     (s.vecu?'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div>'+(Array.isArray(s.vecu)?s.vecu:[s.vecu]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'</div>':'')+
     (s.ex?'<div class="card exemple"><span class="label">Un exemple</span><p>'+esc(s.ex)+'</p></div>':'')+

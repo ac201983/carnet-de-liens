@@ -100,7 +100,7 @@ async function walk(page, visit) {
   // ----- 404
   await page.goto(BASE + 'parent-ecoute/page-inconnue'); await w(200); await visit('404');
   // ----- Espace Antonio
-  await page.goto(APP + 'antonio.html'); await w(200); await visit('espace-antonio');
+  await page.goto(APP + 'antonio/'); await w(200); await visit('espace-antonio');
   await page.fill('#ans', 'court'); await page.click(A('answer')); await visit('espace-antonio-erreur');
   await page.click(A('open', '[data-id="B"]')); await w(80); await page.click(A('send')); await visit('espace-antonio-parent');
 }
