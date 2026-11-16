@@ -40,9 +40,13 @@ note "Fichiers en ligne" "$pareils fichiers sur $total sont identiques à ceux d
 
 # 3. Quelques adresses : code de réponse, type annoncé, renvoi éventuel
 vue() {   # vue "nom" adresse [options de curl]
-  local r
-  r="$(va -o /dev/null -w '%{http_code} | %{content_type} | %{redirect_url}' "${@:2}" 2>/dev/null)" || true
-  printf '%s : %s' "$1" "${r:-pas de réponse}"
+  local r code type vers
+  r="$(va -o /dev/null -w '%{http_code}|%{content_type}|%{redirect_url}' "${@:2}" 2>/dev/null)" || true
+  IFS='|' read -r code type vers <<< "$r"
+  printf '%s : %s' "$1" "${code:-pas de réponse}"
+  [ -n "${type:-}" ] && printf ', %s' "$type"
+  [ -n "${vers:-}" ] && printf ', renvoie vers %s' "$vers"
+  return 0
 }
 fausse="$(va "$adresse/cette-page-n-existe-pas-$RANDOM" 2>/dev/null)" || true
 notre404="non"; printf '%s' "$fausse" | grep -q "Parent" && notre404="oui"

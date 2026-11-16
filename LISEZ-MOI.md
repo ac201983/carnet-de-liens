@@ -9,7 +9,8 @@ Chaque fois que cette branche change, GitHub dépose le contenu du dossier `site
 - `site/` : les pages, telles qu'elles sont fabriquées à partir de la branche `sources`. Ne rien y modifier à la main.
 - `site/version.txt` : la date de fabrication et une empreinte du contenu. Sert à vérifier que la nouvelle version est bien servie.
 - `outils/reglages.env` : l'adresse du serveur, le nom du compte, le dossier du site. Aucun mot de passe.
-- `outils/deposer.sh` : le dépôt, en FTP chiffré. Il ne supprime jamais rien sur le serveur et ne touche pas aux fichiers d'Infomaniak (`.htaccess`, `.user.ini`, `.infomaniak-*`).
+- `outils/deposer.sh` : le dépôt, en FTP chiffré. Il ne touche pas aux fichiers d'Infomaniak (`.htaccess`, `.user.ini`, `.infomaniak-*`).
+- `outils/a-supprimer.txt` : les seuls fichiers que le dépôt retire du serveur, nommés un par un.
 - `outils/verifier.sh` : le contrôle du site en ligne.
 - `.github/workflows/mise-en-ligne.yml` : ce qui lance les deux scripts.
 

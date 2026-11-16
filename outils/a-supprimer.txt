@@ -1,0 +1,5 @@
+# Fichiers à retirer du serveur à la prochaine mise en ligne. Un nom par ligne, depuis le dossier du site.
+# Seulement des fichiers qui ne font pas partie du site. Une fois retirés, la ligne peut rester : elle ne fait plus rien.
+
+# L'archive déposée à la main le 16 novembre 2026, qui ne sert plus.
+parent-ecoute-site-2.zip

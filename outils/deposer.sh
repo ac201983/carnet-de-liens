@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Dépose le contenu de site/ dans le dossier du site, chez Infomaniak.
 # Connexion FTP chiffrée (TLS explicite, port 21). Le mot de passe vient du secret FTP_PASSWORD du dépôt.
-# Ce script ne supprime jamais rien sur le serveur, et il n'envoie pas les fichiers qu'Infomaniak gère lui-même
-# (.htaccess, .user.ini, .infomaniak-*).
+# Ce script n'envoie pas les fichiers qu'Infomaniak gère lui-même (.htaccess, .user.ini, .infomaniak-*).
+# Il ne retire du serveur que les fichiers nommés un par un dans outils/a-supprimer.txt.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 . outils/reglages.env
@@ -75,12 +75,35 @@ envoi=()
 for f in "${ordre[@]}"; do envoi+=(--upload-file "$f" "ftp://$HOTE_FTP$base$f"); done
 
 # shellcheck disable=SC2086
-if curl "${commun[@]}" $mode --fail-early --ftp-create-dirs "${envoi[@]}" 2>/tmp/err; then
-  touch /tmp/depose
-  arrivee="directement dans le dossier du site"
-  [ "$base" != "/" ] && arrivee="à la racine de l'hébergement, puis dans $DOSSIER"
-  echo "::notice title=Dépôt::${#ordre[@]} fichiers déposés. Le compte arrive $arrivee."
-else
+if ! curl "${commun[@]}" $mode --fail-early --ftp-create-dirs "${envoi[@]}" 2>/tmp/err; then
   erreur "Dépôt interrompu" "L'envoi s'est arrêté en route. Réponse : $(message). Le site peut être dans un état intermédiaire : relancer la mise en ligne."
   exit 1
 fi
+touch /tmp/depose
+
+# 4. Retirer du serveur les seuls fichiers nommés un par un dans outils/a-supprimer.txt.
+#    Jamais un fichier du site, jamais un fichier d'Infomaniak, jamais un dossier.
+retires=""
+if [ -f ../outils/a-supprimer.txt ]; then
+  while IFS= read -r nom || [ -n "$nom" ]; do
+    nom="$(printf '%s' "$nom" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+    case "$nom" in '' | '#'*) continue ;; esac
+    case "$nom" in
+      /* | *..* | *' '* | .htaccess | */.htaccess | .user.ini | */.user.ini | .infomaniak* | */.infomaniak*)
+        echo "::warning title=Suppression refusée::$nom n'est pas un nom que ce script accepte de retirer."
+        continue ;;
+    esac
+    if [ -e "$nom" ]; then
+      echo "::warning title=Suppression refusée::$nom fait partie du site."
+      continue
+    fi
+    # shellcheck disable=SC2086
+    if curl "${commun[@]}" $mode --list-only -Q "DELE ${base#/}$nom" "ftp://$HOTE_FTP/" >/dev/null 2>/tmp/err; then
+      retires="$retires $nom"
+    fi
+  done < ../outils/a-supprimer.txt
+fi
+
+arrivee="directement dans le dossier du site"
+[ "$base" != "/" ] && arrivee="à la racine de l'hébergement, puis dans $DOSSIER"
+echo "::notice title=Dépôt::${#ordre[@]} fichiers déposés. Le compte arrive $arrivee. Retirés du serveur :${retires:- rien}"
