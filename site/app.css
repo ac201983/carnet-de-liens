@@ -591,6 +591,8 @@ canvas.eau{display:none}
 .card.carnet textarea{min-height:150px}
 .attente{text-align:center;max-width:46ch;margin-inline:auto}
 .pill.apercu{align-self:flex-start}
+/* le titre « Moi » reçoit les cinq touches de l'aperçu : pas de zoom ni de sélection entre deux touches */
+h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .btn.wide>span{text-align:left}
 .step.soon .tx span{color:var(--sun-fg)}
 /* le schéma : le dessin, puis une phrase par moment */
