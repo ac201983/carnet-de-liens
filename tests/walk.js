@@ -75,6 +75,10 @@ async function walk(page, visit) {
     await page.goto(APP + f + '.html'); await w(200); await visit(f + '-bandeau');
     await page.click('#consent [data-consent="yes"]'); await visit(f);
   }
+  // ----- mentions légales (la page n'existe que lorsque l'éditeur a donné son adresse postale et son adresse e-mail)
+  if ((await page.request.get(APP + 'mentions-legales.html')).ok()) {
+    await page.goto(APP + 'mentions-legales.html'); await w(200); await visit('mentions-legales');
+  }
   // ----- 404
   await page.goto(BASE + 'parent-ecoute/page-inconnue'); await w(200); await visit('404');
   // ----- Espace Antonio
