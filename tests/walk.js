@@ -76,7 +76,7 @@ async function walk(page, visit) {
   await visit('etape-vecu-schema'); await page.click(A('back'));
   for (const i of [2, 3]) { await page.click(A('step', `[data-i="${i}"]`)); await w(80); for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); } await visit('etape-schema-' + (i + 1)); await page.click(A('back')); }
   // le mois 2 et l'étape du MDH-PPH : chaque étape, son schéma déroulé jusqu'au bout, et la carte « La prochaine étape »
-  for (const i of [4, 5, 6, 7, 8]) { await page.click(A('step', `[data-i="${i}"]`)); await w(80); for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); } await visit('etape-schema-' + (i + 1)); await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('etape-suite-' + (i + 1)); await page.click(A('back')); }
+  for (const i of [4, 5, 6, 7, 8, 9, 10, 11]) { await page.click(A('step', `[data-i="${i}"]`)); await w(80); for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); } await visit('etape-schema-' + (i + 1)); await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('etape-suite-' + (i + 1)); await page.click(A('back')); }
   await page.click(A('step', '[data-i="9"]')); await w(80); await visit('etape-ouverte'); await page.click(A('back'));
   await page.click(A('step', '[data-i="11"]')); await w(80); await visit('etape-rappel'); await page.click(A('back'));
   await page.click(A('step', '[data-i="23"]')); await w(80); await visit('etape-derniere'); await page.click(A('back'));

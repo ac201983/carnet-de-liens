@@ -234,10 +234,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     const T = new Function(fs.readFileSync(__dirname + '/../pparts/p2b-parcours.js', 'utf8') + '; return {PARCOURS,SCHEMAS,EVO_OPEN};')();
     const E = []; T.PARCOURS.forEach(m => m.steps.forEach(s => E.push(s)));
     const mots = x => (Array.isArray(x) ? x.join(' ') : (x || '')).split(/\s+/).filter(Boolean).length;
-    ok(E.slice(4, 9).every(s => Array.isArray(s.idee) && s.idee.length >= 3 && s.sch && T.SCHEMAS[s.sch] && s.ex && mots(s.idee) >= 170), 'étapes 5 à 9 : au moins 3 paragraphes, un schéma et un exemple');
-    ok(E.slice(4, 9).every(s => s.vecu), 'étapes 5 à 9 : chacune a son « Ce que j’ai vécu »');
+    ok(E.slice(4, 12).every(s => Array.isArray(s.idee) && s.idee.length >= 3 && s.sch && T.SCHEMAS[s.sch] && s.ex && mots(s.idee) >= 170), 'étapes 5 à 12 : au moins 3 paragraphes, un schéma et un exemple');
+    ok(E.slice(4, 12).every(s => s.vecu), 'étapes 5 à 12 : chacune a son « Ce que j’ai vécu »');
     ok(E.slice(1).every(s => typeof s.acc === 'string' && /^Vous /.test(s.acc) && /\.$/.test(s.acc)) && !E[0].acc, 'chaque étape à partir de la 2 a son accroche');
-    ok(Object.keys(T.SCHEMAS).length === 9 && Object.values(T.SCHEMAS).every(S => S.alt && Math.max(...S.l.map(x => x[0])) === S.caps.length), '9 schémas, chacun avec sa description et autant de phrases que de moments');
+    ok(Object.keys(T.SCHEMAS).length === 12 && Object.values(T.SCHEMAS).every(S => S.alt && Math.max(...S.l.map(x => x[0])) === S.caps.length), '12 schémas, chacun avec sa description et autant de phrases que de moments');
     ok(/Jusqu’à mes 10 ans, j’ai vécu des choses très dures\. Il y a eu la violence des gestes, celle des mots, et d’autres choses qu’aucun enfant ne devrait vivre\. Pourtant, je m’accrochais à ce qu’il y avait de bon, et c’est aussi ce qui m’a sauvé\./.test(E[7].vecu[0]) && E[7].vecu.length === 2, 'étape 8 : le passage choisi par Antonio (version 1), mot pour mot, et rien de plus');
     ok(E[7].vecu[1] === 'J’ai été placé en famille d’accueil à 10 ans. Ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier.' && E[7].vecu.join(' ').split(/(?<=[.?!])\s+/).length === 5, 'étape 8 : le second paragraphe mot pour mot, et 5 phrases en tout');
     {
@@ -248,6 +248,13 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     }
     ok(E[8].vecu.length === 5 && /^À l’étape 3, je vous ai dit qu’un de mes fils/.test(E[8].vecu[0]) && /Son école actuelle utilise d’autres stratégies\./.test(E[8].vecu[2]) && /Faut-il changer d’école, ou de type d’école \?$/.test(E[8].vecu[4]) && /un bond énorme/.test(E[2].vecu), 'étape 9 : l’histoire annoncée à l’étape 3 est racontée, en 5 paragraphes');
     ok(/je vous raconterai ce qui a changé pour mon fils/.test(E[8].acc), 'étape 9 : son accroche annonce cette histoire');
+    // le mois 3 écrit en entier
+    ok(/Steven Reiss/.test(E[9].idee.join(' ')) && /1982/.test(E[9].idee.join(' ')) && /l’ombre du diagnostic/.test(E[9].idee.join(' ')) && E[9].sch === 'projecteur', 'étape 10 : l’ombre du diagnostic est dite simplement, puis attribuée');
+    ok(E[9].vecu.length === 2 && /^Il a beaucoup d’humour\. Il aime rire, et il voit la vie de façon amusante et drôle\. Dans chaque situation, il trouve le moyen de la tourner en positif et en humour\.$/.test(E[9].vecu[1]), 'étape 10 : « Ce que j’ai vécu » présente un enfant sans un mot sur ses difficultés');
+    ok(/Gabriele Oettingen/.test(E[10].idee.join(' ')) && /contraste mental/.test(E[10].idee.join(' ')) && E[10].sch === 'cap' && /cocon familial/.test(E[10].vecu) && /Cela me fait peur de les voir confrontés à cela\.$/.test(E[10].vecu), 'étape 11 : le contraste mental, et la peur d’Antonio avec ses mots');
+    ok(/En 2011, 3 chercheurs/.test(E[11].idee.join(' ')) && /le creux du milieu/.test(E[11].idee.join(' ')) && E[11].sch === 'creux' && E[11].rap === 'depart' && E[11].link.join() === 'evo,photo', 'étape 12 : le creux du milieu, sans perdre le rappel de l’étape 1 ni les 2 boutons');
+    ok(E[11].vecu.length === 2 && /formation tertiaire de 3 ans/.test(E[11].vecu[0]) && /J’aurais pu lâcher, et trouver des prétextes pour arrêter\./.test(E[11].vecu[1]) && /la mention excellente\.$/.test(E[11].vecu[1]), 'étape 12 : « Ce que j’ai vécu » raconte la formation menée au bout');
+    ok([9, 10, 11].every(i => / je /.test(E[i].acc)), 'étapes 10 à 12 : chaque accroche annonce aussi ce qu’Antonio racontera');
     ok(/MDH-PPH/.test(E[8].t) && E[8].sch === 'mdh' && /Modèle de développement humain et Processus de production du handicap/.test(E[8].idee.join(' ')) && /Fougeyrollas/.test(E[8].idee.join(' ')) && /facilitateur/.test(E[8].idee.join(' ')) && /obstacle/.test(E[8].idee.join(' ')), 'étape 9 : le MDH-PPH est nommé, expliqué, avec ses mots');
     const tout = E.map(s => [s.t, s.idee, s.ex, s.exo, s.obs, s.ecr].flat().join(' ')).join(' ');
     ok(!/enfant différent|avec son handicap/.test(tout), 'le parcours ne suppose plus que l’enfant est « différent »');
@@ -255,7 +262,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
 
     const { ctx, page, errs } = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(-70), steps: {}, pv: 2, seen: {}, atelier: true, tout: true, notes: { emotions: { t: 'La colère. Elle me dirait que je suis à bout.', d: iso(-14) } } }));
     await parcours(page);
-    for (const [i, sch, moments] of [[4, 'voyants', 5], [5, 'colonnes', 6], [6, 'vague', 5], [7, 'appuis', 5], [8, 'mdh', 5]]) {
+    for (const [i, sch, moments] of [[4, 'voyants', 5], [5, 'colonnes', 6], [6, 'vague', 5], [7, 'appuis', 5], [8, 'mdh', 5], [9, 'projecteur', 5], [10, 'cap', 5], [11, 'creux', 5]]) {
       await page.click(A('step', `[data-i="${i}"]`)); await page.waitForTimeout(150);
       const debut = (await page.$$('.sp.on')).length;
       let k = 0; while (await page.$(A('schnext')) && k < 8) { await page.click(A('schnext')); await page.waitForTimeout(40); k++; }
@@ -269,6 +276,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
       if (i === 7) ok(/choses très dures/.test(await page.textContent('.card.vecu')) && /parents d’accueil, qui sont devenus mon pilier/.test(await page.textContent('.card.vecu')), 'étape 8 : « Ce que j’ai vécu » montre les 2 paragraphes');
       if (i === 7) ok(/ce qui a changé pour mon fils quand il a changé d’école/.test(await page.textContent('.card.suite')), 'étape 8 : la carte « La prochaine étape » annonce l’histoire de l’étape 9');
       if (i === 8) ok(/MDH-PPH/.test(await page.textContent('h1')) && (await page.$$('.card.vecu p.lesson')).length === 5 && /On respecte le besoin de l’enfant, et cela fait toute la différence\./.test(await page.textContent('.card.vecu')) && /Est-il adapté à votre enfant/.test(await page.textContent('.card.vecu')), 'étape 9 : le titre nomme le MDH-PPH, et « Ce que j’ai vécu » montre les 5 paragraphes');
+      if (i === 8) ok(/je ferai l’exercice avant vous avec un des miens/.test(await page.textContent('.card.suite')), 'étape 9 : la carte « La prochaine étape » annonce l’exercice fait par Antonio');
+      if (i === 9) ok((await page.$$('.card.vecu p.lesson')).length === 2 && /Il a beaucoup d’humour/.test(await page.textContent('.card.vecu')) && /même enfant/.test(await page.textContent('.card.exemple')), 'étape 10 : le vécu et l’exemple sont à l’écran');
+      if (i === 10) ok(/cocon familial/.test(await page.textContent('.card.vecu')) && /boulangerie/.test(await page.textContent('.card.exemple')), 'étape 11 : le vécu et l’exemple sont à l’écran');
+      if (i === 11) ok(/mention excellente/.test(await page.textContent('.card.vecu')) && !!(await page.$('.card.suite ' + A('step', '[data-i="12"]'))), 'étape 12 : le vécu est à l’écran, et la suite mène au mois 4');
       await page.click(A('back')); await page.waitForTimeout(120);
     }
     // la dernière étape n'annonce rien : elle mène au carnet
