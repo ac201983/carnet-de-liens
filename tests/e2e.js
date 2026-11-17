@@ -67,7 +67,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     const c = await store(page, 'pepe-consent'); ok(c && c.audience === false && c.v === 1, 'refus mémorisé');
     ok(await page.evaluate(() => document.cookie === ''), 'aucun cookie déposé');
     await audit(page, 'accueil');
-    ok((await page.$$('.herofull ' + A('onboard'))).length === 1 && (await page.$$(A('onboard'))).length === 2 && (await page.$$('.btn.primary')).length === 2, 'un seul appel à l’action (le même bouton, en haut et en bas)');
+    ok((await page.$$('.herofull ' + A('onboard'))).length === 1 && (await page.$$eval(A('onboard'), L => L.length === 3 && L.every(b => b.textContent.trim() === 'Commencer gratuitement'))) && (await page.$$eval('.btn.primary', L => L.filter(b => b.dataset.act !== 'onboard').every(b => !!b.closest('.sch')))), 'un seul appel à l’action (le même bouton en haut, en bas et en flottant), et le seul autre bouton plein est celui du schéma');
     // aperçu des formules sans s’inscrire
     await page.click(A('peek-plans')); await page.waitForTimeout(100);
     ok((await txt(page, 'h1')) === 'Les formules' && await has(page, 'table.cmp caption'), 'formules consultables depuis l’accueil');

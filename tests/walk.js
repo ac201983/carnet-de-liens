@@ -10,7 +10,20 @@ async function walk(page, visit) {
   const tab = v => page.click('.tab' + A('go', `[data-view="${v}"]`));
   // ----- accueil
   await page.goto(APP); await w(300); await visit('accueil-bandeau');
-  await page.click('#consent [data-consent="no"]'); await visit('accueil');
+  await page.click('#consent [data-consent="no"]');
+  // le bouton flottant de l'accueil passe par-dessus le texte, comme tout bouton fixe : on le retire le temps de regarder la page (tests/accueil.js le vérifie à part)
+  const masque = await page.addStyleTag({ content: '.cta-flot{display:none!important}' });
+  await visit('accueil');
+  // l'accueil est une longue page : chaque chapitre est visité à l'écran (en haut, puis en bas s'il dépasse), le schéma déroulé jusqu'au bout, les volets ouverts
+  { const nb = await page.$$eval('main.intro>section', L => L.length);
+    for (let i = 0; i < nb; i++) {
+      const haut = await page.evaluate(k => { const s = document.querySelectorAll('main.intro>section')[k]; s.scrollIntoView({ block: 'start' }); return s.getBoundingClientRect().height > innerHeight; }, i); await w(220);
+      if (i === 3) { for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); } await page.evaluate(() => document.querySelectorAll('main.intro details').forEach(d => { d.open = true; })); await w(80); }
+      await visit('accueil-chapitre-' + (i + 1));
+      if (haut) { await page.evaluate(k => document.querySelectorAll('main.intro>section')[k].scrollIntoView({ block: 'end' }), i); await w(220); await visit('accueil-chapitre-' + (i + 1) + '-bas'); }
+    }
+    await page.evaluate(() => { document.querySelector('.acc-faq').scrollIntoView({ block: 'start' }); }); await w(200); await visit('accueil-questions-ouvertes');
+    await masque.evaluate(e => e.remove()); await page.evaluate(() => scrollTo(0, 0)); await w(250); }
   await page.click(A('peek-plans')); await w(80); await visit('formules-apercu'); await page.click(A('back'));
   await page.click(A('peek-about')); await w(150); await visit('histoire-apercu'); await page.click(A('back')); await w(80);
   await page.click('.herofull ' + A('onboard')); await w(150); await visit('entree');
