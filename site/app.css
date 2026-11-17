@@ -654,6 +654,12 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .s-marche{fill:var(--surface-2);stroke:rgba(180,222,156,.55);stroke-width:1.2}
 .s-mat{fill:none;stroke:var(--fg);stroke-width:2;stroke-linecap:round}
 .s-drapeau{fill:var(--sun)}
+.s-feuille{fill:rgba(244,239,216,.06);stroke:rgba(244,239,216,.5);stroke-width:1.2}
+.s-pli{fill:none;stroke:rgba(244,239,216,.42);stroke-width:1.2;stroke-dasharray:3 5}
+/* la prochaine étape : son titre et une phrase qui donne envie de revenir */
+.card.suite{background:var(--sun-soft);border-color:transparent;gap:8px}
+.card.suite h2{font-size:21px;line-height:1.2}
+.card.suite .btn{align-self:flex-start}
 /* le carnet de route */
 .carnet-mois{display:flex;flex-direction:column;gap:10px}
 .carnet-mois h2{font-size:19px;display:flex;align-items:center;gap:8px;margin-top:6px}

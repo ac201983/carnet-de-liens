@@ -57,7 +57,7 @@ const PERMISSIONS=[
   ['Vous avez le droit','de demander du répit sans vous justifier.'],
   ['Vous avez le droit','d’être en colère contre la situation, sans l’être contre votre enfant.'],
   ['Vous avez le droit','de ne pas être un parent-thérapeute 24 heures sur 24.'],
-  ['Vous avez le droit','d’avoir des projets qui ne concernent pas le handicap.'],
+  ['Vous avez le droit','d’avoir des projets qui n’ont rien à voir avec les difficultés de votre enfant.'],
   ['Vous avez le droit','de pleurer devant votre enfant. Il apprend ainsi que les émotions passent.'],
   ['Vous avez le droit','de refuser un conseil, même bien intentionné.'],
   ['Vous avez le droit','de rire beaucoup, y compris de la situation.'],
@@ -100,7 +100,7 @@ const SITS=[
    moi:'Quand une transition se passe mal, c’est souvent parce que vous étiez en train de courir. Et si l’une d’elles est difficile à chaque fois, c’est elle qu’il faut changer. Votre patience n’est pas en cause.',
    aide:'Un éducateur ou une logopédiste qui connaît la communication alternative, avec des pictogrammes ou du soutien gestuel, peut construire avec vous un emploi du temps en images. Si votre enfant est en institution, demandez à l’équipe comment elle s’y prend et reprenez à la maison ce qui marche là-bas.'},
   {id:'sommeil',e:'🌙',t:'Le coucher et la nuit',s:'Endormissement long, réveils, se lève',ages:['e','a'],th:'quot',
-   comp:'Chez beaucoup d’enfants en situation de handicap, le sommeil est fragile. Leur corps ne donne pas toujours les signaux au bon moment, l’angoisse de la séparation est plus forte et la journée laisse beaucoup de tension. Un coucher qui se passe mal ne veut donc pas dire que vous manquez d’autorité.',
+   comp:'Chez beaucoup d’enfants en situation de handicap, ou qui traversent une période difficile, le sommeil est fragile. Leur corps ne donne pas toujours les signaux au bon moment, l’angoisse de la séparation est plus forte et la journée laisse beaucoup de tension. Un coucher qui se passe mal ne veut donc pas dire que vous manquez d’autorité.',
    ess:['Gardez le même déroulé chaque soir, dans le même ordre et en images, avec le bain, le pyjama, les dents, l’histoire et le dodo. L’outil « Routine » est fait pour cela.','Baissez la lumière et le bruit une heure avant le coucher, et arrêtez les écrans encore plus tôt.','Donnez-lui un objet pour la nuit qui ne change jamais, et une veilleuse s’il en a besoin.','S’il se relève, raccompagnez-le sans discuter, autant de fois qu’il le faut, en répétant la même phrase douce.','Le matin, ouvrez les volets et accueillez-le avec des mots chaleureux, quelle qu’ait été la nuit.'],
    ev:['Changer de méthode tous les trois jours.','Faire du coucher une négociation.','Vous en vouloir de dormir avec votre enfant certains soirs, parce que c’est parfois la bonne décision pour que tout le monde dorme.'],
    moi:'Le manque de sommeil rend tout plus dur, et c’est vous qui le portez. Si vous êtes deux, alternez les nuits. Si vous élevez votre enfant sans l’autre parent, faites la sieste dès que vous le pouvez, parce que votre corps en a vraiment besoin.',
@@ -127,7 +127,7 @@ const SITS=[
    comp:'Le regard des autres blesse parce qu’il touche ce qui est déjà sensible chez nous. La plupart des gens ne savent tout simplement pas. Certains sont maladroits et quelques-uns sont méchants. Vous ne leur devez aucune explication, et vous pouvez choisir à chaque fois de garder votre énergie pour vous.',
    ess:['Préparez deux phrases courtes. La première met fin à la discussion, comme « Merci, nous gérons ». La seconde ouvre la porte si vous en avez envie, comme « Il entend tout, vous pouvez lui dire bonjour ».','Décidez à l’avance à qui vous avez envie d’expliquer, et à qui vous n’expliquerez rien.','Dans votre famille, dites clairement ce dont vous avez besoin, par exemple « J’ai besoin de présence, pas de conseils ».','Rapprochez-vous de parents qui vivent la même chose. Un groupe de parents vous fera plus de bien que cent inconnus.'],
    ev:['Vous justifier auprès d’inconnus.','Couper tout lien avec les proches qui ne comprennent pas, parce que certains ont simplement besoin de temps pour apprendre.'],
-   moi:'Rien ne vous oblige à représenter le handicap tous les jours. Certains jours, vous avez le droit de fermer les yeux et de passer votre chemin.',
+   moi:'Rien ne vous oblige à expliquer votre enfant à tout le monde, tous les jours. Certains jours, vous avez le droit de fermer les yeux et de passer votre chemin.',
    aide:'Les groupes de parents existent justement pour pouvoir parler sans devoir tout expliquer. Vous en trouverez chez insieme, autisme suisse romande ou Cerebral, et il existe aussi beaucoup de groupes locaux.'},
   {id:'ecole',e:'🏫',t:'L’école',s:'Intégration, devoirs, réunions, enseignants',ages:['e','a'],th:'ecole',
    comp:'L’école est souvent le premier endroit où la différence se voit. Les enseignants sont en général de bonne volonté, mais ils sont peu formés. Les réunions sont nombreuses et vous vous y retrouvez parfois sans personne à vos côtés, face à plusieurs professionnels. Pourtant, c’est vous qui connaissez le mieux votre enfant, et cette connaissance a autant de valeur que la leur.',
@@ -136,7 +136,7 @@ const SITS=[
    moi:'Les réunions à l’école sont épuisantes. Préparez-les, venez à deux si c’est possible et offrez-vous ensuite un café tranquille, rien que pour vous.',
    aide:'Chaque canton a un service de pédagogie spécialisée. Demandez à l’école quel appui est possible, par exemple du soutien, de l’ergothérapie, de la logopédie ou une aide à l’intégration. Pro Infirmis et les associations de parents peuvent aussi vous aider à comprendre vos droits.'},
   {id:'fratrie',e:'👧👦',t:'Les frères et sœurs',s:'Jalousie, colère, trop sages, trop grands',ages:['e','a','g'],th:'fam',
-   comp:'Les frères et sœurs vivent le handicap de l’intérieur, sans l’avoir choisi. Certains deviennent très sages pour ne pas ajouter de poids, et d’autres explosent. Tous ont besoin qu’on les regarde pour eux-mêmes, et pas seulement comme l’enfant qui va bien.',
+   comp:'Les frères et sœurs vivent la situation de l’intérieur, sans l’avoir choisie. Certains deviennent très sages pour ne pas ajouter de poids, et d’autres explosent. Tous ont besoin qu’on les regarde pour eux-mêmes, et pas seulement comme l’enfant qui va bien.',
    ess:['Réservez-leur un moment rien qu’à eux, régulier même s’il est court, par exemple le mercredi à midi ou le samedi matin, et ne le sacrifiez pas.','Expliquez-leur les choses avec des mots vrais et adaptés à leur âge. Dites-leur ce qu’a leur frère ou leur sœur, pourquoi cela prend de la place, et que ce n’est la faute de personne.','Dites-leur à voix haute qu’ils ont le droit d’être en colère ou jaloux, sans leur faire la morale.','Ne leur confiez pas un rôle d’adulte. Ils peuvent aider, mais ils ne doivent pas se sentir responsables.','Demandez-leur ce qu’ils veulent que les autres sachent.'],
    ev:['Leur dire « tu as de la chance, toi ».','Décider qu’ils s’occuperont plus tard de leur frère ou de leur sœur sans jamais leur demander leur avis.'],
    moi:'La culpabilité envers vos autres enfants est l’une des plus lourdes à porter. Dites-leur simplement ce que vous ressentez, par exemple « j’aimerais avoir plus de temps pour toi, et je t’aime tout autant ». Ils l’entendent très bien.',
@@ -164,7 +164,7 @@ const SITS=[
    ess:['Quand elle arrive, nommez-la en vous disant « c’est ma culpabilité qui parle ». Cela suffit souvent à la faire reculer d’un pas.','Demandez-vous ce que vous diriez à un ami proche dans la même situation, puis dites-vous la même chose.','Écrivez sur une feuille la liste de tout ce que vous faites pour votre enfant. Vous verrez qu’elle est longue.','Acceptez qu’une bonne décision puisse quand même donner de mauvaises journées.','Réparez quand il le faut, en disant par exemple « j’ai crié, pardon », puis passez à autre chose.'],
    ev:['Croire que vous devez tout compenser, parce que cela mène à l’épuisement.','Vous comparer aux autres familles.'],
    moi:'Vous n’êtes pas en retard et vous n’avez rien raté. Vous êtes là, en train de chercher comment faire mieux, et c’est exactement ce que fait un bon parent.',
-   aide:'Si la culpabilité vous empêche de dormir ou de vous réjouir depuis des semaines, un ou une psychologue qui connaît le handicap peut vous aider. Pro Infirmis et les associations sauront vous orienter. Consulter n’a rien d’une faiblesse, c’est une façon de prendre soin de vous.'},
+   aide:'Si la culpabilité vous empêche de dormir ou de vous réjouir depuis des semaines, un ou une psychologue qui connaît les familles dans votre situation peut vous aider. Pro Infirmis et les associations sauront vous orienter. Consulter n’a rien d’une faiblesse, c’est une façon de prendre soin de vous.'},
   {id:'epuise',e:'🔋',t:'Je n’en peux plus',s:'Épuisement, isolement, à bout',ages:['e','a','g'],th:'moi',
    comp:'L’épuisement des proches aidants n’a rien à voir avec de la faiblesse. Il arrive après des mois ou des années de vigilance sans pause, de nuits coupées, de rendez-vous et de démarches administratives. Votre corps finit par dire ce que vous n’osez pas dire vous-même. En l’écoutant, vous n’abandonnez pas votre enfant, vous faites ce qu’il faut pour rester debout pour lui.',
    ess:['Aujourd’hui, ne faites qu’une seule chose et laissez le reste attendre.','Dites-le à une personne en une seule phrase, par exemple « je suis à bout ». Vous n’avez pas besoin de donner de détails.','Demandez du répit, que ce soit un week-end, un après-midi ou une nuit. Vous en avez besoin pour votre santé.','Réservez une heure par semaine rien que pour vous et notez-la dans votre agenda comme un rendez-vous médical.','Dormez dès que vous le pouvez, même si c’est peu et même si vous dormez mal.'],
@@ -172,8 +172,8 @@ const SITS=[
    moi:'Si vous lisez ces lignes à deux heures du matin, posez votre téléphone juste après. Vous avez tenu toute la journée, et c’est assez pour aujourd’hui.',
    aide:'Des solutions existent et beaucoup sont financées. Vous pouvez vous adresser à Pro Infirmis pour un service de relève, à la Croix-Rouge pour une garde à domicile, à Cerebral pour du répit ou à votre commune pour l’aide aux proches aidants. Et si vous avez des idées noires, appelez La Main Tendue au 143 dès maintenant.'},
   {id:'couple',e:'💑',t:'Le couple',s:'Plus de temps à deux, désaccords, solitude',ages:['e','a','g'],th:'fam',
-   comp:'Le handicap d’un enfant met le couple à l’épreuve. Il y a la fatigue, les désaccords sur l’éducation, l’un des deux qui porte plus que l’autre, le désir qui s’éteint et les mots qui manquent. Cela ne veut pas dire que l’amour a disparu, mais que toute votre énergie part ailleurs. Votre couple a donc besoin que vous preniez soin de lui volontairement, parce que cela ne se fait plus tout seul.',
-   ess:['Prévoyez un rendez-vous à deux, régulier même s’il est court, même à la maison après le coucher, et ne parlez pas du handicap pendant ce moment.','Dites à voix haute qui s’occupe de quoi, et refaites le point de temps en temps.','Parlez de ce que vous ressentez en commençant par « je ». Dire « j’ai besoin de toi en ce moment » passe mieux que « tu ne fais rien ».','Acceptez que l’autre ne vive pas la même chose au même moment.','Demandez de l’aide ensemble, plutôt que chacun de votre côté contre l’autre.'],
+   comp:'Un enfant en situation de handicap, ou qui traverse une période difficile, met le couple à l’épreuve. Il y a la fatigue, les désaccords sur l’éducation, l’un des deux qui porte plus que l’autre, le désir qui s’éteint et les mots qui manquent. Cela ne veut pas dire que l’amour a disparu, mais que toute votre énergie part ailleurs. Votre couple a donc besoin que vous preniez soin de lui volontairement, parce que cela ne se fait plus tout seul.',
+   ess:['Prévoyez un rendez-vous à deux, régulier même s’il est court, même à la maison après le coucher, et ne parlez pas des soucis de votre enfant pendant ce moment.','Dites à voix haute qui s’occupe de quoi, et refaites le point de temps en temps.','Parlez de ce que vous ressentez en commençant par « je ». Dire « j’ai besoin de toi en ce moment » passe mieux que « tu ne fais rien ».','Acceptez que l’autre ne vive pas la même chose au même moment.','Demandez de l’aide ensemble, plutôt que chacun de votre côté contre l’autre.'],
    ev:['Compter les points.','Attendre que tout aille mieux pour vous occuper de votre couple.'],
    moi:'Si vous élevez votre enfant sans l’autre parent, ces rendez-vous comptent tout autant. Prenez-les avec vous-même.',
    aide:'Il existe des consultations de couple dans chaque canton, dans les centres de consultation conjugale, souvent à un tarif adapté à vos moyens. En parler à deux devant une troisième personne permet parfois de commencer une tout autre conversation.'},
@@ -272,7 +272,7 @@ const PARCOURS=[
      exo:'Faites votre point de départ dans « Mon évolution ». Il y a 5 échelles de 0 à 10 et cela prend 3 minutes.',
      obs:'Cette semaine, remarquez à quel moment de la journée le poids est le plus lourd. Contentez-vous de le remarquer, sans rien changer pour l’instant.',
      ecr:'Terminez cette phrase avec vos mots. Je commence ce parcours parce que…',ph:'Je commence ce parcours parce que…',link:'evo'},
-    {id:'croire',t:'Croire en lui, l’effet Pygmalion',
+    {id:'croire',t:'Croire en lui, l’effet Pygmalion',acc:'Vous verrez comment ce que vous attendez de votre enfant change ce qu’il ose essayer.',
      idee:['Ce que nous attendons d’une personne finit souvent par arriver. Cela n’a rien de magique. Quand je crois qu’un enfant peut y arriver, je lui laisse plus de temps, je l’encourage davantage et je remarque ses essais. Lui le sent, et il ose essayer plus longtemps. Comme il essaie, il progresse, et je crois encore plus en lui.',
        'L’inverse est vrai aussi. Si je pense qu’il n’y arrivera pas, je fais à sa place pour aller plus vite, et il finit par ne plus essayer.',
        'On appelle cela l’effet Pygmalion, du nom d’un sculpteur de la mythologie grecque qui aimait tant sa statue qu’elle a fini par prendre vie. Dans les années 1960, le psychologue américain Robert Rosenthal a fait croire à des enseignants que certains de leurs élèves, en réalité tirés au sort, allaient beaucoup progresser. À la fin de l’année, ces élèves avaient en moyenne davantage progressé que les autres, surtout les plus jeunes. La seule chose qui avait changé, c’était le regard de leurs enseignants. Cette expérience a été beaucoup discutée depuis, et d’autres chercheurs ont mesuré un effet plus modeste. Il n’est pas nul pour autant, parce que ce que nous attendons d’un enfant change notre façon d’agir avec lui.'],
@@ -286,8 +286,8 @@ const PARCOURS=[
      exo:'Choisissez une petite chose que votre enfant pourrait réussir cette semaine. Dites-lui une fois par jour que vous l’en croyez capable, et laissez-lui le temps d’essayer.',
      obs:'Notez ce qui change dans sa façon d’essayer, plutôt que dans le résultat.',
      ecr:'Pensez à une personne qui a cru en vous. Qu’est-ce que cela a changé pour vous ?'},
-    {id:'croyances',t:'Les croyances qui freinent',
-     idee:['Vous vous êtes peut-être déjà dit « il ne pourra jamais », « avec son handicap, c’est inutile » ou « je dois tout faire à sa place ». Ces phrases ne sont pas des faits. Ce sont des croyances, que nous avons souvent héritées ou qu’un professionnel pressé nous a dites il y a 10 ans.',
+    {id:'croyances',t:'Les croyances qui freinent',acc:'Vous apprendrez à repérer les phrases qui ferment des portes, et à en trouver d’aussi vraies qui en ouvrent.',
+     idee:['Vous vous êtes peut-être déjà dit « il ne pourra jamais », « avec ses difficultés, c’est inutile » ou « je dois tout faire à sa place ». Ces phrases ne sont pas des faits. Ce sont des croyances, que nous avons souvent héritées ou qu’un professionnel pressé nous a dites il y a 10 ans.',
        'Une croyance fonctionne comme une paire de lunettes. Elle choisit ce que nous remarquons. Si je pense qu’il est lent, je vois chaque retard et j’oublie les matins où il était prêt à l’heure.',
        'Une croyance qui aide n’a rien d’un mensonge optimiste. C’est une phrase tout aussi vraie, mais qui ouvre une porte au lieu de la fermer. « Il apprend à son rythme » est aussi vrai que « il est lent », et pourtant ces 2 phrases ne vous emmènent pas au même endroit.'],
      sch:'chemins',
@@ -296,7 +296,7 @@ const PARCOURS=[
      exo:'Repérez 3 phrases que vous vous dites sur votre enfant quand c’est difficile. Pour chacune, cherchez une phrase aussi vraie qui ouvre une porte.',
      obs:'Repérez la croyance qui revient le plus souvent dans votre tête.',
      ecr:'Écrivez la phrase qui revient le plus souvent dans votre tête. Puis écrivez une phrase aussi vraie, qui ouvre une porte.'},
-    {id:'objectifs',t:'Mes objectifs à moi',
+    {id:'objectifs',t:'Mes objectifs à moi',acc:'Vous transformerez un souhait flou en un objectif que vous pouvez tenir, et il ne concernera que vous.',
      idee:['Un parcours sans objectif ressemble à une promenade. C’est agréable, mais on ne sait pas vraiment si l’on avance. Les objectifs dont je parle ici ne concernent pas votre enfant, ils vous concernent vous. Cela peut être dormir, souffler, mieux comprendre, oser demander ou arrêter de vous excuser.',
        '« Me reposer » est un souhait, et un souhait reste flou. Il devient un objectif quand vous pouvez dire quoi exactement, quand, et avec l’aide de qui. Choisissez-le petit. Un objectif que vous pouvez tenir une semaine vaut mieux qu’un idéal pour toute l’année.'],
      sch:'marches',
@@ -307,113 +307,137 @@ const PARCOURS=[
      ecr:'Écrivez votre objectif pour ce mois, en commençant par « D’ici un mois, je… ».',ph:'D’ici un mois, je…'}
   ]},
   {m:'Ce que je ressens',steps:[
-    {id:'emotions',t:'Mes émotions, mes signaux',
-     idee:'La colère, la tristesse, la honte, la peur et l’épuisement sont des émotions très fortes chez les parents d’un enfant différent, et on se les interdit souvent. Pourtant, ce sont des signaux et non des fautes. La colère vous dit que quelque chose est injuste, la tristesse que vous avez perdu quelque chose, et la peur que vous tenez à votre enfant. Quand on nomme une émotion, elle baisse d’un cran. Quand on la nie, elle ressort ailleurs, et souvent sur la mauvaise personne.',
-     exo:'Pour commencer, ouvrez le photolangage et choisissez l’image qui dit le mieux ce que vous ressentez ces jours-ci. Ensuite, 3 fois cette semaine, quand l’émotion monte, nommez-la à voix basse. Dites par exemple « là, c’est de la colère », « là, c’est de la peur » ou « là, c’est de la tristesse », sans rien faire d’autre.',
+    {id:'emotions',t:'Mes émotions, mes signaux',acc:'Vous verrez que la colère, la peur et la tristesse sont des voyants, et vous apprendrez à lire ce qu’ils signalent.',
+     idee:['La colère, la tristesse, la peur, la honte et l’épuisement prennent beaucoup de place dans la vie d’un parent, et plus encore quand la famille vit une situation de handicap ou traverse une période difficile. On se les interdit souvent, parce qu’on pense qu’un bon parent ne devrait pas ressentir cela.',
+       'Je vous propose de les regarder autrement. Une émotion ressemble au voyant qui s’allume sur le tableau de bord d’une voiture. Le voyant n’est pas la panne. Il vous prévient que quelque chose demande votre attention. Si vous le cachez avec un autocollant, la voiture roule encore un moment, puis elle s’arrête au pire endroit. Une émotion que l’on nie fait la même chose. Elle ressort plus tard, et souvent sur la mauvaise personne.',
+       'À l’inverse, une émotion que l’on nomme perd un peu de sa force. En 2007, des chercheurs de l’université de Californie à Los Angeles ont montré à des volontaires des visages en colère ou effrayés. Quand ces personnes choisissaient un mot pour dire l’émotion qu’elles voyaient, la zone du cerveau qui donne l’alerte réagissait moins. Les chercheurs précisent que l’effet est modeste. Il suffit pourtant souvent à reprendre la main, et il ne coûte qu’un mot.'],
+     sch:'voyants',
+     vecu:'Comme père, l’émotion que je m’interdis le plus, c’est la colère, parce qu’elle est souvent peu constructive. Pourtant, elle permet aussi de faire comprendre à l’enfant qu’une limite a été dépassée. La colère n’est donc pas à bannir, elle est à canaliser.',
+     ex:'Prenons un soir où votre enfant renverse son verre pour la 3e fois, et où vous criez. Si vous vous dites « je suis un mauvais parent », vous cachez le voyant. Si vous vous dites « là, c’est de la colère, et dessous il y a surtout de la fatigue », vous l’avez lu. Vous savez alors que le verre n’y est pas pour grand-chose, et que vous avez besoin de souffler avant le prochain repas.',
+     exo:'Pour commencer, ouvrez le photolangage et choisissez l’image qui dit le mieux ce que vous ressentez ces jours-ci. Ensuite, 3 fois cette semaine, quand une émotion monte, nommez-la à voix basse. Dites par exemple « là, c’est de la colère », « là, c’est de la peur » ou « là, c’est de la tristesse », puis demandez-vous ce qu’elle vous signale.',
      obs:'Repérez l’émotion que vous vous interdisez le plus.',
      ecr:'Quelle émotion vous interdisez-vous le plus ? Que vous dirait-elle si vous l’écoutiez ?',link:'photo'},
-    {id:'culpa',t:'La culpabilité',
-     idee:'La culpabilité est sans doute l’émotion la plus répandue chez les parents. Elle dit « j’aurais dû le voir plus tôt », « je n’en fais pas assez » ou « je me suis encore énervé ». Elle se présente comme de la lucidité, mais elle mélange 2 choses très différentes. Il y a ce qui dépendait de vous, et que vous pouvez réparer par un mot ou par un geste. Et il y a tout ce qui ne dépendait pas de vous, comme la différence de votre enfant, la fatigue ou le manque de relais, et que vous portez quand même. La culpabilité utile dure le temps de réparer. Celle qui s’installe pendant des années ne répare rien, elle vous use. Si vous la ressentez, c’est d’abord parce que vous tenez à votre enfant.',
+    {id:'culpa',t:'La culpabilité',acc:'Vous trierez ce qui dépendait de vous et ce qui n’en dépendait pas, et vous saurez quoi faire de chaque colonne.',
+     idee:['La culpabilité est sans doute l’émotion la plus répandue chez les parents. Elle parle avec des phrases comme « j’aurais dû le voir plus tôt », « je n’en fais pas assez » ou « je me suis encore énervé ». Si vous l’entendez souvent, c’est d’abord parce que vous tenez à votre enfant. Un parent qui s’en moque ne se sent pas coupable.',
+       'Son défaut est de tout mettre dans le même sac. Il y a ce qui dépendait vraiment de vous, comme un mot trop dur ou une promesse oubliée. Et il y a tout ce qui ne dépendait pas de vous, comme la situation de handicap de votre enfant, la période qu’il traverse, votre fatigue ou le manque de relais. La culpabilité vous fait porter les 2 de la même façon.',
+       'Je vous propose donc de trier. Ce qui dépendait de vous peut se réparer, souvent par un mot ou par un geste, et la culpabilité s’en va quand c’est fait. Ce qui n’en dépendait pas ne se répare pas, parce que vous n’avez rien cassé. Cela se dépose. Une culpabilité qui dure le temps de réparer vous aide. Celle qui s’installe pendant des années ne répare rien, et elle vous use.'],
+     sch:'colonnes',
      vecu:'Comme papa, je me suis senti coupable de ne pas offrir assez de temps à mes enfants, pris par le quotidien, le travail et les obligations. Il faut agender du temps pour la famille et les enfants, et ce temps doit être non négociable. Ce n’est pas tant le temps que je passe avec ma famille qui compte, c’est la qualité de ma présence quand je suis là. Cela fait la différence. La famille, la santé et vous, c’est ce qu’il y a de plus important, et les 3 sont liés.',
-     exo:'Prenez une feuille et faites 2 colonnes. À gauche, écrivez ce qui dépendait vraiment de vous. À droite, écrivez ce qui n’en dépendait pas. Pour la colonne de gauche, choisissez une seule réparation, comme un mot d’excuse ou un moment à deux. La colonne de droite, vous pouvez la déposer.',
+     ex:'Prenons un matin où vous avez crié parce que vous étiez en retard. Dans la colonne de gauche, il y a une seule ligne, « j’ai crié ». Dans celle de droite, il y a la nuit hachée, le rendez-vous de 8 heures et personne pour vous relayer. Le soir, vous dites à votre enfant « ce matin j’ai crié, je te demande pardon, j’étais fatigué et tu n’y étais pour rien ». Cela prend 10 secondes, et la colonne de gauche est vide.',
+     exo:'Prenez une feuille et tracez 2 colonnes. À gauche, écrivez ce qui dépendait vraiment de vous. À droite, écrivez ce qui n’en dépendait pas. Pour la colonne de gauche, choisissez une seule réparation, comme un mot d’excuse ou un moment à deux. La colonne de droite, vous pouvez la déposer.',
      obs:'Remarquez à quel moment de la journée la culpabilité parle le plus fort, et ce qu’elle dit toujours en premier.',
      ecr:'Quelle phrase votre culpabilité répète-t-elle le plus souvent ? Que diriez-vous à un ami qui se dirait la même chose ?',link:'sit_culpa'},
-    {id:'reguler',t:'Me calmer, puis lâcher prise',
-     idee:'On ne choisit pas ce qu’on ressent, mais on peut choisir ce qu’on en fait. Respirer plus lentement que l’émotion, sortir 30 secondes, poser les mains à plat ou dire une phrase apprise par cœur sont des gestes qui calment le corps avant la tête. Lâcher prise ne veut pas dire renoncer. Cela veut dire arrêter de porter ce qui ne dépend pas de vous.',
-     exo:'Choisissez un seul geste pour vous calmer, comme la respiration 4-6, les mains à plat, sortir un instant ou une phrase. Utilisez-le chaque fois que l’émotion monte, pendant une semaine.',
+    {id:'reguler',t:'Me calmer, puis lâcher prise',acc:'Vous choisirez le geste qui vous calme quand la vague monte, et je vous dirai ce qui marche pour moi.',
+     idee:['On ne choisit pas ce que l’on ressent, mais on peut choisir ce que l’on en fait. Une émotion forte monte comme une vague. Le cœur bat plus vite, la mâchoire se serre et la voix se durcit. Au sommet de la vague, la tête réfléchit mal. Les phrases que l’on regrette sortent presque toujours à ce moment-là.',
+       'La bonne nouvelle est qu’une vague ne reste jamais en haut. Si vous ne la nourrissez pas, elle redescend d’elle-même. Vous n’avez donc pas à la retenir. Il suffit de traverser le sommet sans rien casser, et pour cela le corps passe avant la tête. Expirez plus longtemps que vous n’inspirez, et vous sentirez votre cœur ralentir. Vous pouvez aussi sortir 30 secondes, poser les mains à plat, marcher ou dire une phrase apprise par cœur. Parler et décider viendront après, une fois en bas.',
+       'Lâcher prise vient ensuite, et ce mot est souvent mal compris. Lâcher prise, c’est poser ce qui ne dépend pas de vous, comme vous l’avez fait avec la colonne de droite la semaine dernière. Vous gardez ainsi vos forces pour ce que vous pouvez changer. Cela n’a rien d’un renoncement.'],
+     sch:'vague',
+     vecu:'Quand la colère ou la fatigue monte, ce qui me calme, c’est de marcher en forêt et de me connecter à la nature. Le fait de bouger, de faire une activité, fait descendre la pression. Cela permet de se détourner et de prendre du recul.',
+     ex:'Prenons le moment des devoirs, quand le ton monte des 2 côtés. Vous sentez votre mâchoire se serrer. Vous dites « je reviens dans 2 minutes », vous allez à la fenêtre et vous expirez lentement 5 fois. Quand vous revenez, l’exercice de maths est toujours là, mais vous n’êtes plus au sommet de la vague. Vous pouvez alors dire calmement « on reprend à la ligne 3 ».',
+     exo:'Choisissez un seul geste pour vous calmer, comme expirer lentement, sortir un instant, marcher 5 minutes, poser les mains à plat ou dire une phrase apprise par cœur. Utilisez-le chaque fois que la vague monte, pendant une semaine.',
      obs:'Parmi vos soucis de la semaine, repérez ce qui ne dépend pas de vous. Écrivez-le, puis laissez-le de côté.',
-     ecr:'Quel geste vous calme le mieux ? Écrivez-le ici, pour le retrouver un jour de tempête.',link:'breath'},
-    {id:'appuis',t:'Mes appuis pour tenir',
-     idee:'On appelle résilience la capacité de tenir debout quand la vie secoue, et de se relever ensuite. Ce n’est pas une qualité qu’on a ou qu’on n’a pas. Elle se construit avec des appuis, comme une personne qui écoute, un lieu qui apaise, une activité qui vous fait du bien ou une phrase qui vous tient debout. Je vous invite à trouver vos appuis, à les nommer et à aller vers eux volontairement.',
-     vecu:'J’ai été placé en famille d’accueil à 10 ans. Ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier.',
-     exo:'Trouvez vos 4 appuis, c’est-à-dire une personne, un lieu, une activité et une phrase, et notez-les dans votre carnet, plus bas. Prévoyez ensuite un rendez-vous avec chacun d’eux dans le mois.',
+     ecr:'Quel geste vous calme le mieux ? Écrivez-le ici, pour le retrouver un jour de tempête.',rap:'emotions',link:'breath'},
+    {id:'appuis',t:'Mes appuis pour tenir',acc:'Vous trouverez vos 4 appuis, et je vous raconterai ce qui m’a fait tenir quand j’étais enfant.',
+     idee:['On appelle résilience la capacité de tenir debout quand la vie secoue, et de se relever ensuite. On croit souvent que c’est une qualité que l’on a ou que l’on n’a pas. Elle se construit pourtant, et rarement seul. Le neuropsychiatre Boris Cyrulnik, qui a fait connaître ce mot, parle de « tuteur de résilience » pour désigner la personne sur laquelle on s’appuie pour se relever, comme une jeune plante s’appuie sur son tuteur.',
+       'Un appui peut être une personne qui vous écoute sans vous juger, un lieu qui vous apaise, une activité qui vous recharge ou une phrase qui vous tient debout. Avec un seul appui, on tient mal, comme une table sur un seul pied. Avec 4, on peut encaisser un coup.',
+       'Les appuis ont un défaut. Ils ne viennent pas tout seuls quand on est fatigué. Quand on va mal, on annule le café avec l’amie et on reporte la marche. Il faut donc les nommer un jour où l’on va à peu près bien, et prendre rendez-vous avec eux comme on le fait avec le médecin.'],
+     sch:'appuis',
+     vecu:['Jusqu’à mes 10 ans, j’ai vécu des choses très dures. Il y a eu la violence des gestes, celle des mots, et d’autres choses qu’aucun enfant ne devrait vivre. Pourtant, je m’accrochais à ce qu’il y avait de bon, et c’est aussi ce qui m’a sauvé.',
+       'J’ai été placé en famille d’accueil à 10 ans. Ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier.'],
+     ex:'Voici les 4 appuis d’une maman. Sa personne est sa sœur, qu’elle appelle le dimanche soir. Son lieu est un banc au bord du lac, où elle s’assoit 10 minutes après le travail. Son activité est la chorale du jeudi. Sa phrase est « un jour à la fois ». Aucun de ces appuis ne règle ses problèmes, mais ensemble ils l’empêchent de tomber.',
+     exo:'Trouvez vos 4 appuis, c’est-à-dire une personne, un lieu, une activité et une phrase, et notez-les dans votre carnet, plus bas. Prenez ensuite rendez-vous avec chacun d’eux dans le mois.',
      obs:'Remarquez ce qui vous recharge vraiment, et ce qui vous aide seulement à ne plus rien sentir.',
      ecr:'Écrivez vos 4 appuis, une personne, un lieu, une activité et une phrase.'}
   ]},
   {m:'Mon regard',steps:[
-    {id:'regard',t:'D’où vient notre regard sur le handicap',
-     idee:'Le regard sur le handicap a beaucoup changé avec le temps. On l’a d’abord caché, puis on a voulu le soigner, le réparer et l’intégrer. Aujourd’hui, la Convention de l’ONU le décrit comme la rencontre entre une personne et un environnement plus ou moins accessible. Savoir cela change quelque chose, parce que ce que votre enfant ne peut pas faire dépend aussi de ce que le monde met ou ne met pas à sa portée. Ses limites ne reposent donc pas uniquement sur vos épaules, et vous pouvez agir sur ce qui l’entoure.',
-     exo:'Repérez cette semaine une situation où la difficulté venait de l’environnement plutôt que de votre enfant, comme un lieu trop bruyant, une consigne trop longue ou un horaire trop serré. Demandez-vous ce qu’on pourrait y changer.',
-     obs:'Écoutez comment on parle du handicap autour de vous, à la télévision, à l’école ou en famille.',
+    {id:'regard',t:'Ce qui met un enfant en difficulté, le MDH-PPH',acc:'Vous découvrirez le modèle que des professionnels utilisent pour comprendre ce qui met un enfant en difficulté, et ce qu’il change pour un parent.',
+     idee:['Pendant longtemps, on a pensé que le handicap était dans la personne, comme une panne à réparer. Au Québec, l’anthropologue Patrick Fougeyrollas a proposé avec son équipe une autre façon de voir, que des institutions de Suisse romande utilisent aujourd’hui. Avant de vous donner son nom, je commence par un exemple.',
+       'Un enfant myope qui a perdu ses lunettes ne peut pas lire au tableau. On lui rend ses lunettes, et il lit. Ses yeux sont restés les mêmes, et seule la situation a changé. Une situation de handicap apparaît de cette façon, quand ce qu’est un enfant rencontre un environnement qui ne lui convient pas, et qu’il ne peut alors pas faire ce que fait d’habitude un enfant de son âge.',
+       'Ce modèle s’appelle le MDH-PPH, pour Modèle de développement humain et Processus de production du handicap. Il regarde 3 choses. Il y a ce qu’est votre enfant, avec son corps, ses capacités, son caractère et son histoire. Il y a ce qui l’entoure, c’est-à-dire les personnes, les lieux, le matériel et les règles. Et il y a ce qu’il fait chaque jour, comme manger, se déplacer, apprendre ou jouer avec d’autres. Dans ce qui l’entoure, ce qui l’aide s’appelle un facilitateur, et ce qui le gêne s’appelle un obstacle.',
+       'Ce modèle a été construit pour le handicap, mais il part du développement de tout être humain. On peut donc s’en servir aussi pour regarder un enfant qui traverse une séparation, un deuil ou des moqueries à l’école. Lui aussi est mis en difficulté par la rencontre entre ce qu’il vit et ce qui l’entoure. Je trouve ce modèle intéressant pour un parent, parce qu’il déplace la question. On ne peut pas toujours changer ce qu’est un enfant, mais on peut presque toujours changer quelque chose autour de lui.'],
+     sch:'mdh',
+     ex:'Prenons un repas de famille. Votre enfant supporte mal le bruit. Dans une salle pleine, il crie, et quelqu’un dit qu’il est difficile. À une petite table un peu à l’écart, avec son casque sur les oreilles, il mange avec tout le monde. C’est le même enfant dans les 2 cas. Le bruit était l’obstacle, et la petite table et le casque sont des facilitateurs.',
+     exo:'Choisissez un moment de la journée qui se passe souvent mal. Cherchez un obstacle dans ce qui entoure votre enfant à ce moment-là, comme le bruit, une consigne trop longue, un horaire trop serré ou un regard. Changez une seule chose pendant une semaine.',
+     obs:'Écoutez comment on parle de votre enfant autour de vous. Parle-t-on de ce qu’il est, ou de la situation dans laquelle il se trouve ?',
      ecr:'Racontez une situation où c’est l’environnement qui a mis votre enfant en difficulté. Qu’est-ce qui aurait pu l’aider ?'},
-    {id:'enfant',t:'Voir mon enfant avant son diagnostic',
-     idee:'Les idées que la société se fait du handicap s’invitent jusque dans notre cuisine. Elles nous font voir les difficultés avant la personne, et le diagnostic avant le prénom. Pourtant, chaque enfant est d’abord une personne unique, avec ses goûts, son humour, ses peurs et ses talents. Le handicap décrit une partie de son fonctionnement, mais il ne dit pas qui il est. Cette semaine, je vous propose d’inverser l’ordre et de regarder d’abord qui est votre enfant, puis ce dont il a besoin. Vous ne niez pas le handicap en faisant cela. Vous lui redonnez sa vraie place, celle d’une partie de sa vie et non de sa vie entière.',
-     exo:'Dans votre carnet, plus bas, décrivez votre enfant en 10 lignes sans utiliser un seul mot de son dossier. Faites aussi la liste de 5 choses qu’il fait mieux que la plupart des gens. Cherchez bien, parce qu’il y en a.',
-     obs:'Quand vous présentez votre enfant à quelqu’un, remarquez si vous commencez par son prénom ou par son diagnostic.',
+    {id:'enfant',t:'Voir mon enfant avant ses difficultés',acc:'Vous décrirez votre enfant sans un seul mot de son dossier, et vous verrez ce que cela change dans votre regard.',
+     idee:'Les idées toutes faites sur le handicap, ou sur les enfants que l’on dit difficiles, s’invitent jusque dans notre cuisine. Elles nous font voir les difficultés avant la personne, et le diagnostic ou l’étiquette avant le prénom. Pourtant, chaque enfant est d’abord une personne unique, avec ses goûts, son humour, ses peurs et ses talents. Une situation de handicap ou une période difficile décrit une partie de sa vie, mais elle ne dit pas qui il est. Cette semaine, je vous propose d’inverser l’ordre et de regarder d’abord qui est votre enfant, puis ce dont il a besoin. Vous ne niez pas ses difficultés en faisant cela. Vous leur redonnez leur vraie place, celle d’une partie de sa vie et non de sa vie entière.',
+     exo:'Dans votre carnet, plus bas, décrivez votre enfant en 10 lignes sans utiliser un seul mot de son dossier ni de ses bulletins. Faites aussi la liste de 5 choses qu’il fait mieux que la plupart des gens. Cherchez bien, parce qu’il y en a.',
+     obs:'Quand vous présentez votre enfant à quelqu’un, remarquez si vous commencez par son prénom ou par ses difficultés.',
      ecr:'Décrivez votre enfant sans un seul mot de son dossier. Parlez de ses goûts, de son caractère, de son humour et de ses petites manières.'},
-    {id:'avenir',t:'Une vision de l’avenir qui donne envie',
+    {id:'avenir',t:'Une vision de l’avenir qui donne envie',acc:'Vous écrirez une journée de votre enfant dans 10 ans, la plus belle possible tout en restant réaliste.',
      idee:'L’avenir fait peur surtout parce qu’il est flou. Un avenir que l’on souhaite, même imparfait, peut se construire. Il ne s’agit pas de faire un plan de carrière, mais d’avoir une image en tête. Où vit-il, avec qui, que fait-il le matin et qu’est-ce qui le fait rire ? Les parents qui ont cette image avancent vers elle, alors que les autres subissent souvent celle que d’autres ont choisie pour leur enfant.',
      exo:'Cette semaine, l’exercice est d’écrire. Prenez un moment au calme et racontez cette journée dans votre carnet, plus bas.',
      obs:'Dans la semaine, remarquez un petit pas qui va déjà dans cette direction.',
      ecr:'Écrivez une journée de votre enfant dans 10 ans, du réveil au coucher, la plus belle possible tout en restant réaliste.'},
-    {id:'mi',t:'Le bilan de mi-parcours',
+    {id:'mi',t:'Le bilan de mi-parcours',acc:'Vous comparerez vos 5 échelles avec celles du départ, et vous relirez votre toute première phrase.',
      idee:'Vous êtes à la moitié du parcours. C’est le moment de regarder le chemin que vous avez fait plutôt que la montagne qu’il reste à gravir. Refaites le point sur votre stress, votre sentiment de compétence, votre solitude, votre regard et votre confiance, puis comparez avec le départ sans vous juger. Ce qui a bougé vous appartient, et ce qui n’a pas bougé vous montre où porter vos efforts pendant la seconde moitié. Vous pouvez aussi ajuster votre objectif, parce qu’il a le droit d’avoir changé.',
      exo:'Refaites le point dans « Mon évolution », puis choisissez une nouvelle photo dans le photolangage. Relisez ensuite la phrase que vous aviez écrite en commençant le parcours. Elle est sur cette page.',
      obs:'Remarquez ce qui a bougé sans que vous l’ayez décidé.',
      ecr:'Qu’est-ce que vous faites aujourd’hui que vous ne faisiez pas en commençant ?',rap:'depart',link:['evo','photo']}
   ]},
   {m:'Mon enfant et ses forces',steps:[
-    {id:'talents',t:'Ses talents, ses compétences',
+    {id:'talents',t:'Ses talents, ses compétences',acc:'Vous chercherez les talents de votre enfant, y compris ceux qui ne se voient pas tout de suite.',
      idee:'Un talent n’a pas besoin d’être spectaculaire. Remarquer les détails, bien mémoriser, persévérer, sentir l’humeur des autres, rire aux éclats ou être fidèle sont de vraies compétences, et elles se cultivent. Quand on nomme une compétence, elle se renforce. Quand on ne la remarque pas, elle finit par s’éteindre.',
      exo:'Choisissez une compétence de votre enfant et créez une occasion de l’exercer cette semaine. Dites-lui ce que vous avez vu.',
      obs:'Comptez les fois où vous nommez une compétence, et les fois où vous nommez une difficulté.',
      ecr:'Quelle compétence de votre enfant avez-vous choisie ? Qu’avez-vous vu quand il l’a exercée ?'},
-    {id:'encourager',t:'Encourager juste',
+    {id:'encourager',t:'Encourager juste',acc:'Vous verrez pourquoi « tu as essayé 3 fois » porte plus loin que « bravo ».',
      idee:'Encourager ne veut pas dire féliciter tout le temps. Il s’agit plutôt de trouver le bon dosage, parce que trop d’aide étouffe et que trop peu d’aide décourage. Un bon encouragement vise le pas suivant, celui que votre enfant peut atteindre avec un peu d’effort, et il parle de l’effort plutôt que du résultat. « Tu as essayé 3 fois » porte plus loin que « bravo ».',
      exo:'Cette semaine, remplacez « bravo » par la description de ce que vous avez vu, par exemple « tu as attendu », « tu as demandé » ou « tu as réessayé ».',
      obs:'Repérez un moment où vous aidez par habitude alors que votre enfant pourrait essayer.',
      ecr:'Écrivez 3 phrases qui décrivent ce que vous avez vu cette semaine, à la place de « bravo ».'},
-    {id:'solutions',t:'Des solutions pour le quotidien',
+    {id:'solutions',t:'Des solutions pour le quotidien',acc:'Vous choisirez une seule difficulté du quotidien, et vous essaierez une piste pendant 7 jours.',
      idee:'Les problèmes concrets ont souvent des solutions concrètes. On peut prévenir avant un changement d’activité, montrer en images, proposer 2 choix, simplifier une consigne ou préparer une sortie. Les outils de l’application sont là pour cela. Choisissez une seule difficulté du quotidien et essayez de la résoudre avec une méthode, plutôt qu’en y mettant encore plus de volonté.',
      exo:'Dans la boîte à outils, choisissez la situation que vous vivez le plus souvent et essayez une seule des pistes pendant 7 jours.',
      obs:'Notez chaque soir si c’était mieux, pareil ou moins bien. Au bout de 7 jours, vous pourrez décider de continuer ou de changer.',
      ecr:'Quelle situation avez-vous choisie, quelle piste avez-vous essayée, et qu’est-ce que cela a donné au bout de 7 jours ?',link:'advice'},
-    {id:'place',t:'Sa place parmi les autres',
+    {id:'place',t:'Sa place parmi les autres',acc:'Vous regarderez la place de votre enfant parmi les autres, et ce qui peut la préparer.',
      idee:'On parle d’inclusion quand un enfant a sa place à table, à l’école, au club ou au magasin, avec les adaptations dont il a besoin. C’est donc quelque chose de très concret. Elle peut être scolaire, professionnelle, sociale ou liée au lieu de vie, et il existe beaucoup de possibilités entre la classe ordinaire et l’institution spécialisée. Celle qui convient à votre enfant peut d’ailleurs changer avec l’âge. L’inclusion réussit quand quelqu’un prépare le terrain, et beaucoup moins quand on jette l’enfant dans le grand bain. Ce quelqu’un, c’est souvent vous. Vous avez aussi le droit de choisir vos combats, parce que certains lieux méritent votre énergie et d’autres non.',
      exo:'Choisissez un lieu où vous aimeriez que votre enfant ait davantage sa place, et notez dans votre carnet ce qui rendrait cela possible. Parlez-en ensuite à une personne de ce lieu.',
      obs:'Observez un lieu où l’inclusion marche déjà. Qu’est-ce qui fait que ça marche ?',
      ecr:'Dans quel lieu aimeriez-vous que votre enfant ait davantage sa place ? Qu’est-ce qui rendrait cela possible, une personne, une adaptation ou une habitude ?'}
   ]},
   {m:'Autour de nous',steps:[
-    {id:'couple',t:'À deux, ou seul',
-     idee:'Un enfant différent bouscule aussi la vie à deux. Souvent, l’un des parents porte les rendez-vous et l’organisation pendant que l’autre porte l’inquiétude en silence, et chacun croit que l’autre ne voit pas ce qu’il fait. On ne vit pas non plus les choses au même rythme. L’un a besoin d’en parler, l’autre a besoin de ne pas y penser, et aucun des deux n’a tort. Ce qui protège un couple, c’est un moment régulier où l’on se parle d’autre chose que de l’organisation. Si vous élevez votre enfant seul ou seule, la question se pose autrement. Il vous faut une personne avec qui partager les décisions, pour ne pas tout porter dans votre tête.',
+    {id:'couple',t:'À deux, ou seul',acc:'Vous poserez une seule question à la personne qui partage votre quotidien, et vous écouterez sa réponse jusqu’au bout.',
+     idee:'Un enfant qui demande beaucoup bouscule aussi la vie à deux. Souvent, l’un des parents porte les rendez-vous et l’organisation pendant que l’autre porte l’inquiétude en silence, et chacun croit que l’autre ne voit pas ce qu’il fait. On ne vit pas non plus les choses au même rythme. L’un a besoin d’en parler, l’autre a besoin de ne pas y penser, et aucun des deux n’a tort. Ce qui protège un couple, c’est un moment régulier où l’on se parle d’autre chose que de l’organisation. Si vous élevez votre enfant seul ou seule, la question se pose autrement. Il vous faut une personne avec qui partager les décisions, pour ne pas tout porter dans votre tête.',
      exo:'Cette semaine, prenez 20 minutes avec l’autre parent, ou avec la personne qui compte pour vous, et posez-lui une seule question, « qu’est-ce qui est le plus lourd pour toi en ce moment ? ». Écoutez la réponse jusqu’au bout, sans chercher de solution.',
      obs:'Remarquez ce que l’autre fait déjà et que vous ne voyiez plus.',
      ecr:'Qu’avez-vous entendu que vous ne saviez pas ?',link:'sit_couple'},
-    {id:'fratrie',t:'Les frères et sœurs',
+    {id:'fratrie',t:'Les frères et sœurs',acc:'Vous verrez ce que vivent les frères et sœurs, et ce dont ils ont vraiment besoin.',
      idee:'Quand un enfant demande beaucoup, ses frères et sœurs apprennent vite à ne pas en rajouter. Ils deviennent sages et serviables, parfois trop. Ils peuvent ressentir de la jalousie, de la honte devant les copains ou de l’inquiétude, et se sentir coupables de ressentir tout cela. Ils n’ont pas besoin que tout soit égal. Ils ont besoin de savoir ce qui se passe, avec des mots à leur hauteur, d’avoir le droit de se plaindre, et d’avoir de temps en temps un parent pour eux seuls. Si votre enfant n’a ni frère ni sœur, cette étape peut vous servir pour ses cousins ou pour ses amis proches.',
      exo:'Offrez à chaque frère ou sœur 20 minutes seul avec vous cette semaine, pour une activité qu’il choisit. Pendant ce moment, on ne parle pas de son frère ou de sa sœur, sauf s’il en a envie.',
      obs:'Écoutez comment ils parlent de leur frère ou de leur sœur devant leurs amis.',
      ecr:'Qu’a choisi de faire chaque enfant pendant son moment avec vous ? Qu’avez-vous remarqué ?',link:'sit_fratrie'},
-    {id:'entourage',t:'Ma place dans mon entourage',
+    {id:'entourage',t:'Ma place dans mon entourage',acc:'Vous ferez évoluer un regard autour de vous, sans avoir à militer.',
      idee:'Vous avez changé, et votre regard sur la différence aussi. Autour de vous, il y a des personnes qui n’ont pas fait ce chemin et qui disent parfois des choses maladroites. Si vous le souhaitez, et quand vous en avez la force, vous pouvez faire évoluer un regard à la fois. Vous n’avez pas besoin de militer pour cela, il suffit de montrer votre enfant tel qu’il est.',
      exo:'Choisissez une personne de votre entourage et racontez-lui une chose de votre enfant qu’elle ne connaît pas et qui le montre tel qu’il est.',
      obs:'Observez ce qui change dans la façon dont cette personne parle de lui ensuite.',
      ecr:'À qui avez-vous parlé de votre enfant ? Qu’est-ce qui a changé dans sa façon d’en parler ?',link:'sit_regard'},
-    {id:'pros',t:'Collaborer avec les professionnels',
+    {id:'pros',t:'Collaborer avec les professionnels',acc:'Vous préparerez votre prochaine rencontre avec les professionnels en 3 points.',
      idee:'Les professionnels savent des choses que vous ne savez pas, et vous savez des choses qu’ils ne sauront jamais. La collaboration commence quand chacun apporte sa part sans défendre son territoire. Si vous arrivez avec 3 points écrits et des questions simples, et que vous repartez avec des décisions notées, vous devenez un vrai partenaire.',
      exo:'Préparez votre prochaine rencontre en écrivant 3 points, à savoir ce qui va bien, ce qui vous inquiète et ce que vous demandez.',
      obs:'Pendant la rencontre, remarquez si l’on vous écoute vraiment. Si ce n’est pas le cas, redemandez calmement.',
      ecr:'Écrivez vos 3 points pour la prochaine rencontre, ce qui va bien, ce qui vous inquiète et ce que vous demandez.',link:'sit_pros'}
   ]},
   {m:'La suite',steps:[
-    {id:'tenir',t:'Tenir dans la durée',
-     idee:'Accompagner un enfant différent demande de tenir longtemps, et personne ne tient longtemps sans se ravitailler. Demander un relais ne veut pas dire abandonner. C’est ce qui vous permettra d’être encore là dans 10 ans. La suite peut très bien exister sans parcours. Ce dont elle a besoin, c’est d’un rythme, avec un moment pour vous chaque semaine, des rencontres préparées, un dépôt quand cela pèse et une dose de lumière quand vous en avez besoin. Choisissez ce que vous voulez garder et laissez le reste.',
+    {id:'tenir',t:'Tenir dans la durée',acc:'Vous choisirez vos rituels pour tenir longtemps, comme un coureur prépare ses ravitaillements.',
+     idee:'Accompagner un enfant qui a besoin de vous plus que les autres demande de tenir longtemps, et personne ne tient longtemps sans se ravitailler. Demander un relais ne veut pas dire abandonner. C’est ce qui vous permettra d’être encore là dans 10 ans. La suite peut très bien exister sans parcours. Ce dont elle a besoin, c’est d’un rythme, avec un moment pour vous chaque semaine, des rencontres préparées, un dépôt quand cela pèse et une dose de lumière quand vous en avez besoin. Choisissez ce que vous voulez garder et laissez le reste.',
      vecu:'Je cours régulièrement et j’aime comparer la vie de parent à un marathon. On ne peut pas le courir au sprint et on a besoin de ravitaillements pour tenir.',
      exo:'Choisissez vos 3 rituels pour les 6 prochains mois et notez-les dans votre agenda. Choisissez aussi une personne ou un service à qui vous demanderez un relais, même pour 2 heures.',
      obs:'Essayez vos rituels pendant une semaine et gardez ceux qui tiennent.',
      ecr:'Écrivez vos 3 rituels pour les 6 prochains mois, et le relais que vous allez demander.',link:'sit_aide'},
-    {id:'demain',t:'Préparer l’avenir, pas à pas',
+    {id:'demain',t:'Préparer l’avenir, pas à pas',acc:'Vous reprendrez la journée dans 10 ans que vous aviez écrite, et vous choisirez une première décision.',
      idee:'Reprenez la journée dans 10 ans que vous aviez écrite et relisez-la. Qu’est-ce qui a déjà avancé, et qu’est-ce qui manque encore ? Les grandes questions, comme ce qui se passera quand vous ne serez plus là, le logement ou les proches qui prendront le relais, se préparent par petites décisions, une par saison. Vous vous entraînez depuis le début du parcours à faire des petits pas, alors continuez sur ce rythme.',
      exo:'Choisissez une seule décision à prendre dans les 6 prochains mois pour préparer l’avenir, et fixez-lui une date.',
      obs:'Nommez une personne à qui vous en parlerez.',
      ecr:'Quelle décision allez-vous prendre dans les 6 prochains mois pour préparer l’avenir ? À quelle date ?',rap:'avenir',link:'sit_grandir'},
-    {id:'bilan',t:'Le bilan du parcours',
+    {id:'bilan',t:'Le bilan du parcours',acc:'Vous poserez votre troisième point, et vous verrez votre chemin d’un seul regard.',
      idee:'Refaites le point une dernière fois et comparez vos 3 moments, le départ, la mi-parcours et aujourd’hui. Ce qui a bougé est à vous. Ce qui n’a pas bougé n’est pas un échec, parce que certaines choses demandent plus de temps ou d’autres appuis. Prenez aussi un moment pour regarder ce que vous avez mis en place, ce qui tient tout seul maintenant et ce qui a encore un peu besoin de vous. Ce que vous avez gagné ne se résume pas à des chiffres. Vous avez aujourd’hui des réflexes que vous n’aviez pas en commençant.',
      exo:'Faites le point final dans « Mon évolution » et choisissez une dernière photo dans le photolangage. Relisez ensuite votre carnet de route.',
      obs:'Remarquez une situation que vous gérez aujourd’hui sans y penser.',
      ecr:'Écrivez 3 choses qui ont changé, et une qui résiste encore.',rap:'mi',link:['evo','photo']},
-    {id:'chemin',t:'Le chemin parcouru',
+    {id:'chemin',t:'Le chemin parcouru',acc:'Vous écrirez une lettre à la personne que vous étiez en commençant.',
      idee:'Vous voilà au bout des 24 étapes, avec un enfant qui n’a pas attendu que vous ayez fini pour grandir. Vous avez regardé où vous en étiez, appris à nommer vos émotions et trouvé vos appuis. Vous avez changé une partie de votre regard, vu les forces de votre enfant, préparé vos rencontres et choisi vos rituels. Vous n’êtes pas pour autant un parent parfait, et personne ne l’est. Vous êtes un parent plus éclairé qu’au premier jour. C’est vous qui avez fait ce chemin, et vous pouvez en être fier ou fière.',
      exo:'Cette semaine, l’exercice est d’écrire une lettre à la personne que vous étiez en commençant ce parcours. Vous pouvez l’écrire dans votre carnet, plus bas.',
      obs:'Gardez cette lettre et relisez-la un jour où tout vous paraît gris.',
@@ -437,6 +461,9 @@ const sBulle=(cx,cy,w,lignes,cls,num,haut)=>{const h=haut||(lignes.length>1?46:3
     (num?'<circle class="s-num" cx="'+(x+19)+'" cy="'+cy+'" r="10.5"/><text class="s-numt" x="'+(x+19)+'" y="'+(cy+4.6)+'" text-anchor="middle">'+num+'</text>':'')+
     lignes.map((l,i)=>'<text class="s-t" x="'+(cx+dx)+'" y="'+(cy+4.6+(i-(lignes.length-1)/2)*16)+'" text-anchor="middle">'+l+'</text>').join('');};
 const sTrait=(d,k,cls)=>'<path class="s-a'+(cls?' '+cls:'')+'" d="'+d+'" marker-end="url(#fl'+(cls==='rose'?'r':'')+'-'+k+')"/>';
+/* Un repère numéroté posé sur une courbe : le même chiffre que la phrase qui l'explique. */
+const sPoint=(cx,cy,n)=>'<circle class="s-halo" cx="'+cx+'" cy="'+cy+'" r="17"/><circle class="s-num" cx="'+cx+'" cy="'+cy+'" r="11"/><text class="s-numt" x="'+cx+'" y="'+(cy+4.4)+'" text-anchor="middle">'+n+'</text>';
+const sPied=(x,a,b)=>'<rect class="s-marche" x="'+x+'" y="58" width="72" height="118"/><text class="s-t" x="'+(x+36)+'" y="113" text-anchor="middle">'+a+'</text><text class="s-t" x="'+(x+36)+'" y="129" text-anchor="middle">'+b+'</text>';
 const SCHEMAS={
   points:{vb:'0 0 340 200',
     alt:'Un chemin qui monte, avec 3 points. Le premier est posé aujourd’hui, le deuxième au milieu du parcours et le troisième à la fin. Une ligne relie les 3 points.',
@@ -472,6 +499,53 @@ const SCHEMAS={
        [4,'<rect class="s-marche" x="248" y="70" width="78" height="144"/><text class="s-t" x="287" y="93" text-anchor="middle">avec qui ?</text>'],
        [5,'<path class="s-mat" d="M300 70 L300 18"/><path class="s-drapeau" d="M300 18 L270 29 L300 40 Z"/><text class="s-t fort" x="262" y="34" text-anchor="end">un objectif</text>']],
     caps:['Au départ, il y a un souhait. Je voudrais souffler.','Je dis quoi exactement. Je veux marcher 20 minutes.','Je dis quand. Ce sera jeudi soir.','Je dis avec l’aide de qui. Ma sœur gardera les enfants.','Mon souhait est devenu un objectif que je peux tenir.']}
+  ,voyants:{vb:'0 0 340 290',
+    alt:'4 voyants et leur message. La colère signale qu’une limite est dépassée, la tristesse que l’on a perdu quelque chose, la peur que l’on tient à quelqu’un, et l’épuisement que l’on donne sans recharger.',
+    base:sFleche('voyants'),
+    l:[[1,sBulle(84,36,148,['Colère'],'',1)+sTrait('M160 36 L173 36','voyants')+sBulle(254,36,152,['une limite','est dépassée'],'vert')],
+       [2,sBulle(84,108,148,['Tristesse'],'',2)+sTrait('M160 108 L173 108','voyants')+sBulle(254,108,152,['j’ai perdu','quelque chose'],'vert')],
+       [3,sBulle(84,180,148,['Peur'],'',3)+sTrait('M160 180 L173 180','voyants')+sBulle(254,180,152,['je tiens','à quelqu’un'],'vert')],
+       [4,sBulle(84,252,148,['Épuisement'],'',4)+sTrait('M160 252 L173 252','voyants')+sBulle(254,252,152,['je donne','sans recharger'],'vert')],
+       [5,'<rect class="s-anneau" x="172" y="6" width="164" height="276" rx="26"/>']],
+    caps:['La colère vous dit qu’une limite a été dépassée, ou que quelque chose est injuste.','La tristesse vous dit que vous avez perdu quelque chose qui comptait.','La peur vous dit que vous tenez à quelqu’un.','L’épuisement vous dit que vous donnez plus que vous ne rechargez.','Aucun de ces voyants n’est une faute. Lisez le message, puis occupez-vous de ce qu’il signale.']},
+  colonnes:{vb:'0 0 340 292',
+    alt:'Une feuille partagée en 2 colonnes. À gauche, ce qui dépendait de moi, avec une ligne, j’ai crié ce matin, qui mène à je répare. À droite, ce qui ne dépendait pas de moi, avec sa nuit agitée et ma fatigue, qui mène à je dépose.',
+    base:sFleche('colonnes'),
+    l:[[1,sBulle(170,24,190,['« Je m’en veux »'],'fait')],
+       [2,'<rect class="s-feuille" x="12" y="56" width="316" height="170" rx="14"/><path class="s-pli" d="M170 64 L170 218"/><text class="s-t fort" x="91" y="80" text-anchor="middle">Cela dépendait</text><text class="s-t fort" x="91" y="96" text-anchor="middle">de moi</text><text class="s-t fort" x="249" y="80" text-anchor="middle">Cela ne dépendait</text><text class="s-t fort" x="249" y="96" text-anchor="middle">pas de moi</text>'],
+       [3,sBulle(91,150,134,['J’ai crié','ce matin'])],
+       [4,sBulle(249,134,134,['Sa nuit agitée'])+sBulle(249,178,134,['Ma fatigue'])],
+       [5,sTrait('M91 228 L91 244','colonnes')+sBulle(91,266,134,['Je répare'],'vert')],
+       [6,sTrait('M249 228 L249 244','colonnes')+sBulle(249,266,134,['Je dépose'],'vert')]],
+    caps:['Au départ, tout est mélangé dans une seule phrase, « je m’en veux ».','Je prends une feuille et je trace 2 colonnes.','À gauche, j’écris ce qui dépendait de moi. J’ai crié ce matin.','À droite, j’écris ce qui n’en dépendait pas, comme sa nuit agitée et ma fatigue.','La colonne de gauche se répare, par un mot ou par un geste.','La colonne de droite se dépose. Je n’ai rien cassé, je n’ai donc rien à réparer.']},
+  vague:{vb:'0 0 340 214',
+    alt:'Une vague qui monte puis redescend, avec 5 repères. L’émotion monte, elle atteint son sommet, je fais mon geste, elle redescend, et je parle une fois en bas.',
+    base:sFleche('vague')+'<path class="s-sol" d="M12 186 L328 186"/><path class="s-route" d="M20 176 C 90 176, 110 44, 170 44 S 250 176, 320 176"/>',
+    l:[[5,'<path class="s-trace" pathLength="1" d="M20 176 C 90 176, 110 44, 170 44 S 250 176, 320 176"/>'],
+       [1,sPoint(99,110,1)],
+       [2,sPoint(170,44,2)+'<text class="s-t" x="170" y="19" text-anchor="middle">Le sommet</text>'],
+       [3,sTrait('M244 68 L230 77','vague')+sBulle(276,48,118,['Mon geste'],'vert',3)],
+       [4,sPoint(241,110,4)],
+       [5,sPoint(320,176,5)+'<text class="s-t" x="330" y="207" text-anchor="end">Je parle</text>']],
+    caps:['Une émotion forte monte comme une vague. Le cœur bat plus vite et la voix se durcit.','Au sommet, la tête réfléchit mal. Ce n’est le moment ni de parler ni de décider.','C’est le moment de faire mon geste. J’expire lentement, je sors un instant ou je marche.','La vague redescend d’elle-même, parce que je ne l’ai pas nourrie.','Une fois en bas, je peux parler et décider calmement.']},
+  appuis:{vb:'0 0 340 190',
+    alt:'Une table posée sur 4 pieds. Le plateau, c’est moi. Les 4 pieds sont une personne, un lieu, une activité et une phrase.',
+    base:'<path class="s-sol" d="M8 176 L332 176"/>'+sBulle(170,40,320,['Moi'],'fait',0,36),
+    l:[[1,sPied(14,'une','personne')],
+       [2,sPied(94,'un','lieu')],
+       [3,sPied(174,'une','activité')],
+       [4,sPied(254,'une','phrase')],
+       [5,'<rect class="s-anneau" x="5" y="17" width="330" height="46" rx="23"/>']],
+    caps:['Le premier appui est une personne qui vous écoute sans vous juger.','Le deuxième est un lieu qui vous apaise, même tout près de chez vous.','Le troisième est une activité qui vous recharge.','Le quatrième est une phrase qui vous tient debout.','Posé sur ces 4 appuis, vous tenez quand la vie secoue.']},
+  mdh:{vb:'0 0 340 282',
+    alt:'Le schéma du MDH-PPH. Qui est l’enfant et ce qui l’entoure se rencontrent, et cette rencontre décide de ce qu’il fait chaque jour. Avec un obstacle, il est en situation de handicap. Avec une aide, il participe.',
+    base:sFleche('mdh'),
+    l:[[1,sBulle(88,28,156,['Qui il est'],'',1)],
+       [2,sBulle(252,28,156,['Ce qui l’entoure'],'',2)],
+       [3,sTrait('M88 48 C 88 68, 140 62, 140 82','mdh')+sTrait('M252 48 C 252 68, 200 62, 200 82','mdh')+sBulle(170,104,232,['Ce qu’il fait chaque jour'],'fait',3)],
+       [4,sTrait('M140 124 C 140 142, 88 138, 88 156','mdh','rose')+sBulle(88,178,156,['Un obstacle'],'rose')+sTrait('M88 198 L88 220','mdh','rose')+sBulle(88,248,156,['Situation','de handicap'],'rose')],
+       [5,sTrait('M200 124 C 200 142, 252 138, 252 156','mdh')+sBulle(252,178,156,['Une aide'],'vert')+sTrait('M252 198 L252 220','mdh')+sBulle(252,248,156,['Il participe'],'vert',0,46)]],
+    caps:['Il y a d’abord votre enfant, avec son corps, ses capacités, son caractère et son histoire. Le modèle appelle cela les facteurs personnels.','Il y a ensuite ce qui l’entoure, c’est-à-dire les personnes, les lieux, le matériel et les règles. Ce sont les facteurs environnementaux.','La rencontre des 2 décide de ce qu’il arrive à faire chaque jour, comme manger, apprendre ou jouer. Le modèle parle des habitudes de vie.','Quand ce qui l’entoure lui fait obstacle, il ne peut pas faire ce que fait d’habitude un enfant de son âge. Il est alors en situation de handicap.','Quand ce qui l’entoure l’aide, il y arrive. Le modèle appelle cette aide un facilitateur, et il parle alors de participation sociale.']}
 };
 
 /* ---------- Mon évolution (questionnaire) ---------- */
@@ -482,7 +556,8 @@ const EVO_SCALES=[
   {id:'regard',t:'Mon regard sur mon enfant',lo:'je vois d’abord ses difficultés',hi:'je vois d’abord qui il est'},
   {id:'confiance',t:'Ma confiance dans l’avenir',lo:'peur',hi:'confiance'}
 ];
-const EVO_OPEN=[['avant','Que connaissiez-vous du handicap avant qu’il entre dans votre vie de famille ?'],['change','Votre regard a-t-il changé depuis ? Qu’est-ce qui a changé, et comment l’expliquez-vous ?']];
+/* La première question dépend de la situation choisie à l'inscription (handicap, période difficile, ou parent simplement). */
+const EVO_OPEN=[['avant',{hand:'Que connaissiez-vous du handicap avant qu’il entre dans votre vie de famille ?',diff:'Que saviez-vous de ce que vous traversez aujourd’hui, avant que cela entre dans votre vie de famille ?',parent:'Quelle idée vous faisiez-vous de la vie de parent, avant de le devenir ?'}],['change','Votre regard a-t-il changé depuis ? Qu’est-ce qui a changé, et comment l’expliquez-vous ?']];
 const EVO_TIMES=[['t1','Point de départ'],['t2','Mi-parcours (3 mois)'],['t3','Bilan (6 mois)']];
 /* ---------- Photolangage ---------- */
 /* Quarante-huit photos du domaine public (licence CC0). Elles viennent de la collection de fonds d'écran d'Ubuntu Budgie,
@@ -1295,9 +1370,11 @@ function viewStep(){
   if(s.rap){const r=steps.find(x=>x.id===s.rap);const rn=r?noteDe(r.id):null;
     if(r)rap='<div class="card rap"><span class="label">Ce que vous aviez écrit à l’étape '+(r.idx+1)+'</span>'+(rn?'<p class="lesson">'+nl2(rn.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(rn.d))+'</span>':'<p class="hint">Vous n’aviez rien écrit à cette étape, qui s’appelle « '+esc(r.t)+' ». Vous pouvez encore le faire.</p><button type="button" class="btn small" data-act="step" data-i="'+r.idx+'" style="align-self:flex-start">Ouvrir cette étape</button>')+'</div>';}
   const sv=s.idx<steps.length-1?steps[s.idx+1]:null;const ap=sv?stepEtat(sv.idx):null;
-  const suite=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':
-    (ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Étape suivante '+I.chev+'</button>':'';
-  const attente=sv&&ap.k==='bientot'?'<p class="hint attente">L’étape suivante, « '+esc(sv.t)+' », s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez une semaine pour essayer.</p>':'';
+  /* La prochaine étape : son titre, une phrase qui dit ce qu'on y trouvera, puis le jour où elle s'ouvre ou le bouton pour y aller. */
+  const fin=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':'';
+  const suite=!sv?'':'<div class="card suite"><span class="label">La prochaine étape</span><h2>'+esc(sv.t)+'</h2>'+(sv.acc?'<p>'+esc(sv.acc)+'</p>':'')+
+    ((ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Ouvrir cette étape '+I.chev+'</button>':
+     ap.k==='bientot'?'<p class="hint">Elle s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez le temps d’essayer.</p>':'')+'</div>';
   return '<main id="main" tabindex="-1" class="view etape"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
     '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En 2 minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
     (s.sch?schHtml(s.sch):'')+
@@ -1308,7 +1385,7 @@ function viewStep(){
     '<div class="card green"><span class="label">À observer</span><p>'+esc(s.obs)+'</p></div>'+
     stepLiens(s)+
     '<div class="card carnet"><span class="label">Mon carnet de route</span><label class="lesson" for="note">'+esc(s.ecr)+'</label><textarea id="note" data-note="'+s.id+'" maxlength="'+LIM.note+'" placeholder="'+esc(s.ph||'Écrivez ici, avec vos mots.')+'">'+esc(txt)+'</textarea><p class="hint" id="note-etat" aria-live="polite">'+(txt?NOTE_OUI:NOTE_NON)+'</p></div>'+
-    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-id="'+s.id+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+suite+'</div>'+attente+'</main>';
+    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-id="'+s.id+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+fin+'</div>'+suite+'</main>';
 }
 /* Le carnet de route : ce que le parent a écrit à chaque étape, mois par mois. Tout reste sur son appareil. */
 function viewCarnet(){
@@ -1346,6 +1423,8 @@ function schSync(neuf){
 /* ---------- évolution ---------- */
 /* Une échelle numérotée de 0 à 10 : le rond se glisse, les chiffres se touchent, et le rond porte le chiffre choisi.
    Ce qui est réglé mais pas encore enregistré est gardé de côté (state.evoDraft), pour ne pas le perdre si l'écran est redessiné. */
+/* Une question ouverte peut avoir une formulation par situation (handicap, période difficile, parent simplement). */
+function evoQ(o){const q=o[1];return typeof q==='string'?q:(q[D().situation]||q.hand);}
 function evoSync(r){
   const v=Number(r.value),b=r.closest('.scale');if(!b)return;
   b.style.setProperty('--p',String(v/10));
@@ -1368,7 +1447,7 @@ function viewEvo(){
       '<div class="scale-nums" aria-hidden="true">'+NUMS.map(n=>'<button type="button" tabindex="-1" data-act="evoset" data-k="'+s.id+'" data-v="'+n+'" class="'+(n<=v?'on':'')+(n===v?' cur':'')+'"><span>'+n+'</span></button>').join('')+'</div>'+
       '<div class="row" id="sd-'+s.id+'"><span><b>0</b> '+esc(s.lo)+'</span><span><b>10</b> '+esc(s.hi)+'</span></div></div>';
   }).join('');
-  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(o[1])+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(dr[o[0]]!==undefined?dr[o[0]]:(cur[o[0]]||''))+'</textarea></div>').join('');
+  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(evoQ(o))+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(dr[o[0]]!==undefined?dr[o[0]]:(cur[o[0]]||''))+'</textarea></div>').join('');
   const have=EVO_TIMES.filter(x=>e[x[0]]);
   let bars='';
   if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b><em>'+Number(e[x[0]][s.id]||0)+'</em></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Chaque barre va de 0 à 10. Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}
