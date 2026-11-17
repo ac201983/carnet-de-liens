@@ -668,6 +668,10 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .s-groupe.part{fill:none;stroke:rgba(216,223,126,.9);stroke-dasharray:3 4}
 .s-pt{fill:var(--green)}
 .s-pt.lui{fill:var(--sun);stroke:var(--fg);stroke-width:1.5}
+.s-verre{fill:none;stroke:rgba(244,239,216,.75);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.s-eau{fill:rgba(180,222,156,.5)}
+.s-eau.plus{fill:rgba(216,223,126,.55)}
+.s-lentille{fill:rgba(216,223,126,.22);stroke:var(--sun);stroke-width:1.6}
 /* la prochaine étape : son titre et une phrase qui donne envie de revenir */
 .card.suite{background:var(--sun-soft);border-color:transparent;gap:8px}
 .card.suite h2{font-size:21px;line-height:1.2}
