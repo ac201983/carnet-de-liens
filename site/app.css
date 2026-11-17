@@ -660,6 +660,14 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .s-cone{fill:rgba(216,223,126,.2)}
 .s-lueur{fill:rgba(216,223,126,.09)}
 .s-brume{fill:var(--surface);stroke:rgba(244,239,216,.5);stroke-width:1.2;stroke-dasharray:3 5;stroke-linejoin:round}
+.s-glace{fill:rgba(244,239,216,.14);stroke:rgba(244,239,216,.62);stroke-width:1.2;stroke-linejoin:round}
+.s-glace.bas{fill:rgba(180,222,156,.1);stroke:rgba(180,222,156,.55)}
+.s-zone{fill:none;stroke:rgba(244,239,216,.5);stroke-width:1.2;stroke-dasharray:3 5}
+.s-zone.proche{fill:rgba(180,222,156,.1);stroke:var(--green);stroke-dasharray:none}
+.s-groupe{fill:rgba(180,222,156,.08);stroke:rgba(180,222,156,.75);stroke-width:1.4}
+.s-groupe.part{fill:none;stroke:rgba(216,223,126,.9);stroke-dasharray:3 4}
+.s-pt{fill:var(--green)}
+.s-pt.lui{fill:var(--sun);stroke:var(--fg);stroke-width:1.5}
 /* la prochaine étape : son titre et une phrase qui donne envie de revenir */
 .card.suite{background:var(--sun-soft);border-color:transparent;gap:8px}
 .card.suite h2{font-size:21px;line-height:1.2}
