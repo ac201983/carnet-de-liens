@@ -656,6 +656,10 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .s-drapeau{fill:var(--sun)}
 .s-feuille{fill:rgba(244,239,216,.06);stroke:rgba(244,239,216,.5);stroke-width:1.2}
 .s-pli{fill:none;stroke:rgba(244,239,216,.42);stroke-width:1.2;stroke-dasharray:3 5}
+.s-bulle.ombre{fill:none;stroke:rgba(244,239,216,.5);stroke-dasharray:3 5}
+.s-cone{fill:rgba(216,223,126,.2)}
+.s-lueur{fill:rgba(216,223,126,.09)}
+.s-brume{fill:var(--surface);stroke:rgba(244,239,216,.5);stroke-width:1.2;stroke-dasharray:3 5;stroke-linejoin:round}
 /* la prochaine étape : son titre et une phrase qui donne envie de revenir */
 .card.suite{background:var(--sun-soft);border-color:transparent;gap:8px}
 .card.suite h2{font-size:21px;line-height:1.2}
