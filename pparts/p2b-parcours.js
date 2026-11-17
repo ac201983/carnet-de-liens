@@ -168,23 +168,48 @@ const PARCOURS=[
      ecr:'Qu’est-ce que vous faites aujourd’hui que vous ne faisiez pas en commençant ?',rap:'depart',link:['evo','photo']}
   ]},
   {m:'Mon enfant et ses forces',steps:[
-    {id:'talents',t:'Ses talents, ses compétences',acc:'Vous chercherez les talents de votre enfant, y compris ceux qui ne se voient pas tout de suite.',
-     idee:'Un talent n’a pas besoin d’être spectaculaire. Remarquer les détails, bien mémoriser, persévérer, sentir l’humeur des autres, rire aux éclats ou être fidèle sont de vraies compétences, et elles se cultivent. Quand on nomme une compétence, elle se renforce. Quand on ne la remarque pas, elle finit par s’éteindre.',
+    {id:'talents',t:'Ses talents, ses compétences',acc:'Vous chercherez les talents de votre enfant qui ne se voient pas au premier regard, et je vous dirai celui que j’ai découvert chez un des miens.',
+     idee:['Quand on parle des talents d’un enfant, on pense d’abord à ce qui se voit, comme les notes, le dessin, le sport ou la musique. Un talent n’a pourtant pas besoin d’être spectaculaire. Remarquer les détails, bien mémoriser, persévérer, sentir l’humeur des autres, rire aux éclats ou être fidèle sont de vraies compétences, et elles se cultivent.',
+       'Pensez à un iceberg. La partie qui dépasse de l’eau est petite, et la plus grande partie se trouve en dessous. En 2004, les psychologues Christopher Peterson et Martin Seligman ont classé ces qualités dans un grand ouvrage. Ils en ont décrit 24, parmi lesquelles la persévérance, la gentillesse, la curiosité, l’espoir et l’humour. Ils les appellent les forces de caractère.',
+       'Ces forces ont une particularité. Un enfant ne sait pas toujours qu’il les possède, parce que personne ne les note dans un bulletin. Quand vous nommez une force que vous avez vue, avec un exemple précis, votre enfant apprend qu’elle existe et qu’elle est à lui. Cette semaine, je vous propose de regarder sous l’eau.'],
+     sch:'iceberg',
+     vecu:['Chez un de mes enfants, le talent qui ne se voit pas tout de suite, c’est sa patience et sa persévérance. Il ne lâche rien tant qu’il n’a pas la solution.',
+       'Je l’ai remarqué en le regardant chercher la solution d’un problème. Il fait tout pour y arriver. Il peut reprendre la tâche le lendemain et continuer pendant des heures. Tant qu’il n’a pas trouvé, il ne lâche rien.'],
+     ex:'Un soir, un papa dit à sa fille « tu es restée 20 minutes sur ce puzzle sans te décourager, cela s’appelle de la persévérance ». Il ne lui dit pas qu’elle est la meilleure. Il lui montre une force qu’elle a, avec la preuve. Elle sait maintenant quoi refaire, et elle a un mot pour le dire.',
      exo:'Choisissez une compétence de votre enfant et créez une occasion de l’exercer cette semaine. Dites-lui ce que vous avez vu.',
      obs:'Comptez les fois où vous nommez une compétence, et les fois où vous nommez une difficulté.',
      ecr:'Quelle compétence de votre enfant avez-vous choisie ? Qu’avez-vous vu quand il l’a exercée ?'},
-    {id:'encourager',t:'Encourager juste',acc:'Vous verrez pourquoi « tu as essayé 3 fois » porte plus loin que « bravo ».',
-     idee:'Encourager ne veut pas dire féliciter tout le temps. Il s’agit plutôt de trouver le bon dosage, parce que trop d’aide étouffe et que trop peu d’aide décourage. Un bon encouragement vise le pas suivant, celui que votre enfant peut atteindre avec un peu d’effort, et il parle de l’effort plutôt que du résultat. « Tu as essayé 3 fois » porte plus loin que « bravo ».',
+    {id:'encourager',t:'Encourager juste',acc:'Vous verrez pourquoi « tu as essayé 3 fois » porte plus loin que « bravo », et ce que je fais quand un de mes enfants n’y arrive pas.',
+     idee:['Encourager ne veut pas dire féliciter tout le temps. Il s’agit plutôt de trouver le bon dosage, parce que trop d’aide étouffe et que trop peu d’aide décourage.',
+       'Imaginez 3 zones autour de votre enfant. Au centre, il y a ce qu’il fait déjà seul. Tout au bord, il y a ce qu’il ne peut pas encore faire, même avec vous. Entre les 2 se trouve ce qu’il réussit avec un coup de pouce, et c’est là qu’il apprend. Le psychologue Lev Vygotski a décrit cette zone il y a près d’un siècle. On l’appelle la zone proximale de développement.',
+       'Votre aide ressemble alors à un échafaudage. Vous donnez un indice, vous montrez autrement, vous proposez un outil, puis vous retirez l’aide dès que votre enfant tient debout. Souvenez-vous des 5 minutes de lecture par jour dont je vous ai parlé à l’étape 2. On me demandait 5 minutes, et non une heure. Un bon encouragement vise le pas suivant, celui que votre enfant peut atteindre avec un peu d’effort.',
+       'Quant aux mots, parlez de l’effort plutôt que du résultat. « Tu as essayé 3 fois » porte plus loin que « bravo », parce que votre enfant sait alors ce qu’il a bien fait, et qu’il peut le refaire.'],
+     sch:'zones',
+     vecu:['Quand un de mes enfants n’y arrive pas, je le rassure et je lui dis de respirer. Puis j’essaie d’autres méthodes, comme le dessin, le jeu, un schéma, des objets ou une mise en situation.',
+       'Je lui dis que la solution, il l’a, mais qu’il faut tester, chercher, et parfois persévérer. Parfois je lui donne des indices. Parfois je lui suggère un outil, comme internet, une IA ou un dictionnaire.'],
+     ex:'Votre fille n’arrive pas à fermer sa veste. Si vous la fermez à sa place, elle n’apprend rien de nouveau. Si vous lui dites de se débrouiller, elle abandonne. Vous engagez alors le bas de la fermeture, et elle tire la languette jusqu’en haut. Dans quelques jours, vous ne tiendrez plus que le tissu. Vous lui direz « tu as tiré jusqu’en haut toute seule », plutôt que « bravo ».',
      exo:'Cette semaine, remplacez « bravo » par la description de ce que vous avez vu, par exemple « tu as attendu », « tu as demandé » ou « tu as réessayé ».',
      obs:'Repérez un moment où vous aidez par habitude alors que votre enfant pourrait essayer.',
      ecr:'Écrivez 3 phrases qui décrivent ce que vous avez vu cette semaine, à la place de « bravo ».'},
-    {id:'solutions',t:'Des solutions pour le quotidien',acc:'Vous choisirez une seule difficulté du quotidien, et vous essaierez une piste pendant 7 jours.',
-     idee:'Les problèmes concrets ont souvent des solutions concrètes. On peut prévenir avant un changement d’activité, montrer en images, proposer 2 choix, simplifier une consigne ou préparer une sortie. Les outils de l’application sont là pour cela. Choisissez une seule difficulté du quotidien et essayez de la résoudre avec une méthode, plutôt qu’en y mettant encore plus de volonté.',
+    {id:'solutions',t:'Des solutions pour le quotidien',acc:'Vous choisirez une seule difficulté du quotidien, et je vous raconterai comment le brossage des dents est devenu un jeu chez nous.',
+     idee:['Les problèmes concrets ont souvent des solutions concrètes. On peut prévenir avant un changement d’activité, montrer en images, proposer 2 choix, simplifier une consigne, préparer une sortie ou transformer une corvée en jeu. Les outils de l’application sont là pour cela.',
+       'Quand une difficulté revient tous les jours, on est tenté d’y mettre encore plus de volonté. On répète plus fort, et on s’énerve plus vite. Une méthode marche mieux. Les usines utilisent depuis longtemps une roue en 4 temps, où l’on prépare, on essaie, on vérifie, puis on ajuste, avant de recommencer. On l’appelle la roue de Deming, du nom du statisticien qui l’a fait connaître au Japon dans les années 1950, à partir des travaux de Walter Shewhart.',
+       'À la maison, cette roue tourne très bien. Vous choisissez une seule difficulté et une seule piste. Vous l’essayez pendant 7 jours, sans rien changer d’autre. Chaque soir, vous notez si c’était mieux, pareil ou moins bien. Au bout des 7 jours, vous gardez la piste ou vous en changez. Si la première piste ne marche pas, vous n’avez pas échoué. Vous avez appris quelque chose, et la roue repart.'],
+     sch:'roue',
+     vecu:['Chez nous, c’était difficile pour les enfants d’aller se brosser les dents. Alors nous avons créé un jeu. Les brosses à dents sont devenues des personnages de Mario, et les dents sont des briques. Elles doivent être propres pour que Mario ou Luigi les voient bien et puissent taper dedans.',
+       'Pendant le brossage, on imagine Mario, Luigi, Peach ou les Toad sur un parcours. Il faut passer sur toutes les dents pour éviter les dégâts de Bowser, le monstre. Le passage de la brosse crée une protection, à condition de rester 30 secondes sur chacune des 4 zones de la bouche.'],
+     ex:'Chaque matin, mettre les chaussures prend 20 minutes et finit en cris. Une maman choisit une seule piste, qui est de préparer les chaussures la veille avec son fils et de lui laisser choisir la paire. Pendant 7 jours, elle note. C’est mieux 4 matins sur 7. Elle garde la piste. La semaine suivante, la roue repart, et elle essaie un minuteur pour les 3 autres matins.',
      exo:'Dans la boîte à outils, choisissez la situation que vous vivez le plus souvent et essayez une seule des pistes pendant 7 jours.',
      obs:'Notez chaque soir si c’était mieux, pareil ou moins bien. Au bout de 7 jours, vous pourrez décider de continuer ou de changer.',
      ecr:'Quelle situation avez-vous choisie, quelle piste avez-vous essayée, et qu’est-ce que cela a donné au bout de 7 jours ?',link:'advice'},
-    {id:'place',t:'Sa place parmi les autres',acc:'Vous regarderez la place de votre enfant parmi les autres, et ce qui peut la préparer.',
-     idee:'On parle d’inclusion quand un enfant a sa place à table, à l’école, au club ou au magasin, avec les adaptations dont il a besoin. C’est donc quelque chose de très concret. Elle peut être scolaire, professionnelle, sociale ou liée au lieu de vie, et il existe beaucoup de possibilités entre la classe ordinaire et l’institution spécialisée. Celle qui convient à votre enfant peut d’ailleurs changer avec l’âge. L’inclusion réussit quand quelqu’un prépare le terrain, et beaucoup moins quand on jette l’enfant dans le grand bain. Ce quelqu’un, c’est souvent vous. Vous avez aussi le droit de choisir vos combats, parce que certains lieux méritent votre énergie et d’autres non.',
+    {id:'place',t:'Sa place parmi les autres',acc:'Vous regarderez la place de votre enfant parmi les autres, et je vous dirai où j’ai trouvé la mienne quand j’étais enfant.',
+     idee:['Avoir sa place parmi les autres, ce n’est pas seulement être présent. Un enfant peut être assis dans la classe, invité à l’anniversaire ou inscrit au club, et rester seul au milieu des autres.',
+       'Pour y voir clair, on distingue 4 situations. Dans l’exclusion, l’enfant reste dehors. Dans la ségrégation, il est accueilli, mais à part, avec ceux qui lui ressemblent. Dans l’intégration, il est avec les autres, à condition de s’adapter tout seul. Dans l’inclusion, c’est le groupe qui s’organise pour que chacun y ait sa place. Ces 4 mots viennent d’un texte de 2016 du Comité des droits des personnes handicapées des Nations Unies, écrit pour l’école. Ils éclairent aussi la place d’un enfant timide, moqué, ou arrivé en cours d’année.',
+       'L’inclusion ne tombe pas du ciel. Elle réussit quand quelqu’un prépare le terrain, et beaucoup moins quand on jette l’enfant dans le grand bain. Ce quelqu’un, c’est souvent vous. Il existe d’ailleurs beaucoup de possibilités entre la classe ordinaire et l’institution spécialisée, et celle qui convient à votre enfant peut changer avec l’âge. Vous avez aussi le droit de choisir vos combats, parce que certains lieux méritent votre énergie et d’autres non.',
+       'Bien souvent, la porte d’entrée est une activité que l’on partage. On trouve plus facilement sa place autour de ce que l’on fait ensemble.'],
+     sch:'inclusion',
+     vecu:'Enfant, j’ai trouvé ma place grâce à un instrument de musique, l’accordéon. Je faisais partie du club des accordéonistes. Je me sentais dans un groupe, et j’avais un sentiment d’appartenance.',
+     ex:'Un garçon qui parle peu arrive dans un club de football. Si l’entraîneur le laisse sur le banc, il est présent, et rien de plus. Sa maman va voir l’entraîneur avant le premier entraînement. Elle lui explique que son fils comprend mieux quand on lui montre, et qu’il adore être gardien. L’entraîneur montre alors les exercices au lieu de les expliquer, pour toute l’équipe. Personne ne remarque l’adaptation, et le garçon a sa place dans les buts.',
      exo:'Choisissez un lieu où vous aimeriez que votre enfant ait davantage sa place, et notez dans votre carnet ce qui rendrait cela possible. Parlez-en ensuite à une personne de ce lieu.',
      obs:'Observez un lieu où l’inclusion marche déjà. Qu’est-ce qui fait que ça marche ?',
      ecr:'Dans quel lieu aimeriez-vous que votre enfant ait davantage sa place ? Qu’est-ce qui rendrait cela possible, une personne, une adaptation ou une habitude ?'}
@@ -255,6 +280,11 @@ const sTrait=(d,k,cls)=>'<path class="s-a'+(cls?' '+cls:'')+'" d="'+d+'" marker-
 /* Un repère numéroté posé sur une courbe : le même chiffre que la phrase qui l'explique. */
 const sPoint=(cx,cy,n)=>'<circle class="s-halo" cx="'+cx+'" cy="'+cy+'" r="17"/><circle class="s-num" cx="'+cx+'" cy="'+cy+'" r="11"/><text class="s-numt" x="'+cx+'" y="'+(cy+4.4)+'" text-anchor="middle">'+n+'</text>';
 const sPied=(x,a,b)=>'<rect class="s-marche" x="'+x+'" y="58" width="72" height="118"/><text class="s-t" x="'+(x+36)+'" y="113" text-anchor="middle">'+a+'</text><text class="s-t" x="'+(x+36)+'" y="129" text-anchor="middle">'+b+'</text>';
+/* Un chiffre seul, sans halo, pour numéroter une zone ou une case. */
+const sNum=(cx,cy,n)=>'<circle class="s-num" cx="'+cx+'" cy="'+cy+'" r="10.5"/><text class="s-numt" x="'+cx+'" y="'+(cy+4.4)+'" text-anchor="middle">'+n+'</text>';
+/* Un groupe (un rond) et ses membres (des points). Le point « lui » est l'enfant dont on parle. */
+const sRond=(cx,cy,r,cls)=>'<circle class="s-groupe'+(cls?' '+cls:'')+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>';
+const sPts=(L,cls)=>L.map(p=>'<circle class="s-pt'+(cls?' '+cls:'')+'" cx="'+p[0]+'" cy="'+p[1]+'" r="5"/>').join('');
 const SCHEMAS={
   points:{vb:'0 0 340 200',
     alt:'Un chemin qui monte, avec 3 points. Le premier est posé aujourd’hui, le deuxième au milieu du parcours et le troisième à la fin. Une ligne relie les 3 points.',
@@ -369,6 +399,43 @@ const SCHEMAS={
        [4,sTrait('M90 51 L46 55','creux')+sBulle(170,50,152,['Je me retourne'],'vert',4)],
        [5,sPoint(222,131,5)+sBulle(266,174,136,['Un but tout proche'],'vert')]],
     caps:['Au départ, l’élan est là. Chaque pas se voit, parce que tout est nouveau.','Vers la moitié arrive souvent un creux. Le départ est loin, l’arrivée aussi, et l’on croit ne plus avancer.','À l’approche du but, l’élan revient.','Dans le creux, ce qui aide est de se retourner et de mesurer le chemin déjà fait.','Puis on se donne un but tout proche, et chaque pas recommence à compter.']}
+  ,iceberg:{vb:'0 0 340 262',
+    alt:'Un iceberg. La petite partie au-dessus de l’eau est ce qui se voit. La grande partie sous l’eau contient la persévérance, l’humour, la gentillesse et la curiosité. Une bulle, je nomme ce que je vois, pointe vers la persévérance, qui est alors entourée.',
+    base:sFleche('iceberg')+'<path class="s-sol" d="M8 76 L332 76"/>',
+    l:[[2,'<path class="s-glace bas" d="M44 76 L300 76 L264 232 L152 250 L74 214 Z"/>'],
+       [1,'<path class="s-glace" d="M142 76 L170 24 L198 76 Z"/><text class="s-t" x="208" y="50" text-anchor="start">Ce qui se voit</text>'],
+       [2,'<text class="s-t" x="172" y="102" text-anchor="middle">Ce qui ne se voit pas</text><text class="s-t" x="172" y="118" text-anchor="middle">tout de suite</text>'],
+       [3,[[126,160,'la persévérance'],[238,160,'l’humour'],[128,198,'la gentillesse'],[226,198,'la curiosité']].map(c=>'<text class="s-t fort" x="'+c[0]+'" y="'+c[1]+'" text-anchor="middle">'+c[2]+'</text>').join('')],
+       [4,sTrait('M70 62 C 70 100, 78 124, 90 140','iceberg')+sBulle(68,38,124,['Je nomme','ce que je vois'],'vert')],
+       [5,'<rect class="s-anneau" x="62" y="141" width="128" height="30" rx="15"/>']],
+    caps:['Au-dessus de l’eau, il y a ce que tout le monde voit, comme les notes, le dessin ou le sport.','Sous l’eau se trouve la plus grande partie, celle que l’on ne voit pas tout de suite.','On y trouve la persévérance, l’humour, la gentillesse ou la curiosité. Ce sont des forces de caractère.','Votre regard peut aller les chercher. Vous nommez ce que vous avez vu, avec un exemple précis.','Une force que l’on a nommée ne reste plus cachée. Votre enfant sait maintenant qu’elle est à lui.']}
+  ,zones:{vb:'0 0 340 236',
+    alt:'3 zones emboîtées. Au centre, ce que l’enfant fait seul. Tout au bord, ce qu’il ne peut pas encore faire. Entre les 2, ce qu’il réussit avec un coup de pouce, comme un indice ou un outil. Cette zone du milieu est entourée, parce que c’est là qu’il apprend.',
+    base:'',
+    l:[[2,'<rect class="s-zone" x="6" y="8" width="328" height="220" rx="26"/>'+sNum(118,30,2)+'<text class="s-t" x="176" y="34.6" text-anchor="middle">Pas encore</text>'],
+       [3,'<rect class="s-zone proche" x="34" y="48" width="272" height="156" rx="24"/>'+sNum(80,70,3)+'<text class="s-t" x="180" y="74.6" text-anchor="middle">Avec un coup de pouce</text>'],
+       [5,'<rect class="s-anneau" x="30" y="44" width="280" height="164" rx="27"/>'],
+       [1,sBulle(170,166,184,['Il y arrive seul'],'fait',1)],
+       [4,sBulle(170,116,216,['Un indice, un outil'],'vert',4)]],
+    caps:['Au centre, il y a ce que votre enfant fait déjà seul. Il n’a plus besoin de vous pour cela.','Tout au bord, il y a ce qu’il ne peut pas encore faire, même avec de l’aide. Le lui demander maintenant le découragerait.','Entre les 2 se trouve ce qu’il réussit avec un coup de pouce. C’est dans cette zone qu’il apprend.','Votre aide est un échafaudage. Vous donnez un indice, vous montrez autrement ou vous proposez un outil.','Puis vous retirez l’aide. Ce qu’il fait avec vous aujourd’hui, il le fera seul demain.']}
+  ,roue:{vb:'0 0 340 250',
+    alt:'Une roue en 4 temps, reliés par des flèches. Je choisis, j’essaie pendant 7 jours, je note, je décide. Une dernière flèche ramène au début, et la roue repart.',
+    base:sFleche('roue'),
+    l:[[1,sBulle(170,30,144,['Je choisis'],'',1)],
+       [2,sTrait('M244 36 C 268 44, 278 72, 274 102','roue')+sBulle(266,125,132,['J’essaie'],'',2)+'<text class="s-t fort" x="170" y="129.6" text-anchor="middle">7 jours</text>'],
+       [3,sTrait('M274 148 C 278 180, 268 206, 246 214','roue')+sBulle(170,220,144,['Je note'],'',3)],
+       [4,sTrait('M96 214 C 72 206, 62 180, 66 148','roue')+sBulle(74,125,132,['Je décide'],'',4)],
+       [5,sTrait('M66 102 C 62 72, 72 44, 96 36','roue')]],
+    caps:['Je choisis une seule difficulté du quotidien, et une seule piste pour l’améliorer.','J’essaie cette piste pendant 7 jours, sans rien changer d’autre.','Chaque soir, je note si c’était mieux, pareil ou moins bien.','Au bout de 7 jours, je décide. Je garde la piste, ou j’en change.','Puis la roue repart. Si la première piste n’a pas marché, j’ai appris quelque chose et j’essaie la suivante.']}
+  ,inclusion:{vb:'0 0 340 262',
+    alt:'4 dessins. Dans le premier, un point reste en dehors du groupe. Dans le deuxième, il est dans un petit groupe à part. Dans le troisième, il est dans le groupe, mais enfermé dans son propre cercle. Dans le quatrième, il est mêlé aux autres, et ce dessin est entouré.',
+    base:'',
+    l:[[1,sNum(20,18,1)+sRond(74,58,34)+sPts([[60,46],[84,42],[56,66],[76,60],[92,64],[72,80]])+sPts([[134,58]],'lui')+'<text class="s-t" x="88" y="118" text-anchor="middle">Exclusion</text>'],
+       [2,sNum(184,18,2)+sRond(232,58,32)+sPts([[218,46],[242,42],[214,66],[234,60],[250,64],[230,80]])+sRond(297,58,18,'part')+sPts([[291,54],[303,63]],'lui')+'<text class="s-t" x="252" y="118" text-anchor="middle">Ségrégation</text>'],
+       [3,sNum(20,144,3)+sRond(88,184,34)+sPts([[72,170],[96,166],[66,190],[84,206],[108,176]])+sRond(100,192,11,'part')+sPts([[100,192]],'lui')+'<text class="s-t" x="88" y="244" text-anchor="middle">Intégration</text>'],
+       [5,'<rect class="s-anneau" x="202" y="136" width="112" height="120" rx="22"/>'],
+       [4,sNum(184,144,4)+sRond(252,184,34)+sPts([[236,170],[260,166],[230,190],[248,206],[272,176],[268,198]])+sPts([[252,186]],'lui')+'<text class="s-t" x="252" y="244" text-anchor="middle">Inclusion</text>']],
+    caps:['Dans l’exclusion, l’enfant reste dehors. Le groupe se fait sans lui.','Dans la ségrégation, il a une place, mais à part, avec ceux qui lui ressemblent.','Dans l’intégration, il est parmi les autres, mais c’est à lui seul de s’adapter.','Dans l’inclusion, le groupe s’organise pour que chacun y ait sa place, lui compris.','C’est cette place que l’on prépare, un lieu à la fois, avec une personne, une adaptation ou une habitude.']}
 };
 
 /* ---------- Mon évolution (questionnaire) ---------- */

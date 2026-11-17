@@ -234,17 +234,17 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     const T = new Function(fs.readFileSync(__dirname + '/../pparts/p2b-parcours.js', 'utf8') + '; return {PARCOURS,SCHEMAS,EVO_OPEN};')();
     const E = []; T.PARCOURS.forEach(m => m.steps.forEach(s => E.push(s)));
     const mots = x => (Array.isArray(x) ? x.join(' ') : (x || '')).split(/\s+/).filter(Boolean).length;
-    ok(E.slice(4, 12).every(s => Array.isArray(s.idee) && s.idee.length >= 3 && s.sch && T.SCHEMAS[s.sch] && s.ex && mots(s.idee) >= 170), 'étapes 5 à 12 : au moins 3 paragraphes, un schéma et un exemple');
-    ok(E.slice(4, 12).every(s => s.vecu), 'étapes 5 à 12 : chacune a son « Ce que j’ai vécu »');
+    ok(E.slice(4, 16).every(s => Array.isArray(s.idee) && s.idee.length >= 3 && s.sch && T.SCHEMAS[s.sch] && s.ex && mots(s.idee) >= 170), 'étapes 5 à 16 : au moins 3 paragraphes, un schéma et un exemple');
+    ok(E.slice(4, 16).every(s => s.vecu), 'étapes 5 à 16 : chacune a son « Ce que j’ai vécu »');
     ok(E.slice(1).every(s => typeof s.acc === 'string' && /^Vous /.test(s.acc) && /\.$/.test(s.acc)) && !E[0].acc, 'chaque étape à partir de la 2 a son accroche');
-    ok(Object.keys(T.SCHEMAS).length === 12 && Object.values(T.SCHEMAS).every(S => S.alt && Math.max(...S.l.map(x => x[0])) === S.caps.length), '12 schémas, chacun avec sa description et autant de phrases que de moments');
+    ok(Object.keys(T.SCHEMAS).length === 16 && Object.values(T.SCHEMAS).every(S => S.alt && Math.max(...S.l.map(x => x[0])) === S.caps.length), '16 schémas, chacun avec sa description et autant de phrases que de moments');
     ok(/Jusqu’à mes 10 ans, j’ai vécu des choses très dures\. Il y a eu la violence des gestes, celle des mots, et d’autres choses qu’aucun enfant ne devrait vivre\. Pourtant, je m’accrochais à ce qu’il y avait de bon, et c’est aussi ce qui m’a sauvé\./.test(E[7].vecu[0]) && E[7].vecu.length === 2, 'étape 8 : le passage choisi par Antonio (version 1), mot pour mot, et rien de plus');
     ok(E[7].vecu[1] === 'J’ai été placé en famille d’accueil à 10 ans. Ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier.' && E[7].vecu.join(' ').split(/(?<=[.?!])\s+/).length === 5, 'étape 8 : le second paragraphe mot pour mot, et 5 phrases en tout');
     {
       // « Ce que j’ai vécu » ne nomme personne : aucun mot à majuscule ailleurs qu’en début de phrase
       const noms = [];
-      E.filter(s => s.vecu).forEach(s => (Array.isArray(s.vecu) ? s.vecu : [s.vecu]).forEach(par => par.replace(/«[^»]*»/g, ' ').split(/(?<=[.?!])\s+/).forEach(ph => ph.split(/\s+/).slice(1).forEach(w => { const m = w.replace(/^[^A-Za-zÀ-ÿ]+/, ''); if (/^[A-ZÀ-Ý]/.test(m) && !/^Dieu(?![a-zà-ÿ])/.test(m)) noms.push(s.id + ' ' + m); }))));
-      ok(!noms.length, '« Ce que j’ai vécu » : aucun nom propre, ni prénom, ni lieu, ni école ' + noms.join(' | '));
+      E.filter(s => s.vecu).forEach(s => (Array.isArray(s.vecu) ? s.vecu : [s.vecu]).forEach(par => par.replace(/«[^»]*»/g, ' ').split(/(?<=[.?!])\s+/).forEach(ph => ph.split(/\s+/).slice(1).forEach(w => { const m = w.replace(/^[^A-Za-zÀ-ÿ]+/, ''); if (/^[A-ZÀ-Ý]/.test(m) && !/^(Dieu|Mario|Luigi|Peach|Toad|Bowser|IA)(?![a-zà-ÿ])/.test(m)) noms.push(s.id + ' ' + m); }))));
+      ok(!noms.length, '« Ce que j’ai vécu » : aucun nom propre, ni prénom, ni lieu, ni école (sauf Dieu, les personnages d’un jeu et le sigle IA) ' + noms.join(' | '));
     }
     ok(E[8].vecu.length === 5 && /^À l’étape 3, je vous ai dit qu’un de mes fils/.test(E[8].vecu[0]) && /Son école actuelle utilise d’autres stratégies\./.test(E[8].vecu[2]) && /Faut-il changer d’école, ou de type d’école \?$/.test(E[8].vecu[4]) && /un bond énorme/.test(E[2].vecu), 'étape 9 : l’histoire annoncée à l’étape 3 est racontée, en 5 paragraphes');
     ok(/je vous raconterai ce qui a changé pour mon fils/.test(E[8].acc), 'étape 9 : son accroche annonce cette histoire');
@@ -254,7 +254,12 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok(/Gabriele Oettingen/.test(E[10].idee.join(' ')) && /contraste mental/.test(E[10].idee.join(' ')) && E[10].sch === 'cap' && E[10].vecu.length === 2 && /cocon familial/.test(E[10].vecu[0]) && /Cela me fait peur de les voir confrontés à cela\.$/.test(E[10].vecu[0]) && /rebondir à chaque difficulté/.test(E[10].vecu[1]) && /toujours là pour eux\.$/.test(E[10].vecu[1]), 'étape 11 : le contraste mental, puis la peur d’Antonio et son image de l’avenir, avec ses mots');
     ok(/En 2011, 3 chercheurs/.test(E[11].idee.join(' ')) && /le creux du milieu/.test(E[11].idee.join(' ')) && E[11].sch === 'creux' && E[11].rap === 'depart' && E[11].link.join() === 'evo,photo', 'étape 12 : le creux du milieu, sans perdre le rappel de l’étape 1 ni les 2 boutons');
     ok(E[11].vecu.length === 2 && /formation tertiaire de 3 ans/.test(E[11].vecu[0]) && /J’aurais pu lâcher, et trouver des prétextes pour arrêter\./.test(E[11].vecu[1]) && /la mention excellente\.$/.test(E[11].vecu[1]), 'étape 12 : « Ce que j’ai vécu » raconte la formation menée au bout');
-    ok([9, 10, 11].every(i => / je /.test(E[i].acc)), 'étapes 10 à 12 : chaque accroche annonce aussi ce qu’Antonio racontera');
+    ok([9, 10, 11, 12, 13, 14, 15].every(i => / je /.test(E[i].acc)), 'étapes 10 à 16 : chaque accroche annonce aussi ce qu’Antonio racontera');
+    // le mois 4 écrit en entier
+    ok(/Christopher Peterson et Martin Seligman/.test(E[12].idee.join(' ')) && /forces de caractère/.test(E[12].idee.join(' ')) && E[12].sch === 'iceberg' && /sa patience et sa persévérance/.test(E[12].vecu[0]) && /il ne lâche rien\.$/.test(E[12].vecu[1]), 'étape 13 : les forces de caractère, et la persévérance d’un de ses enfants');
+    ok(/Lev Vygotski/.test(E[13].idee.join(' ')) && /zone proximale de développement/.test(E[13].idee.join(' ')) && E[13].sch === 'zones' && /je le rassure et je lui dis de respirer/.test(E[13].vecu[0]) && /internet, une IA ou un dictionnaire\.$/.test(E[13].vecu[1]), 'étape 14 : la zone où l’enfant apprend, et ce qu’Antonio fait quand son enfant n’y arrive pas');
+    ok(/roue de Deming/.test(E[14].idee.join(' ')) && /Walter Shewhart/.test(E[14].idee.join(' ')) && E[14].sch === 'roue' && E[14].link === 'advice' && /Les brosses à dents sont devenues des personnages/.test(E[14].vecu[0]) && /30 secondes sur chacune des 4 zones de la bouche\.$/.test(E[14].vecu[1]), 'étape 15 : la roue des petits essais, le jeu du brossage, et le bouton vers la boîte à outils');
+    ok(/Comité des droits des personnes handicapées des Nations Unies/.test(E[15].idee.join(' ')) && ['exclusion', 'ségrégation', 'intégration', 'inclusion'].every(m => E[15].idee.join(' ').includes('l’' + m) || E[15].idee.join(' ').includes('la ' + m)) && E[15].sch === 'inclusion' && /club des accordéonistes/.test(E[15].vecu), 'étape 16 : les 4 situations, et le club des accordéonistes');
     ok(/MDH-PPH/.test(E[8].t) && E[8].sch === 'mdh' && /Modèle de développement humain et Processus de production du handicap/.test(E[8].idee.join(' ')) && /Fougeyrollas/.test(E[8].idee.join(' ')) && /facilitateur/.test(E[8].idee.join(' ')) && /obstacle/.test(E[8].idee.join(' ')), 'étape 9 : le MDH-PPH est nommé, expliqué, avec ses mots');
     const tout = E.map(s => [s.t, s.idee, s.ex, s.exo, s.obs, s.ecr].flat().join(' ')).join(' ');
     ok(!/enfant différent|avec son handicap/.test(tout), 'le parcours ne suppose plus que l’enfant est « différent »');
@@ -262,7 +267,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
 
     const { ctx, page, errs } = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(-70), steps: {}, pv: 2, seen: {}, atelier: true, tout: true, notes: { emotions: { t: 'La colère. Elle me dirait que je suis à bout.', d: iso(-14) } } }));
     await parcours(page);
-    for (const [i, sch, moments] of [[4, 'voyants', 5], [5, 'colonnes', 6], [6, 'vague', 5], [7, 'appuis', 5], [8, 'mdh', 5], [9, 'projecteur', 5], [10, 'cap', 5], [11, 'creux', 5]]) {
+    for (const [i, sch, moments] of [[4, 'voyants', 5], [5, 'colonnes', 6], [6, 'vague', 5], [7, 'appuis', 5], [8, 'mdh', 5], [9, 'projecteur', 5], [10, 'cap', 5], [11, 'creux', 5], [12, 'iceberg', 5], [13, 'zones', 5], [14, 'roue', 5], [15, 'inclusion', 5]]) {
       await page.click(A('step', `[data-i="${i}"]`)); await page.waitForTimeout(150);
       const debut = (await page.$$('.sp.on')).length;
       let k = 0; while (await page.$(A('schnext')) && k < 8) { await page.click(A('schnext')); await page.waitForTimeout(40); k++; }
@@ -280,6 +285,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
       if (i === 9) ok((await page.$$('.card.vecu p.lesson')).length === 2 && /Il a beaucoup d’humour/.test(await page.textContent('.card.vecu')) && /même enfant/.test(await page.textContent('.card.exemple')), 'étape 10 : le vécu et l’exemple sont à l’écran');
       if (i === 10) ok((await page.$$('.card.vecu p.lesson')).length === 2 && /cocon familial/.test(await page.textContent('.card.vecu')) && /leurs rêves se réalisent/.test(await page.textContent('.card.vecu')) && /boulangerie/.test(await page.textContent('.card.exemple')), 'étape 11 : la peur, l’image et l’exemple sont à l’écran');
       if (i === 11) ok(/mention excellente/.test(await page.textContent('.card.vecu')) && !!(await page.$('.card.suite ' + A('step', '[data-i="12"]'))), 'étape 12 : le vécu est à l’écran, et la suite mène au mois 4');
+      if (i === 12) ok(/il ne lâche rien/.test(await page.textContent('.card.vecu')) && /puzzle/.test(await page.textContent('.card.exemple')), 'étape 13 : le vécu et l’exemple sont à l’écran');
+      if (i === 13) ok(/je lui dis de respirer/.test(await page.textContent('.card.vecu')) && /fermer sa veste/.test(await page.textContent('.card.exemple')), 'étape 14 : le vécu et l’exemple sont à l’écran');
+      if (i === 14) ok(/Bowser, le monstre/.test(await page.textContent('.card.vecu')) && /chaussures/.test(await page.textContent('.card.exemple')) && !!(await page.$('main [data-act="go"], main [data-act="kit"], main .btn')), 'étape 15 : le jeu du brossage et l’exemple sont à l’écran');
+      if (i === 15) ok(/accordéon/.test(await page.textContent('.card.vecu')) && /gardien/.test(await page.textContent('.card.exemple')) && !!(await page.$('.card.suite ' + A('step', '[data-i="16"]'))), 'étape 16 : le vécu est à l’écran, et la suite mène au mois 5');
       await page.click(A('back')); await page.waitForTimeout(120);
     }
     // la dernière étape n'annonce rien : elle mène au carnet
