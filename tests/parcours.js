@@ -152,7 +152,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok(/Vous n’aviez rien écrit/.test(await page.textContent('.card.rap')) && !!(await page.$('.card.rap ' + A('step', '[data-i="11"]'))), 'bilan : sans note à rappeler, la carte propose d’ouvrir l’étape');
     await page.click(A('back')); await page.waitForTimeout(120);
     await page.click(A('step', '[data-i="23"]')); await page.waitForTimeout(150);
-    ok(!!(await page.$('.quick ' + A('go', '[data-view="carnet"]'))) && !(await page.$('.quick ' + A('step'))), 'dernière étape : le bouton mène au carnet');
+    ok(!!(await page.$('.quick ' + A('go', '[data-view="final"]'))) && !(await page.$('.quick ' + A('step'))), 'dernière étape : le bouton mène à « Mon chemin », la page qui rassemble tout le parcours');
     // éteindre l'aperçu : on revoit le parcours comme un parent
     await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(150);
     await page.click(A('tout')); await page.waitForTimeout(150);
@@ -328,7 +328,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok(!(await page.$('.card.mot .linkbtn')), 'le mot de la fin n’a pas de lien');
     // la dernière étape n'annonce rien : elle mène au carnet
     await page.click(A('step', '[data-i="23"]')); await page.waitForTimeout(150);
-    ok(!(await page.$('.card.suite')) && !!(await page.$('.quick ' + A('go', '[data-view="carnet"]'))), 'étape 24 : pas de carte « La prochaine étape », mais le carnet de route');
+    ok(!(await page.$('.card.suite')) && !!(await page.$('.quick ' + A('go', '[data-view="final"]'))) && /Voir mon chemin en entier/.test(await page.textContent('.quick')), 'étape 24 : pas de carte « La prochaine étape », mais le bouton vers « Mon chemin »');
     ok(errs.length === 0, 'aucune erreur (mois 2) ' + errs.slice(0, 2).join(' | '));
     await ctx.close();
     // la première question de « Mon évolution » suit la situation choisie à l'inscription

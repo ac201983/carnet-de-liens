@@ -44,7 +44,10 @@ async function walk(page, visit) {
   await visit('etape-schema');
   await page.fill('#note', 'Je commence ce parcours parce que je veux souffler un peu.'); await w(500); await visit('etape-carnet');
   await page.click(A('back'));
-  await page.click('.quick ' + A('go', '[data-view="carnet"]')); await w(80); await visit('carnet'); await page.click(A('back'));
+  await page.click('.quick ' + A('go', '[data-view="carnet"]')); await w(80); await visit('carnet');
+  // le final, « Mon chemin », ouvert depuis le carnet
+  await page.click('main ' + A('go', '[data-view="final"]')); await w(200); await visit('final'); await page.click(A('back')); await w(80);
+  await page.click(A('back'));
   await page.click('.quick ' + A('go', '[data-view="evo"]')); await w(80); await visit('evolution-chemin'); await page.click(A('back'));
   // ----- boîte à outils
   await tab('kit'); await w(100); await visit('outils-situations');

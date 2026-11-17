@@ -54,7 +54,7 @@ const HELP=[
 ];
 
 /* ---------- état ---------- */
-const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
+const DEF={fxOff:false,tier:'free',me:'',age:'e',situation:'hand',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
 const state={photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -62,6 +62,9 @@ function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&
 /* Avant le 16 novembre 2026, les étapes faites étaient rangées par leur numéro. Elles le sont maintenant par leur nom.
    Un parent venu avant garde ouvertes autant d'étapes que de semaines écoulées depuis son arrivée, et celles qu'il avait faites. */
 function migre(d){
+  /* L'historique des photos commence avec celle qui était déjà gardée. */
+  if(!Array.isArray(d.photos))d.photos=[];
+  if(!d.photos.length&&d.photo&&d.photo.date){const pid=d.photo.id||(typeof d.photo.i==='number'?PHOTOS_AVANT[d.photo.i]:null);if(pid)d.photos.push({id:pid,text:d.photo.text||'',date:d.photo.date});}
   if(d.pv>=2)return d;
   const faits={},vus=(d.seen&&typeof d.seen==='object')?d.seen:{};
   const jour=(iso,n)=>{const p=String(iso).split('-').map(Number);const x=new Date(p[0],p[1]-1,p[2]+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());};
@@ -151,7 +154,7 @@ const MQ_LARGE=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1024px)'):
 const large=()=>!!(MQ_LARGE&&MQ_LARGE.matches);
 /* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
 const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
-const FX_SEL='.intro .acc-h,.intro .acc-c>*:not(.acc-perms),.intro .acc-perms>li,.intro>.voice,.intro>.acc-fin,.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
+const FX_SEL='.final>.fin-couv,.final>.fin-bloc>*,.intro .acc-h,.intro .acc-c>*:not(.acc-perms),.intro .acc-perms>li,.intro>.voice,.intro>.acc-fin,.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
 let fxIO=null,fxSeq=0,fxSkip=0,fxVT=null;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
 function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
@@ -468,7 +471,7 @@ function eauSync(entering){
 }
 /* ---------- rendu ---------- */
 const TAB_VIEWS=['today','parcours','kit','me'];
-const BACK_VIEWS=['sit','exo','step','carnet','photo','data','about','plans','evo','depots','antonio','letter'];
+const BACK_VIEWS=['sit','exo','step','carnet','final','photo','data','about','plans','evo','depots','antonio','letter'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
 function focusKey(el){
   if(!el||!el.matches||!el.closest||!el.closest('#app'))return null;
@@ -493,6 +496,7 @@ function render(){
       case 'parcours':html+=viewParcours();break;
       case 'step':html+=viewStep();break;
       case 'carnet':html+=viewCarnet();break;
+      case 'final':html+=viewFinal();break;
       case 'evo':html+=viewEvo();break;
       case 'photo':html+=viewPhoto();break;
       case 'kit':html+=viewKit();break;
@@ -780,6 +784,7 @@ function viewParcours(){
     (d.tout?'<span class="pill sun apercu">Aperçu d’Antonio, tout est ouvert</span>':'')+
     '<div class="card prog"><div class="kv"><span>Votre parcours</span><span>'+done+' sur 24 étapes</span></div><div class="progress"><b style="width:'+pct+'%"></b></div>'+
     '<div class="quick"><button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet'+(nn?' ('+nn+')':'')+'</button><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
+    (done>=24?'<button type="button" class="card fin-appel" data-act="go" data-view="final"><span class="label">Vous êtes au bout des 24 étapes</span><p class="lesson">Votre chemin tient maintenant sur une page, avec vos mots.</p><span class="btn primary small" style="align-self:flex-start">'+I.path+'Voir mon chemin</span></button>':'')+
     '<div class="months">'+PARCOURS.map((m,mi)=>'<div class="month"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';return '<button type="button" class="step'+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'"><span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div>').join('')+'</div>'+
     (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre 7 jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
 }
@@ -802,7 +807,7 @@ function viewStep(){
     if(r)rap='<div class="card rap"><span class="label">Ce que vous aviez écrit à l’étape '+(r.idx+1)+'</span>'+(rn?'<p class="lesson">'+nl2(rn.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(rn.d))+'</span>':'<p class="hint">Vous n’aviez rien écrit à cette étape, qui s’appelle « '+esc(r.t)+' ». Vous pouvez encore le faire.</p><button type="button" class="btn small" data-act="step" data-i="'+r.idx+'" style="align-self:flex-start">Ouvrir cette étape</button>')+'</div>';}
   const sv=s.idx<steps.length-1?steps[s.idx+1]:null;const ap=sv?stepEtat(sv.idx):null;
   /* La prochaine étape : son titre, une phrase qui dit ce qu'on y trouvera, puis le jour où elle s'ouvre ou le bouton pour y aller. */
-  const fin=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':'';
+  const fin=!sv?'<button type="button" class="btn" data-act="go" data-view="final">'+I.path+'Voir mon chemin en entier</button>':'';
   /* Le mot de la fin : les derniers mots d'Antonio, après le carnet. Seule la dernière étape en a un. */
   const mot=!s.mot?'':'<div class="card vecu mot"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Le mot de la fin</b><small>Antonio</small></div></div>'+(Array.isArray(s.mot)?s.mot:[s.mot]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'</div>';
   const suite=!sv?'':'<div class="card suite"><span class="label">La prochaine étape</span><h2>'+esc(sv.t)+'</h2>'+(sv.acc?'<p>'+esc(sv.acc)+'</p>':'')+
@@ -825,12 +830,53 @@ function viewCarnet(){
   const S=allSteps();const n=nbNotes();
   let h='<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mon carnet de route</h1><p class="sub">Vous retrouvez ici ce que vous avez écrit à chaque étape du parcours. Tout reste sur votre appareil.</p></div>';
   if(!n)return h+'<div class="card"><p>Votre carnet est encore vide. Il se remplira avec ce que vous écrirez à la fin de chaque étape.</p><button type="button" class="btn primary" data-act="step" data-i="'+currentStepIdx()+'" style="align-self:flex-start">'+I.path+'Ouvrir mon étape</button></div></main>';
+  h+='<button type="button" class="btn" data-act="go" data-view="final" style="align-self:flex-start">'+I.path+'Mon chemin, la page à garder</button>';
   PARCOURS.forEach((m,mi)=>{
     const L=S.filter(s=>s.mi===mi&&noteDe(s.id));if(!L.length)return;
     h+='<section class="carnet-mois"><h2><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h2>'+L.map(s=>{const nt=noteDe(s.id);
       return '<article class="card page"><span class="label">Étape '+(s.idx+1)+', '+esc(s.t)+'</span><p class="q">'+esc(s.ecr)+'</p><p class="lesson">'+nl2(nt.t)+'</p><div class="row" style="align-items:center;justify-content:space-between"><span class="hint">Écrit le '+esc(fmtDate(nt.d))+'</span><button type="button" class="btn small" data-act="step" data-i="'+s.idx+'">Rouvrir l’étape</button></div></article>';}).join('')+'</section>';
   });
   return h+'</main>';
+}
+/* ---------- Le final : « Mon chemin », tout le parcours du parent sur une page, à garder ou à imprimer ----------
+   La page rassemble ce que le parent a fait et écrit : ses points de « Mon évolution », les photos qu'il a choisies,
+   ses pages de carnet, sa lettre. Les seuls mots qui ne sont pas les siens sont le mot de la fin d'Antonio. Tout reste sur l'appareil. */
+function dateLongue(iso){
+  const p=String(iso||'').split('-').map(Number);if(p.length<3||!p[0]||!p[1]||!p[2])return '';
+  try{return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('fr-CH',{day:'numeric',month:'long',year:'numeric'});}catch(e){return fmtDate(iso);}
+}
+/* Le graphique de « Mon évolution » : une ligne par échelle, une barre par point fait. Il sert dans « Mon évolution » et dans le final. */
+function evoBars(){
+  const e=D().evo||{};const have=EVO_TIMES.filter(x=>e[x[0]]);if(!have.length)return '';
+  return '<div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b><em>'+Number(e[x[0]][s.id]||0)+'</em></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div>';
+}
+/* Les photos choisies, dans l'ordre. Une photo retirée depuis du jeu n'est pas montrée. */
+function photosChoisies(){
+  const L=Array.isArray(D().photos)?D().photos:[];
+  return L.map(p=>{const x=p&&p.id?PHOTOS.find(y=>y[0]===p.id):null;return x?{x:x,text:p.text||'',date:p.date||''}:null;}).filter(Boolean);
+}
+function viewFinal(){
+  const d=D();const S=allSteps();const e=d.evo||{};
+  const dep=noteDe('depart'),lettre=noteDe('chemin');const der=S[S.length-1]||{};
+  const faites=doneCount(),pages=nbNotes(),photos=photosChoisies(),pts=EVO_TIMES.filter(x=>e[x[0]]);
+  const peutImprimer=typeof window.print==='function';
+  const du=dateLongue(d.start),au=dateLongue(todayIso());
+  let h='<main id="main" tabindex="-1" class="view final"><div class="fin-couv"><span class="label">Parent Écouté, Parent Éclairé</span><h1 class="t1">'+(d.me?'Le chemin de '+esc(d.me):'Mon chemin')+'</h1>'+
+    '<p class="sub">'+(du&&du!==au?'Du '+esc(du)+' au '+esc(au)+'. ':'')+faites+' étape'+(faites>1?'s':'')+' faite'+(faites>1?'s':'')+' sur 24, et '+pages+' page'+(pages>1?'s':'')+' écrite'+(pages>1?'s':'')+'.</p></div>'+
+    '<div class="card fin-mode sansimp"><p>Voici votre parcours rassemblé sur une seule page, avec vos mots. Vous pouvez la garder, ou l’imprimer.</p>'+(peutImprimer?'<button type="button" class="btn primary" data-act="imprimer" style="align-self:flex-start">'+I.note+'Imprimer ou enregistrer en PDF</button>':'')+'</div>';
+  if(!pages&&!pts.length&&!photos.length)return h+'<div class="card"><p>Votre chemin est encore vide. Il se remplira avec ce que vous écrirez à chaque étape, vos points dans « Mon évolution » et les photos que vous choisirez.</p><button type="button" class="btn" data-act="step" data-i="'+currentStepIdx()+'" style="align-self:flex-start">'+I.path+'Ouvrir mon étape</button></div></main>';
+  if(dep)h+='<section class="fin-bloc" aria-labelledby="fin-dep"><h2 id="fin-dep" class="t2">Mon point de départ</h2><div class="card page"><p class="q">'+esc(S[0].ecr)+'</p><p class="lesson">'+nl2(dep.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(dep.d))+'</span></div></section>';
+  if(pts.length){
+    const ouv=pts.map(x=>{const r=e[x[0]];const L=EVO_OPEN.filter(o=>r[o[0]]&&String(r[o[0]]).trim());return L.length?'<div class="card page"><span class="label">'+esc(x[1])+(r.date?', le '+esc(fmtDate(r.date)):'')+'</span>'+L.map(o=>'<p class="q">'+esc(evoQ(o))+'</p><p class="lesson">'+nl2(r[o[0]])+'</p>').join('')+'</div>':'';}).join('');
+    h+='<section class="fin-bloc" aria-labelledby="fin-evo"><h2 id="fin-evo" class="t2">'+(pts.length>1?'Mes '+pts.length+' points':'Mon premier point')+'</h2><div class="card">'+evoBars()+'<p class="hint">Chaque barre va de 0 à 10.</p></div>'+ouv+'</section>';
+  }
+  if(photos.length)h+='<section class="fin-bloc" aria-labelledby="fin-pho"><h2 id="fin-pho" class="t2">'+(photos.length>1?'Les photos que j’ai choisies':'La photo que j’ai choisie')+'</h2><div class="fin-photos">'+photos.map(p=>'<figure class="card fin-photo"><img src="'+PHOTO_DIR+p.x[0]+'.webp" alt="'+esc(p.x[2])+'" width="400" height="300" loading="lazy" decoding="async"><figcaption><b>'+esc(p.x[1])+'</b>'+(p.date?'<span class="hint">Choisie le '+esc(fmtDate(p.date))+'</span>':'')+(p.text?'<p class="lesson">'+nl2(p.text)+'</p>':'')+'</figcaption></figure>').join('')+'</div></section>';
+  const ecrits=PARCOURS.map((m,mi)=>{const L=S.filter(s=>s.mi===mi&&noteDe(s.id)&&s.id!=='depart'&&s.id!=='chemin');if(!L.length)return '';
+    return '<div class="carnet-mois"><h3><span class="n">'+(mi+1)+'</span>'+esc(m.m)+'</h3>'+L.map(s=>{const nt=noteDe(s.id);return '<article class="card page"><span class="label">Étape '+(s.idx+1)+', '+esc(s.t)+'</span><p class="q">'+esc(s.ecr)+'</p><p class="lesson">'+nl2(nt.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(nt.d))+'</span></article>';}).join('')+'</div>';}).join('');
+  if(ecrits)h+='<section class="fin-bloc" aria-labelledby="fin-ecr"><h2 id="fin-ecr" class="t2">Ce que j’ai écrit</h2>'+ecrits+'</section>';
+  h+='<section class="fin-bloc" aria-labelledby="fin-let"><h2 id="fin-let" class="t2">Ma lettre</h2>'+(lettre?'<div class="card page fin-lettre"><p class="q">'+esc(der.ecr||'')+'</p><p class="lesson">'+nl2(lettre.t)+'</p><span class="hint">Écrite le '+esc(fmtDate(lettre.d))+'</span></div>':'<div class="card sansimp"><p>Votre lettre vous attend à la dernière étape du parcours.</p></div>')+'</section>';
+  if(der.mot)h+='<div class="card vecu mot"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Le mot de la fin</b><small>Antonio</small></div></div>'+(Array.isArray(der.mot)?der.mot:[der.mot]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'</div>';
+  return h+'<p class="hint fin-pied">Tout ce qui est écrit ici reste sur votre appareil. Cette page se complète à mesure que vous avancez.</p></main>';
 }
 /* ---------- Les schémas du parcours ----------
    Le dessin avance d'un moment à chaque « Voir la suite ». Rien ne démarre tout seul, et le dessin n'est pas redessiné
@@ -883,7 +929,7 @@ function viewEvo(){
   const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(evoQ(o))+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(dr[o[0]]!==undefined?dr[o[0]]:(cur[o[0]]||''))+'</textarea></div>').join('');
   const have=EVO_TIMES.filter(x=>e[x[0]]);
   let bars='';
-  if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b><em>'+Number(e[x[0]][s.id]||0)+'</em></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Chaque barre va de 0 à 10. Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}
+  if(have.length){bars='<div class="card"><span class="label">Le chemin</span>'+evoBars()+'<p class="hint">Chaque barre va de 0 à 10. Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}
   return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+(t==='t1'?'Le questionnaire de départ':t==='t2'?'Le point à trois mois':'Le bilan à six mois')+'</span><h1 class="t1">Mon évolution</h1><p class="sub">Vous faites le point trois fois en six mois, au départ, à mi-parcours et au bilan. Il y a cinq échelles de 0 à 10 et deux questions à chaque fois. Il n’y a pas de bonne réponse, seulement la vôtre aujourd’hui.</p></div>'+chips+bars+
     '<div class="card"><p class="hint">Pour chaque ligne, faites glisser le rond ou touchez un chiffre.</p>'+scales+opens+'<button type="button" class="btn primary" data-act="evosave" style="align-self:flex-start">'+I.check+'Enregistrer ce point</button></div></main>';
 }
