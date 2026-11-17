@@ -1032,7 +1032,7 @@ const MQ_LARGE=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1024px)'):
 const large=()=>!!(MQ_LARGE&&MQ_LARGE.matches);
 /* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
 const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
-const FX_SEL='.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
+const FX_SEL='.intro .acc-h,.intro .acc-c>*:not(.acc-perms),.intro .acc-perms>li,.intro>.voice,.intro>.acc-fin,.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
 let fxIO=null,fxSeq=0,fxSkip=0,fxVT=null;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
 function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
@@ -1418,6 +1418,7 @@ function render(){
   }
   if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
   syncStory(entering);
+  if(key==='intro')introLive();
   fxMark();
   eauSync(entering);if(entering)eauArrive();
 }
@@ -1465,20 +1466,76 @@ function updCount(t){
   if(n>=LIM.draft*0.875){c.textContent=n+' / '+LIM.draft;c.className='count'+(n>=LIM.draft?' warn':'');}else c.textContent='';
 }
 /* ---------- accueil plein écran ---------- */
+/* ---------- l'accueil : la page que voit un parent qui arrive pour la première fois ----------
+   Une page longue, en chapitres. Chaque chapitre montre un vrai morceau de l'espace, pris dans ses contenus :
+   des permissions, la dose du jour, une réponse à un dépôt, un schéma du parcours, un extrait de « Ce que j'ai vécu »,
+   des cartes-images, les formules. Rien n'y est inventé au nom d'Antonio. */
+function introDoseLabel(){if(new Date().getDay()===0)return 'Dose spéciale du dimanche';let j='';try{j=new Date().toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});}catch(e){}return 'La dose du '+(j||fmtDate(todayIso()));}
 function viewIntro(){
   const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="onboard">'+I.sun2+'Commencer gratuitement</button>';
   const priv=SITE?'Cette version de test est gratuite et tout ce que vous écrivez reste sur votre appareil. La phrase-miroir personnalisée arrivera avec la version complète. En attendant, chaque dépôt reçoit une question et une lumière.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0">'+
-    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer six mois à votre rythme.</p>'+cta(false)+'</div>'+
-    '<div class="pillars reveal d1">'+
-    '<div class="pillar"><span class="ic">'+I.drop+'</span><div><h2>Écouté</h2><span>Vous déposez par écrit ce qui vous pèse, sans donner de prénom. En retour, vous recevez une phrase-miroir, une question qui ouvre et une lumière.</span></div></div>'+
-    '<div class="pillar sun"><span class="ic">'+I.sun2+'</span><div><h2>Éclairé</h2><span>Vous recevez chaque matin la dose de lumière intérieure et vous suivez un parcours de six mois, à raison d’une étape par semaine.</span></div></div>'+
-    '<div class="pillar"><span class="ic">'+I.user+'</span><div><h2>Accompagné, si vous le voulez</h2><span>Antonio Company, travailleur social depuis ses 19 ans, vous écrit chaque mois dans la formule « Avec Antonio ».</span></div></div>'+
-    '</div>'+
-    '<section class="voice reveal d2" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à dix ans, je suis travailleur social depuis mes 19 ans et je suis père de trois enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></section>'+
-    '<div class="cta-stack reveal d3">'+cta(true)+'</div>'+
-    '<p class="hint" style="text-align:center">'+priv+'</p></main>'+
+  const sec=(k,t,l,c)=>'<section class="acc acc-'+k+'" aria-labelledby="acc-'+k+'-t"><div class="acc-h"><h2 id="acc-'+k+'-t" class="acc-t">'+t+'</h2>'+(l?'<p class="acc-l">'+l+'</p>':'')+'</div><div class="acc-c">'+c+'</div></section>';
+  const steps=allSteps();const etape=id=>steps.find(x=>x.id===id)||{};
+  /* 1. Les permissions : 4 des 10 que l'espace propose. Le titre commence la phrase, chaque ligne la finit. */
+  const perms='<ul class="acc-perms">'+[0,2,3,9].map(i=>PERMISSIONS[i]).filter(Boolean).map(p=>'<li>'+esc(p[1])+'</li>').join('')+'</ul><p class="acc-l">Ici, vous n’avez rien à prouver à personne.</p>';
+  /* 2. La dose du jour, la vraie. Sur le site, la page est écrite à l'avance : introLive() remet la dose d'aujourd'hui. */
+  const dose='<div class="dose"><span class="label">'+esc(introDoseLabel())+'</span><p>'+esc(curatedDose())+'</p><span class="sig">Antonio</span></div>';
+  /* 3. Déposer : un exemple, avec une question et une lumière prises dans celles de l'espace. */
+  const depot='<div class="mirror"><span class="lbl">Un exemple</span><p class="depot you">« Ce soir, j’ai crié pour une histoire de chaussettes. Il a pleuré, et moi aussi après. Je m’en veux. »</p><p class="q">'+esc(LOCAL_Q[1])+'</p><p class="l">'+esc(WORDS[10])+'</p></div>'+
+    '<p class="hint">'+(SITE?'Ce que vous écrivez reste sur votre appareil. Personne d’autre ne le lit.':'Votre texte part sans votre nom, et une intelligence artificielle écrit la réponse.')+'</p>';
+  /* 4. Le parcours : un schéma à dérouler, les 6 mois et leurs 24 étapes, puis un extrait de ce qu'Antonio raconte à l'étape 2. */
+  const sch=schHtml('vague').replace('<span class="label">Le schéma</span>','<span class="label">Un schéma de l’étape 7, à dérouler</span>');
+  const mois='<p class="acc-st">Les 6 mois, étape par étape</p><div class="acc-mois">'+PARCOURS.map((m,mi)=>'<details class="mois"'+(mi===0?' open':'')+'><summary><span class="n">'+(mi+1)+'</span><span class="tx"><b>'+esc(m.m)+'</b><span>Mois '+(mi+1)+'</span></span>'+I.chev+'</summary><ol start="'+(mi*4+1)+'">'+m.steps.map(s=>'<li>'+esc(s.t)+'</li>').join('')+'</ol></details>').join('')+'</div>';
+  const cr=etape('croire');const vec=Array.isArray(cr.vecu)?cr.vecu.slice(0,2):[];
+  const vecu=!vec.length?'':'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio, à l’étape 2</small></div></div>'+vec.map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'<div class="vecu-lien"><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></div>';
+  /* 5. La boîte à outils : les 6 images de la routine du soir, et quelques-unes des situations. */
+  const pictos='<p class="acc-st">La routine du soir, en '+ROUTINE_DEF.length+' images</p><ul class="acc-pictos">'+ROUTINE_DEF.map(id=>{const p=PICTOS.find(x=>x[0]===id);return p?'<li class="pc">'+pictoImg(id,72,true)+'<b>'+esc(p[1])+'</b></li>':'';}).join('')+'</ul>';
+  const choix=[0,2,3,4,11,8,15,20].map(i=>SITS[i]).filter(Boolean);
+  const sits='<p class="acc-st">Quelques-unes des '+SITS.length+' situations</p><ul class="acc-chips">'+choix.map(s=>'<li>'+esc(s.t)+'</li>').join('')+'<li class="plus">et '+(SITS.length-choix.length)+' autres</li></ul>';
+  /* 7. Les formules, avec les prix affichés dans l'espace. */
+  const F=[['free','La dose chaque jour, toute la boîte à outils, 3 dépôts écoutés et la première étape du parcours.'],['parcours','Les 24 étapes, votre carnet de route, « Mon évolution », le photolangage et des dépôts sans limite.'],['antonio','Tout Le parcours, avec un mot personnel d’Antonio chaque mois et 2 questions par mois.']];
+  const plans='<ul class="acc-plans">'+F.map(f=>{const T=TIERS[f[0]];return '<li'+(f[0]==='parcours'?' class="best"':'')+'><div class="h"><b>'+esc(T.t)+'</b><span class="prix">'+T.p+' CHF'+(T.p==='0'?'':' <small>par mois</small>')+'</span></div><p>'+f[1]+'</p></li>';}).join('')+'</ul><button type="button" class="btn" data-act="peek-plans">Voir le détail des formules</button>';
+  /* 8. Les questions qu'un parent se pose avant de commencer. */
+  const Q=[
+    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace s’adresse à tous les parents, que votre enfant vive une situation de handicap, que votre famille traverse une période difficile, ou que vous soyez parent, simplement.'],
+    ['Qui lit ce que j’écris ?',SITE?'Personne. Dans cette version, tout ce que vous écrivez reste sur votre appareil, et rien n’est envoyé.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom, et une intelligence artificielle écrit la réponse.'],
+    ['Qui me répond ?',SITE?'Les textes de l’espace sont écrits à l’avance, sous la responsabilité d’Antonio Company. Dans cette version de test, chaque dépôt reçoit une question et une lumière. Dans la version complète, une intelligence artificielle écrira une réponse personnelle, et l’espace vous le dira clairement.':'Quand vous déposez, une intelligence artificielle écrit la réponse, avec la méthode d’Antonio, et l’espace vous le dit. Les autres textes sont écrits à l’avance, sous la responsabilité d’Antonio Company.'],
+    ['Combien de temps cela demande-t-il ?','Comptez 5 à 10 minutes par semaine pour lire une étape, puis un essai chez vous et quelques mots dans votre carnet. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.'],
+    ['Est-ce que cela remplace un professionnel ?','Non. Cet espace vous soutient entre deux rendez-vous, et il ne remplace ni un médecin ni un thérapeute. En cas d’urgence, le bouton SOS vous donne les numéros à appeler.']
+  ];
+  const faq='<div class="acc-faq-l">'+Q.map(q=>'<details class="faq"><summary><span>'+q[0]+'</span>'+I.chev+'</summary><p>'+q[1]+'</p></details>').join('')+'</div>';
+  /* 9. La fin : la phrase qu'Antonio adresse aux parents à l'étape 4, puis le bouton. */
+  const ob=etape('objectifs');const cit=((typeof ob.vecu==='string'?ob.vecu:'').match(/Vous qui me lisez.*$/)||[''])[0];
+  return '<main id="main" tabindex="-1" class="view intro" style="padding-top:0">'+
+    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high"><span class="pill test">Version de test</span><h1>Parent Écouté,<br>Parent Éclairé</h1><span class="by">Par Antonio Company</span><p class="tag">Un espace d’écoute pour tout parent en chemin, pour déposer ce qui pèse, recevoir chaque jour une dose de lumière et avancer pendant 6 mois, à votre rythme.</p>'+cta(false)+
+    '<p class="rassure">Gratuit pour commencer, sans carte bancaire. Rien à installer.</p><button type="button" class="voir" data-act="intro-suite">Voir ce qu’il y a dedans'+I.chev+'</button></div>'+
+    sec('perm','Ici, vous avez le droit','',perms)+
+    sec('dose','Chaque matin, une dose de lumière','Voici celle d’aujourd’hui. Demain, une autre vous attendra.',dose)+
+    sec('depot','Un endroit pour déposer ce qui pèse','Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
+    sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+mois+vecu)+
+    sec('outils','Une boîte à outils pour les jours difficiles','Vous y trouvez '+SITS.length+' situations du quotidien avec des pistes à essayer, '+PICTOS.length+' images pour montrer à votre enfant ce qui vient d’abord et ce qui vient ensuite, des exercices pour souffler, et un bouton SOS.',pictos+sits)+
+    '<section class="voice" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à 10 ans, je suis travailleur social depuis mes 19 ans et je suis père de 3 enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="btn small" data-act="peek-about">Lire mon histoire</button></div></section>'+
+    sec('formules','Vous commencez gratuitement','Pendant la version de test, vous pouvez essayer chaque formule sans rien payer, et la formule « Avec Antonio » est une démonstration. Voici les prix prévus pour la Suisse.',plans)+
+    sec('faq','Vos questions','',faq)+
+    '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+HERO+'" alt="" width="866" height="470" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
+    '<p class="hint" style="text-align:center">'+priv+'</p>'+
+    '<div class="cta-flot">'+cta(false)+'</div></main>'+
     '<footer class="foot"><button type="button" class="linkbtn" data-act="peek-plans">Formules</button>'+(SITE?'<a href="confidentialite.html">Confidentialité</a><a href="conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="mentions-legales.html">Mentions légales</a>':''):'')+'</footer>';
+}
+/* Ce qui vit sur l'accueil une fois la page à l'écran : la dose du jour (la page a pu être écrite un autre jour),
+   et le bouton flottant, qui apparaît quand le bouton du haut est sorti de l'écran et s'efface quand celui du bas arrive. */
+let introIO=null;
+function introLive(){
+  if(introIO){try{introIO.disconnect();}catch(e){}introIO=null;}
+  const app=document.getElementById('app');if(!app||!app.querySelector)return;const m=app.querySelector('main.intro');if(!m)return;
+  const dp=m.querySelector('.acc-dose .dose p'),dl=m.querySelector('.acc-dose .dose .label');
+  if(dp){const tx=curatedDose();if(dp.textContent!==tx)dp.textContent=tx;}
+  if(dl){const lb=introDoseLabel();if(dl.textContent!==lb)dl.textContent=lb;}
+  const fl=m.querySelector('.cta-flot'),haut=m.querySelector('.herofull'),bas=m.querySelector('.acc-fin');
+  if(!fl||!haut||!bas||!('IntersectionObserver' in window))return;
+  const vu=new Map();
+  introIO=new IntersectionObserver(es=>{es.forEach(e=>vu.set(e.target,e.isIntersecting));if(vu.has(haut)&&vu.has(bas))fl.classList.toggle('on',!vu.get(haut)&&!vu.get(bas));},{threshold:0});
+  introIO.observe(haut);introIO.observe(bas);
 }
 /* ---------- aujourd’hui ---------- */
 function viewToday(){
@@ -2001,6 +2058,7 @@ function handle(act,d,el){
   switch(act){
     case 'peek-plans':state.prev=null;state.sheet=null;state.view='plans';break;
     case 'peek-about':openStory();return;
+    case 'intro-suite':{const s=document.querySelector('.intro .acc');if(s&&s.scrollIntoView)s.scrollIntoView({behavior:fxOn()?'smooth':'auto',block:'start'});return;}
     case 'onboard':state.sheet='onboard';break;
     case 'ob':data[d.k]=d.v;save();break;
     case 'obw':{const i=data.weights.indexOf(d.v);if(i>=0)data.weights.splice(i,1);else data.weights.push(d.v);save();break;}
@@ -2121,7 +2179,7 @@ if(SITE)window.addEventListener('hashchange',()=>{
 state.inClaude=!SITE&&!!(window.claude&&typeof window.claude.use==='function');
 if(SITE)state.sample=false;
 /* Sur le site, l'accueil est déjà écrit dans la page (affichage immédiat, lisible sans JavaScript par les moteurs) : on le garde tel quel. */
-if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');fxMark();eauArrive(true);}
+if(app.getAttribute('data-prerender')==='intro'&&!D().onboarded&&!storyFirst){state.lastKey='intro';app.removeAttribute('data-prerender');introLive();fxMark();eauArrive(true);}
 else render();
 if(atelierMsg)toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');
 if(!SITE)(async()=>{try{if(state.inClaude){const s=await window.claude.use('sample');state.sample=s||false;}else state.sample=false;}catch(e){state.sample=false;}if(D().onboarded||state.view==='plans')render();})();
