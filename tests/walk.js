@@ -43,7 +43,10 @@ async function walk(page, visit) {
     if (t === 'abc') { await page.click(A('abcadd')); await visit('outils-abc-erreur'); await page.fill('#a2', 'Cris pendant dix minutes'); await page.click(A('abcadd')); }
     if (t === 'phr') { await page.fill('#ph', 'On respire comme le dragon'); await page.click(A('phadd')); await page.fill('#ph', 'On respire comme le dragon'); await page.click(A('phadd')); }
     await visit('outils-' + t);
-    if (t === 'ft') { await page.click('.picto button:has-text("Dents")'); await page.click('.picto button:has-text("Histoire")'); await w(60); await visit('outils-ft-rempli'); }
+    if (t === 'ft') {
+      await page.click(A('ftg', '[data-v="soir"]')); await w(60); await page.click(A('ftset', '[data-id="dents"]')); await page.click(A('ftset', '[data-id="histoire"]')); await w(120); await visit('outils-ft-rempli');
+      await page.click(A('ftg', '[data-v="tout"]')); await w(200); await visit('outils-ft-tout');
+    }
   }
   await page.click(A('kit', '[data-v="me"]')); await visit('outils-pour-moi');
   for (const x of ['breath', 'trois', 'deposer', 'droit', 'minute', 'appeler']) {

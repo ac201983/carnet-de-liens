@@ -16,6 +16,8 @@ find pparts site-src tests -type f ! -name '*.bak' ! -path '*/node_modules/*' -p
 cp eparts/p2-content.js "$BRANCHE/eparts/"
 cp outils/*.sh "$BRANCHE/outils/"
 cp outils/*.py "$BRANCHE/outils/" 2>/dev/null || true
+# Ce qui a servi à choisir et à préparer les cartes-images
+cp -r outils/pictos "$BRANCHE/outils/" 2>/dev/null || true
 # Le banc d'essai de l'eau et de la goutte
 cp build/doux/lab.html build/doux/eau.js "$BRANCHE/outils/eau/" 2>/dev/null || true
 

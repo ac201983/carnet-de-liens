@@ -386,6 +386,7 @@ def build_site():
                                     '<IfModule mod_mime.c>\n'
                                     'AddType application/manifest+json .webmanifest\n'
                                     'AddType font/woff2 .woff2\n'
+                                    'AddType image/svg+xml .svg\n'
                                     'AddCharset utf-8 .html .css .js .xml .txt .webmanifest\n'
                                     '</IfModule>\n'
                                     '<IfModule mod_headers.c>\n'

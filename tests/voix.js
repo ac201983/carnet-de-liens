@@ -32,8 +32,11 @@ const TELLS = [
   await browser.close();
   // Les contenus que le parcours des écrans n'ouvre pas tous (22 situations, 24 étapes, 18 doses, mots, exercices) : lus dans les sources.
   const fs = require('fs');
-  let c = fs.readFileSync(__dirname + '/../eparts/p2-content.js', 'utf8').replace(/<\/?script>/g, ''); c = c.slice(c.indexOf('const WORDS'), c.indexOf('const PICTOS'));
+  const c0 = fs.readFileSync(__dirname + '/../eparts/p2-content.js', 'utf8').replace(/<\/?script>/g, ''); const c = c0.slice(c0.indexOf('const WORDS'), c0.indexOf('const PICTOS'));
   const T1 = new Function(c + '; return {WORDS,PERMISSIONS,MOODS,MOOD_WORDS,SITS,EXOS,THEMES,AGES};')();
+  // les mots écrits sous les images, ce qu'on dit après « D'abord » ou « ensuite », et les noms des groupes
+  const P = new Function(c0.slice(c0.indexOf('const PICTOS')) + '; return {PICTOS,PICTO_GROUPES};')();
+  T1.PICTOS = P.PICTOS.map(x => [x[1], x[2]]); T1.PICTO_GROUPES = P.PICTO_GROUPES.map(x => x[1]);
   const T2 = new Function(fs.readFileSync(__dirname + '/../pparts/p2b-parcours.js', 'utf8') + '; return {DOSES,PARCOURS,EVO_SCALES,EVO_OPEN,EVO_TIMES,PHOTOS};')();
   let nTables = 0;
   const rec = (v, where) => { if (typeof v === 'string') { nTables++; const l = v.replace(/\s+/g, ' ').trim(); if (l && !seen.has(l)) seen.set(l, where); } else if (Array.isArray(v)) v.forEach(x => rec(x, where)); else if (v && typeof v === 'object') for (const k in v) rec(v[k], where + (Array.isArray(v) ? '' : '.' + k)); };
