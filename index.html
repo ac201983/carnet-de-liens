@@ -288,7 +288,7 @@ textarea{width:100%;min-height:124px;border:1px solid var(--line);border-radius:
 const KEY='carnet-de-liens-demo-v5';
 const SEEN_KEY='carnet-de-liens-seen-v5';
 const PHONE='026 000 00 00';
-const PAVILLON='Pavillon Bleu';
+const PAVILLON='Pavillon du Verger';
 const RESPONSABLE='Antonio Company';
 
 /* ---------- icons ---------- */
@@ -418,7 +418,7 @@ const RESIDENTS=[
 
 /* ---------- profiles ---------- */
 const ROLES={
-  equipe:{label:'Équipe éducative',kind:'team',who:'équipe éducative du '+PAVILLON,short:'Équipe',desc:'Écrire, lire, préparer ce que la famille verra',initials:'ÉB',hue:168},
+  equipe:{label:'Équipe éducative',kind:'team',who:'équipe éducative du '+PAVILLON,short:'Équipe',desc:'Écrire, lire, préparer ce que la famille verra',initials:'ÉV',hue:168},
   responsable:{label:RESPONSABLE,kind:'team',canValidate:true,canTrace:true,who:'responsable du '+PAVILLON,short:RESPONSABLE,desc:'Responsable du '+PAVILLON+' · valide, règle les accès, trace',initials:'AC',hue:200},
   curatrice:{label:'Anne Rey',kind:'family',rid:'r1',member:0,who:'Anne Rey, mère et curatrice de Mathilde',short:'Anne Rey (curatrice)',first:'Anne',desc:'Mère de Mathilde, curatrice de portée générale',initials:'AR',hue:36},
   proche:{label:'Luc Rey',kind:'family',rid:'r1',member:1,who:'Luc Rey, frère de Mathilde, sans mandat',short:'Luc Rey (proche)',first:'Luc',desc:'Frère de Mathilde, sans mandat',initials:'LR',hue:36},
@@ -450,8 +450,8 @@ const SEED_ENTRIES=[
   {id:'e17',rid:'r7',d:2,time:'16:00',cat:'activites',by:'equipe',status:'ok',read:{d:2,time:'22:05'},text:'Sortie au marché : Marco a payé lui-même ses pommes et a vérifié la monnaie. Objectif du PAI en bonne voie.'}
 ];
 const SEED_TRACE=[
-  {rid:'r1',d:0,time:'16:41',kind:'create',what:'Entrée « Quotidien » écrite',who:'Équipe · auteur interne C.D.'},
-  {rid:'r1',d:0,time:'13:06',kind:'create',what:'Entrée « Santé » écrite, en attente de validation',who:'Équipe · auteur interne M.B.'},
+  {rid:'r1',d:0,time:'16:41',kind:'create',what:'Entrée « Quotidien » écrite',who:'Équipe · auteur interne P.R.'},
+  {rid:'r1',d:0,time:'13:06',kind:'create',what:'Entrée « Santé » écrite, en attente de validation',who:'Équipe · auteur interne O.T.'},
   {rid:'r1',d:1,time:'19:12',kind:'consult',what:'Carnet consulté',who:'Anne Rey (curatrice)'},
   {rid:'r1',d:1,time:'10:02',kind:'validate',what:'Entrée « Santé » validée',who:RESPONSABLE+' (responsable)'},
   {rid:'r1',d:'ret',time:'20:16',kind:'family',what:'Retour de séjour écrit',who:'Anne Rey (curatrice)'},
@@ -460,7 +460,7 @@ const SEED_TRACE=[
   {rid:'r1',d:64,time:'14:05',kind:'access',what:'Accès d’Anne Rey fixé à « accès complet » : curatelle de portée générale (art. 398 CC)',who:RESPONSABLE+' (responsable)'},
   {rid:'r2',d:'ret',time:'19:41',kind:'family',what:'Retour de séjour écrit',who:'Marianne Aebischer (mère)'},
   {rid:'r2',d:30,time:'10:00',kind:'access',what:'Accès de Marianne Aebischer étendu aux rendez-vous : accord de Julien, recueilli avec soutien et consigné',who:RESPONSABLE+' (responsable)'},
-  {rid:'r3',d:0,time:'15:31',kind:'create',what:'Entrée « Santé » écrite, en attente de validation',who:'Équipe · auteur interne J.F.'},
+  {rid:'r3',d:0,time:'15:31',kind:'create',what:'Entrée « Santé » écrite, en attente de validation',who:'Équipe · auteur interne V.H.'},
   {rid:'r3',d:1,time:'21:10',kind:'read',what:'Entrée « Activités » marquée comme lue',who:'Pierre Dorthe (curateur)'},
   {rid:'r7',d:2,time:'22:05',kind:'read',what:'Entrée « Activités » marquée comme lue',who:'Rosa Castella (curatrice)'}
 ];
