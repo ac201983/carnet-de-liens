@@ -505,7 +505,7 @@ const PARCOURS=[
      sch:'ravito',
      vecu:['Je cours régulièrement et j’aime comparer la vie de parent à un marathon. On ne peut pas le courir au sprint et on a besoin de ravitaillements pour tenir.',
        'Mon ravitaillement, c’est la marche. C’est un temps pour moi seul, souvent dans la nature, en forêt. Mais marcher seul peut largement suffire. Le sport est aussi un de mes moyens, la course à pied par exemple.',
-       'Je n’ai jamais demandé de relais. Le relais se fait entre ma femme et moi, et notre organisation est comme cela.'],
+       'Chez nous, le relais se fait entre ma femme et moi. Notre organisation est comme cela.'],
      ex:'Une maman fait la liste de ce qui lui pèse et de ce qui la recharge. La première liste a 9 lignes, et la seconde en a 2. Elle choisit alors 3 rituels. Elle marchera 20 minutes le mardi et le jeudi, elle prendra un café avec une amie le samedi matin, et elle gardera une soirée par mois pour lire. Puis elle demande à sa sœur de garder les enfants un dimanche après-midi sur 2. Au bout de 3 semaines, la marche du jeudi a sauté 2 fois. Elle la déplace au mercredi à midi, et les 2 autres rituels tiennent.',
      exo:'Choisissez vos 3 rituels pour les 6 prochains mois et notez-les dans votre agenda. Choisissez aussi une personne ou un service à qui vous demanderez un relais, même pour 2 heures.',
      obs:'Essayez vos rituels pendant une semaine et gardez ceux qui tiennent.',
@@ -540,7 +540,7 @@ const PARCOURS=[
        'Vous êtes un parent plus éclairé qu’au premier jour. C’est vous qui avez fait ce chemin, et vous pouvez en être fier ou fière. Pour le voir en entier, il vous reste un geste, celui d’écrire. À partir de 1986, le psychologue James Pennebaker a étudié ce qui se passe quand une personne écrit ce qu’elle a traversé. En 2006, la chercheuse Joanne Frattaroli a réuni 146 études sur ce sujet. L’effet qu’elle a mesuré est petit, mais il est réel, et écrire ne coûte rien.',
        'La lettre de cette semaine s’adresse à la personne que vous étiez en commençant. Elle ne savait pas encore ce que vous savez. Dites-lui ce que vous auriez aimé entendre ce jour-là.'],
      sch:'sentier',
-     vecu:['Quand je repense à l’enfant que j’étais, je vois un enfant meurtri. Mais j’avais l’espérance, et la croyance que je pouvais m’en sortir.',
+     vecu:['À l’étape 8, je vous ai dit que j’avais vécu des choses très dures jusqu’à mes 10 ans. Quand je repense à l’enfant que j’étais, je vois un enfant meurtri. Mais j’avais l’espérance, et la croyance que je pouvais m’en sortir.',
        'Je voyais le bien là où il y avait le mal, et c’est difficile à expliquer. Je croyais à l’impossible, même avec mes doutes et mes souffrances. Je voyais la sortie du tunnel.'],
      ex:'Un papa écrit sa lettre un dimanche soir. « Tu crois que tu fais tout de travers. Tu ne dors plus, et tu n’oses le dire à personne. Dans 6 mois, tu sauras demander de l’aide, et ton fils te racontera sa journée dans la voiture. Tu ne seras pas devenu parfait. Tu seras là, et c’est ce dont il a besoin. » Il plie la lettre et il la range dans son portefeuille.',
      exo:'Cette semaine, l’exercice est d’écrire une lettre à la personne que vous étiez en commençant ce parcours. Vous pouvez l’écrire dans votre carnet, plus bas.',
@@ -1487,7 +1487,7 @@ function viewToday(){
   html+='<div class="duo"><div class="duo-a">';
   if(can('antonio'))html+=letterCard();
   if(!d.evo.t1)html+='<button type="button" class="card reveal d1" data-act="go" data-view="evo" style="text-align:left;cursor:pointer;border-color:var(--green)"><div class="row" style="justify-content:space-between;align-items:center"><span class="label" style="color:var(--green)">Pour commencer, 3 minutes</span><span class="pill green">Étape 1</span></div><p class="lesson" style="font-size:20px">Le questionnaire de départ</p><span class="hint">Il y a cinq échelles de 0 à 10 et deux questions pour voir où vous en êtes aujourd’hui. Vous le referez à trois mois puis à six mois, et c’est ce qui vous montrera le chemin parcouru.</span><span class="btn primary small" style="align-self:flex-start;margin-top:4px">'+I.chart+'Faire mon point de départ</span></button>';
-  html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p><span class="sig">'+(d.doseDate===t&&d.doseText?'Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio':'Antonio')+'</span>'+
+  html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p>'+(d.doseDate===t&&d.doseText?'<span class="sig">Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio</span>':'<div class="sigrow"><span class="sig">Antonio</span><button type="button" class="linkbtn" data-act="go" data-view="about">Lire mon histoire</button></div>')+
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
   html+='</div><div class="duo-b">';
   html+=depotBox();
@@ -1635,7 +1635,7 @@ function viewStep(){
   return '<main id="main" tabindex="-1" class="view etape"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
     '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En 2 minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
     (s.sch?schHtml(s.sch):'')+
-    (s.vecu?'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div>'+(Array.isArray(s.vecu)?s.vecu:[s.vecu]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'</div>':'')+
+    (s.vecu?'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div>'+(Array.isArray(s.vecu)?s.vecu:[s.vecu]).map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'<div class="vecu-lien"><button type="button" class="linkbtn" data-act="go" data-view="about">Lire mon histoire</button></div></div>':'')+
     (s.ex?'<div class="card exemple"><span class="label">Un exemple</span><p>'+esc(s.ex)+'</p></div>':'')+
     rap+
     '<div class="exo"><span class="label">Cette semaine, j’essaie</span><p>'+esc(s.exo)+'</p></div>'+

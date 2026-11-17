@@ -609,6 +609,12 @@ canvas.eau{display:none}
 .card.vecu .from small{display:block;font-size:13px;font-weight:700;color:var(--muted)}
 .card.vecu .lesson{font-style:italic}
 .card.mot .lesson{font-size:22px;line-height:1.36}
+.vecu-lien{display:flex;justify-content:flex-end;margin:-8px 0 -10px}
+.card.vecu .linkbtn{background:none;border:0;color:var(--green);font-weight:800;font-size:14.5px;line-height:1.55;padding:11px 0 11px 8px;text-decoration:underline;text-underline-offset:4px}
+.card.vecu .linkbtn:hover{color:var(--cream)}
+.dose .sigrow{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1;margin:-8px 0 -10px}
+.dose .linkbtn{background:none;border:0;color:#2F4A16;font-weight:800;font-size:14px;line-height:1.55;padding:11px 0 11px 8px;text-decoration:underline;text-underline-offset:4px}
+.dose .linkbtn:hover{color:#143320}
 .card.rap{border-style:dashed;border-color:rgba(244,239,216,.42)}
 .card.carnet{background:var(--surface-2);border-color:rgba(180,222,156,.3)}
 .card.carnet label.lesson{display:block}
