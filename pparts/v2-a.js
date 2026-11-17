@@ -744,9 +744,11 @@ function viewStep(){
   if(s.rap){const r=steps.find(x=>x.id===s.rap);const rn=r?noteDe(r.id):null;
     if(r)rap='<div class="card rap"><span class="label">Ce que vous aviez écrit à l’étape '+(r.idx+1)+'</span>'+(rn?'<p class="lesson">'+nl2(rn.t)+'</p><span class="hint">Écrit le '+esc(fmtDate(rn.d))+'</span>':'<p class="hint">Vous n’aviez rien écrit à cette étape, qui s’appelle « '+esc(r.t)+' ». Vous pouvez encore le faire.</p><button type="button" class="btn small" data-act="step" data-i="'+r.idx+'" style="align-self:flex-start">Ouvrir cette étape</button>')+'</div>';}
   const sv=s.idx<steps.length-1?steps[s.idx+1]:null;const ap=sv?stepEtat(sv.idx):null;
-  const suite=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':
-    (ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Étape suivante '+I.chev+'</button>':'';
-  const attente=sv&&ap.k==='bientot'?'<p class="hint attente">L’étape suivante, « '+esc(sv.t)+' », s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez une semaine pour essayer.</p>':'';
+  /* La prochaine étape : son titre, une phrase qui dit ce qu'on y trouvera, puis le jour où elle s'ouvre ou le bouton pour y aller. */
+  const fin=!sv?'<button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet de route</button>':'';
+  const suite=!sv?'':'<div class="card suite"><span class="label">La prochaine étape</span><h2>'+esc(sv.t)+'</h2>'+(sv.acc?'<p>'+esc(sv.acc)+'</p>':'')+
+    ((ap.k==='open'||ap.k==='formule')?'<button type="button" class="btn" data-act="step" data-i="'+sv.idx+'">Ouvrir cette étape '+I.chev+'</button>':
+     ap.k==='bientot'?'<p class="hint">Elle s’ouvrira '+dansJours(ap.n)+'. D’ici là, vous avez le temps d’essayer.</p>':'')+'</div>';
   return '<main id="main" tabindex="-1" class="view etape"><div><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p></div>'+
     '<div class="card idee"><span class="label">'+(s.sch?'Comprendre':'En 2 minutes')+'</span>'+paras+(s.vecu?'':'<p class="hint" style="text-align:right">Antonio</p>')+'</div>'+
     (s.sch?schHtml(s.sch):'')+
@@ -757,7 +759,7 @@ function viewStep(){
     '<div class="card green"><span class="label">À observer</span><p>'+esc(s.obs)+'</p></div>'+
     stepLiens(s)+
     '<div class="card carnet"><span class="label">Mon carnet de route</span><label class="lesson" for="note">'+esc(s.ecr)+'</label><textarea id="note" data-note="'+s.id+'" maxlength="'+LIM.note+'" placeholder="'+esc(s.ph||'Écrivez ici, avec vos mots.')+'">'+esc(txt)+'</textarea><p class="hint" id="note-etat" aria-live="polite">'+(txt?NOTE_OUI:NOTE_NON)+'</p></div>'+
-    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-id="'+s.id+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+suite+'</div>'+attente+'</main>';
+    '<div class="quick"><button type="button" class="btn'+(dn?'':' primary')+'" data-act="stepdone" data-id="'+s.id+'">'+I.check+(dn?'Étape faite':'Marquer comme faite')+'</button>'+fin+'</div>'+suite+'</main>';
 }
 /* Le carnet de route : ce que le parent a écrit à chaque étape, mois par mois. Tout reste sur son appareil. */
 function viewCarnet(){
@@ -795,6 +797,8 @@ function schSync(neuf){
 /* ---------- évolution ---------- */
 /* Une échelle numérotée de 0 à 10 : le rond se glisse, les chiffres se touchent, et le rond porte le chiffre choisi.
    Ce qui est réglé mais pas encore enregistré est gardé de côté (state.evoDraft), pour ne pas le perdre si l'écran est redessiné. */
+/* Une question ouverte peut avoir une formulation par situation (handicap, période difficile, parent simplement). */
+function evoQ(o){const q=o[1];return typeof q==='string'?q:(q[D().situation]||q.hand);}
 function evoSync(r){
   const v=Number(r.value),b=r.closest('.scale');if(!b)return;
   b.style.setProperty('--p',String(v/10));
@@ -817,7 +821,7 @@ function viewEvo(){
       '<div class="scale-nums" aria-hidden="true">'+NUMS.map(n=>'<button type="button" tabindex="-1" data-act="evoset" data-k="'+s.id+'" data-v="'+n+'" class="'+(n<=v?'on':'')+(n===v?' cur':'')+'"><span>'+n+'</span></button>').join('')+'</div>'+
       '<div class="row" id="sd-'+s.id+'"><span><b>0</b> '+esc(s.lo)+'</span><span><b>10</b> '+esc(s.hi)+'</span></div></div>';
   }).join('');
-  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(o[1])+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(dr[o[0]]!==undefined?dr[o[0]]:(cur[o[0]]||''))+'</textarea></div>').join('');
+  const opens=EVO_OPEN.map(o=>'<div class="field"><label for="evo-'+o[0]+'">'+esc(evoQ(o))+'</label><textarea id="evo-'+o[0]+'" data-evoopen="'+o[0]+'" maxlength="'+LIM.evo+'" style="min-height:80px">'+esc(dr[o[0]]!==undefined?dr[o[0]]:(cur[o[0]]||''))+'</textarea></div>').join('');
   const have=EVO_TIMES.filter(x=>e[x[0]]);
   let bars='';
   if(have.length){bars='<div class="card"><span class="label">Le chemin</span><div class="bars">'+EVO_SCALES.map(s=>'<div class="barrow"><span>'+esc(s.t.replace('Mon ','').replace('Ma ',''))+'</span><div class="bartrack">'+EVO_TIMES.map((x,i)=>e[x[0]]?'<i class="t'+(i+1)+'"><b style="width:'+(Number(e[x[0]][s.id]||0)*10)+'%"></b><em>'+Number(e[x[0]][s.id]||0)+'</em></i>':'').join('')+'</div></div>').join('')+'</div><div class="legend">'+have.map(x=>'<span class="t'+(EVO_TIMES.indexOf(x)+1)+'">'+esc(x[1])+(e[x[0]].date?', '+esc(fmtDate(e[x[0]].date)):'')+'</span>').join('')+'</div><p class="hint">Chaque barre va de 0 à 10. Avec le temps, le stress et la solitude devraient baisser, alors que la compétence, le regard et la confiance devraient monter. Tout ce qui bouge, c’est grâce à vous.</p></div>';}

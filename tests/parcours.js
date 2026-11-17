@@ -64,8 +64,8 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await page.click(A('stepdone')); await page.waitForTimeout(150);
     ok((await store(page)).steps.depart === true && /Étape faite/.test(await toast(page)), 'étape marquée comme faite, rangée par son nom');
     ok((await page.inputValue('#note')) === 'Je commence ce parcours parce que je veux souffler.', 'carnet : le texte est toujours là après un nouveau rendu');
-    await page.click('.quick ' + A('step', '[data-i="1"]')); await page.waitForTimeout(150);
-    ok(!!(await page.$('.sheet #up-title')), 'gratuit : « Étape suivante » ouvre la feuille des formules');
+    await page.click('.card.suite ' + A('step', '[data-i="1"]')); await page.waitForTimeout(150);
+    ok(!!(await page.$('.sheet #up-title')), 'gratuit : « Ouvrir cette étape » ouvre la feuille des formules');
     await page.keyboard.press('Escape');
     // le carnet de route
     await page.click(A('back')); await page.waitForTimeout(150);
@@ -87,8 +87,9 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await parcours(page);
     ok((await page.$$('.step.locked')).length === 23 && (await sous(page, 1)) === 'Plus tard', 'jour 0 : tant que l’étape 1 n’est pas ouverte, la suite est « Plus tard »');
     await page.click(A('step', '[data-i="0"]')); await page.waitForTimeout(150);
-    ok(/s’ouvrira dans 7 jours/.test(await page.textContent('.attente')) && /Croire en lui/.test(await page.textContent('.attente')), 'étape 1 : la suivante est annoncée dans 7 jours, avec son titre');
-    ok(!(await page.$('.quick ' + A('step'))), 'étape 1 : pas de bouton « Étape suivante » tant qu’elle est fermée');
+    ok(/s’ouvrira dans 7 jours/.test(await page.textContent('.card.suite')) && /Croire en lui/.test(await page.textContent('.card.suite h2')), 'étape 1 : la suivante est annoncée dans 7 jours, avec son titre');
+    ok(/ce que vous attendez de votre enfant change ce qu’il ose essayer/.test(await page.textContent('.card.suite')), 'étape 1 : une phrase dit ce qu’on trouvera dans la suivante');
+    ok(!(await page.$('.card.suite ' + A('step'))) && !(await page.$('.quick ' + A('step'))), 'étape 1 : pas de bouton pour ouvrir la suivante tant qu’elle est fermée');
     await page.click(A('back')); await page.waitForTimeout(150);
     ok((await sous(page, 1)) === 'S’ouvre dans 7 jours' && (await sous(page, 2)) === 'Plus tard', 'parcours : étape 2 « S’ouvre dans 7 jours », étape 3 « Plus tard »');
     await page.click(A('step', '[data-i="1"]')); await page.waitForTimeout(120);
@@ -225,6 +226,53 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok((await page.$$('.sp.neuf')).length === 1 && (await page.$eval('.sp.neuf', g => g.dataset.p)) === '3', 'animations : un seul morceau à la fois');
     ok(errs.length === 0, 'aucune erreur (animations) ' + errs.slice(0, 2).join(' | '));
     await ctx.close();
+  }
+
+  // ---------- Le mois 2 écrit en entier, l'étape du MDH-PPH, les accroches, la question ouverte selon la situation ----------
+  {
+    const fs = require('fs');
+    const T = new Function(fs.readFileSync(__dirname + '/../pparts/p2b-parcours.js', 'utf8') + '; return {PARCOURS,SCHEMAS,EVO_OPEN};')();
+    const E = []; T.PARCOURS.forEach(m => m.steps.forEach(s => E.push(s)));
+    const mots = x => (Array.isArray(x) ? x.join(' ') : (x || '')).split(/\s+/).filter(Boolean).length;
+    ok(E.slice(4, 9).every(s => Array.isArray(s.idee) && s.idee.length >= 3 && s.sch && T.SCHEMAS[s.sch] && s.ex && mots(s.idee) >= 170), 'étapes 5 à 9 : au moins 3 paragraphes, un schéma et un exemple');
+    ok(E.slice(4, 8).every(s => s.vecu), 'mois 2 : chaque étape a son « Ce que j’ai vécu »');
+    ok(E.slice(1).every(s => typeof s.acc === 'string' && /^Vous /.test(s.acc) && /\.$/.test(s.acc)) && !E[0].acc, 'chaque étape à partir de la 2 a son accroche');
+    ok(Object.keys(T.SCHEMAS).length === 9 && Object.values(T.SCHEMAS).every(S => S.alt && Math.max(...S.l.map(x => x[0])) === S.caps.length), '9 schémas, chacun avec sa description et autant de phrases que de moments');
+    ok(/Jusqu’à mes 10 ans, j’ai vécu des choses très dures\. Il y a eu la violence des gestes, celle des mots, et d’autres choses qu’aucun enfant ne devrait vivre\. Pourtant, je m’accrochais à ce qu’il y avait de bon, et c’est aussi ce qui m’a sauvé\./.test(E[7].vecu[0]) && E[7].vecu.length === 2, 'étape 8 : le passage choisi par Antonio (version 1), mot pour mot, et rien de plus');
+    ok(/MDH-PPH/.test(E[8].t) && E[8].sch === 'mdh' && /Modèle de développement humain et Processus de production du handicap/.test(E[8].idee.join(' ')) && /Fougeyrollas/.test(E[8].idee.join(' ')) && /facilitateur/.test(E[8].idee.join(' ')) && /obstacle/.test(E[8].idee.join(' ')), 'étape 9 : le MDH-PPH est nommé, expliqué, avec ses mots');
+    const tout = E.map(s => [s.t, s.idee, s.ex, s.exo, s.obs, s.ecr].flat().join(' ')).join(' ');
+    ok(!/enfant différent|avec son handicap/.test(tout), 'le parcours ne suppose plus que l’enfant est « différent »');
+    ok(typeof T.EVO_OPEN[0][1] === 'object' && ['hand', 'diff', 'parent'].every(k => /\?$/.test(T.EVO_OPEN[0][1][k])), 'la première question ouverte a une formulation par situation');
+
+    const { ctx, page, errs } = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(-70), steps: {}, pv: 2, seen: {}, atelier: true, tout: true, notes: { emotions: { t: 'La colère. Elle me dirait que je suis à bout.', d: iso(-14) } } }));
+    await parcours(page);
+    for (const [i, sch, moments] of [[4, 'voyants', 5], [5, 'colonnes', 6], [6, 'vague', 5], [7, 'appuis', 5], [8, 'mdh', 5]]) {
+      await page.click(A('step', `[data-i="${i}"]`)); await page.waitForTimeout(150);
+      const debut = (await page.$$('.sp.on')).length;
+      let k = 0; while (await page.$(A('schnext')) && k < 8) { await page.click(A('schnext')); await page.waitForTimeout(40); k++; }
+      const fin = await page.evaluate(() => ({ pos: document.querySelector('.sch-pos').textContent, on: document.querySelectorAll('.sp.on').length, tous: document.querySelectorAll('.sp').length, sch: document.querySelector('.card.sch').dataset.sch, cur: document.querySelectorAll('.sch-caps li.cur').length, alt: (document.querySelector('.sch-svg').getAttribute('aria-label') || '').length }));
+      ok(fin.sch === sch && debut >= 1 && debut < fin.tous && fin.on === fin.tous && fin.pos === moments + ' sur ' + moments && fin.cur === 1 && fin.alt > 60, 'étape ' + (i + 1) + ' : le schéma « ' + sch + ' » se déroule en ' + moments + ' moments ' + JSON.stringify(fin));
+      // aucun mot du dessin ne sort du cadre
+      const hors = await page.$$eval('.sch-svg text', L => { const svg = document.querySelector('.sch-svg').getBoundingClientRect(); return L.filter(t => { const r = t.getBoundingClientRect(); return r.width > 0 && (r.left < svg.left - 1 || r.right > svg.right + 1 || r.top < svg.top - 1 || r.bottom > svg.bottom + 1); }).map(t => t.textContent); });
+      ok(!hors.length, 'étape ' + (i + 1) + ' : aucun mot du schéma ne sort du cadre ' + hors.join(' | '));
+      ok(!!(await page.$('.card.suite h2')) && /^Vous /.test(await page.textContent('.card.suite p')) && !!(await page.$('.card.suite ' + A('step', `[data-i="${i + 1}"]`))), 'étape ' + (i + 1) + ' : la carte « La prochaine étape » annonce la suivante');
+      if (i === 6) ok(/La colère\. Elle me dirait que je suis à bout\./.test(await page.textContent('.card.rap')) && /étape 5/.test(await page.textContent('.card.rap')), 'étape 7 : elle rappelle ce que le parent avait écrit à l’étape 5');
+      if (i === 7) ok(/choses très dures/.test(await page.textContent('.card.vecu')) && /parents d’accueil, qui sont devenus mon pilier/.test(await page.textContent('.card.vecu')), 'étape 8 : « Ce que j’ai vécu » montre les 2 paragraphes');
+      if (i === 8) ok(/MDH-PPH/.test(await page.textContent('h1')) && !(await page.$('.card.vecu')), 'étape 9 : le titre nomme le MDH-PPH, et rien n’est encore écrit à la place d’Antonio');
+      await page.click(A('back')); await page.waitForTimeout(120);
+    }
+    // la dernière étape n'annonce rien : elle mène au carnet
+    await page.click(A('step', '[data-i="23"]')); await page.waitForTimeout(150);
+    ok(!(await page.$('.card.suite')) && !!(await page.$('.quick ' + A('go', '[data-view="carnet"]'))), 'étape 24 : pas de carte « La prochaine étape », mais le carnet de route');
+    ok(errs.length === 0, 'aucune erreur (mois 2) ' + errs.slice(0, 2).join(' | '));
+    await ctx.close();
+    // la première question de « Mon évolution » suit la situation choisie à l'inscription
+    for (const [sit, attendu] of [['hand', /Que connaissiez-vous du handicap/], ['diff', /ce que vous traversez aujourd’hui/], ['parent', /la vie de parent, avant de le devenir/], ['autre', /Que connaissiez-vous du handicap/]]) {
+      const o = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(0), steps: {}, pv: 2, seen: {}, notes: {}, situation: sit }));
+      await parcours(o.page); await o.page.click('.quick ' + A('go', '[data-view="evo"]')); await o.page.waitForTimeout(150);
+      ok(attendu.test(await o.page.textContent('label[for="evo-avant"]')) && o.errs.length === 0, 'Mon évolution, situation « ' + sit + ' » : la question est adaptée');
+      await o.ctx.close();
+    }
   }
 
   await browser.close();
