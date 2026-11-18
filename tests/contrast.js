@@ -50,6 +50,8 @@ const HIDE = '*,*::before,*::after{color:transparent!important;-webkit-text-fill
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: W, height: 844 }, deviceScaleFactor: 1, locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: 'reduce' });
+  // PEPE_HEURE fige l'heure lue par l'application (0 à 23), pour mesurer la photo dans sa lumière du matin, du jour, du soir ou de la nuit.
+  if (process.env.PEPE_HEURE) await ctx.addInitScript(h => { Date.prototype.getHours = function () { return h; }; }, +process.env.PEPE_HEURE);
   const page = await ctx.newPage();
   let k = 0; const index = [];
   const dump = async name => {

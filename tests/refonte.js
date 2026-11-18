@@ -92,6 +92,35 @@ const NB_NOTES = Object.keys(D.notes).filter(k => D.notes[k] && D.notes[k].t).le
   await page.click('.months ' + A('step', '[data-i="9"]')); await page.waitForTimeout(500);
   ok(await page.evaluate(() => { const bv = document.querySelector('.bravo'); return !!bv && !bv.classList.contains('neuf'); }), 'à la visite suivante, le fil est là sans rejouer');
 
+  // ----- la page du carnet grandit avec le texte
+  r = await page.evaluate(() => { const t = document.getElementById('note'); return { h: t.getBoundingClientRect().height, sh: t.scrollHeight, ch: t.clientHeight, ov: getComputedStyle(t).overflowY }; });
+  ok(r.h >= 194 && r.sh <= r.ch + 1 && r.ov === 'hidden', 'carnet : une page vide a 6 lignes, sans défilement intérieur ' + JSON.stringify(r));
+  const long = Array.from({ length: 18 }, (_, i) => 'Ligne ' + (i + 1) + ' de ma lettre.').join('\n');
+  await page.fill('#note', long); await page.waitForTimeout(700);
+  let r2 = await page.evaluate(() => { const t = document.getElementById('note'); return { h: t.getBoundingClientRect().height, sh: t.scrollHeight, ch: t.clientHeight, garde: JSON.parse(localStorage.getItem('pepe-v1')).notes.enfant.t.split('\n').length }; });
+  ok(r2.h >= 18 * 32 && r2.h <= 18 * 32 + 40 && r2.sh <= r2.ch + 1 && r2.garde === 18, 'carnet : 18 lignes écrites, la page a grandi et tout se voit ' + JSON.stringify(r2));
+  await page.click('.etape>.quick ' + A('stepdone')); await page.waitForTimeout(300);
+  let r3 = await page.evaluate(() => { const t = document.getElementById('note'); return { h: t.getBoundingClientRect().height, v: t.value.split('\n').length }; });
+  ok(Math.abs(r3.h - r2.h) <= 1 && r3.v === 18, 'carnet : après un nouveau rendu, la page garde sa hauteur ' + JSON.stringify(r3));
+  await page.fill('#note', 'Une seule ligne.'); await page.waitForTimeout(500);
+  ok((await page.evaluate(() => document.getElementById('note').getBoundingClientRect().height)) <= 196, 'carnet : le texte raccourci, la page revient à 6 lignes');
+
+  // ----- l'étang à l'heure qu'il est : la classe du moment, la teinte sur la photo, rien sur « Mon histoire »
+  for (const [h, nom] of [[3, 'nuit'], [7, 'matin'], [14, 'jour'], [19, 'soir'], [23, 'nuit']]) {
+    const c2 = await b.newContext({ viewport: { width: 390, height: 844 }, ignoreHTTPSErrors: true, reducedMotion: 'reduce', locale: 'fr-CH' });
+    await c2.addInitScript(d => { try { if (!localStorage.getItem('pepe-v1')) localStorage.setItem('pepe-v1', JSON.stringify(d)); } catch (e) { } }, D);
+    await c2.addInitScript(hh => { Date.prototype.getHours = function () { return hh; }; }, h);
+    const p2 = await c2.newPage(); await p2.goto(APP); await p2.waitForTimeout(600);
+    const v = await p2.evaluate(() => { const a = document.getElementById('app'); const f = getComputedStyle(document.querySelector('.band'), '::after'); return { cls: (a.className.match(/\bh-(\w+)/) || [])[1], filtre: f.backdropFilter || f.webkitBackdropFilter || 'none', fond: f.backgroundImage.split('gradient(').length - 1 }; });
+    ok(v.cls === nom && (nom === 'jour' ? v.filtre === 'none' : /hue-rotate/.test(v.filtre)) && v.fond >= 2, 'à ' + h + ' h, l’étang est en « ' + nom + ' » ' + JSON.stringify(v));
+    if (h === 23) {
+      await p2.click('.tab' + A('go', '[data-view="me"]')); await p2.waitForTimeout(250); await p2.click(A('go', '[data-view="about"]')); await p2.waitForTimeout(700);
+      const st = await p2.evaluate(() => { const e = document.querySelector('.band.story'); const f = e ? getComputedStyle(e, '::after') : null; return f ? (f.backdropFilter || f.webkitBackdropFilter || 'none') : 'absent'; });
+      ok(st === 'none', '« Mon histoire » garde sa photo telle quelle, même la nuit (' + st + ')');
+    }
+    await c2.close();
+  }
+
   ok(errs.length === 0, 'aucune erreur dans la page ' + errs.slice(0, 2).join(' | '));
   await b.close();
   console.log('refonte : ' + n + ' vérifications, ' + ko + ' échec' + (ko > 1 ? 's' : ''));
