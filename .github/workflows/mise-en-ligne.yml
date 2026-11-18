@@ -1,5 +1,5 @@
 # Dépose le site sur parent-ecoute.ch chaque fois que cette branche change.
-# Tout le travail est fait par outils/deposer.sh et outils/verifier.sh : ce fichier n'a pas besoin de changer.
+# Tout le travail est fait par outils/deposer.sh, outils/verifier.sh et outils/essais-en-ligne.sh.
 # Le mot de passe du compte FTP n'est écrit nulle part ici. Il vit dans les secrets du dépôt, sous le nom FTP_PASSWORD.
 name: Mise en ligne
 
@@ -32,3 +32,19 @@ jobs:
         run: bash outils/deposer.sh
       - name: Vérifier le site en ligne
         run: bash outils/verifier.sh
+
+  # Quand la branche contient une version d'essai (site/essai/), 3 parcours de parent y sont rejoués dans un vrai navigateur,
+  # au format téléphone puis ordinateur. Cette étape ne reçoit aucun mot de passe : elle visite le site comme un parent.
+  essais:
+    name: Essais en ligne
+    needs: mise-en-ligne
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Récupérer les fichiers
+        run: |
+          git init -q .
+          git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
+          git checkout -q FETCH_HEAD
+      - name: Rejouer les parcours sur la version d'essai
+        run: bash outils/essais-en-ligne.sh

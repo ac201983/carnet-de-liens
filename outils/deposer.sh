@@ -90,7 +90,8 @@ for f in "${a_envoyer[@]}"; do envoi+=(--upload-file "$f" "ftp://$HOTE_FTP$base$
 
 if [ "${#envoi[@]}" -gt 0 ]; then
   # shellcheck disable=SC2086
-  if ! curl "${commun[@]}" $mode --fail-early --ftp-create-dirs "${envoi[@]}" 2>/tmp/err; then
+  # Un premier envoi peut compter plusieurs centaines de fichiers (une version d'essai entière, par exemple) : on lui laisse 15 minutes au lieu de 3.
+  if ! curl "${commun[@]}" $mode --max-time 900 --fail-early --ftp-create-dirs "${envoi[@]}" 2>/tmp/err; then
     erreur "Dépôt interrompu" "L'envoi s'est arrêté en route. Réponse : $(message). Le site peut être dans un état intermédiaire : relancer la mise en ligne."
     exit 1
   fi

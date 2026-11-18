@@ -90,6 +90,20 @@ note "Adresses" \
   "$(vue "plan du site" "$adresse/sitemap.xml")" \
   "$(vue "robots" "$adresse/robots.txt")"
 
+# 3 bis. La version d'essai, quand il y en a une : son accueil, une fiche ouverte par son adresse (avec et sans la barre finale), son image d'aperçu
+if [ -f site/essai/index.html ]; then
+  fiche="essai/fiches/quand-il-ou-elle-vit-ailleurs"
+  titre="non"; va "$adresse/$fiche/" 2>/dev/null | grep -q '<h1[^>]*>Quand il ou elle vit ailleurs</h1>' && titre="oui"
+  consigne="non"; va "$adresse/essai/" 2>/dev/null | grep -q 'name="robots" content="noindex,nofollow"' && consigne="oui"
+  note "Version d'essai" \
+    "$(vue "accueil de l'essai" "$adresse/essai/") | consigne noindex : $consigne" \
+    "$(vue "liste des situations" "$adresse/essai/fiches/")" \
+    "$(vue "une fiche par son adresse" "$adresse/$fiche/") | la fiche est écrite dans la page : $titre" \
+    "$(vue "la même sans barre finale" "$adresse/$fiche")" \
+    "$(vue "image d'aperçu de la fiche" "$adresse/essai/img/fiches/quand-il-ou-elle-vit-ailleurs.jpg")" \
+    "$(vue "tableau de bord dans l'essai (ne doit pas exister)" "$adresse/essai/antonio/")"
+fi
+
 # 4. Les en-têtes de la page d'accueil
 entetes="$(va -D - -o /dev/null -H 'Accept-Encoding: gzip, br' -w 'http %{http_version}\n' "$adresse/" 2>/dev/null \
   | tr -d '\r' | grep -i -E '^(http|content-type|content-encoding|cache-control|expires|strict-transport-security|x-frame-options|x-content-type-options|referrer-policy|content-security-policy|server|last-modified|etag|alt-svc|vary)' )" || true
