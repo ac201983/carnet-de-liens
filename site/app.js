@@ -989,6 +989,13 @@ function monthKey(iso){return iso.slice(0,7);}
 function nextLetterDate(){const d=new Date();const n=new Date(d.getFullYear(),d.getMonth()+1,1);return '1er '+MONTHS_FR[n.getMonth()];}
 function dayIdx(n){const d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000)%n;}
 function greeting(){const h=new Date().getHours();return h<5?'Il est tard':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';}
+/* Le moment de la journée : la photo de l'étang prend la lumière de l'heure qu'il est (matin, jour, soir, nuit). */
+function moment(){const h=new Date().getHours();return (h<5||h>=22)?'nuit':h<11?'matin':h<18?'jour':'soir';}
+/* La page du carnet grandit avec le texte : on voit toujours tout ce qu'on a écrit, et les lignes restent sous les mots. */
+function carnetHaut(t){
+  t=t||document.getElementById('note');if(!t||!t.style||!t.closest||!t.closest('.etape'))return;
+  t.style.height='auto';const h=t.scrollHeight;if(h>0)t.style.height=Math.max(194,Math.ceil((h-2)/32)*32+2)+'px';
+}
 function weekNo(){const s=D().start||todayIso();const p=s.split('-').map(Number);const d0=new Date(p[0],p[1]-1,p[2]);return Math.max(0,Math.floor((Date.now()-d0.getTime())/(7*86400000)));}
 function allSteps(){const out=[];PARCOURS.forEach((m,mi)=>m.steps.forEach((s,si)=>out.push(Object.assign({mi,si,idx:out.length},s))));return out;}
 /* L'étape du moment : la dernière qui est ouverte. Dans l'aperçu d'Antonio, où tout est ouvert, la première qui n'est pas faite. */
@@ -1406,7 +1413,7 @@ function render(){
   if(state.sheet==='upgrade')html+=sheetUpgrade(sheetIn);
   /* « lum » : la lumière qui se lève une fois sur la photo. Si l'écran est redessiné entre-temps, elle reprend là où elle en était (--fx-age). */
   /* « v-… » dit quel écran est affiché, et « wide » marque les quatre onglets : la mise en page pour grand écran s'appuie dessus. */
-  base+=' v-'+key+(TAB_VIEWS.includes(key)?' wide':'');
+  base+=' v-'+key+(TAB_VIEWS.includes(key)?' wide':'')+' h-'+moment();
   app.className=base+(entering?' enter':'')+(FX_OK&&age<4.8?' lum':'');
   if(FX_OK&&age<4.8&&app.style&&app.style.setProperty)app.style.setProperty('--fx-age',age.toFixed(2)+'s');
   app.removeAttribute('data-prerender');
@@ -1426,7 +1433,7 @@ function render(){
   if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
   syncStory(entering);
   if(key==='intro')introLive();
-  if(key==='step')lectureSync();
+  if(key==='step'){carnetHaut();lectureSync();}
   fxMark();
   eauSync(entering);if(entering)eauArrive();
 }
@@ -1473,7 +1480,7 @@ function lectureSync(){
   for(let i=0;i<3;i++){const q=Math.max(0,Math.min(1,(y-b[i])/Math.max(1,b[i+1]-b[i])));const f=r.children[i]&&r.children[i].firstChild;if(f&&f.style)f.style.transform='scaleX('+q.toFixed(3)+')';}
 }
 let lectTick=0;
-function lectureScroll(){if(lectTick)return;lectTick=1;(window.requestAnimationFrame||setTimeout)(()=>{lectTick=0;lectureSync();});}
+function lectureScroll(e){if(lectTick)return;lectTick=1;const large=!!(e&&e.type==='resize');(window.requestAnimationFrame||setTimeout)(()=>{lectTick=0;if(large)carnetHaut();lectureSync();});}
 /* ---------- erreurs de saisie : affichées sous le champ, sans rien effacer ---------- */
 function fieldErr(id,msg){
   const el=document.getElementById(id);if(!el)return;
@@ -2264,7 +2271,7 @@ let typing=null,noteT=null,noteAttend=false;
 app.addEventListener('input',e=>{
   const t=e.target;clearErr(t);
   /* Le carnet de route se garde tout seul, pendant qu'on écrit. */
-  if(t.dataset&&t.dataset.note){const id=t.dataset.note;const v=String(t.value).slice(0,LIM.note);if(v.trim())D().notes[id]={t:v,d:todayIso()};else delete D().notes[id];clearTimeout(noteT);noteAttend=true;noteT=setTimeout(()=>{noteAttend=false;save();},400);const st=document.getElementById('note-etat');if(st){const m=v.trim()?NOTE_OUI:NOTE_NON;if(st.textContent!==m)st.textContent=m;}}
+  if(t.dataset&&t.dataset.note){const id=t.dataset.note;const v=String(t.value).slice(0,LIM.note);if(v.trim())D().notes[id]={t:v,d:todayIso()};else delete D().notes[id];clearTimeout(noteT);noteAttend=true;noteT=setTimeout(()=>{noteAttend=false;save();},400);const st=document.getElementById('note-etat');if(st){const m=v.trim()?NOTE_OUI:NOTE_NON;if(st.textContent!==m)st.textContent=m;}carnetHaut(t);lectureSync();}
   if(t.id==='draft'){state.draft=t.value;updCount(t);}
   if(t.id==='qdraft')state.qdraft=t.value;
   if(t.id==='ptext')state.pdraft=t.value;
