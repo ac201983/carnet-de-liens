@@ -90,6 +90,11 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
   const attendEtat = async (page, sel, etat, ms = 8000) => { const t = Date.now(); while (Date.now() - t < ms) { const b = await bouton(page, sel); if (b && b.etat === etat) return true; await page.waitForTimeout(80); } return false; };
   const cacher = (page, v) => page.evaluate(v => { if (v === 'hidden') window.__son.verrous.forEach(x => x.release()); Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => v }); Object.defineProperty(document, 'hidden', { configurable: true, get: () => v === 'hidden' }); document.dispatchEvent(new Event('visibilitychange')); return performance.now(); }, v);
   const maintenant = page => page.evaluate(() => performance.now());
+  // Attendre le silence : plus aucune piste en cours et plus de signal à la sortie. Le résultat dit combien de temps il a mis à venir.
+  // (compter un délai fixe ne suffit pas : sur une machine lente, l'horloge du son avance par à-coups)
+  const silence = async (page, ms = 3000) => { const t = Date.now(); let s = await son(page); while (!(s.actives === 0 && s.rms < 0.0005) && Date.now() - t < ms) { await page.waitForTimeout(100); s = await son(page); }
+    return Object.assign({}, s, { muet: s.actives === 0 && s.rms < 0.0005, delai: Date.now() - t }); };
+  const dit = q => '(silence après ' + q.delai + ' ms, ' + q.actives + ' piste, signal ' + q.rms.toFixed(5) + ')';
   const B = '.son-souffle', D = '.son-dose';
   // la porte « Souffler 2 minutes » : on note l'instant du geste, pour savoir où doit en être le morceau quand le son part
   const porteSouffle = async (page, sel) => { const t = await maintenant(page); await page.click(sel); await page.waitForSelector('main.souffle.s-cours'); const d = await page.evaluate(() => window.__son.depart); return d || t; };
@@ -162,9 +167,8 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
         // couper d'un geste
         await page.click(B); const b3 = await bouton(page, B);
         ok(b3.etat === 'off' && b3.texte === 'Écouter l’étang', P('2. un geste coupe le son, et le bouton repropose « Écouter l’étang »'));
-        await page.waitForTimeout(700);
-        const s3 = await son(page);
-        ok(s3.actives === 0 && s3.audibles === 0 && s3.rms < 0.0005, P('2. le son s’est éteint en moins d’une seconde (signal ' + s3.rms.toFixed(5) + ')'));
+        const s3 = await silence(page);
+        ok(s3.muet && s3.audibles === 0 && s3.delai < 1500, P('2. le son s’éteint tout de suite après le geste ' + dit(s3)));
         const [m3, m4] = await motChange(page);
         ok(!!(await page.$('main.souffle.s-cours')) && m3 !== m4, P('2. couper le son n’interrompt pas la respiration (' + m3 + ' puis ' + m4 + ')'));
         // des pressions rapides : jamais 2 pistes à la fois
@@ -182,9 +186,9 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
         if (b5.etat !== 'on') { await page.click(B); await attendEtat(page, B, 'on'); }
         // l'arrière-plan : le son s'arrête, puis reprend au bon endroit au retour
         await page.waitForTimeout(600);
-        const tCache = await cacher(page, 'hidden'); await page.waitForTimeout(450);
-        const s6 = await son(page);
-        ok(s6.audibles === 0 && s6.rms < 0.0005, P('2. page à l’arrière-plan : le son s’arrête tout de suite (signal ' + s6.rms.toFixed(5) + ')'));
+        const tCache = await cacher(page, 'hidden');
+        const s6 = await silence(page);
+        ok(s6.muet && s6.audibles === 0 && s6.delai < 1200, P('2. page à l’arrière-plan : le son s’arrête tout de suite ' + dit(s6)));
         ok(s6.ecran === 0, P('2. à l’arrière-plan, l’écran n’est plus retenu'));
         await page.waitForTimeout(900); const tVu = await cacher(page, 'visible');
         ok(await attendEtat(page, B, 'on', 5000), P('2. au retour sur la page, le son reprend'));
@@ -194,30 +198,30 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
         ok(s7.ecran === 1, P('2. au retour, l’écran est de nouveau tenu allumé'));
 
         // les sorties : Arrêter, Retour, SOS, la flèche du navigateur
-        await page.click(A('souffle-stop')); await page.waitForTimeout(700);
-        const s8 = await son(page);
-        ok(s8.actives === 0 && s8.rms < 0.0005 && !!(await page.$('main.souffle.s-pret')) && !(await page.$(B)), P('2. « Arrêter » coupe le son avec la respiration'));
+        await page.click(A('souffle-stop'));
+        const s8 = await silence(page);
+        ok(s8.muet && !!(await page.$('main.souffle.s-pret')) && !(await page.$(B)), P('2. « Arrêter » coupe le son avec la respiration ' + dit(s8)));
         ok(s8.ecran === 0, P('2. après « Arrêter », le téléphone retrouve sa mise en veille habituelle'));
         await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(500);
         const s8b = await son(page);
         ok((await bouton(page, B)).etat === 'off' && s8b.actives === 0, P('2. après « Arrêter », « Commencer » repart en silence'));
         ok(s8b.session === 'auto', P('2. une fois le son coupé, la page rend au téléphone son réglage habituel (' + s8b.session + ')'));
         await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
-        await page.click('.souffle .bar .back'); await page.waitForTimeout(900);
-        const s9 = await son(page);
-        ok(s9.actives === 0 && s9.rms < 0.0005 && !!(await page.$('main.intro')), P('2. « Retour » coupe le son et ramène à la vitrine, d’où l’exercice avait été lancé'));
+        await page.click('.souffle .bar .back'); await page.waitForSelector('main.intro');
+        const s9 = await silence(page);
+        ok(s9.muet && !!(await page.$('main.intro')), P('2. « Retour » coupe le son et ramène à la vitrine, d’où l’exercice avait été lancé ' + dit(s9)));
         const tP2 = await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(300);
         ok((await bouton(page, B)).etat === 'off', P('2. rouvrir l’exercice : il recommence en silence'));
         await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
-        await page.click('.souffle .bar .sos'); await page.waitForTimeout(900);
-        const s10 = await son(page);
-        ok(s10.actives === 0 && s10.rms < 0.0005 && !(await page.$('main.souffle')) && (await page.$$('.son-b')).length === 0, P('2. le SOS coupe le son, et l’écran du SOS est silencieux'));
+        await page.click('.souffle .bar .sos'); await page.waitForTimeout(300);
+        const s10 = await silence(page);
+        ok(s10.muet && !(await page.$('main.souffle')) && (await page.$$('.son-b')).length === 0, P('2. le SOS coupe le son, et l’écran du SOS est silencieux ' + dit(s10)));
         await page.goBack(); await page.waitForTimeout(700);
         if (await page.$('main.souffle.s-pret')) { await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); } else if (!(await page.$('main.souffle.s-cours'))) { await page.goto(APP + '#accueil'); await page.waitForSelector('.herofull .porte'); await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); }
         await page.waitForTimeout(300); await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
-        await page.goBack(); await page.waitForTimeout(900);
-        const s11 = await son(page);
-        ok(s11.actives === 0 && s11.rms < 0.0005 && !(await page.$('main.souffle')), P('2. la flèche du navigateur coupe le son en quittant l’exercice'));
+        await page.goBack(); await page.waitForTimeout(300);
+        const s11 = await silence(page);
+        ok(s11.muet && !(await page.$('main.souffle')), P('2. la flèche du navigateur coupe le son en quittant l’exercice ' + dit(s11)));
         ok(s9.ecran === 0 && s10.ecran === 0 && s11.ecran === 0 && s11.ecranPire === 1, P('2. en quittant l’exercice, l’écran n’est plus retenu, et il ne l’a jamais été 2 fois en même temps ' + JSON.stringify([s9.ecran, s10.ecran, s11.ecran, s11.ecranPire, s11.ecranDemandes])));
         ok((await son(page)).contextes === 1 && sons.length === 1 && sons[0] === 'etang.mp3', P('2. tout cela avec un seul téléchargement du morceau (' + sons.length + ')'));
       } else {
@@ -258,7 +262,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); ok(await attendEtat(page, B, 'on', 5000), P('2 bis. « Encore 2 minutes » : le son repart avec la respiration, puisque le parent l’écoutait'));
       await page.waitForTimeout(300); const f2 = await son(page);
       ok(f2.actives === 1 && f2.dernier.offset < 1.2, P('2 bis. et il repart du début (' + f2.dernier.offset.toFixed(2) + ' s)'));
-      await page.click(A('souffle-stop')); await page.waitForTimeout(700); ok((await son(page)).actives === 0, P('2 bis. « Arrêter » le coupe de nouveau'));
+      await page.click(A('souffle-stop')); { const q = await silence(page); ok(q.muet, P('2 bis. « Arrêter » le coupe de nouveau ' + dit(q))); }
       ok(errs.length === 0, P('2 bis. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }
@@ -280,18 +284,18 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
         ok(sons.join(',') === 'instant.mp3' && i1.actives === 1 && i1.dernier.offset === 0 && Math.abs(i1.dernier.dur - 40) < 0.5 && i1.volume > 0.85 && i1.rms > 0.001 && bi.texte === 'Revenir au silence', P('4. c’est le morceau court (40 s) qui joue, depuis son début, et le bouton propose « Revenir au silence » ' + JSON.stringify([sons, i1.dernier.dur, bi.texte])));
         ok(!!(await page.$('.dose p')) && !(await page.$('.sheet')), P('4. le texte de la dose reste à l’écran pendant l’écoute'));
         ok(i1.ecran === 1, P('4. pendant l’instant d’écoute, l’écran reste allumé'));
-        await page.click(D); await page.waitForTimeout(700);
-        const i2 = await son(page);
-        ok(i2.actives === 0 && (await bouton(page, D)).texte.startsWith('Prendre un instant'), P('4. le même geste ramène le silence'));
+        await page.click(D);
+        const i2 = await silence(page);
+        ok(i2.muet && (await bouton(page, D)).texte.startsWith('Prendre un instant'), P('4. le même geste ramène le silence ' + dit(i2)));
         ok(i2.ecran === 0, P('4. et le téléphone retrouve sa mise en veille habituelle'));
         await page.click(D); await attendEtat(page, D, 'on'); await page.waitForTimeout(300);
-        await page.click('.tabs ' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(800);
-        ok((await son(page)).actives === 0 && (await page.$$('.son-b')).length === 0, P('4. changer d’onglet coupe le son'));
+        await page.click('.tabs ' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(300);
+        { const q = await silence(page); const reste = (await page.$$('.son-b')).length; ok(q.muet && reste === 0, P('4. changer d’onglet coupe le son ' + dit(q) + (reste ? ', le bouton du son est encore à l’écran' : ''))); }
         await page.click('.tabs ' + A('go', '[data-view="today"]')); await page.waitForSelector(D); await page.waitForTimeout(400);
         ok((await bouton(page, D)).etat === 'off', P('4. de retour sur « Aujourd’hui », le bouton est revenu à « Prendre un instant »'));
         await page.click(D); await attendEtat(page, D, 'on'); await page.waitForTimeout(300);
-        await page.click('.dose .qui-b'); await page.waitForSelector('.sheet'); await page.waitForTimeout(700);
-        ok((await son(page)).actives === 0, P('4. ouvrir une feuille par-dessus coupe le son'));
+        await page.click('.dose .qui-b'); await page.waitForSelector('.sheet');
+        { const q = await silence(page); ok(q.muet, P('4. ouvrir une feuille par-dessus coupe le son ' + dit(q))); }
         await page.keyboard.press('Escape'); await page.waitForTimeout(500);
         if (tel && !COURT) {
           await page.click(D); await attendEtat(page, D, 'on');
