@@ -14,7 +14,7 @@ Chaque fois que cette branche change, GitHub dépose le contenu du dossier `site
 - `outils/proteges.txt` : les dossiers fermés par un mot de passe chez Infomaniak (Manager, Sécurité, Protection de dossiers). Leurs fichiers sont renvoyés à chaque mise en ligne, faute de pouvoir être relus, et le contrôle vérifie qu'ils répondent bien par une demande de mot de passe. Le mot de passe n'est écrit nulle part dans le dépôt.
 - `outils/htaccess-bloc.txt` : nos réglages du serveur (page 404, type du manifest et des images SVG, en-têtes de sécurité, une seule adresse en https et sans www). Le dépôt les ajoute à la fin du `.htaccess` d'Infomaniak, entre deux repères, sans toucher à ce qui précède. Si la page d'accueil ne répond plus juste après, il remet le fichier d'avant. Une copie du fichier d'origine reste sur le serveur sous le nom `.htaccess.avant-parent-ecoute`.
 - `outils/verifier.sh` : le contrôle du site en ligne.
-- `outils/essais-en-ligne.sh` et `outils/essais/premier-geste.js` : quand une version d'essai est présente, 3 parcours de parent y sont rejoués dans un vrai navigateur, au format téléphone puis ordinateur. Cette étape ne reçoit aucun mot de passe.
+- `outils/essais-en-ligne.sh` et `outils/essais/` : quand une version d'essai est présente, des parcours de parent y sont rejoués dans de vrais navigateurs après chaque mise en ligne, au format téléphone puis ordinateur. `premier-geste.js` joue 3 parcours dans Chrome. `finition.js` joue la respiration en silence puis avec le son, la dose, « Accueil » et « Retour », dans Chrome, Firefox et WebKit (le moteur de Safari). Les résultats sont écrits en notes sur la page de la mise en ligne.
 - `.github/workflows/mise-en-ligne.yml` : ce qui lance ces scripts.
 
 ## La version d'essai
@@ -24,6 +24,7 @@ Le dossier `site/essai/` contient une version d'essai de l'espace, servie à htt
 - Elle n'est jamais référencée par les moteurs de recherche (chaque page porte la consigne `noindex`), et aucune page du site public n'y mène.
 - Ce qu'on y écrit est rangé à part dans le navigateur (une autre clé que celle de l'espace habituel). L'espace habituel n'est jamais modifié.
 - Le tableau de bord d'Antonio n'y figure pas, parce qu'il n'y serait pas fermé par son mot de passe.
+- Le dossier `site/essai/son/` contient l'ambiance de l'étang : 2 morceaux composés pour l'espace (du son calculé, sans enregistrement ni musique existante). Ils ne sont chargés que si le parent touche « Écouter l'étang » ou « Prendre un instant ».
 - Tant que ce dossier existe, le reste de `site/` ne doit pas changer en même temps que lui : `outils/preparer-essai.sh` (branche `sources-essai`) le vérifie avant de copier.
 
 ## Le mot de passe

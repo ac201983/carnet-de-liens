@@ -39,7 +39,7 @@ jobs:
     name: Essais en ligne
     needs: mise-en-ligne
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - name: Récupérer les fichiers
         run: |

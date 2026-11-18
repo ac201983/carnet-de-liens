@@ -106,6 +106,16 @@ if [ -f site/essai/index.html ]; then
     "$(vue "la même sans barre finale" "$adresse/$fiche")" \
     "$(vue "image d'aperçu de la fiche" "$adresse/essai/img/fiches/quand-il-ou-elle-vit-ailleurs.jpg")" \
     "$(vue "tableau de bord dans l'essai (ne doit pas exister)" "$adresse/essai/antonio/")"
+  # Le son de l'étang : le fichier répond-il, avec le bon type, et le serveur sait-il en envoyer un morceau seulement ?
+  # (le lecteur audio ordinaire, qui sert de secours sur les anciens iPhone, lit le fichier par morceaux)
+  if [ -f site/essai/son/etang.mp3 ]; then
+    morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/essai/son/etang.mp3" 2>/dev/null \
+      | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires)' | tr '\n' ' ')" || true
+    note "Le son de l'étang" \
+      "$(vue "les 2 minutes" "$adresse/essai/son/etang.mp3")" \
+      "$(vue "l'extrait de 40 secondes" "$adresse/essai/son/instant.mp3")" \
+      "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
+  fi
 fi
 
 # 4. Les en-têtes de la page d'accueil

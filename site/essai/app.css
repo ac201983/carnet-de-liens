@@ -1081,6 +1081,33 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 /* Arrivé par la porte « Une piste pour ce soir » : les pistes d'abord, puis la boîte entière sous son propre titre. */
 .k-piste h2.suite{margin-top:14px}
 .app.wide .k-piste .ce-soir{max-width:620px}
+/* ---------- Passe de finition : l'accueil à tout moment, le son de l'étang, l'instant de la dose ---------- */
+/* « Accueil », à côté du SOS, sur tous les écrans de l'espace. Le nom de l'espace y mène aussi. */
+.bar .bar-d{margin-left:auto;display:flex;align-items:center;gap:8px}
+.bar .bar-d .sos{margin-left:0}
+.acc-l{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:rgba(15,51,28,.55);color:var(--cream);font-weight:800;font-size:14.5px;line-height:1;text-decoration:none}
+.acc-l .i{display:none;width:17px;height:17px}
+@media (hover:hover){.acc-l:hover{border-color:var(--green);color:var(--green)}}
+@media (max-width:374px){.acc-l{padding:0 10px}.bar .bar-d{gap:6px}.bar .sos{padding-inline:11px}}
+@media (max-width:339px){.bar a.wordmark>span{display:none}}
+a.rail-brand,a.tab{text-decoration:none}
+/* Sous les 3 portes de la vitrine, un parent déjà entré a 2 liens : son parcours, et son espace. */
+.herofull .voie+.voie{margin-top:-12px}
+/* « Écouter l'étang » dans la respiration, « Prendre un instant » sous la dose : le même bouton, qui dit toujours ce qu'il va faire. */
+.son-b{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:8px 16px;border-radius:999px;border:1px solid rgba(200,232,180,.38);background:rgba(15,51,28,.6);color:var(--cream);font-family:inherit;font-weight:800;font-size:15.5px;line-height:1.2;text-align:left}
+.son-b .i{width:19px;height:19px;flex:none}
+.son-b .tx{display:flex;flex-direction:column;gap:2px}
+.son-b small{font-size:13.5px;font-weight:700}
+.son-b[data-etat="on"],.son-b[data-etat="charge"]{background:var(--sun-soft);border-color:var(--sun);color:var(--sun-fg)}
+@media (hover:hover){.son-b:hover{border-color:var(--green)}}
+.souffle .actions{flex-wrap:wrap}
+.souffle .actions[hidden]{display:none}
+.dose .son-dose{align-self:flex-start;position:relative;z-index:1;margin-top:2px;background:rgba(255,255,255,.42);border-color:rgba(20,51,32,.35);color:#143320}
+.dose .son-dose small{color:#2F4A16}
+.dose .son-dose[data-etat="on"],.dose .son-dose[data-etat="charge"]{background:#143320;border-color:#143320;color:#F4EFD8}
+/* « Trouver une idée » : sur téléphone, un bandeau plus bas et un titre qui tient sur une ligne, pour que les 4 propositions soient à l'écran. */
+@media (max-width:1023px){.k-piste .band.thin{height:112px}.k-piste .band.thin h1{font-size:clamp(21px,6.1vw,27px)}}
+.autres-ages{display:flex;flex-direction:column;gap:7px}
 a.sit{text-decoration:none;color:var(--fg)}
 .sit .e.duo{font-size:16px;white-space:nowrap;letter-spacing:-3px}
 .fiche .couv .med.duo{font-size:27px;white-space:nowrap;letter-spacing:-4px}
