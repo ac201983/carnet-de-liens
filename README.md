@@ -100,7 +100,9 @@ outils/preparer-essai.sh
 cd pub/infomaniak && git add -A && git commit -m "Ce qui change" && git push origin infomaniak
 ```
 
-`preparer-essai.sh` refuse de continuer si quelque chose a changé dans `site/` en dehors de `essai/` : le site public ne bouge pas avec la version d'essai. Après l'envoi, GitHub dépose les fichiers, relit les adresses de l'essai, puis rejoue `premier-geste.js` dans un vrai navigateur contre l'adresse en ligne. Les résultats sont écrits en notes sur la page de la mise en ligne.
+`preparer-essai.sh` refuse de continuer si quelque chose a changé dans `site/` en dehors de `essai/` : le site public ne bouge pas avec la version d'essai. Après l'envoi, GitHub dépose les fichiers, relit les adresses de l'essai et les fichiers du son, puis rejoue contre l'adresse en ligne `premier-geste.js` dans Chrome et `finition.js` dans Chrome, WebKit et Firefox, chacun sur sa machine. Les résultats sont écrits en notes sur la page de la mise en ligne. Pour rejouer ces essais sans rien déposer : `git push origin infomaniak:essais-en-ligne`.
+
+Dans `finition.js`, l'horloge de la respiration est relevée dans la page, au moment du geste. La relever depuis l'extérieur ajoute le temps que le navigateur d'essai met à cliquer, qui dépasse 1 seconde sur une machine lente.
 
 Publier la version d'essai comme site (seulement quand Antonio l'a essayée et validée) :
 
@@ -118,3 +120,4 @@ Publier la version d'essai comme site (seulement quand Antonio l'a essayée et v
 - Le lien d'une fiche partagée ne contient que l'adresse de la fiche. Rien de ce que le parent a écrit ou choisi n'y figure.
 - Le silence est la règle. Aucun son ne part sans un geste du parent, et le même geste le coupe.
 - « Retour » ramène d'où l'on vient. La flèche du navigateur suit le même chemin.
+- Avant de donner un nom de classe à un nouvel élément, le chercher dans `pparts/p1-head.html`. Les noms courts sont déjà pris : `acc` et `acc-l` appartiennent à la vitrine, par exemple. Un nom déjà pris donne sa mise en forme à des éléments qui n'ont rien à voir, et aucun contrôle automatique ne le voit. Après un changement de style, regarder la vitrine entière, du haut jusqu'en bas, sur téléphone et sur ordinateur.

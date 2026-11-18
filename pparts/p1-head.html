@@ -1084,10 +1084,11 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 /* « Accueil », à côté du SOS, sur tous les écrans de l'espace. Le nom de l'espace y mène aussi. */
 .bar .bar-d{margin-left:auto;display:flex;align-items:center;gap:8px}
 .bar .bar-d .sos{margin-left:0}
-.acc-l{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:rgba(15,51,28,.55);color:var(--cream);font-weight:800;font-size:14.5px;line-height:1;text-decoration:none}
-.acc-l .i{display:none;width:17px;height:17px}
-@media (hover:hover){.acc-l:hover{border-color:var(--green);color:var(--green)}}
-@media (max-width:374px){.acc-l{padding:0 10px}.bar .bar-d{gap:6px}.bar .sos{padding-inline:11px}}
+/* Ce lien a son propre nom de classe. « acc-l » est déjà celui des phrases d'introduction de la vitrine, et « acc » celui de ses sections. */
+.va-accueil{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:rgba(15,51,28,.55);color:var(--cream);font-weight:800;font-size:14.5px;line-height:1;text-decoration:none}
+.va-accueil .i{display:none;width:17px;height:17px}
+@media (hover:hover){.va-accueil:hover{border-color:var(--green);color:var(--green)}}
+@media (max-width:374px){.va-accueil{padding:0 10px}.bar .bar-d{gap:6px}.bar .sos{padding-inline:11px}}
 @media (max-width:339px){.bar a.wordmark>span{display:none}}
 a.rail-brand,a.tab{text-decoration:none}
 /* Sous les 3 portes de la vitrine, un parent déjà entré a 2 liens : son parcours, et son espace. */

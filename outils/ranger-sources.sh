@@ -25,7 +25,7 @@ mkdir -p "$BRANCHE/outils/son"
 cp outils/son/compose.py outils/son/analyse.py outils/son/balance.py "$BRANCHE/outils/son/" 2>/dev/null || true
 # Ce qui sert à fabriquer, à regarder et à vérifier la version d'essai (dans l'atelier, ces fichiers sont dans build/essai/)
 mkdir -p "$BRANCHE/outils/essai"
-cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/vite.sh build/essai/vue.js build/essai/planche.py "$BRANCHE/outils/essai/" 2>/dev/null || true
+cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/vite.sh build/essai/reste.sh build/essai/vue.js build/essai/planche.py "$BRANCHE/outils/essai/" 2>/dev/null || true
 
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40
