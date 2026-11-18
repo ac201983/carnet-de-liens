@@ -30,7 +30,7 @@ const DOSES=[
    rap : l'étape dont on relit la note ; link : un ou plusieurs boutons (evo, photo, breath, advice, ou « sit_nom » pour une situation). */
 const PARCOURS=[
   {m:'Mon point de départ',steps:[
-    {id:'depart',t:'D’où je pars',
+    {id:'depart',t:'D’où je pars',acc:'Vous poserez votre point de départ en 3 minutes, et vous écrirez pourquoi vous commencez ce parcours.',
      idee:['Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger. Il est d’avoir un point de comparaison pour plus tard, parce que la fatigue joue un mauvais tour à la mémoire. Les jours difficiles, elle nous fait croire que rien n’a changé, alors que nous avons parfois beaucoup avancé. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru.',
        'Aujourd’hui, vous faites donc votre premier point sur 5 choses qui pèsent dans la vie d’un parent, à savoir votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Vous le referez au milieu du parcours, puis à la fin. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.'],
      sch:'points',

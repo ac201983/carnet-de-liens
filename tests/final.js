@@ -77,6 +77,7 @@ const PLEIN = Object.assign({}, BASE, {
     ok(!!(await page.$('#app.v-me')), 'final : Retour ramène à « Moi », d’où l’on venait');
     await tab(page, 'parcours'); await page.waitForTimeout(250);
     ok(!!(await page.$('.fin-appel')) && /au bout des 24 étapes/.test(await page.textContent('.fin-appel')), 'parcours terminé : une carte invite à voir son chemin');
+    ok(await page.evaluate(() => { const a = document.querySelector('.months .month:last-child .sentier > .arrivee'); return !!a && a.tagName === 'BUTTON' && a.classList.contains('ouverte') && a.dataset.view === 'final' && /Mon chemin/.test(a.textContent); }), 'parcours terminé : au bout du sentier, l’arrivée est ouverte et mène à « Mon chemin »');
     await page.click(A('step', '[data-i="23"]')); await page.waitForTimeout(250);
     await page.click('.quick ' + A('go', '[data-view="final"]')); await page.waitForTimeout(400);
     ok(!!(await page.$('#app.v-final')), 'dernière étape : « Voir mon chemin en entier » ouvre le final');

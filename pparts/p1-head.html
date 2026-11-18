@@ -101,7 +101,7 @@ textarea{min-height:120px;resize:vertical}
 .mirror .q{font-size:16.5px;color:var(--fg)}
 .mirror .l{font-size:16px;color:var(--muted);font-style:italic;font-family:var(--font-display)}
 .mirror .hint.ia{font-size:13.5px}
-.mirror .lbl{font-size:12.5px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.mirror .lbl{font-size:13.5px;color:var(--muted);font-weight:800}
 .think{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:15px}
 .dotp{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 1.1s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.dotp{animation:none}}
@@ -624,6 +624,8 @@ canvas.eau{display:none}
   @keyframes fx-fade{from{opacity:0}}
   /* -- arriver sur un écran sans onde (première ouverture, navigateur plus ancien) : les blocs remontent l'un après l'autre -- */
   html.fx .fxe{animation:fx-pose .95s var(--fx-ease) backwards}
+  html.fx .bravo.neuf .pts i.f{animation:fx-point .5s var(--fx-ease) backwards;animation-delay:calc(var(--k,0)*28ms)}
+  @keyframes fx-point{from{transform:scale(.35);background-color:rgba(244,239,216,.26)}to{transform:none}}
   html.fx .enter .reveal{animation-name:fx-pose;animation-duration:.95s;animation-timing-function:var(--fx-ease);animation-fill-mode:backwards}
   html.fx .enter .reveal.d1{animation-delay:.085s}html.fx .enter .reveal.d2{animation-delay:.17s}html.fx .enter .reveal.d3{animation-delay:.255s}html.fx .enter .reveal.d4{animation-delay:.34s}
   @keyframes fx-pose{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -700,6 +702,200 @@ canvas.eau{display:none}
 .fin-lettre .lesson{font-size:20px;line-height:1.45}
 .fin-pied{text-align:center}
 .fin-appel{text-align:left;cursor:pointer;border-color:rgba(216,223,126,.5)}
+/* ---------- La refonte des écrans, premier temps : le fil du parcours, l'étape de la semaine, le sentier ---------- */
+.band .fil{align-self:flex-start;display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;background:none;border:0;padding:9px 2px 9px 0;margin:0 0 -8px;min-height:44px;text-align:left}
+.fil .pts{display:flex;align-items:center;gap:2.5px}
+.fil .pts i{width:6px;height:6px;border-radius:50%;background:rgba(244,239,216,.34);flex:none}
+.fil .pts i.m{margin-left:6px}
+.fil .pts i.f{background:var(--sun)}
+.fil .pts i.c{background:rgba(7,36,15,.5);box-shadow:0 0 0 2px var(--cream)}
+.fil .ou{font-size:13.5px;font-weight:800;color:var(--cream);text-shadow:0 1px 8px rgba(0,0,0,.65)}
+.step.semaine{flex-direction:column;align-items:stretch;gap:12px;padding:16px 16px 16px;border-radius:22px;border-color:rgba(216,223,126,.42);background:linear-gradient(180deg,rgba(216,223,126,.1),rgba(216,223,126,.02) 70%),var(--surface)}
+.step.semaine:hover{border-color:var(--sun)}
+.step.semaine .haut{display:flex;align-items:center;gap:14px}
+.step.semaine .n{width:58px;height:58px;font-size:20px;color:var(--cream);background:radial-gradient(closest-side,var(--surface-2) 0,var(--surface-2) 80%,rgba(0,0,0,0) 82%),conic-gradient(var(--sun) calc(var(--p,0)*1%),rgba(169,201,160,.3) 0)}
+.step.semaine.done .n{color:var(--green)}
+.step.semaine .tx b{font-family:var(--font-display);font-size:22px;line-height:1.14;font-weight:600;color:var(--cream)}
+.step.semaine .tx .label{font-size:13px;color:var(--sun-fg)}
+.step.semaine .promesse{font-size:15.5px;line-height:1.5;color:var(--fg)}
+.step.semaine .promesse b{color:var(--cream)}
+.step.semaine .aller{align-self:flex-start;pointer-events:none}
+.chips.attente{margin-top:-2px}
+.card.prog .ou{display:flex;align-items:center;gap:16px}
+.card.prog .anneau{width:84px;height:84px;border-radius:50%;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:radial-gradient(closest-side,var(--surface) 0,var(--surface) 82%,rgba(0,0,0,0) 84%),conic-gradient(var(--green) calc(var(--p,0)*1%),var(--surface-2) 0)}
+.card.prog .anneau b{font-family:var(--font-display);font-size:30px;line-height:1;color:var(--cream);font-weight:600}
+.card.prog .anneau small{font-size:12px;font-weight:800;color:var(--muted)}
+.card.prog .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.card.prog .txt .lesson{font-size:21px;line-height:1.15}
+.months{gap:22px}
+.months .month{gap:2px}
+.months .month h2{padding-left:34px;gap:12px;font-size:21px;line-height:1.15}
+.months .month h2 .nom{margin-right:auto}
+.months .month h2 .mfait{font-family:var(--font-ui);font-size:12.5px;font-weight:800;color:var(--muted);white-space:nowrap}
+.months .month h2 .n{position:relative;z-index:1}
+.sentier{display:flex;flex-direction:column}
+.months .step{position:relative;display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:0 4px;min-height:88px;padding:8px 10px 8px 0;background:none;border:1px solid rgba(0,0,0,0);border-radius:22px}
+.months .step:hover{border-color:rgba(0,0,0,0)}
+@media (hover:hover){.months .step:hover{background:rgba(169,201,160,.07)}}
+.months .step .trace{position:absolute;left:0;top:0;width:96px;height:100%;overflow:visible;pointer-events:none}
+.months .step .trace path{fill:none;stroke:rgba(169,201,160,.5);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1 8;vector-effect:non-scaling-stroke}
+.months .step .trace path.fait{stroke:var(--green-2);stroke-width:3;stroke-dasharray:none}
+.months .step .n{grid-column:1;justify-self:start;margin-left:6px;width:44px;height:44px;position:relative;z-index:1;background:var(--bg);border:2px solid var(--green-2);color:var(--green);font-size:16px}
+.months .step.d .n{margin-left:46px}
+.months .step.done .n{background:var(--green);border-color:var(--green);color:var(--green-fg)}
+.months .step.now .n{background:var(--sun);border-color:var(--sun);color:#243A12;box-shadow:0 0 0 7px rgba(216,223,126,.2),0 0 0 15px rgba(216,223,126,.09)}
+.months .step.locked .n{background:var(--bg);border:2px dashed rgba(169,201,160,.5);color:var(--muted)}
+.months .step .tx{grid-column:2}
+.months .step .tx b{font-size:17px;line-height:1.22}
+.months .step.now{background:linear-gradient(90deg,rgba(216,223,126,0) 0,rgba(216,223,126,.1) 34%,rgba(216,223,126,.1) 100%)}
+.months .step.now .tx span{color:var(--sun-fg);font-weight:800}
+/* l'arrivée, au bout du sentier */
+.arrivee{position:relative;display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:0 4px;min-height:88px;padding:6px 10px 8px 0;background:none;border:0;border-radius:22px;text-align:left;width:100%;color:var(--fg)}
+.arrivee .n{justify-self:start;margin-left:22px;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px dashed rgba(216,223,126,.6);color:var(--sun-fg)}
+.arrivee .n .i{width:26px;height:26px}
+.arrivee .tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.arrivee .tx b{font-family:var(--font-display);font-size:20px;font-weight:600;line-height:1.15;color:var(--cream)}
+.arrivee .tx span{font-size:14px;line-height:1.4;color:var(--muted)}
+.arrivee.ouverte .n{background:var(--sun);border:2px solid var(--sun);color:#243A12;box-shadow:0 0 0 7px rgba(216,223,126,.2),0 0 0 15px rgba(216,223,126,.09)}
+.arrivee.ouverte .tx span{color:var(--sun-fg)}
+.arrivee .chev{color:var(--muted)}
+.arrivee::before{content:"";position:absolute;left:46.75px;top:0;height:calc(50% - 26px);border-left:2.5px dotted rgba(169,201,160,.55)}
+.arrivee.ouverte::before{left:46.5px;border-left:3px solid var(--green-2)}
+@media (hover:hover){.arrivee.ouverte:hover{background:rgba(216,223,126,.08)}}
+/* ---------- La refonte, étape B : la page d'une étape se lit comme un petit livre, en 3 temps ---------- */
+/* les 3 traits de lecture, sous la barre du haut */
+.bar .lecture{position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:0;height:3px;display:flex;gap:5px;pointer-events:none}
+.bar .lecture i{flex:1;background:rgba(169,201,160,.2);border-radius:2px;overflow:hidden}
+.bar .lecture b{display:block;height:100%;background:var(--sun);border-radius:2px;transform:scaleX(0);transform-origin:0 50%}
+/* la couverture : le numéro en grand derrière le titre, la promesse, les 3 temps */
+.etape{gap:16px}
+.etape .couv{position:relative;display:flex;flex-direction:column;gap:5px;padding:10px 0 2px}
+.etape .couv::before{content:attr(data-n);position:absolute;right:-4px;top:-30px;font-family:var(--font-display);font-weight:600;font-size:176px;line-height:1;letter-spacing:-.05em;color:rgba(180,222,156,.1);pointer-events:none;z-index:0}
+.etape .couv>*{position:relative;z-index:1}
+.etape .couv .label{color:var(--sun-fg);font-size:13.5px}
+.etape .couv .t1{font-size:35px;line-height:1.05;max-width:10.5em}
+.etape .couv .sub{font-size:15px}
+.etape .couv .promesse{font-family:var(--font-display);font-size:20px;line-height:1.4;color:var(--cream);margin-top:10px;max-width:30em}
+.temps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:relative;margin:18px -4px 0}
+.temps::before{content:"";position:absolute;left:16.67%;right:16.67%;top:23px;height:2px;background-image:radial-gradient(circle,rgba(169,201,160,.7) 1.1px,rgba(0,0,0,0) 1.6px);background-size:9px 2px;background-repeat:repeat-x}
+.temps button{position:relative;z-index:1;background:none;border:0;padding:4px 2px 6px;min-height:44px;display:flex;flex-direction:column;align-items:center;gap:7px;font-weight:800;font-size:14.5px;color:var(--fg)}
+.temps button i{font-style:normal;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--green-2);color:var(--green);font-size:15.5px;box-shadow:0 0 0 6px var(--bg)}
+.temps button:first-child i{background:var(--sun);border-color:var(--sun);color:#243A12}
+@media (hover:hover){.temps button:hover i{border-color:var(--cream);color:var(--cream)}.temps button:first-child:hover i{color:#243A12}}
+.etape .couv .duree{text-align:center;margin-top:6px}
+/* les 3 temps : un titre qui reprend le rond du sentier */
+.etape .chap{display:flex;align-items:center;gap:12px;margin-top:20px;font-size:27px;line-height:1.1;scroll-margin-top:84px}
+.etape .chap:focus{outline:none}
+.etape .chap .n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;font-family:var(--font-ui);font-size:14.5px;font-weight:800;background:var(--surface-2);color:var(--green)}
+.etape .chap::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(200,232,180,.3),rgba(200,232,180,0))}
+/* comprendre : un texte ouvert, sans carte, avec un premier paragraphe plus grand */
+.etape .card.idee{background:none;border:0;border-radius:0;padding:0;gap:14px}
+.etape .idee .lesson{font-size:18.5px;line-height:1.56}
+.etape .idee .lesson:first-child{font-size:21.5px;line-height:1.38;color:var(--cream)}
+/* le schéma : une petite scène éclairée par le haut */
+.etape .card.sch{border-radius:24px;border-color:rgba(200,232,180,.2);background:radial-gradient(520px 250px at 50% 0,rgba(180,222,156,.14),rgba(180,222,156,0) 72%),#0B2A16}
+/* la voix d'Antonio : la lumière entre par le coin */
+.etape .card.vecu{position:relative;overflow:hidden;border:0;border-left:3px solid var(--sun);border-radius:6px 24px 24px 6px;padding:18px 18px 10px 18px;gap:12px;background:radial-gradient(460px 240px at 0 0,rgba(216,223,126,.22),rgba(216,223,126,0) 70%),rgba(216,223,126,.07)}
+.etape .card.vecu .av{width:44px;height:44px;font-size:22px;box-shadow:0 0 0 5px rgba(216,223,126,.16)}
+.etape .card.vecu .from{gap:14px}
+.etape .card.vecu .from b{font-family:var(--font-display);font-size:20px;font-weight:600;line-height:1.15;color:var(--cream)}
+.etape .card.vecu .from small{color:var(--sun-fg)}
+.etape .card.vecu .lesson{font-size:18.5px;line-height:1.5}
+.etape .card.mot .lesson{font-size:23px;line-height:1.34}
+/* l'exemple : un aparté, en retrait */
+.etape .card.exemple{background:none;border:0;border-left:2px solid rgba(169,201,160,.45);border-radius:0;padding:2px 0 2px 16px;gap:6px}
+/* essayer : la mission de la semaine et ce qu'il faut regarder, dans un seul bloc */
+.mission{border:1.5px solid rgba(216,223,126,.5);border-radius:24px;overflow:hidden;background:linear-gradient(180deg,rgba(216,223,126,.17),rgba(216,223,126,.05))}
+.mission .exo{background:none;border-radius:0;padding:18px 18px 16px;gap:8px}
+.mission .label{display:flex;align-items:center;gap:8px;font-size:14px}
+.mission .label .i{width:18px;height:18px}
+.mission .exo p{font-family:var(--font-display);font-size:20px;line-height:1.4;color:var(--cream)}
+.mission .card.green{background:rgba(7,36,15,.42);border:0;border-top:1px dashed rgba(216,223,126,.42);border-radius:0;padding:14px 18px 16px;gap:6px}
+.mission .card.green .label{color:var(--green)}
+.mission .card.green p{font-size:16.5px;line-height:1.55}
+/* écrire : la page du carnet, avec sa marge et ses lignes */
+.etape .card.carnet,.etape .card.rap{position:relative;border:1px solid rgba(244,239,216,.3);border-radius:8px 24px 24px 8px;padding:18px 18px 14px 30px;background:linear-gradient(180deg,rgba(244,239,216,.1),rgba(244,239,216,.05))}
+.etape .card.carnet::before,.etape .card.rap::before{content:"";position:absolute;left:15px;top:0;bottom:0;width:1.5px;background:rgba(232,131,111,.6)}
+.etape .card.carnet textarea{border:0;border-top:1px solid rgba(244,239,216,.55);border-radius:0;padding:0 2px;background-color:rgba(0,0,0,0);background-image:repeating-linear-gradient(to bottom,rgba(244,239,216,0) 0,rgba(244,239,216,0) 31px,rgba(244,239,216,.15) 31px,rgba(244,239,216,.15) 32px);background-attachment:local;font-family:var(--font-display);font-size:19px;line-height:32px;min-height:194px}
+.etape .card.carnet textarea::placeholder{color:#BAD5AF;font-style:italic}
+.etape .card.rap .lesson{font-style:italic}
+.etape>.quick{flex-direction:column;flex-wrap:nowrap}
+.etape>.quick .btn{flex:none;padding:15px 12px;font-size:16.5px;border-radius:16px}
+.etape .card.suite{margin-top:10px;border:1px solid rgba(216,223,126,.36);border-radius:24px;background:linear-gradient(180deg,rgba(216,223,126,.15),rgba(216,223,126,.04)),var(--surface)}
+.etape .card.suite h2{font-size:23px}
+.bravo{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0 0;text-align:center}
+.bravo .pts{display:flex;align-items:center;gap:3px}
+.bravo .pts i{width:8px;height:8px;border-radius:50%;background:rgba(244,239,216,.26);flex:none}
+.bravo .pts i.m{margin-left:7px}
+.bravo .pts i.f{background:var(--sun)}
+.bravo p{font-size:15px;font-weight:800;color:var(--sun-fg)}
+/* ---------- La refonte, étape C : la boîte à outils rangée par thèmes, la fiche d'une situation, « Moi » ---------- */
+/* les thèmes : un titre, un compte, et une seule carte qui porte les lignes */
+.sits.groupes{gap:22px}
+.grp{display:flex;flex-direction:column;gap:9px;min-width:0}
+.grp>h2{display:flex;align-items:baseline;gap:10px;font-size:22px;line-height:1.15;padding-left:2px}
+.grp>h2 .nb{font-family:var(--font-ui);font-size:13.5px;font-weight:800;color:var(--muted)}
+.grp .liste{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.grp .liste .sit{border:0;border-radius:0;background:none;padding:12px 14px}
+.grp .liste .sit+.sit{border-top:1px solid var(--line)}
+@media (hover:hover){.grp .liste .sit:hover{background:rgba(169,201,160,.07)}}
+/* « Pour moi » : la même carte à lignes */
+.ex{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.ex .sit{border:0;border-radius:0;background:none;padding:12px 14px}
+.ex .sit+.sit{border-top:1px solid var(--line)}
+/* la fiche d'une situation : une couverture, un texte ouvert, puis ce qu'on peut essayer mis en avant */
+.fiche{gap:16px}
+.fiche .couv{display:flex;flex-direction:column;gap:5px;padding:8px 0 2px}
+.fiche .couv .med{width:74px;height:74px;border-radius:26px;display:grid;place-items:center;font-size:38px;line-height:1;margin-bottom:10px;background:radial-gradient(circle at 30% 22%,rgba(216,223,126,.32),rgba(180,222,156,.1) 72%);border:1px solid rgba(200,232,180,.3)}
+.fiche .couv .label{color:var(--sun-fg);font-size:13.5px}
+.fiche .couv .t1{font-size:35px;line-height:1.05}
+.fiche .sec h2{font-size:22px}
+.fiche .card.sec.comp{background:none;border:0;border-radius:0;padding:0;gap:10px}
+.fiche .card.sec.comp p{font-family:var(--font-display);font-size:19.5px;line-height:1.5;color:var(--cream)}
+.fiche .card.sec.ess{border:1.5px solid rgba(216,223,126,.5);border-radius:24px;background:linear-gradient(180deg,rgba(216,223,126,.16),rgba(216,223,126,.04));padding:18px;gap:12px}
+.fiche .sec .list{list-style:none;padding:0;gap:12px}
+.fiche .sec .list li{position:relative;padding-left:34px;line-height:1.5}
+.fiche .sec.ess .list li::before{content:"";position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;background:var(--green)}
+.fiche .sec.ess .list li::after{content:"";position:absolute;left:8px;top:6px;width:5px;height:10px;border:solid #07240F;border-width:0 2.4px 2.4px 0;transform:rotate(45deg)}
+.fiche .card.sec.ev{border-radius:24px;padding:18px;gap:12px}
+.fiche .sec.ev .list li::before,.fiche .sec.ev .list li::after{content:"";position:absolute;left:4px;top:12px;width:14px;height:2.4px;border-radius:2px;background:var(--coral)}
+.fiche .sec.ev .list li::before{transform:rotate(45deg)}
+.fiche .sec.ev .list li::after{transform:rotate(-45deg)}
+.fiche .comfort{border:0;border-left:3px solid var(--sun);border-radius:6px 24px 24px 6px;padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;background:radial-gradient(460px 220px at 0 0,rgba(216,223,126,.22),rgba(216,223,126,0) 70%),rgba(216,223,126,.07)}
+.fiche .comfort .label{color:var(--sun-fg)}
+.fiche .comfort p{font-family:var(--font-display);font-style:italic;font-size:20px;line-height:1.4;color:var(--cream)}
+.fiche .card.sec.aide{border-radius:24px;padding:18px;background:rgba(240,163,163,.07);border-color:rgba(240,163,163,.34)}
+.fiche .grp.proches{margin-top:10px}
+/* « Moi » : trois chiffres en haut, chacun mène à son écran */
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.trio button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 12px 13px}
+.trio b{font-family:var(--font-display);font-size:38px;line-height:.95;font-weight:600;color:var(--cream)}
+.trio span{font-size:13.5px;font-weight:800;line-height:1.25;color:var(--muted)}
+.trio button:first-child{border-color:rgba(216,223,126,.42);background:linear-gradient(180deg,rgba(216,223,126,.12),rgba(216,223,126,.02) 80%),var(--surface)}
+.trio button:first-child b{color:var(--sun-fg)}
+@media (hover:hover){.trio button:hover{border-color:var(--green)}}
+h2.detail{margin-top:16px;font-size:23px}
+.moi .mooddots{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:5px;flex-wrap:nowrap}
+.moi .mooddots i{width:auto;height:auto;aspect-ratio:1;border-radius:6px;background:rgba(0,0,0,.2);border:1px solid var(--line)}
+.moi .mooddots i[class^="m"]{border-color:rgba(0,0,0,0)}
+.moi .mooddots i.m2{background:rgba(244,239,216,.42)}
+.moi .mooddots i:last-child{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px rgba(244,239,216,.55)}
+/* ---------- La refonte, étape D : les pages écrites par le parent, les 3 points de « Mon évolution » ---------- */
+/* tout ce que le parent a écrit se relit sur une page de carnet, avec sa marge */
+.card.page{position:relative;border:1px solid rgba(244,239,216,.3);border-radius:8px 24px 24px 8px;padding:18px 18px 14px 30px;background:linear-gradient(180deg,rgba(244,239,216,.1),rgba(244,239,216,.05))}
+.card.page::before{content:"";position:absolute;left:15px;top:0;bottom:0;width:1.5px;background:rgba(232,131,111,.6)}
+.card.page .lesson{font-style:italic}
+.card.page.fin-lettre{border-color:rgba(216,223,126,.5);background:linear-gradient(180deg,rgba(216,223,126,.14),rgba(216,223,126,.05))}
+/* les 3 points : 3 ronds sur un fil */
+.chips.points3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;position:relative;margin:4px -4px 2px}
+.chips.points3::before{content:"";position:absolute;left:16.67%;right:16.67%;top:20px;height:2px;background-image:radial-gradient(circle,rgba(169,201,160,.7) 1.1px,rgba(0,0,0,0) 1.6px);background-size:9px 2px;background-repeat:repeat-x}
+.points3 .chip{position:relative;z-index:1;flex:auto;display:flex;flex-direction:column;align-items:center;gap:13px;min-height:44px;padding:0 2px 4px;border:0;border-radius:0;background:none;color:var(--fg);font-size:13.5px;line-height:1.25;text-align:center}
+.points3 .chip::before{content:"";width:36px;height:36px;border-radius:50%;flex:none;background:var(--bg);border:2px solid var(--green-2);box-shadow:0 0 0 6px var(--bg)}
+.points3 .chip.fait::before{background:var(--green);border-color:var(--green)}
+.points3 .chip[aria-pressed="true"]{background:none;color:var(--sun-fg)}
+.points3 .chip[aria-pressed="true"]::before{border-color:var(--sun);box-shadow:0 0 0 6px var(--bg),0 0 0 8.5px rgba(216,223,126,.45)}
+.points3 .chip.fait[aria-pressed="true"]::before{background:var(--sun)}
+.points3 .chip .i{position:absolute;top:9px;left:50%;margin-left:-9px;width:18px;height:18px;color:var(--muted)}
 .card.rap{border-style:dashed;border-color:rgba(244,239,216,.42)}
 .card.carnet{background:var(--surface-2);border-color:rgba(180,222,156,.3)}
 .card.carnet label.lesson{display:block}
@@ -812,6 +1008,14 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
   .app.v-plans>.bar.sub{padding-inline:max(var(--pad),calc((100vw - var(--rail) - 1000px)/2))}
   .app:not(.nobar):not(.wide)>main.view{padding-top:8px}
   .bar .back{font-size:16.5px;padding:8px 10px 8px 0}
+  .bar .lecture{left:max(var(--pad),calc((100vw - var(--rail) - var(--lire))/2));right:max(var(--pad),calc((100vw - var(--rail) - var(--lire))/2));bottom:4px}
+  .etape .couv .t1{font-size:46px;max-width:13em}
+  .etape .couv::before{font-size:250px;top:-56px;right:-10px}
+  .etape .couv .promesse{font-size:22px}
+  .temps,.etape .couv .duree{max-width:460px}
+  .etape .chap{font-size:32px;margin-top:28px}
+  .etape .idee .lesson{font-size:19.5px}
+  .etape .idee .lesson:first-child{font-size:24px}
   /* sans colonne de gauche (accueil, pages de texte, aperçus avant l'inscription) : la barre court sur toute la largeur */
   .app.nobar>.bar{max-width:none;margin:0;padding-inline:max(var(--pad),calc((100vw - var(--lire))/2))}
   .app.v-peek-plans>.bar{padding-inline:max(var(--pad),calc((100vw - 1000px)/2))}
@@ -836,8 +1040,9 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 
   /* -- le parcours : les six mois d'un seul regard -- */
   .card.prog{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 30px;align-items:center}
-  .card.prog .kv,.card.prog .progress{grid-column:1}
-  .card.prog .quick{grid-column:2;grid-row:1 / span 2;flex-wrap:nowrap}
+  .card.prog .ou{grid-column:1}
+  .card.prog .txt .lesson{font-size:25px}
+  .card.prog .quick{grid-column:2;grid-row:1;flex-wrap:nowrap}
   .card.prog .quick .btn{flex:none;padding-inline:18px}
   .months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 26px;align-items:start;margin-top:6px}
   .month h2{min-height:2.3em;align-items:flex-start}
@@ -850,6 +1055,17 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
   .chips.scroll{flex-wrap:wrap;overflow:visible}
   .chip{font-size:15px;padding:8px 14px}
   .sits,.ex{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .sits.groupes{gap:26px 22px;align-items:start}
+  .sits.groupes.trouve{display:flex}
+  .sits.groupes .sit{padding:13px 16px}
+  .ex{background:none;border:0;border-radius:0;overflow:visible}
+  .ex .sit{border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+  .ex .sit+.sit{border-top:1px solid var(--line)}
+  .fiche .couv .t1{font-size:46px}
+  .fiche .card.sec.comp p{font-size:21.5px}
+  .fiche .comfort p{font-size:22px}
+  .trio b{font-size:44px}
+  .trio button{padding:18px 18px 16px}
   .sits>.hint{grid-column:1 / -1}
   .sits .sit .tx span,.ex .sit .tx span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .sits .sit,.ex .sit{align-items:flex-start;padding:15px 16px}
@@ -985,6 +1201,8 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
   .card,.fin-photo,article{break-inside:avoid;background:#fff !important}
   h1,h2,h3{break-after:avoid}
   .card.vecu{background:#fbf8e4 !important}
+  .card.page{border-radius:10px;padding:14px 16px}
+  .card.page::before{display:none}
   .fin-lettre{background:#fbf8e4 !important;border-color:#b99a00 !important}
   .bartrack i,.bartrack i b,.legend span::before,.av,.carnet-mois .n,.card.vecu,.fin-lettre,.fin-photo img{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .bartrack i{background:#e3e7da !important}

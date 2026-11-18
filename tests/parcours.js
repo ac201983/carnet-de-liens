@@ -43,6 +43,22 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     // l'étape en six blocs
     ok(!!(await page.$('.card.idee')) && !!(await page.$('.card.sch svg[role="img"]')) && !!(await page.$('.card.exemple')) && !!(await page.$('.exo')) && !!(await page.$('.card.green')) && !!(await page.$('.card.carnet textarea#note')), 'étape 1 : comprendre, schéma, exemple, essayer, observer, carnet');
     ok((await page.$$('.card.idee p.lesson')).length === 2, 'étape 1 : deux paragraphes pour comprendre');
+    // la refonte : la couverture, les 3 temps, les 3 traits de lecture
+    {
+      const c = await page.evaluate(() => { const q = s => [...document.querySelectorAll(s)]; const m = document.querySelector('main.etape'); const k = [...m.children].map(e => e.className.split(' ').slice(0, 2).join('.') + (e.id ? '#' + e.id : '')); return { n: document.querySelector('.couv').dataset.n, temps: q('.temps button').map(e => e.textContent), chap: q('h2.chap').map(e => e.id + ' ' + e.textContent), traits: q('.bar .lecture i b').map(e => parseFloat(e.style.transform.replace('scaleX(', ''))), duree: document.querySelector('.couv .duree').textContent, prom: document.querySelector('.couv .promesse') ? document.querySelector('.couv .promesse').textContent : '', mission: !!document.querySelector('.mission > .exo') && !!document.querySelector('.mission > .card.green'), ordre: k.join(' '), y: scrollY }; });
+      ok(c.n === '1' && c.temps.join('|') === '1Comprendre|2Essayer|3Écrire' && c.chap.join('|') === 't-comprendre 1Comprendre|t-essayer 2Essayer|t-ecrire 3Écrire', 'étape 1 : la couverture porte son numéro, et la page se lit en 3 temps ' + JSON.stringify([c.n, c.temps, c.chap]));
+      ok(/^Environ \d+ minutes de lecture, puis votre essai de la semaine\.$/.test(c.duree) && c.prom === 'Vous poserez votre point de départ en 3 minutes, et vous écrirez pourquoi vous commencez ce parcours.' && c.mission, 'étape 1 : le temps de lecture est annoncé, et l’essai et l’observation forment un seul bloc (' + c.duree + ')');
+      ok(/^couv h2\.chap#t-comprendre card\.idee card\.sch card\.exemple h2\.chap#t-essayer mission( btn\.wide)* h2\.chap#t-ecrire card\.carnet quick card\.suite$/.test(c.ordre.replace(/\bchap\b/g, 'h2.chap')), 'étape 1 : l’ordre de la page ' + c.ordre);
+      ok(c.traits.length === 3 && c.traits.every(t => t === 0), 'en haut de la page, les 3 traits de lecture sont vides ' + c.traits.join(' '));
+      await page.evaluate(() => { document.querySelector('main').dataset.temoin = '1'; });
+      await page.click('.temps button[data-k="ecrire"]'); await page.waitForTimeout(500);
+      const d2 = await page.evaluate(() => ({ y: scrollY, h: document.getElementById('t-ecrire').getBoundingClientRect().top, bar: document.querySelector('.app>.bar').getBoundingClientRect().bottom, traits: [...document.querySelectorAll('.bar .lecture i b')].map(e => parseFloat(e.style.transform.replace('scaleX(', ''))), temoin: document.querySelector('main').dataset.temoin }));
+      ok(d2.y > 300 && d2.h >= d2.bar && d2.h < d2.bar + 60 && d2.traits[0] === 1 && d2.traits[1] === 1 && d2.temoin === '1', 'toucher « Écrire » descend jusqu’au carnet, et les 2 premiers traits sont pleins ' + JSON.stringify(d2));
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight)); await page.waitForTimeout(250);
+      const d3 = await page.evaluate(() => [...document.querySelectorAll('.bar .lecture i b')].map(e => parseFloat(e.style.transform.replace('scaleX(', ''))).join(' '));
+      ok(d3 === '1 1 1', 'en bas de la page, les 3 traits sont pleins (' + d3 + ')');
+      await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(200);
+    }
     // le schéma avance à la demande, sans que l'écran soit redessiné
     const marque = await page.evaluate(() => { const m = document.querySelector('main'); m.dataset.temoin = '1'; return document.querySelectorAll('.sp.on').length; });
     ok(marque === 1 && (await page.textContent('.sch-pos')) === '1 sur 4', 'schéma : un seul moment au départ');
@@ -64,6 +80,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await page.click(A('stepdone')); await page.waitForTimeout(150);
     ok((await store(page)).steps.depart === true && /Étape faite/.test(await toast(page)), 'étape marquée comme faite, rangée par son nom');
     ok((await page.inputValue('#note')) === 'Je commence ce parcours parce que je veux souffler.', 'carnet : le texte est toujours là après un nouveau rendu');
+    {
+      const v = await page.evaluate(() => ({ p: document.querySelector('.bravo p') ? document.querySelector('.bravo p').textContent : '', f: document.querySelectorAll('.bravo .pts i.f').length, n: document.querySelectorAll('.bravo .pts i').length, apres: document.querySelector('.bravo') && document.querySelector('.bravo').previousElementSibling.className, traits: [...document.querySelectorAll('.bar .lecture i b')].map(e => e.style.transform).join(' ') }));
+      ok(v.p === 'Vous avez fait 1 étape sur 24.' && v.f === 1 && v.n === 24 && v.apres === 'quick' && /^scaleX\(/.test(v.traits), 'étape faite : le fil des 24 étapes montre le chemin parcouru, et les traits de lecture restent justes après le nouveau rendu ' + JSON.stringify(v));
+    }
     await page.click('.card.suite ' + A('step', '[data-i="1"]')); await page.waitForTimeout(150);
     ok(!!(await page.$('.sheet #up-title')), 'gratuit : « Ouvrir cette étape » ouvre la feuille des formules');
     await page.keyboard.press('Escape');
@@ -104,10 +124,23 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await page.evaluate(d => { const x = JSON.parse(localStorage.getItem('pepe-v1')); x.seen.depart = d; localStorage.setItem('pepe-v1', JSON.stringify(x)); }, iso(-7));
     await page.reload(); await page.waitForTimeout(350);
     ok(/Croire en lui/.test(await page.textContent('.step.now b')), 'sept jours après : « Aujourd’hui » propose l’étape 2');
+    // la refonte : le fil des 24 étapes sous le bonjour, et l'étape de la semaine en grande carte
+    {
+      const f = await page.evaluate(() => { const pts = [...document.querySelectorAll('.band .fil .pts i')]; const c = document.querySelector('.step.semaine'); return { n: pts.length, cur: pts.findIndex(e => e.classList.contains('c')), faits: pts.filter(e => e.classList.contains('f')).length, ou: document.querySelector('.band .fil .ou').textContent, nom: document.querySelector('.band .fil').getAttribute('aria-label'), date: document.querySelector('.band .label, .band .pill') ? document.querySelector('.band .label, .band .pill').textContent : '', prom: c ? c.querySelector('.promesse').textContent : '', aller: c ? c.querySelector('.aller').textContent.trim() : '', p: c ? c.querySelector('.n').style.getPropertyValue('--p') : '', apresDose: c ? c.previousElementSibling && /dose/.test(c.previousElementSibling.className) : false }; });
+      ok(f.n === 24 && f.cur === 1 && f.faits === 0 && f.ou === 'Étape 2 sur 24' && /Voir le parcours\.$/.test(f.nom), 'le fil : 24 points, le deuxième marqué, « Étape 2 sur 24 » ' + JSON.stringify(f).slice(0, 160));
+      ok(/ce que vous attendez de votre enfant change ce qu’il ose essayer/.test(f.prom) && f.aller === 'Ouvrir l’étape' && f.apresDose, 'l’étape de la semaine : sa phrase d’accroche, un seul bouton, juste après la dose ' + JSON.stringify([f.prom.slice(0, 40), f.aller, f.apresDose]));
+      ok(/^(Lundi|Mardi|Mercredi|Jeudi|Vendredi|Samedi|Dimanche) \d{1,2}(er)? \S+$/.test(f.date.trim()), 'la date est écrite en mots (' + f.date + ')');
+      await page.click('.band .fil'); await page.waitForTimeout(200);
+      ok(/Le parcours/.test(await page.textContent('h1')), 'toucher le fil mène au parcours');
+      const t = await page.evaluate(() => { const S = [...document.querySelectorAll('.months .step')]; const a = document.querySelector('.card.prog .anneau'); return { n: S.length, traces: S.filter(e => e.querySelector('svg.trace path')).length, alt: S.every((e, i) => e.classList.contains(i % 2 ? 'd' : 'g')), faits: S.filter(e => e.querySelector('.trace path.fait')).length, dernier: S[23].querySelectorAll('.trace path').length, arr: (() => { const a = document.querySelector('.months .month:last-child .sentier > .arrivee'); return a ? a.tagName + (a.classList.contains('ouverte') ? ' ouverte ' : ' ') + a.textContent : ''; })(), anneau: a.textContent, p: a.style.getPropertyValue('--p'), mois: [...document.querySelectorAll('.months .mfait')].map(e => e.textContent).join('|'), lieu: document.querySelector('.card.prog .lesson').textContent, ancien: !!document.querySelector('.card.prog .kv, .card.prog .progress') }; });
+      ok(t.n === 24 && t.traces === 24 && t.alt && t.dernier === 2 && t.arr === 'DIV L’arrivéeAu bout du chemin, tout votre parcours tiendra sur une page, avec vos mots.', 'le sentier : 24 étapes reliées, une à gauche, une à droite, et au bout l’arrivée, encore fermée ' + JSON.stringify(t).slice(0, 260));
+      ok(t.anneau === '0sur 24' && t.p === '0' && t.mois === '0 sur 4|0 sur 4|0 sur 4|0 sur 4|0 sur 4|0 sur 4' && t.lieu === 'Mois 1, Mon point de départ' && !t.ancien, 'la carte de position : l’anneau, le mois, et le compte de chaque mois ' + JSON.stringify([t.anneau, t.p, t.mois, t.lieu]));
+    }
     await parcours(page);
     ok((await sous(page, 1)) === 'Cette semaine' && (await sous(page, 2)) === 'Plus tard', 'sept jours après : étape 2 ouverte, étape 3 « Plus tard »');
     await page.click(A('step', '[data-i="1"]')); await page.waitForTimeout(150);
     ok(!!(await page.$('.card.vecu')) && /parents d’accueil ont cru en moi/.test(await page.textContent('.card.vecu')) && /150 mots/.test(await page.textContent('.card.vecu')), 'étape 2 : « Ce que j’ai vécu », avec les mots d’Antonio');
+    ok(/ce que vous attendez de votre enfant change ce qu’il ose essayer/.test(await page.textContent('.couv .promesse')) && (await page.getAttribute('.couv', 'data-n')) === '2' && !(await page.$('.bravo')), 'étape 2 : la couverture dit ce que l’étape promet, et rien n’annonce une étape faite');
     ok((await store(page)).seen.croire === iso(0), 'étape 2 : ouverture datée d’aujourd’hui');
     ok((await page.$$('.sch-caps li')).length === 5, 'étape 2 : la boucle a cinq moments');
     // une longue absence : rien ne s'accumule
@@ -118,6 +151,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await page.evaluate(() => { const x = JSON.parse(localStorage.getItem('pepe-v1')); x.seen.croyances = x.seen.croire; x.steps.croyances = true; const d = new Date(); d.setDate(d.getDate() - 3); const p = v => String(v).padStart(2, '0'); x.seen.croyances = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); localStorage.setItem('pepe-v1', JSON.stringify(x)); });
     await page.reload(); await page.waitForTimeout(350);
     ok(/Étape faite\. La suivante s’ouvre dans 4 jours\./.test(await page.textContent('.step.now .label')), '« Aujourd’hui » : étape faite, la suivante dans 4 jours');
+    {
+      const f = await page.evaluate(() => { const c = document.querySelector('.step.semaine'); return { done: c.classList.contains('done'), b: c.querySelector('.promesse b') ? c.querySelector('.promesse b').textContent : '', aller: c.querySelector('.aller').textContent.trim(), faits: document.querySelectorAll('.band .fil .pts i.f').length }; });
+      ok(f.done && /^Ensuite, .+\.$/.test(f.b) && f.aller === 'Relire l’étape' && f.faits === 1, 'l’étape faite : la carte annonce la suivante par « Ensuite », et le fil compte l’étape faite ' + JSON.stringify(f));
+    }
     ok(errs.length === 0, 'aucune erreur (parcours) ' + errs.slice(0, 2).join(' | '));
     await ctx.close();
   }
@@ -237,7 +274,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok(E.slice(4, 24).every(s => Array.isArray(s.idee) && s.idee.length >= 3 && s.sch && T.SCHEMAS[s.sch] && s.ex && mots(s.idee) >= 170), 'étapes 5 à 24 : au moins 3 paragraphes, un schéma et un exemple');
     ok(E.slice(1).every(s => s.vecu), 'étapes 2 à 24 : chacune a son « Ce que j’ai vécu »');
     ok(new Set(E.map(s => s.sch)).size === 24, 'les 24 étapes ont chacune un schéma différent');
-    ok(E.slice(1).every(s => typeof s.acc === 'string' && /^Vous /.test(s.acc) && /\.$/.test(s.acc)) && !E[0].acc, 'chaque étape à partir de la 2 a son accroche');
+    ok(E.every(s => typeof s.acc === 'string' && /^Vous /.test(s.acc) && /\.$/.test(s.acc)), 'chaque étape a son accroche, la première aussi');
     ok(Object.keys(T.SCHEMAS).length === 24 && Object.values(T.SCHEMAS).every(S => S.alt && Math.max(...S.l.map(x => x[0])) === S.caps.length), '24 schémas, chacun avec sa description et autant de phrases que de moments');
     ok(/Jusqu’à mes 10 ans, j’ai vécu des choses très dures\. Il y a eu la violence des gestes, celle des mots, et d’autres choses qu’aucun enfant ne devrait vivre\. Pourtant, je m’accrochais à ce qu’il y avait de bon, et c’est aussi ce qui m’a sauvé\./.test(E[7].vecu[0]) && E[7].vecu.length === 2, 'étape 8 : le passage choisi par Antonio (version 1), mot pour mot, et rien de plus');
     ok(E[7].vecu[1] === 'J’ai été placé en famille d’accueil à 10 ans. Ce qui m’a aidé à tenir, ce sont mes parents d’accueil, qui sont devenus mon pilier.' && E[7].vecu.join(' ').split(/(?<=[.?!])\s+/).length === 5, 'étape 8 : le second paragraphe mot pour mot, et 5 phrases en tout');
