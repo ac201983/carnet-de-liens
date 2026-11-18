@@ -33,13 +33,18 @@ jobs:
       - name: Vérifier le site en ligne
         run: bash outils/verifier.sh
 
-  # Quand la branche contient une version d'essai (site/essai/), 3 parcours de parent y sont rejoués dans un vrai navigateur,
-  # au format téléphone puis ordinateur. Cette étape ne reçoit aucun mot de passe : elle visite le site comme un parent.
+  # Quand la branche contient une version d'essai (site/essai/), des parcours de parent y sont rejoués dans de vrais navigateurs,
+  # au format téléphone puis ordinateur : Chrome, WebKit (le moteur de Safari) et Firefox, chacun sur sa machine, en même temps.
+  # Cette étape ne reçoit aucun mot de passe : elle visite le site comme un parent.
   essais:
-    name: Essais en ligne
+    name: Essais en ligne (${{ matrix.navigateur }})
     needs: mise-en-ligne
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        navigateur: [chromium, webkit, firefox]
     steps:
       - name: Récupérer les fichiers
         run: |
@@ -47,4 +52,4 @@ jobs:
           git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
           git checkout -q FETCH_HEAD
       - name: Rejouer les parcours sur la version d'essai
-        run: bash outils/essais-en-ligne.sh
+        run: bash outils/essais-en-ligne.sh ${{ matrix.navigateur }}

@@ -1,0 +1,33 @@
+# Rejoue les essais sur la version d'essai déjà en ligne, sans rien déposer.
+# Sert à mettre au point les essais eux-mêmes : il suffit de pousser la branche « essais-en-ligne ».
+# Ce fichier ne reçoit aucun mot de passe et ne touche pas au site : il le visite, comme un parent.
+name: Essais en ligne, sans dépôt
+
+on:
+  push:
+    branches: [essais-en-ligne]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: essais-seuls
+  cancel-in-progress: true
+
+jobs:
+  essais:
+    name: Essais seuls (${{ matrix.navigateur }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        navigateur: [chromium, webkit, firefox]
+    steps:
+      - name: Récupérer les fichiers
+        run: |
+          git init -q .
+          git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
+          git checkout -q FETCH_HEAD
+      - name: Rejouer les parcours sur la version d'essai
+        run: bash outils/essais-en-ligne.sh ${{ matrix.navigateur }}
