@@ -2,9 +2,9 @@
 # Après la mise en ligne : rejoue des parcours de parent dans un vrai navigateur, sur la version d'essai en ligne,
 # au format téléphone puis au format ordinateur.
 #
-#   outils/essais-en-ligne.sh chromium   les 3 parcours du premier geste (premier-geste.js), la respiration (respiration.js) et la passe de finition (finition.js), dans Chrome
-#   outils/essais-en-ligne.sh webkit     la respiration et la passe de finition dans WebKit, le moteur de Safari
-#   outils/essais-en-ligne.sh firefox    la respiration et la passe de finition dans Firefox
+#   outils/essais-en-ligne.sh chromium   les 3 parcours du premier geste (premier-geste.js), la respiration (respiration.js), la passe de finition (finition.js) et le chemin d'un futur client (aboutie.js), dans Chrome
+#   outils/essais-en-ligne.sh webkit     la respiration, la passe de finition et le chemin d'un futur client dans WebKit, le moteur de Safari
+#   outils/essais-en-ligne.sh firefox    la respiration, la passe de finition et le chemin d'un futur client dans Firefox
 #
 #   premier-geste.js :
 #     1. Il est 21 h 40, un nouveau parent veut souffler immédiatement.   2. Un parent d'adulte reçoit une fiche par lien direct.
@@ -14,6 +14,9 @@
 #     chaque note comparée au mot affiché, les sorties en cours d'exercice, et les 2 minutes entières jusqu'à la dernière respiration.
 #   finition.js :
 #     « Prendre un instant » après la dose, la troisième entrée, « Accueil », « Reprendre mon parcours » et le sens de « Retour ».
+#   aboutie.js :
+#     les 3 formules, l'essai d'une étape depuis la fiche « La crise », la commande en démonstration (acceptée, refusée, abandonnée, l'arrêt),
+#     l'aperçu « Avec Antonio », et l'absence de toute sollicitation commerciale dans le SOS, la respiration et « Déposer ».
 #
 # Le son n'est pas écouté, il est mesuré. Sur une machine sans sortie audio, un navigateur peut ne rien jouer : le test le dit alors en note.
 # WebKit est le moteur de Safari. Ce n'est pas Safari sur un iPhone : l'essai sur un vrai téléphone reste nécessaire.
@@ -81,5 +84,6 @@ essai() {
 [ "$nav" = chromium ] && essai "Premier geste dans Chrome" node premier-geste.js
 essai "Respiration dans $nom" node respiration.js
 essai "Finition dans $nom" node finition.js
+essai "Chemin d'un futur client dans $nom" node aboutie.js
 etape "essais : fin"
 exit "$total"

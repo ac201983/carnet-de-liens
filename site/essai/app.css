@@ -804,7 +804,7 @@ canvas.eau{display:none}
 .etape .card.vecu .from{gap:14px}
 .etape .card.vecu .from b{font-family:var(--font-display);font-size:20px;font-weight:600;line-height:1.15;color:var(--cream)}
 .etape .card.vecu .from small{color:var(--sun-fg)}
-.etape .card.vecu .lesson{font-size:18.5px;line-height:1.5}
+.etape .card.vecu .lesson{font-family:var(--font-display);font-style:normal;font-size:19.5px;line-height:1.6;color:var(--cream)}
 .etape .card.mot .lesson{font-size:23px;line-height:1.34}
 /* l'exemple : un aparté, en retrait */
 .etape .card.exemple{background:none;border:0;border-left:2px solid rgba(169,201,160,.45);border-radius:0;padding:2px 0 2px 16px;gap:6px}
@@ -1177,6 +1177,165 @@ a.sit{text-decoration:none;color:var(--fg)}
 .resp-cad p{margin:0;text-align:center;font-size:15px;font-weight:700;line-height:1.3;color:var(--fg)}
 .resp-cad .btn[aria-disabled="true"]{color:rgba(169,201,160,.62);border-color:rgba(214,232,210,.12);cursor:default}
 .resp-note{margin:0;text-align:center;font-size:14.5px;line-height:1.4;color:var(--muted)}
+/* ---------- la page claire ---------- */
+/* L'étang et le vert profond restent la signature de l'espace : la barre du haut, les onglets et le fond ne changent pas.
+   Les écrans où l'on lit longtemps et ceux où l'on décide se posent sur une feuille claire et chaude, comme une lettre posée au bord de l'eau.
+   À l'intérieur de la feuille, les couleurs de l'espace sont redéfinies : l'encre est le vert profond, et le bouton principal aussi. */
+.feuille{
+  --bg:#F7F2E1;--fg:#11301C;--cream:#0F331C;--muted:#4B6352;--surface:#FFFCF0;--surface-2:#EDE6CB;--line:rgba(17,48,28,.17);
+  --green:#1E6A39;--green-2:#2E7D46;--green-fg:#F7F2E1;--green-soft:rgba(30,106,57,.1);
+  --sun:#B9C24A;--sun-fg:#4F5410;--sun-soft:rgba(216,223,126,.36);
+  --coral:#B4472F;--rose:#A33D4A;--rose-soft:rgba(163,61,74,.1);
+  --shadow:0 1px 2px rgba(17,48,28,.1),0 14px 34px rgba(17,48,28,.14);--shadow-sm:0 1px 2px rgba(17,48,28,.12),0 3px 10px rgba(17,48,28,.08);
+  background:var(--bg);color:var(--fg);color-scheme:light;
+  margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)) + 6px);padding:26px 20px 30px;border-radius:26px;
+  display:flex;flex-direction:column;gap:20px;flex:1;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.view.v-feuille{padding-block:8px 6px}
+.feuille h1,.feuille h2,.feuille h3{color:var(--fg)}
+.feuille .t1{font-size:31px;line-height:1.12}
+.feuille .sub{font-size:16.5px;line-height:1.5;color:var(--muted)}
+.feuille .label{color:var(--muted)}
+.feuille a{color:var(--green)}
+.feuille :focus-visible{outline-color:var(--green)}
+.feuille .btn{border-color:rgba(17,48,28,.32);background:rgba(255,255,255,.6);color:var(--fg)}
+.feuille .btn.ghost{background:rgba(255,255,255,0)}
+.feuille .btn.primary{background:var(--cream);color:var(--bg);border-color:var(--cream)}
+.feuille .btn[aria-disabled="true"]{color:var(--muted);border-style:dashed;background:rgba(255,255,255,0);cursor:default}
+@media (hover:hover){.feuille .btn:hover{border-color:var(--cream)}.feuille .btn.primary:hover{background:#184A2A;border-color:#184A2A}}
+.feuille textarea,.feuille input[type=text]{background:#FFFDF6;border-color:rgba(17,48,28,.6);color:var(--fg)}
+.feuille textarea::placeholder,.feuille input::placeholder{color:#5C7163}
+.feuille .pill{background:var(--surface-2);color:var(--muted)}
+.feuille .pill.sun{background:var(--sun-soft);color:var(--sun-fg)}
+.feuille .kv span:last-child{color:var(--green)}
+/* Un schéma garde son fond vert profond : il est dessiné pour lui, et il devient une image de l'étang posée dans la page. */
+.feuille .card.sch{--bg:#07240F;--surface:#0F331C;--surface-2:#164426;--fg:#F4EFD8;--muted:#A9C9A0;--line:rgba(200,232,180,.16);--cream:#F4EFD8;
+  --green:#B4DE9C;--green-2:#8CC773;--green-fg:#07240F;--green-soft:rgba(180,222,156,.14);--sun:#D8DF7E;--sun-soft:rgba(216,223,126,.15);--sun-fg:#E9EDAE;
+  background:var(--surface);color:var(--fg);border-color:rgba(7,36,15,.2);box-shadow:var(--shadow-sm)}
+.feuille .card.sch .label{color:var(--muted)}
+.feuille .card.sch .btn{border-color:rgba(214,232,210,.28);background:rgba(255,255,255,.04);color:var(--fg)}
+.feuille .card.sch .btn.primary{background:var(--cream);color:var(--bg);border-color:var(--cream)}
+.f-tete{display:flex;flex-direction:column;gap:8px}
+.demo-paie{display:flex;align-items:flex-start;gap:8px;margin:0;font-size:14.5px;line-height:1.4;font-weight:700;color:var(--sun-fg);background:var(--sun-soft);border-radius:12px;padding:9px 12px}
+.demo-paie .i{width:18px;height:18px;flex:none;margin-top:1px}
+.demo-fort{font-size:15.5px;border:1px dashed rgba(79,84,16,.7)}
+/* Les formules : le nom, le prix, ce que la formule apporte et son bouton se lisent ensemble. Le détail vient en dessous. */
+.formules{display:flex;flex-direction:column;gap:14px}
+.formule,.offre,.cmd-recap{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-sm)}
+.formule.best,.offre{border:2px solid var(--green);padding:17px 17px 15px}
+.f-haut{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.f-nom{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.f-haut h2{font-family:var(--font-display);font-size:25px;font-weight:600;line-height:1.1;margin:0}
+.f-prix{margin:0;text-align:right;line-height:1.1;white-space:nowrap}
+.f-prix b{font-family:var(--font-display);font-size:28px;font-weight:600}
+.f-prix small{display:block;margin-top:3px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.f-benef{margin:0;font-family:var(--font-display);font-size:20.5px;line-height:1.3}
+.f-concret{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:9px}
+.f-concret h3{margin:0;font-family:var(--font-ui);font-size:13.5px;font-weight:800;color:var(--muted)}
+.f-concret ul,.cmd-recap ul,.pa-col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.f-concret li,.cmd-recap li{position:relative;padding-left:26px;font-size:16px;line-height:1.45}
+.f-concret li::before,.cmd-recap li::before{content:"";position:absolute;left:3px;top:.42em;width:12px;height:6px;border-left:2.5px solid var(--green);border-bottom:2.5px solid var(--green);transform:rotate(-45deg)}
+.f-note,.f-avant{margin:0;font-size:14.5px;line-height:1.45;color:var(--muted)}
+.lien-f{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 2px;border:0;background:none;color:var(--green);font-family:inherit;font-size:15.5px;font-weight:800;line-height:1.3;text-decoration:underline;text-underline-offset:4px;text-align:left;align-self:flex-start}
+.lien-f .i{width:18px;height:18px;flex:none}
+.f-regles,.f-prevenir,.partage-a,.recoit-a,.cmd-paie{display:flex;flex-direction:column;gap:10px}
+.f-regles h2,.f-prevenir h2,.partage-a h2,.recoit-a h2,.cmd-paie h2,.lettre-q h2{font-family:var(--font-display);font-size:22px;font-weight:600;line-height:1.2;margin:0}
+.f-regles .list li,.recoit-a .list li{font-size:16px;line-height:1.45}
+.f-prevenir p,.cmd-paie p{margin:0;font-size:16px;line-height:1.5}
+.f-prevenir .btn span{text-align:left}
+.f-detail{border:1px solid var(--line);border-radius:18px;background:var(--surface);padding:0 14px}
+.f-detail summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;font-weight:800;font-size:15.5px;list-style:none;cursor:pointer}
+.f-detail summary::-webkit-details-marker{display:none}
+.f-detail summary .i{width:18px;height:18px;flex:none;transform:rotate(90deg)}
+.f-detail[open] summary .i{transform:rotate(-90deg)}
+.f-detail .cmp{margin-bottom:8px}
+.f-arret{margin:0}
+/* Les mots d'Antonio : une lettre, en caractères plus amples. */
+.lecture-l{margin:0;font-family:var(--font-display);font-size:19.5px;line-height:1.6;max-width:34em}
+.mots-a,.place-a{border-radius:6px 20px 20px 6px;padding:18px 18px 18px 20px;display:flex;flex-direction:column;gap:12px}
+.mots-a{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sun);box-shadow:var(--shadow-sm)}
+.mots-a .from,.place-a .from{display:flex;align-items:center;gap:10px}
+.mots-a .av,.place-a .av{width:38px;height:38px;border-radius:50%;background:var(--cream);color:var(--bg);display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:19px;flex:none}
+.mots-a .from b,.place-a .from b{display:block;font-size:15px}
+.mots-a .from small,.place-a .from small{display:block;font-size:13px;font-weight:700;color:var(--muted)}
+.mots-a p{margin:0;font-family:var(--font-display);font-size:20.5px;line-height:1.55}
+.mots-grand p{font-size:21.5px;line-height:1.6}
+.mots-a .signe{font-family:var(--font-ui);font-size:14.5px;font-weight:800;line-height:1.4;color:var(--muted)}
+.place-a{border:2px dashed rgba(17,48,28,.36);background:rgba(255,255,255,.4)}
+.place-a p{margin:0;font-size:16px;line-height:1.5;color:var(--muted)}
+.place-voix{display:flex;align-items:center;gap:12px;border:1px dashed rgba(17,48,28,.36);border-radius:16px;padding:12px 14px;color:var(--muted)}
+.place-voix .i{width:22px;height:22px;flex:none}
+.place-voix p{margin:0;font-size:15px;line-height:1.45}
+.avec-voix{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.feuille .son-b{border-color:rgba(17,48,28,.32);background:rgba(255,255,255,.6);color:var(--fg)}
+.feuille .son-b[data-etat="on"],.feuille .son-b[data-etat="charge"]{background:var(--sun-soft);border-color:var(--sun-fg);color:var(--sun-fg)}
+.lettre-q{background:var(--surface-2);border-radius:20px 20px 20px 6px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.lettre-q>p{margin:0;font-size:17px;line-height:1.55}
+.lettre-q>p.hint{font-size:14.5px;line-height:1.45;color:var(--muted)}
+.lettre-q .pill{background:var(--bg)}
+.partage-a .deux{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+@media (min-width:560px){.partage-a .deux{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pa-col{border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.pa-col.lu{background:var(--sun-soft)}
+.pa-col.chez{background:var(--green-soft)}
+.pa-col h3{margin:0;display:flex;align-items:center;gap:8px;font-family:var(--font-ui);font-size:15.5px;font-weight:800;line-height:1.3}
+.pa-col h3 .i{width:18px;height:18px;flex:none}
+.pa-col li{position:relative;padding-left:16px;font-size:15.5px;line-height:1.45}
+.pa-col li::before{content:"";position:absolute;left:2px;top:.6em;width:6px;height:6px;border-radius:50%;background:currentColor}
+/* L'aperçu du parcours. */
+.ap-fil{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.ap-fil li{display:flex;flex-direction:column;gap:4px;border-top:3px solid var(--surface-2);padding-top:6px;font-size:12.5px;line-height:1.25;color:var(--muted)}
+.ap-fil li span{font-weight:800}
+.ap-fil li b{font-weight:800}
+.ap-fil li.ap-fait{border-top-color:var(--green)}
+.ap-fil li.ap-ici{border-top-color:var(--cream);color:var(--fg)}
+.ap-consigne{margin:0;font-size:16.5px;line-height:1.5}
+.ap-gestes{display:flex;flex-direction:column;gap:8px}
+.ap-g{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;align-items:center;min-height:52px;width:100%;padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-family:inherit;text-align:left}
+.ap-g b{font-size:16.5px;font-weight:800;line-height:1.3}
+.feuille .resp-p{border-color:rgba(17,48,28,.5)}
+.ap-g[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft)}
+.ap-g[aria-pressed="true"] .resp-p{border-color:var(--green);background:radial-gradient(circle,var(--green) 0,var(--green) 5px,rgba(30,106,57,0) 6px)}
+@media (hover:hover){.ap-g:hover{border-color:var(--green)}}
+.ap-suite{display:flex;flex-direction:column;gap:10px}
+.ap-suite .hint{margin:0;text-align:center}
+.carnet-p{background:#FFFDF6;border:1px solid var(--line);border-left:5px solid var(--green);border-radius:6px 18px 18px 6px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm)}
+.carnet-p .q{margin:0;font-size:15px;line-height:1.45;color:var(--muted)}
+.carnet-p .ecrit{margin:0;font-family:var(--font-display);font-size:21px;line-height:1.45}
+.ap-semaine{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.ap-semaine li{position:relative;padding-left:30px;display:flex;flex-direction:column;gap:3px}
+.ap-semaine li::before{content:"";position:absolute;left:3px;top:.5em;width:13px;height:7px;border-left:2.5px solid var(--green);border-bottom:2.5px solid var(--green);transform:rotate(-45deg)}
+.ap-semaine b{font-size:16.5px;line-height:1.35}
+.ap-semaine span{font-size:15.5px;line-height:1.45;color:var(--muted)}
+/* « Mon histoire » : la photo de l'étang reste en haut, et la lettre d'Antonio se pose dessus. Ses mots sont composés plus grand. */
+.f-histoire{margin-top:-22px;position:relative;z-index:2;padding-top:30px}
+.feuille .story{gap:24px;padding-block:0}
+.feuille .story>p,.feuille .story .avec>p,.feuille .places p{font-size:20px;line-height:1.62}
+.feuille .story .big{font-size:clamp(23px,6.2vw,28px)}
+.feuille .quote{font-size:21px;line-height:1.45;color:var(--fg)}
+.feuille .sign .medal.seal{box-shadow:0 6px 18px rgba(17,48,28,.22),0 0 0 1px rgba(17,48,28,.12)}
+.feuille .places li::before{background:var(--bg);box-shadow:0 0 0 5px var(--bg)}
+.feuille .places::before{background:linear-gradient(to bottom,var(--green),rgba(30,106,57,.12))}
+.f-lettre .hint{color:var(--muted)}
+/* Dans « Moi », sur le fond vert : ce que cet appareil a compté. */
+.reperes{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+/* La fiche d'une situation se lit sur la feuille. Les couleurs posées en dur pour le fond sombre sont reprises ici pour le papier. */
+.view.fiche{padding-top:8px}
+.f-fiche{flex:none;gap:18px}
+.f-fiche .couv{padding:0 0 2px}
+.f-fiche .couv .med{background:radial-gradient(circle at 30% 22%,rgba(216,223,126,.85),rgba(190,222,160,.4) 72%);border-color:rgba(17,48,28,.16)}
+.f-fiche .couv .sub{color:var(--muted)}
+.f-fiche .card.sec.ess{border-color:rgba(79,84,16,.36);background:linear-gradient(180deg,rgba(216,223,126,.42),rgba(216,223,126,.16))}
+.f-fiche .sec.ess .list li::after{border-color:#F7F2E1}
+.f-fiche .card.sec.ev{background:var(--surface);box-shadow:none}
+.f-fiche .comfort{background:radial-gradient(460px 220px at 0 0,rgba(216,223,126,.55),rgba(216,223,126,.16) 70%)}
+.f-fiche .card.sec.aide{background:rgba(163,61,74,.06);border-color:rgba(163,61,74,.3)}
+/* L'invitation à essayer une étape, au bas d'une fiche. Elle ne parle pas de prix. */
+.vers-apercu{border:1px solid rgba(216,223,126,.36);background:rgba(216,223,126,.08);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.vers-apercu h2{margin:0;font-family:var(--font-display);font-size:21px;font-weight:600;line-height:1.2;color:var(--cream)}
+.vers-apercu p{margin:0;font-size:16px;line-height:1.5}
+.acc-plans .acc-benef{font-family:var(--font-display);font-size:18.5px;line-height:1.3;color:var(--cream)}
+.acc-plans .linkbtn{align-self:flex-start;background:none;border:0;padding:8px 0;min-height:44px;color:var(--green);font-weight:800;font-size:15px;text-decoration:underline;text-underline-offset:4px;text-align:left}
+.acc-essai{align-self:flex-start}
 /* « Qui vous parle ici ? » */
 .sheet .voix .qui{display:flex;flex-direction:column;gap:4px;padding-left:14px;border-left:3px solid var(--green-2)}
 .sheet .voix .qui h3{font-family:var(--font-ui);font-size:15.5px;font-weight:800;color:var(--cream)}
@@ -1191,7 +1350,23 @@ a.sit{text-decoration:none;color:var(--fg)}
   .app:not(.nobar){padding-left:var(--rail)}
   .app>main.view,.app>.foot{width:100%;max-width:calc(var(--lire) + 2*var(--pad));margin-inline:auto;padding-inline:var(--pad)}
   .app.wide>main.view{max-width:calc(var(--page) + 2*var(--pad))}
-  .app.v-plans>main.view,.app.v-peek-plans>main.view{max-width:calc(1000px + 2*var(--pad))}
+  .app.v-plans>main.view,.app.v-peek-plans>main.view{max-width:calc(1040px + 2*var(--pad))}
+  .feuille{margin-inline:0;padding:38px 44px 42px;border-radius:30px;gap:24px}
+  .feuille .t1{font-size:38px}
+  .v-plans .formules,.v-peek-plans .formules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:16px}
+  .v-plans .f-haut,.v-peek-plans .f-haut{flex-direction:column;align-items:flex-start;gap:8px;min-height:104px;justify-content:flex-end}
+  .v-plans .f-prix,.v-peek-plans .f-prix{text-align:left}
+  .v-plans .f-prix small,.v-peek-plans .f-prix small{display:inline}
+  .v-plans .f-benef,.v-peek-plans .f-benef{min-height:2.6em}
+  .v-plans .f-regles,.v-plans .f-prevenir,.v-plans .f-detail,.v-peek-plans .f-regles,.v-peek-plans .f-prevenir,.v-peek-plans .f-detail{max-width:760px}
+  .v-plans .f-prevenir .btn,.v-peek-plans .f-prevenir .btn{width:auto;align-self:flex-start}
+  .lecture-l{font-size:20.5px}
+  .f-histoire{margin-top:-26px}
+  .feuille .story>p,.feuille .story .avec>p,.feuille .places p{font-size:21px}
+  .mots-a p{font-size:21.5px}.mots-grand p{font-size:22.5px}
+  .ap-suite{flex-direction:row;flex-wrap:wrap;align-items:center}
+  .ap-suite .btn.wide{width:auto}
+  .ap-gestes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
   .app>main.view{padding-top:30px;gap:18px}
   .app.wide>main.view{padding-top:28px !important}
   .t1{font-size:38px}

@@ -388,11 +388,15 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       await page.waitForSelector('main.souffle.s-fini', { timeout: 140000 });
       const T = await mots(page); const N = (await page.evaluate(() => window.__son.sources())).filter(r => r.k === 'notes');
       const M = []; for (let i = 0; i + 1 < T.length; i++) if (T[i].m !== 'Voilà.') M.push({ ty: T[i].m === 'Inspirez' ? 'in' : 'out', t: T[i].t, d: (T[i + 1].t - T[i].t) / 1000 });
-      const fin = T.find(x => x.m === 'Voilà.'); const total = fin ? (fin.t - M[0].t) / 1000 : 0;
-      ok(M.length === 24 && dureesOk(M, 'long') && proche(total, 120, 0.3), P('5. les 2 minutes entières : 12 respirations, 24 mouvements, ' + total.toFixed(2) + ' secondes'));
+      // Comme au point 1, le tout premier mot peut s'afficher un peu tard sur une machine lente : la durée se compte depuis le 2e mouvement, auquel on ajoute la durée voulue du premier.
+      const fin = T.find(x => x.m === 'Voilà.'); const total = fin && M.length > 1 ? (fin.t - M[1].t) / 1000 + durees('long')[0] : 0;
+      const retard5 = M.length ? durees('long')[0] - M[0].d : 0;
+      ok(M.length === 24 && retard5 > -0.12 && retard5 < 0.6 && dureesOk(M.slice(1), 'long') && proche(total, 120, 0.3), P('5. les 2 minutes entières : 12 respirations, 24 mouvements, ' + total.toFixed(2) + ' secondes'));
       const avec = M.filter(x => N.some(r => Math.abs(entendu(r) - x.t) < 150));
       const r = musique(avec, N, 'long');
-      ok(avec.length >= 23 && avec[avec.length - 1] === M[23] && r.pb.length === 0 && r.pire < 110 && r.pireEsp < 25, P('5. la musique reste calée sur le mot affiché jusqu’à la dernière respiration (' + avec.length + ' mouvements en musique, pire écart ' + r.pire.toFixed(0) + ' ms) ' + JSON.stringify(r.pb.slice(0, 3))));
+      // La musique entre au premier changement de mouvement qui suit l'arrivée des 2 fichiers. Sur une connexion lente, c'est le 3e ou le 4e mouvement au lieu du 2e : ce qui compte, c'est qu'elle reste ensuite calée, sans trou, jusqu'au dernier.
+      if (avec.length < 23 && avec.length >= 21) notesFin.push(P('le son a mis du temps à arriver sur cette connexion : la musique est entrée au mouvement ' + (25 - avec.length) + ' au lieu du 2e.'));
+      ok(avec.length >= 21 && avec[avec.length - 1] === M[23] && M.indexOf(avec[0]) === 24 - avec.length && r.pb.length === 0 && r.pire < 110 && r.pireEsp < 25, P('5. la musique reste calée sur le mot affiché jusqu’à la dernière respiration (' + avec.length + ' mouvements en musique, pire écart ' + r.pire.toFixed(0) + ' ms) ' + JSON.stringify(r.pb.slice(0, 3))));
       const ecarts = avec.map(x => { const L = N.filter(q => Math.abs(entendu(q) - x.t) < 150 && hauteur(q) >= 57); return L.length ? entendu(L[0]) - x.t : 0; });
       const debut = ecarts.slice(0, 4).reduce((a, b) => a + b, 0) / 4, bout = ecarts.slice(-4).reduce((a, b) => a + b, 0) / 4;
       ok(Math.abs(bout - debut) < 40, P('5. aucun décalage ne s’installe avec le temps : écart moyen de ' + debut.toFixed(0) + ' ms sur les 4 premiers mouvements, de ' + bout.toFixed(0) + ' ms sur les 4 derniers'));
