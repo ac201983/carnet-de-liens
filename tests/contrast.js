@@ -45,7 +45,7 @@ const COLLECT = () => {
   }
   return items;
 };
-const HIDE = '*,*::before,*::after{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;caret-color:transparent!important}::placeholder{color:transparent!important;opacity:1!important}svg{visibility:hidden!important}';
+const HIDE = '*,*::before,*::after{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;caret-color:transparent!important}::placeholder{color:transparent!important;opacity:1!important}::selection{color:transparent!important;-webkit-text-fill-color:transparent!important}svg{visibility:hidden!important}';   // un texte sélectionné garde sinon sa couleur de sélection, et l'outil prendrait ses lettres pour le fond
 
 (async () => {
   const browser = await chromium.launch();
