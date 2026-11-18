@@ -62,7 +62,7 @@ const HELP=[
    « perso » : il a rempli (ou enregistré) « Personnaliser mon espace ». « recents » : les dernières fiches et les derniers outils ouverts. */
 const PRE=typeof globalThis!=='undefined'&&typeof globalThis.__PEPE_PRERENDER__==='function';
 const DEF={fxOff:false,tier:'free',me:'',age:'',situation:'',perso:false,persoTard:false,recents:[],via:'',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
-const state={photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
+const state={ap:{k:0,g:'',mot:''},cmd:{f:'',k:'recap',de:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
@@ -498,7 +498,7 @@ function eauSync(entering){
 }
 /* ---------- rendu ---------- */
 const TAB_VIEWS=['today','parcours','kit','me'];
-const BACK_VIEWS=['sit','exo','step','carnet','final','photo','data','about','plans','evo','depots','antonio','letter','deposer'];
+const BACK_VIEWS=['sit','exo','step','carnet','final','photo','data','about','plans','evo','depots','antonio','letter','deposer','apercu','avec','commande'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
 function focusKey(el){
   if(!el||!el.matches||!el.closest||!el.closest('#app'))return null;
@@ -517,7 +517,7 @@ function render(){
   /* Le SOS s'ouvre pour tout le monde, même pour un visiteur qui n'est pas encore entré dans l'espace. */
   if(state.view==='sos'){base='app nobar';key='sos';html=viewSOS();}
   else if(state.view==='souffle'&&!visiteur){base='app nobar';key='souffle';html=viewSouffle();}
-  else if(visiteur&&(state.view==='plans'||state.view==='about')){base='app nobar';key='peek-'+state.view;html='<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+(state.view==='about'?viewAbout():viewPlans());}
+  else if(visiteur&&['plans','about','apercu','avec','commande'].includes(state.view)){base='app nobar';key='peek-'+state.view;html='<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+(state.view==='about'?viewAbout():state.view==='apercu'?viewApercu():state.view==='avec'?viewAvec():state.view==='commande'?viewCommande():viewPlans());}
   /* Un visiteur arrivé par le lien d'une fiche la lit tout de suite, sans rien avoir à créer. */
   else if(visiteur&&SITE&&state.view==='sit'&&SITS.some(x=>x.id===state.sit)){base='app nobar pub';key='pub-sit';html=barPub()+viewSit()+piedPub();}
   else if(visiteur&&SITE&&state.view==='kit'){state.kit='sits';base='app nobar pub';key='pub-kit';html=barPub()+viewKit()+piedPub();}
@@ -538,6 +538,9 @@ function render(){
       case 'exo':html+=viewExo();break;
       case 'me':html+=viewMe();break;
       case 'plans':html+=viewPlans();break;
+      case 'apercu':html+=viewApercu();break;
+      case 'avec':html+=viewAvec();break;
+      case 'commande':html+=viewCommande();break;
       case 'depots':html+=viewDepots();break;
       case 'antonio':html+=viewAntonio();break;
       case 'letter':html+=viewLetter();break;
@@ -682,8 +685,9 @@ function viewIntro(){
   const vecu=!vec.length?'':'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio, à l’étape 2</small></div></div>'+vec.map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'<div class="vecu-lien"><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></div>';
   const allerParcours=repr?'<button type="button" class="btn" data-act="step" data-i="'+cur+'">'+I.path+'Reprendre mon parcours</button>':'<button type="button" class="btn" data-act="entrer" data-v="parcours">'+I.path+'Commencer le parcours de 6 mois</button>';
   /* Les formules, avec les prix affichés dans l'espace. */
-  const F=[['free','La dose chaque jour, toute la boîte à outils, 3 dépôts écoutés et la première étape du parcours.'],['parcours','Les 24 étapes, votre carnet de route, « Mon évolution », le photolangage et des dépôts sans limite.'],['antonio','Tout Le parcours, avec un mot personnel d’Antonio chaque mois et 2 questions par mois.']];
-  const plans='<ul class="acc-plans">'+F.map(f=>{const T=TIERS[f[0]];return '<li'+(f[0]==='parcours'?' class="best"':'')+'><div class="h"><b>'+esc(T.t)+'</b><span class="prix">'+T.p+' CHF'+(T.p==='0'?'':' <small>par mois</small>')+'</span></div><p>'+f[1]+'</p></li>';}).join('')+'</ul><button type="button" class="btn" data-act="peek-plans">Voir le détail des formules</button>';
+  const plans='<ul class="acc-plans">'+['free','parcours','antonio'].map(k=>{const T=TIERS[k],X=F_TXT[k];
+    const lien=k==='parcours'?'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape, en 3 minutes</button>':k==='antonio'?'<button type="button" class="linkbtn" data-act="avec">Voir à quoi ressemble un échange</button>':'';
+    return '<li'+(k==='parcours'?' class="best"':'')+'><div class="h"><b>'+esc(T.t)+'</b><span class="prix">'+T.p+' CHF'+(T.p==='0'?'':' <small>par mois</small>')+'</span></div><p class="acc-benef">'+X.b+'</p><p>'+X.c[k==='free'?4:k==='parcours'?0:2]+'</p>'+lien+'</li>';}).join('')+'</ul><button type="button" class="btn" data-act="peek-plans">Voir ce que chaque formule apporte</button>';
   /* Les questions qu'un parent se pose avant de commencer. */
   const Q=[
     ['Faut-il créer un compte ?','Non. Il n’y a ni compte ni mot de passe. Votre espace se crée sur votre appareil dès votre premier geste, et vous pouvez ensuite le personnaliser si vous le souhaitez.'],
@@ -709,9 +713,9 @@ function viewIntro(){
     sec('outils','Des pistes pour les jours difficiles','Vous y trouvez '+SITS.length+' situations de la vraie vie, avec des pistes à essayer dès ce soir. Chaque fiche se lit en 2 minutes'+(SITE?' et s’envoie à quelqu’un qui compte pour vous.':'.'),scenes+pictos)+
     sec('depot','Un endroit pour déposer ce qui pèse','Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
     sec('perm','Ici, vous avez le droit','',perms)+
-    sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+mois+vecu+allerParcours)+
+    sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+'<button type="button" class="btn acc-essai" data-act="apercu">'+I.path+'Essayer cette étape, en 3 minutes</button>'+mois+vecu+allerParcours)+
     '<section class="voice" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à 10 ans, je suis travailleur social depuis mes 19 ans et je suis père de 3 enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="btn small" data-act="peek-about">Lire mon histoire</button></div></section>'+
-    sec('formules','Vous commencez gratuitement','Pendant la version de test, vous pouvez essayer chaque formule sans rien payer, et la formule « Avec Antonio » est une démonstration. Voici les prix prévus pour la Suisse.',plans)+
+    sec('formules','Vous commencez gratuitement','Voici ce que chaque formule vous apporte, avec les prix prévus pour la Suisse. Dans cette version d’essai, aucun montant réel n’est débité, et la formule « Avec Antonio » est une démonstration.',plans)+
     sec('faq','Vos questions','',faq)+
     '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+HERO+'" alt="" width="866" height="470" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
     '<p class="hint" style="text-align:center">'+priv+'</p>'+
@@ -803,8 +807,13 @@ function depotBox(){
   const left=depotsLeft();const today=todayIso();const td=D().depots.filter(x=>x.date===today).slice(-1)[0];
   const head=lab=>'<div class="row" style="justify-content:space-between;align-items:center">'+lab+(left!==Infinity&&left>0?'<span class="pill">'+left+' dépôt'+(left>1?'s':'')+' offert'+(left>1?'s':'')+'</span>':'')+'</div>';
   let html='<div class="card depot-c reveal d2">';
+  /* Après les 3 dépôts offerts, l'écran reste le même : le parent peut toujours écrire et garder ses mots. Seule la réponse manque.
+     Ici, on vient poser ce qui pèse : l'écran ne propose rien à acheter. */
   if(left===0){
-    html+=head('<span class="label">Déposer avec une réponse</span>')+'<p class="lesson" style="font-size:18px">Vos 3 dépôts Découverte sont utilisés.</p>'+lockline('Déposer sans limite, avec la phrase-miroir','depots')+'<button type="button" class="btn primary" data-act="upgrade" data-f="depots" style="align-self:flex-start">Passer au Parcours pour 14 CHF par mois</button>';
+    html+='<label class="label" for="draft">Qu’est-ce qui pèse, là, maintenant ?</label>'+
+      '<textarea id="draft" maxlength="'+LIM.draft+'" placeholder="Écrivez comme ça vient, sans prénom." style="min-height:150px">'+esc(state.draft)+'</textarea>'+
+      '<div class="row" style="align-items:center"><button type="button" class="btn primary" data-act="dsend">'+I.drop+'Déposer</button><span class="count" id="draft-count" aria-hidden="true"></span></div>'+
+      '<p class="hint">Vos 3 dépôts avec réponse sont utilisés. Vous pouvez toujours déposer ici, et vos mots sont gardés pour vous, sur votre appareil.</p>';
   }else{
     /* Les 2 intentions (« Écoutez-moi », « Et concrètement ? ») n'existent que là où une intelligence artificielle répond vraiment de 2 façons.
        Sur le site, l'écoute est ici, et les pistes concrètes sont dans les fiches : chaque bouton fait ce que dit son libellé. */
@@ -849,12 +858,16 @@ const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais
 async function sendDepot(){
   if(state.busy||state.sinking)return;
   const text=clean(state.draft,LIM.draft);if(text.length<5){fieldErr('draft','Écrivez quelques mots, comme ça vient (cinq caractères au moins).');return;}
-  if(depotsLeft()===0){openUpgrade('depots');render();return;}
+  const sansReponse=depotsLeft()===0;
   const d=D();const n=new Date();const dep={id:'d'+Date.now(),date:todayIso(),time:pad(n.getHours())+':'+pad(n.getMinutes()),text,mode:state.depotMode};
   if(RISK.test(text)){dep.risk=true;toast('Si c’est urgent, appelez le 143 (La Main Tendue) ou le 144, de jour comme de nuit.');}
   else{const ps=pistesDepot(text);if(ps.length)dep.pistes=ps;}
   state.sinking=true;await fxSink();state.sinking=false;
   state.draft='';brouillonOte();state.busy=true;render();
+  if(sansReponse){
+    dep.sans=true;dep.lumiere='C’est déposé. Même sans réponse, ce que vous avez écrit est maintenant en dehors de vous.';
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+  }
   if(!state.sample){
     dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
     d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
@@ -909,7 +922,7 @@ function viewParcours(){
     '<div class="quick"><button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet'+(nn?' ('+nn+')':'')+'</button><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
     (done>=24?'<button type="button" class="card fin-appel" data-act="go" data-view="final"><span class="label">Vous êtes au bout des 24 étapes</span><p class="lesson">Votre chemin tient maintenant sur une page, avec vos mots.</p><span class="btn primary small" style="align-self:flex-start">'+I.path+'Voir mon chemin</span></button>':'')+
     '<div class="months">'+PARCOURS.map((m,mi)=>{const nf=m.steps.filter(s=>d.steps[s.id]).length;return '<div class="month"><h2><span class="n">'+(mi+1)+'</span><span class="nom">'+esc(m.m)+'</span><span class="mfait">'+(nf===m.steps.length?'Fait':nf+' sur '+m.steps.length)+'</span></h2><div class="sentier">'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';const av=st.idx>0?!!d.steps[steps[st.idx-1].id]:true;return '<button type="button" class="step'+(si%2?' d':' g')+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'">'+sentierSvg(si%2===1,av,dn,false)+'<span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+(mi===5?arrivee:'')+'</div></div>';}).join('')+'</div>'+
-    (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre 7 jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
+    (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre 7 jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours')+'<button type="button" class="btn" data-act="apercu" style="align-self:flex-start">'+I.path+'Essayer une étape, en 3 minutes</button>')+'</main>';
 }
 /* Les boutons d'une étape vers un autre écran : « Mon évolution », le photolangage, la respiration, les situations, ou une situation précise (« sit_nom »). */
 function stepLiens(s){

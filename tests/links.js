@@ -46,7 +46,7 @@ const BASE_PATH = process.env.PEPE_BASE || '/carnet-de-liens/';
 
   let bad = 0; const ext = []; const internal = [];
   for (const [url, v] of found) {
-    if (/^(tel|mailto|sms):/.test(url)) { if (!/^tel:\+?[0-9]+$|^mailto:[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(url)) { bad++; console.log('✗ adresse mal formée : ' + url); } continue; }
+    if (/^(tel|mailto|sms):/.test(url)) { if (!/^tel:\+?[0-9]+$|^mailto:[^@\s?]+@[^@\s?]+\.[a-z]{2,}(\?(subject|body)=[^\s&#]*(&(subject|body)=[^\s&#]*)?)?$/i.test(url)) { bad++; console.log('✗ adresse mal formée : ' + url); } continue; }
     if (url.startsWith('data:')) continue;
     if (url.startsWith('INVALIDE:')) { bad++; console.log('✗ ' + url + ' (' + [...v.from].slice(0, 3).join(', ') + ')'); continue; }
     let local = null;

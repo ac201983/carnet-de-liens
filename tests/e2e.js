@@ -235,7 +235,11 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.evaluate(() => scrollTo(0, 0)); await audit(page, 'histoire'); await page.click(A('back')); await page.waitForTimeout(100);
     ok(/Camille|Moi/.test(await txt(page, 'h1')) && !/#histoire/.test(page.url()), 'retour à « Moi », adresse rétablie');
     await page.click(A('go', '[data-view="plans"]')); await page.waitForTimeout(60); await audit(page, 'formules');
-    await page.click(A('tier', '[data-v="antonio"]')); await page.waitForTimeout(100);
+    // choisir une formule ouvre la commande en démonstration, et c'est « paiement accepté » qui l'active
+    await page.click('.formule ' + A('commande', '[data-v="antonio"]')); await page.waitForTimeout(150);
+    ok(/Aucun montant réel n’est débité/.test(await txt(page, 'main')) && (await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).tier)) !== 'antonio', 'commande : une démonstration, et la formule ne change pas avant la confirmation');
+    await page.click(A('cmd', '[data-v="ok"]')); await page.waitForTimeout(150);
+    ok((await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).tier)) === 'antonio', 'commande acceptée (démonstration) : la formule Avec Antonio est active');
 
     // ============ 9. Avec Antonio : démonstration honnête ============
     await page.click('.tab' + A('go', '[data-view="today"]')); await page.waitForTimeout(100);

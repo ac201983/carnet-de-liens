@@ -40,7 +40,7 @@ const S=()=>JSON.parse(store['pepe-v1']);
   // parcours locks
   click('go',{view:'parcours'});
   ok((app.innerHTML.match(/class="step[^"]*locked/g)||[]).length===23,'23 locked steps in free');
-  click('step',{i:'5'});ok(has(/Les 24 étapes/)&&has(/data-act="tier" data-v="parcours"/),'locked step opens upgrade sheet');
+  click('step',{i:'5'});ok(has(/Les 24 étapes/)&&has(/data-act="apercu"/),'locked step opens upgrade sheet');
   click('sheet-close');
   click('step',{i:'0'});ok(has(/étape 1 \/ 24/),'step 1 open in free');
   click('back');
@@ -51,7 +51,7 @@ const S=()=>JSON.parse(store['pepe-v1']);
   // dose perso lock on today
   click('go',{view:'today'});ok(has(/data-act="upgrade" data-f="dose"/),'dose perso locked in free with recent depot');
   // upgrade to parcours
-  click('upgrade',{f:'dose'});click('tier',{v:'parcours'});
+  click('upgrade',{f:'dose'});click('commande',{v:'parcours'});click('cmd',{v:'ok'});
   ok(S().tier==='parcours'&&has(/data-act="dose-perso"/)&&has(/id="draft"/),'parcours tier: dose perso + depot box unlocked');
   click('dose-perso');await wait(15);ok(S().doseText.length>0,'dose perso stored');
   click('go',{view:'parcours'});ok(!has(/locked/),'no locks in parcours tier');
@@ -62,7 +62,7 @@ const S=()=>JSON.parse(store['pepe-v1']);
   click('back');ok(has(/<h1 class="t1">Moi<\/h1>/),'back to me');
   // plans
   click('go',{view:'plans'});ok(has(/class="cmp"/)&&(app.innerHTML.match(/<tr>/g)||[]).length===11&&has(/Votre formule/),'plans table 10 rows + current marker');
-  click('tier',{v:'antonio'});ok(S().tier==='antonio','antonio tier set');
+  click('commande',{v:'antonio'});click('cmd',{v:'ok'});ok(S().tier==='antonio','antonio tier set');
   click('go',{view:'today'});ok(has(/Le mot d’Antonio · exemple/)&&has(/data-act="letter"/),'letter card example on today');
   ok(has(/Partager ce dépôt avec Antonio/),'share checkbox visible');
   click('letter',{i:'-1'});ok(has(/à quoi ressemble le mot d’Antonio/)&&has(/Antonio Company/),'letter view');

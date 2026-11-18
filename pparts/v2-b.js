@@ -71,14 +71,16 @@ function viewSit(){
   const pr=SITS.filter(x=>x.th===s.th&&x.id!==s.id).slice(0,3);
   const pub=!D().onboarded;
   /* Le lien envoyé est l'adresse publique de la fiche, et rien d'autre. */
+  const versAp=s.id==='crise'?'<div class="vers-apercu"><h2>Et vous, quand la vague monte ?</h2><p>Une étape du parcours vous aide à traverser ce moment sans rien casser. Vous pouvez l’essayer maintenant, en 3 minutes.</p><button type="button" class="btn" data-act="apercu">'+I.path+'Essayer cette étape</button></div>':'';
   const part=SITE?'<div class="partage"><button type="button" class="btn" data-act="partager" data-id="'+s.id+'">'+I.share+'Envoyer cette fiche</button><p class="hint">Le lien mène tout droit à cette fiche, et il ne contient rien de vous.</p>'+(state.lien?'<div class="field"><label for="lien">Le lien de cette fiche, à copier</label><input type="text" id="lien" readonly value="'+esc(state.lien)+'"></div>':'')+'</div>':'';
-  return '<main id="main" tabindex="-1" class="view fiche"><div class="couv"><span class="med'+(deuxImages(s.e)?' duo':'')+'" aria-hidden="true">'+s.e+'</span><span class="label">'+esc(liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])))+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(s.s)+'</p></div>'+
+  /* La fiche elle-même se lit sur la feuille claire. Ce que l'on fait ensuite (essayer une étape, envoyer la fiche, déposer) reste au bord de l'eau. */
+  return '<main id="main" tabindex="-1" class="view fiche"><div class="feuille f-fiche"><div class="couv"><span class="med'+(deuxImages(s.e)?' duo':'')+'" aria-hidden="true">'+s.e+'</span><span class="label">'+esc(liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])))+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(s.s)+'</p></div>'+
     '<div class="card sec comp"><h2><span class="dot"></span>Ce qui se passe</h2><p>'+esc(s.comp)+'</p></div>'+
     '<div class="card sec ess"><h2><span class="dot"></span>Ce que vous pouvez essayer</h2>'+li(s.ess)+'</div>'+
     '<div class="card sec ev"><h2><span class="dot"></span>Ce qu’il vaut mieux éviter</h2>'+li(s.ev)+'</div>'+
     '<div class="comfort"><span class="label">Un mot pour vous</span><p>'+esc(s.moi)+'</p></div>'+
-    '<div class="card sec aide"><h2><span class="dot"></span>Quand demander de l’aide</h2><p>'+esc(s.aide)+'</p></div>'+
-    part+
+    '<div class="card sec aide"><h2><span class="dot"></span>Quand demander de l’aide</h2><p>'+esc(s.aide)+'</p></div></div>'+
+    versAp+part+
     (pub?'':'<div class="quick"><button type="button" class="btn" data-act="porte" data-v="deposer">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="kit" data-v="tools">'+I.tools+'Les outils</button></div>')+
     (pr.length?'<section class="grp proches"><h2><span class="nom">Dans le même thème</span></h2><div class="liste">'+pr.map(sitRow).join('')+'</div></section>':'')+'</main>';
 }
@@ -192,7 +194,7 @@ function viewMe(){
     '<button type="button" class="btn'+(tier()==='free'?' primary':'')+'" data-act="go" data-view="plans" style="align-self:flex-start">'+I.tag+(tier()==='free'?'Voir les formules':'Changer de formule')+'</button></div>'+
     (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration avec un exemple de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+', il vous reste '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot par mois et deux questions</span></span><span class="chev">'+I.chev+'</span></button>')+
     '<button type="button" class="sit" data-act="go" data-view="final"><span class="e">'+I.path+'</span><span class="tx"><b>Mon chemin</b><span>Tout votre parcours sur une page, à garder ou à imprimer</span></span><span class="chev">'+I.chev+'</span></button>'+
-    '</div><div class="duo-b">'+essaiCarte()+'<div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
+    '</div><div class="duo-b">'+essaiCarte()+'<div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. Vos humeurs restent sur votre appareil.</p></div>'+
     '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre appareil':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button>'+(d.atelier?'<button type="button" data-act="tout" aria-pressed="'+(!!d.tout)+'">'+I.path+'<span>Tout voir, l’aperçu d’Antonio</span><span class="state">'+(d.tout?'Activé':'Désactivé')+'</span></button>':'')+'<button type="button" data-act="onboard">'+I.user+'<span>Personnaliser mon espace (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="voix">'+I.question+'<span>Qui vous parle ici ?</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
     (SITE?'<a href="'+RACINE+'confidentialite.html">'+I.shield+'<span>Politique de confidentialité</span><span class="chev">'+I.chev+'</span></a><a href="'+RACINE+'conditions.html">'+I.note+'<span>Conditions générales</span><span class="chev">'+I.chev+'</span></a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">'+I.info+'<span>Mentions légales</span><span class="chev">'+I.chev+'</span></a>':''):'')+'</div></div></div></main>';
 }
@@ -203,34 +205,203 @@ function viewDepots(){
 }
 /* ---------- formules ---------- */
 function cell(v){if(v===true)return '<td>'+I.check+'<span class="sr">inclus</span></td>';if(v===false)return '<td class="no"><span class="sr">non inclus</span></td>';return '<td class="tx">'+esc(v)+'</td>';}
-function viewPlans(){
-  const t=tier();const peek=!D().onboarded;
-  const btn=k=>{
-    const name=TIERS[k].t;
-    if(peek)return k==='free'?'<button type="button" class="btn wide" data-act="entrer" data-v="today">Commencer gratuitement</button>':'<button type="button" class="btn'+(k==='parcours'?' primary':'')+' wide" data-act="tier" data-v="'+k+'" aria-label="Choisir la formule '+esc(name)+'">Choisir</button>';
-    return t===k?'<button type="button" class="btn wide" disabled>'+I.check+'Votre formule</button>':'<button type="button" class="btn'+(k==='parcours'?' primary':'')+' wide" data-act="tier" data-v="'+k+'" aria-label="'+(k==='free'?'Revenir à Découverte, la formule gratuite':'Choisir la formule '+esc(name))+'">'+(k==='free'?'Revenir à Découverte':'Choisir')+'</button>';
-  };
-  return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Les formules</h1><p class="sub">Les formules sont sans engagement et vous pouvez arrêter à tout moment. Voici ce que chacune vous donne concrètement.</p></div>'+
-    '<div class="plans">'+
-    '<div class="plan"><h2 class="t2">Découverte</h2><div class="price">0 CHF <small>pour toujours</small></div><p>Cette formule vous permet de voir si l’espace vous parle. Vous avez la dose chaque jour, toute la boîte à outils, trois dépôts écoutés et la première étape.</p>'+btn('free')+'</div>'+
-    '<div class="plan best"><span class="pill sun">Recommandé</span><h2 class="t2">Le parcours</h2><div class="price">14 CHF <small>par mois</small></div><p>Tous les cadenas disparaissent. Vous déposez autant que nécessaire avec la phrase-miroir, vous recevez une dose écrite pour vous, vous suivez les 24 étapes et vous voyez votre chemin sur six mois.</p>'+btn('parcours')+'</div>'+
-    '<div class="plan"><h2 class="t2">Avec Antonio</h2><div class="price">49 CHF <small>par mois</small></div><p>Vous avez tout Le parcours, avec en plus un travailleur social qui vous connaît. <b>Chaque mois, Antonio lit les dépôts que vous choisissez de lui partager et vous écrit un mot personnel</b>, qui s’affiche en haut de votre accueil. <b>Deux fois par mois, vous pouvez lui poser une question</b> et il vous répond par écrit dans les 48 heures. Il ne demande jamais le prénom de votre enfant et ne pose jamais de diagnostic.</p>'+btn('antonio')+'</div></div>'+
-    '<h2 class="t2 detail">Le détail de chaque formule</h2><div class="card"><table class="cmp"><caption class="sr">Ce que comprend chaque formule</caption><thead><tr><th scope="col"><span class="sr">Ce qui est compris</span></th><th scope="col">Découverte<br>0</th><th scope="col" class="best">Parcours<br>14/mois</th><th scope="col">Antonio<br>49/mois</th></tr></thead><tbody>'+FEATURES.map(f=>'<tr><th scope="row">'+esc(f[0])+'</th>'+cell(f[1])+cell(f[2])+cell(f[3])+'</tr>').join('')+'</tbody></table></div>'+
-    '<p class="hint">Dans cette version de test, choisir une formule change simplement l’interface pour vous la montrer. Aucun paiement n’est demandé et rien n’est transmis à Antonio. Les prix sont ceux prévus pour la Suisse.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p></main>';
+/* ---------- les formules, les aperçus et la commande ---------- */
+/* Tout ce qui touche à la vente tient ici, à l'écart du SOS, de la respiration et de l'écran « Déposer » :
+   la page des formules, l'aperçu du parcours (3 minutes, à partir de l'étape 7), l'aperçu d'un échange avec Antonio,
+   la commande en démonstration, « Me prévenir à l'ouverture », et les 3 repères commerciaux gardés sur l'appareil.
+   Rien n'est payé et rien n'est envoyé : il n'existe encore ni prestataire de paiement, ni compte, ni serveur. */
+function com(){const d=D();if(!d.com||typeof d.com!=='object')d.com={};return d.com;}
+/* Les 3 repères commerciaux : un aperçu terminé, une formule choisie, un achat confirmé. Ils ne contiennent ni texte, ni humeur, ni situation.
+   Dans cette version, ils restent sur l'appareil. Le jour où un compteur sera branché, il ne recevra que le nom du repère et celui de la formule,
+   et seulement si le visiteur a dit oui à la mesure. */
+function repere(quoi,f){const c=com();const j=todayIso();
+  if(quoi==='apercu'){if(!c.ap)c.ap=j;}
+  else if(quoi==='choix')c.ch={f:f,d:j};
+  else if(quoi==='achat')c.ac={f:f,d:j,demo:true};
+  save();}
+function contact(){return String(CONTACT_R||'').split('').reverse().join('');}
+const F_TXT={
+  free:{b:'Recevoir une aide tout de suite.',
+    c:['Vous lisez la dose de lumière, chaque jour.','Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous ouvrez les '+SITS.length+' situations et tous les outils.','Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.','Vous faites la première étape du parcours et votre point de départ.'],
+    d:'Découverte est gratuite, sans limite de durée.'},
+  parcours:{b:'Avancer d’une semaine à l’autre.',
+    c:['Chaque semaine, une nouvelle étape s’ouvre. Il y en a 24.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.','Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'],
+    d:'Le parcours compte 24 étapes, une par semaine. Il faut donc environ 6 mois pour le suivre en entier.'},
+  antonio:{b:'Être accompagné par écrit, personnellement, par Antonio.',
+    c:['Vous avez tout Le parcours.','Chaque mois, Antonio vous écrit un mot personnel.','2 fois par mois, vous lui posez une question, et il vous répond par écrit dans les 48 heures.','Antonio lit seulement ce que vous choisissez de lui envoyer.'],
+    d:'Antonio ne pose pas de diagnostic et ne demande jamais le prénom de votre enfant.'}
+};
+const PRIX=k=>TIERS[k].p+' CHF'+(k==='free'?'':' par mois');
+const DEMO_PAIE='Dans cette version d’essai, aucun montant réel n’est débité.';
+/* Un seul bouton par formule, qui dit ce qu'il fait. Choisir une formule payante ouvre la commande (en démonstration). */
+function formuleBouton(k,ou){
+  const t=tier(),name=TIERS[k].t,peek=!D().onboarded;
+  if(!peek&&t===k)return '<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'Votre formule</button>';
+  if(k==='free')return peek?'<button type="button" class="btn wide" data-act="entrer" data-v="today">Commencer gratuitement</button>':'<button type="button" class="btn wide" data-act="arret">Revenir à Découverte</button>';
+  return '<button type="button" class="btn primary wide" data-act="commande" data-v="'+k+'" data-de="'+(ou||'plans')+'">Choisir '+esc(name)+'</button>';
 }
+function formuleCarte(k){
+  const T=TIERS[k],X=F_TXT[k];
+  const plus=k==='parcours'?'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>':k==='antonio'?'<button type="button" class="lien-f" data-act="avec">'+I.mail+'Voir à quoi ressemble un échange</button>':'';
+  return '<section class="formule f-'+k+(k==='parcours'?' best':'')+'" aria-labelledby="f-'+k+'">'+
+    '<div class="f-haut"><div class="f-nom">'+(k==='parcours'?'<span class="pill sun">Recommandé</span>':'')+'<h2 id="f-'+k+'">'+esc(T.t)+'</h2></div><p class="f-prix"><b>'+T.p+' CHF</b> <small>'+(k==='free'?'sans limite de durée':'par mois')+'</small></p></div>'+
+    '<p class="f-benef">'+X.b+'</p>'+
+    formuleBouton(k,'plans')+
+    '<div class="f-concret"><h3>Concrètement</h3><ul>'+X.c.map(x=>'<li>'+x+'</li>').join('')+'</ul><p class="f-note">'+X.d+'</p></div>'+plus+'</section>';
+}
+function viewPlans(){
+  const t=tier();
+  return '<main id="main" tabindex="-1" class="view v-feuille"><div class="feuille">'+
+    '<div class="f-tete"><h1 class="t1">Les formules</h1><p class="sub">Voici ce que chaque formule vous permet de faire et de recevoir, concrètement.</p><p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></div>'+
+    '<div class="formules">'+formuleCarte('free')+formuleCarte('parcours')+formuleCarte('antonio')+'</div>'+
+    '<section class="f-regles"><h2>Durée, paiement et arrêt</h2><ul class="list">'+
+      '<li>Découverte est gratuite, sans limite de durée.</li>'+
+      '<li>Le parcours coûte 14 CHF par mois et Avec Antonio 49 CHF par mois. Ces prix sont ceux prévus pour la Suisse.</li>'+
+      '<li>Les formules sont sans engagement, et vous pouvez arrêter à tout moment.</li>'+
+      '<li>Si vous suivez Le parcours sans pause, ses 24 étapes demandent environ 6 mois, soit environ 84 CHF en tout.</li>'+
+      '<li>Si vous arrêtez, vous revenez à Découverte. Votre carnet et tout ce que vous avez écrit restent sur votre appareil.</li>'+
+    '</ul><p class="f-avant">Le moyen de paiement, le jour du prélèvement et les conditions de remboursement seront écrits ici et dans les conditions générales avant l’ouverture de la vente.</p></section>'+
+    '<details class="f-detail"><summary><span>Comparer les 3 formules, ligne par ligne</span>'+I.chev+'</summary><table class="cmp"><caption class="sr">Ce que comprend chaque formule</caption><thead><tr><th scope="col"><span class="sr">Ce qui est compris</span></th><th scope="col">Découverte<br>0</th><th scope="col" class="best">Parcours<br>14/mois</th><th scope="col">Antonio<br>49/mois</th></tr></thead><tbody>'+FEATURES.map(f=>'<tr><th scope="row">'+esc(f[0])+'</th>'+cell(f[1])+cell(f[2])+cell(f[3])+'</tr>').join('')+'</tbody></table></details>'+
+    '<section class="f-prevenir"><h2>Être prévenu de l’ouverture</h2><p>Les formules payantes ne sont pas encore ouvertes. Si vous le souhaitez, vous pouvez demander à être prévenu par e-mail du jour où une formule ouvrira, à son prix annoncé.</p>'+prevenirHtml('parcours')+prevenirHtml('antonio')+'<p class="hint">Le message part de votre propre messagerie. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p></section>'+
+    (t!=='free'&&D().onboarded?'<p class="f-arret"><button type="button" class="lien-f" data-act="arret">Arrêter ma formule et revenir à Découverte</button></p>':'')+
+    '<p class="hint">Dans cette version d’essai, choisir une formule ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis à Antonio.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>'+
+    '</div></main>';
+}
+/* « Me prévenir » est un vrai lien vers la messagerie du parent, avec un message écrit d'avance. C'est lui qui l'envoie : rien ne part sans lui. */
+function prevenirUrl(k){
+  const T=TIERS[k];
+  return 'mailto:'+contact()+'?subject='+encodeURIComponent('Me prévenir à l’ouverture de la formule '+T.t)+'&body='+encodeURIComponent('Bonjour,\n\nMerci de me prévenir par e-mail quand la formule « '+T.t+' » ouvrira, à '+PRIX(k)+'.\n\n');
+}
+function prevenirHtml(k){return CONTACT_R?'<a class="btn wide prevenir" href="'+esc(prevenirUrl(k))+'">'+I.mail+'<span>Me prévenir pour '+esc(TIERS[k].t)+', '+PRIX(k)+'</span></a>':'';}
+
+/* ---------- l'aperçu du parcours : l'étape 7, en 3 minutes ---------- */
+/* Un chemin complet, fait de ce qui existe déjà : la vague de l'émotion (l'idée et le schéma de l'étape 7), un geste à choisir (son exercice),
+   le carnet de route (la page de l'étape), puis ce que la semaine suivante apporte. Le parent repart avec quelque chose d'utile même s'il s'arrête là.
+   L'offre du Parcours n'arrive qu'au dernier écran. */
+const AP_GESTES=[['souffle','Expirer lentement'],['sortir','Sortir un instant'],['marcher','Marcher 5 minutes'],['mains','Poser les mains à plat'],['phrase','Dire une phrase apprise par cœur']];
+const AP_TITRES=['La vague','Mon geste','Mon carnet','La semaine prochaine'];
+function apEtape(){return allSteps().find(x=>x.id==='reguler');}
+function apGarde(){
+  const a=state.ap,d=D(),s=apEtape();if(!s)return false;
+  const g=(AP_GESTES.find(x=>x[0]===a.g)||[])[1]||'';const champ=document.getElementById('ap-mot');const mot=clean(champ?champ.value:(a.mot||''),LIM.note);
+  if(!g&&!mot)return false;
+  a.mot=mot;
+  const texte=(g?g+'.':'')+(g&&mot?' ':'')+mot;
+  /* Une page déjà écrite à l'étape 7 n'est jamais remplacée : le geste choisi s'ajoute à la suite. */
+  const nt=noteDe(s.id);
+  if(nt){if(nt.t.indexOf(texte)<0){nt.t=(nt.t+'\n'+texte).slice(0,LIM.note);nt.d=todayIso();}}
+  else d.notes[s.id]={t:texte,d:todayIso()};
+  entrer('apercu');save();return true;
+}
+function viewApercu(){
+  const s=apEtape(),a=state.ap,k=Math.max(0,Math.min(3,a.k||0));const steps=allSteps();const sv=steps[s.idx+1];
+  const fil='<ol class="ap-fil" aria-label="Les 4 moments de cet aperçu">'+AP_TITRES.map((t,i)=>'<li'+(i===k?' aria-current="step"':'')+' class="'+(i<k?'ap-fait':i===k?'ap-ici':'')+'"><span>'+(i+1)+'</span><b>'+t+'</b></li>').join('')+'</ol>';
+  const idee=Array.isArray(s.idee)?s.idee:[s.idee];
+  let corps='';
+  if(k===0)corps='<div class="f-tete"><span class="label">Un aperçu du parcours, en 3 minutes</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">Voici l’étape '+(s.idx+1)+' du parcours, en plus court. Vous repartez avec un geste à vous, même si vous vous arrêtez là.</p></div>'+fil+
+    '<p class="lecture-l">'+esc(idee[0])+'</p>'+
+    schHtml('vague')+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="ap" data-k="1">Choisir mon geste '+I.chev+'</button></div>';
+  else if(k===1)corps='<div class="f-tete"><span class="label">Aperçu du parcours, étape '+(s.idx+1)+'</span><h1 class="t1">Votre geste, quand la vague monte</h1></div>'+fil+
+    '<div class="mots-a"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div><p>'+esc(Array.isArray(s.vecu)?s.vecu[0]:s.vecu)+'</p></div>'+
+    '<p class="ap-consigne">'+esc(s.exo)+'</p>'+
+    '<div class="ap-gestes" role="group" aria-label="Choisir un geste">'+AP_GESTES.map(g=>'<button type="button" class="ap-g" data-act="ap-g" data-v="'+g[0]+'" aria-pressed="'+(a.g===g[0])+'"><span class="resp-p" aria-hidden="true"></span><b>'+g[1]+'</b></button>').join('')+'</div>'+
+    '<div class="field"><label for="ap-mot">'+esc(s.ecr)+'</label><textarea id="ap-mot" maxlength="'+LIM.note+'" placeholder="Vous pouvez aussi l’écrire avec vos mots.">'+esc(a.mot||'')+'</textarea></div>'+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="ap-garde">'+I.note+'Garder ce geste dans mon carnet</button><p class="hint">Votre geste reste sur votre appareil. Personne d’autre ne le lit.</p></div>';
+  else if(k===2){const nt=noteDe(s.id);
+    corps='<div class="f-tete"><span class="label">Aperçu du parcours, étape '+(s.idx+1)+'</span><h1 class="t1">C’est gardé dans votre carnet</h1></div>'+fil+
+    '<article class="carnet-p"><span class="label">Mon carnet de route, étape '+(s.idx+1)+'</span><p class="q">'+esc(s.ecr)+'</p><p class="ecrit">'+(nt?nl2(nt.t):'')+'</p><span class="hint">'+(nt?'Écrit le '+esc(fmtDate(nt.d)):'')+'</span></article>'+
+    '<p class="lecture-l">Vous retrouvez cette page quand vous voulez, dans « Parcours », puis « Mon carnet ». Un jour de tempête, c’est là que votre geste vous attend.</p>'+
+    (a.g==='souffle'?'<button type="button" class="btn wide" data-act="exo" data-id="breath">'+I.wind+'L’essayer maintenant avec « Souffler 2 minutes »</button>':'')+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="ap" data-k="3">Voir la semaine prochaine '+I.chev+'</button><button type="button" class="btn wide" data-act="go" data-view="carnet">'+I.note+'Ouvrir mon carnet</button></div>';}
+  else{
+    const deja=can('parcours');
+    corps='<div class="f-tete"><span class="label">Aperçu du parcours</span><h1 class="t1">Ce que vous retrouvez la semaine prochaine</h1></div>'+fil+
+    '<ol class="ap-semaine"><li><b>Votre geste, dans votre carnet.</b><span>Vous le relisez, et vous pouvez le compléter après l’avoir essayé.</span></li>'+
+      (sv?'<li><b>Une nouvelle étape, « '+esc(sv.t)+' ».</b><span>'+esc(sv.acc||'')+'</span></li>':'')+
+      '<li><b>La même forme, chaque semaine.</b><span>Vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots. Si vous vous absentez, rien ne s’accumule.</span></li></ol>'+
+    (deja?'<div class="offre"><p class="f-benef">Vous avez déjà Le parcours.</p><button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button></div>':
+      '<section class="offre" aria-labelledby="offre-t"><div class="f-haut"><h2 id="offre-t">Le parcours</h2><p class="f-prix"><b>14 CHF</b> <small>par mois</small></p></div><p class="f-benef">'+F_TXT.parcours.b+'</p>'+
+      '<button type="button" class="btn primary wide" data-act="commande" data-v="parcours" data-de="apercu">Choisir Le parcours</button>'+
+      '<p class="f-note">24 étapes, une par semaine, pendant environ 6 mois. Sans engagement, vous pouvez arrêter à tout moment.</p>'+
+      '<p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>'+
+      '<div class="ap-suite"><button type="button" class="btn wide" data-act="entrer" data-v="parcours">Continuer gratuitement avec l’étape 1</button><button type="button" class="lien-f" data-act="go" data-view="plans">Comparer les 3 formules</button></div>');
+  }
+  return '<main id="main" tabindex="-1" class="view v-feuille v-apercu ap-'+k+'"><div class="feuille">'+corps+'</div></main>';
+}
+
+/* ---------- l'aperçu d'un échange avec Antonio ---------- */
+/* La question est un exemple, écrit pour montrer la forme d'une question, et l'écran le dit. La réponse, elle, est celle d'Antonio ou n'est pas là :
+   tant qu'il ne l'a pas écrite et relue, l'emplacement reste vide. Même règle pour sa voix. */
+const AVEC_Q='Mon fils a 24 ans. Depuis le printemps, il vit dans un foyer, et je crois qu’il y est bien. Mais moi, je ne sais plus très bien ce que je suis pour lui. Avant, je faisais tout. Maintenant, je viens le dimanche, je demande si ça va, et je repars. Quand l’équipe prend une décision, je l’apprends après. Comment est-ce que je retrouve une place de père, sans marcher sur le travail des éducateurs ?';
+function viewAvec(){
+  const rep=String(AVEC_REPONSE||'').trim();
+  const reponse=rep?'<div class="mots-a mots-grand"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>La réponse d’Antonio</b><small>écrite et relue par lui</small></div></div>'+rep.split(/\n+/).map(p=>'<p>'+esc(p)+'</p>').join('')+'<p class="signe">Antonio Company, travailleur social</p></div>':
+    '<div class="place-a"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>La réponse d’Antonio</b><small>bientôt ici</small></div></div><p>Antonio écrira ici sa vraie réponse à cette question, avec ses mots, et il la relira avant de la publier.</p><p>Tant que ce n’est pas fait, cet emplacement reste vide. Une réponse inventée ne vous dirait rien de vrai sur lui.</p></div>';
+  const voix=AVEC_VOIX?'<div class="avec-voix">'+sonBoutonHtml('avec')+'<p class="hint">Vous choisissez de l’écouter, et vous pouvez l’arrêter à tout moment.</p></div>':
+    '<div class="place-voix">'+I.son+'<p>Vous pourrez aussi écouter ici la voix d’Antonio, pendant 30 secondes, dès qu’il l’aura enregistrée.</p></div>';
+  return '<main id="main" tabindex="-1" class="view v-feuille avec-a"><div class="feuille">'+
+    '<div class="f-tete"><span class="label">Avec Antonio, un aperçu</span><h1 class="t1">À quoi ressemble un échange avec Antonio</h1><p class="sub">Vous lui écrivez, il vous lit et il vous répond par écrit. Voici la forme que cela prend.</p></div>'+
+    '<div class="lettre-q"><span class="pill">Exemple</span><h2>La question d’un parent</h2><p>'+AVEC_Q+'</p><p class="hint">Cette question a été écrite pour l’exemple. Ce n’est pas le message d’un vrai parent.</p></div>'+
+    reponse+voix+
+    '<section class="partage-a" aria-labelledby="pa-t"><h2 id="pa-t">Ce que vous partagez, et ce qui reste chez vous</h2><div class="deux"><div class="pa-col lu"><h3>'+I.eye+'Ce qu’Antonio lit</h3><ul><li>Votre question, quand vous choisissez de l’envoyer.</li><li>Les dépôts que vous cochez « Partager avec Antonio », un par un.</li></ul></div>'+
+      '<div class="pa-col chez"><h3>'+I.lock+'Ce qui reste sur votre appareil</h3><ul><li>Votre carnet de route.</li><li>Vos humeurs.</li><li>Vos dépôts non cochés.</li><li>Votre point de départ et « Mon évolution ».</li></ul></div></div>'+
+      '<p class="f-note">Vous n’avez jamais à donner le prénom de votre enfant. Dans cette version d’essai, rien n’est transmis à Antonio.</p></section>'+
+    '<section class="recoit-a"><h2>Ce que vous recevez</h2><ul class="list">'+F_TXT.antonio.c.slice(1,3).map(x=>'<li>'+x+'</li>').join('')+'<li>Vous gardez tout Le parcours, ses 24 étapes et votre carnet.</li></ul><p class="f-note">Antonio ne pose pas de diagnostic, et il ne remplace ni un médecin ni un thérapeute. En cas d’urgence, le bouton SOS donne les numéros à appeler.</p></section>'+
+    (can('antonio')?'<div class="offre"><p class="f-benef">Vous avez déjà la formule Avec Antonio.</p><button type="button" class="btn primary wide" data-act="go" data-view="antonio">'+I.mail+'Ouvrir mes échanges avec Antonio</button></div>':
+    '<section class="offre" aria-labelledby="offre-a"><div class="f-haut"><h2 id="offre-a">Avec Antonio</h2><p class="f-prix"><b>49 CHF</b> <small>par mois</small></p></div><p class="f-benef">'+F_TXT.antonio.b+'</p>'+
+      '<button type="button" class="btn primary wide" data-act="commande" data-v="antonio" data-de="avec">Choisir Avec Antonio</button>'+
+      '<p class="f-note">Sans engagement, vous pouvez arrêter à tout moment.</p><p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>'+
+    '<div class="ap-suite">'+prevenirHtml('antonio')+'<button type="button" class="lien-f" data-act="go" data-view="plans">Comparer les 3 formules</button></div>')+
+    '</div></main>';
+}
+
+/* ---------- la commande, en démonstration ---------- */
+/* Le chemin complet d'un achat, sans paiement : le récapitulatif, puis 3 issues à essayer (accepté, refusé, abandonné), et l'arrêt d'une formule.
+   Chaque écran dit que rien n'est débité. Le jour où un prestataire de paiement sera branché, seule l'étape du milieu changera. */
+function viewCommande(){
+  const c=state.cmd||{},k=TIERS[c.f]&&c.f!=='free'?c.f:'parcours',T=TIERS[k],X=F_TXT[k],e=c.k||'recap';
+  const demo='<p class="demo-paie demo-fort">'+I.info+'<span>Ceci est une démonstration. Aucun montant réel n’est débité, et aucune carte n’est demandée.</span></p>';
+  const recap='<div class="cmd-recap"><div class="f-haut"><h2>'+esc(T.t)+'</h2><p class="f-prix"><b>'+T.p+' CHF</b> <small>par mois</small></p></div><p class="f-benef">'+X.b+'</p><ul>'+X.c.slice(0,3).map(x=>'<li>'+x+'</li>').join('')+'</ul><p class="f-note">Sans engagement, vous pouvez arrêter à tout moment.</p></div>';
+  let corps='';
+  if(e==='arret'){const a=TIERS[tier()];
+    corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">Arrêter ma formule</h1></div>'+demo+
+      '<div class="cmd-recap"><p class="f-benef">Vous quittez '+esc(a.t)+' et vous revenez à Découverte.</p><ul><li>Votre carnet, vos dépôts et tout ce que vous avez écrit restent sur votre appareil.</li><li>La dose du jour, les outils, la respiration et le SOS restent ouverts.</li><li>Les étapes 2 à 24 se referment. Elles se rouvrent si vous reprenez Le parcours.</li></ul></div>'+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="arret-ok">Confirmer l’arrêt</button><button type="button" class="btn wide" data-act="back">Garder ma formule</button></div>';
+  }else if(e==='ok')corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">C’est confirmé.</h1><p class="sub">Votre formule est maintenant '+esc(T.t)+'.</p></div>'+demo+
+      '<div class="cmd-recap"><p class="f-benef">'+(k==='antonio'?'Vos échanges avec Antonio sont ouverts, en démonstration.':'Votre parcours est ouvert.')+'</p><ul>'+(k==='antonio'?'<li>Dans cette version d’essai, rien n’est transmis à Antonio, et le mot comme la réponse affichés sont des exemples.</li><li>Vous avez aussi tout Le parcours.</li>':'<li>Une étape s’ouvre chaque semaine, 7 jours après la précédente.</li><li>Votre carnet garde ce que vous écrivez.</li>')+'<li>Vous pouvez arrêter à tout moment, dans « Moi », puis « Ma formule ».</li></ul></div>'+
+      '<div class="ap-suite">'+(k==='antonio'?'<button type="button" class="btn primary wide" data-act="go" data-view="antonio">'+I.mail+'Ouvrir mes échanges avec Antonio</button><button type="button" class="btn wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>':'<button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>')+'</div>';
+  else if(e==='refus')corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">Le paiement n’a pas abouti.</h1><p class="sub">Rien n’a été débité, et votre formule n’a pas changé.</p></div>'+demo+
+      '<div class="cmd-recap"><p class="f-benef">Dans la vraie version, vous pourrez réessayer ou choisir un autre moyen de paiement.</p><p class="f-note">Tout ce qui est gratuit reste ouvert, et ce que vous avez écrit est toujours là.</p></div>'+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="recap">Réessayer</button><button type="button" class="btn wide" data-act="go" data-view="plans">Revenir aux formules</button></div>';
+  else if(e==='abandon')corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">Vous avez arrêté avant de payer.</h1><p class="sub">Rien n’a été débité, et votre formule n’a pas changé.</p></div>'+demo+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="go" data-view="plans">Revenir aux formules</button><button type="button" class="btn wide" data-act="cmd" data-v="recap">Reprendre la commande</button></div>';
+  else corps='<div class="f-tete"><span class="label">Démonstration de commande</span><h1 class="t1">Votre commande</h1></div>'+demo+recap+
+      '<section class="cmd-paie"><h2>Le paiement</h2><p>Dans la vraie version, vous paierez ici, auprès d’un prestataire de paiement. Il n’est pas encore choisi. Pour l’essai, choisissez l’issue que vous voulez voir.</p>'+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="ok">Simuler un paiement accepté</button><button type="button" class="btn wide" data-act="cmd" data-v="refus">Simuler un paiement refusé</button><button type="button" class="btn ghost wide" data-act="cmd" data-v="abandon">Abandonner la commande</button></div></section>';
+  return '<main id="main" tabindex="-1" class="view v-feuille commande cde-'+e+'"><div class="feuille">'+corps+'</div></main>';
+}
+/* Ce que cet appareil a compté, pour la carte « Version d'essai » de l'écran « Moi ». */
+function reperesHtml(){
+  const c=com();
+  const l=[['Aperçu du parcours terminé',c.ap?'le '+fmtDate(c.ap):'pas encore'],['Formule choisie',c.ch&&TIERS[c.ch.f]?TIERS[c.ch.f].t+', le '+fmtDate(c.ch.d):'aucune'],['Achat confirmé',c.ac&&TIERS[c.ac.f]?TIERS[c.ac.f].t+', en démonstration, le '+fmtDate(c.ac.d):'aucun']];
+  return '<div class="reperes"><span class="label">Les 3 repères de la vente, sur cet appareil</span>'+l.map(x=>'<div class="kv"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>').join('')+'<p class="hint">Ces repères ne contiennent ni vos écrits, ni vos humeurs, ni votre situation. Dans cette version d’essai, ils restent sur votre appareil et rien n’est envoyé.</p></div>';
+}
+
 function sheetUpgrade(sheetIn){
   const u=UP[state.upFeat]||UP.parcours;const anto=state.upFeat==='antonio';
+  /* La feuille ne vend pas : elle propose d'essayer d'abord, puis de voir les formules. */
   return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="up-title" tabindex="-1"><div class="sheet-in"><div class="grab"></div><span class="label">'+I.lock+' Fait partie '+(anto?'de la formule Avec Antonio':'du Parcours')+'</span><h2 id="up-title" class="t2" style="font-family:var(--font-display);font-weight:500">'+esc(u.t)+'</h2><p>'+esc(u.s)+'</p>'+
-    (anto?'':'<button type="button" class="btn primary wide" data-act="tier" data-v="parcours">Le parcours, 14 CHF par mois</button>')+
-    '<button type="button" class="btn'+(anto?' primary':'')+' wide" data-act="tier" data-v="antonio">Avec Antonio, 49 CHF par mois</button>'+
-    '<button type="button" class="btn ghost wide" data-act="sheet-close">Plus tard</button><p class="hint" style="text-align:center">Dans cette version de test, la formule s’active sans paiement, pour vous montrer l’interface.</p></div></div>';
+    (anto?'<button type="button" class="btn primary wide" data-act="avec">'+I.mail+'Voir à quoi ressemble un échange</button>':'<button type="button" class="btn primary wide" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>')+
+    '<button type="button" class="btn wide" data-act="go" data-view="plans">Voir les formules et les prix</button>'+
+    '<button type="button" class="btn ghost wide" data-act="sheet-close">Plus tard</button><p class="hint" style="text-align:center">'+DEMO_PAIE+'</p></div></div>';
 }
 /* ---------- avec Antonio ---------- */
 function viewAntonio(){
   const d=D();const L=d.letters.slice().reverse();const Q=d.questions.slice().reverse();const ql=questionsLeft();
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mes échanges avec Antonio</h1><p class="sub">Un travailleur social qui vous connaît sans que vous ayez à tout raconter, parce qu’il lit ce que vous choisissez de partager.</p></div>'+
     (DEMO?'<div class="demo-note"><b>Démonstration.</b> Dans cette version de test, rien n’est transmis à Antonio. Vos questions et vos dépôts cochés restent sur votre appareil, et le mot comme la réponse affichés ici sont des exemples. Les vrais échanges commenceront à l’ouverture des abonnements.</div>':'')+
-    '<div class="card sun"><div class="kv"><span>Le mot d’Antonio</span><span>'+(DEMO?'le 1er de chaque mois':esc(nextLetterDate()))+'</span></div><div class="kv"><span>Dépôts cochés ce mois</span><span>'+sharedThisMonth()+'</span></div><div class="kv"><span>Questions restantes ce mois</span><span>'+ql+' sur '+Q_PER_MONTH+'</span></div><p class="hint">Pour partager un dépôt, cochez « Partager avec Antonio » sous le dépôt. Sans dépôt partagé, le mot d’Antonio se base sur votre humeur et vos étapes.</p></div>'+
+    '<div class="card sun"><div class="kv"><span>Le mot d’Antonio</span><span>'+(DEMO?'le 1er de chaque mois':esc(nextLetterDate()))+'</span></div><div class="kv"><span>Dépôts cochés ce mois</span><span>'+sharedThisMonth()+'</span></div><div class="kv"><span>Questions restantes ce mois</span><span>'+ql+' sur '+Q_PER_MONTH+'</span></div><p class="hint">Pour partager un dépôt, cochez « Partager avec Antonio » sous le dépôt. Antonio lit seulement ce que vous cochez et les questions que vous lui envoyez.</p></div>'+
     (ql>0?'<div class="card"><label class="label" for="qdraft">Poser une question à Antonio</label><textarea id="qdraft" maxlength="'+LIM.q+'" placeholder="Décrivez une situation, une décision ou un doute, sans donner de prénom." style="min-height:90px">'+esc(state.qdraft)+'</textarea><button type="button" class="btn primary" data-act="qsend" style="align-self:flex-start">'+I.send+(DEMO?'Enregistrer ma question':'Envoyer ma question')+'</button></div>':'<div class="card"><span class="label">Poser une question à Antonio</span><p>Vos deux questions du mois sont posées. Vous pourrez en poser à nouveau le '+esc(nextLetterDate())+'. En attendant, « Déposer » reste ouvert.</p></div>')+
     (Q.length?Q.map(q=>'<div class="qa"><span class="st">'+esc(fmtDate(q.date))+(q.answer?', réponse d’Antonio le '+esc(fmtDate(q.answeredAt)):(DEMO?', gardée sur votre appareil et non transmise (version de test)':', en attente d’une réponse sous 48 h'))+'</span><p class="q">'+esc(q.text)+'</p>'+(q.answer?'<p class="a">'+esc(q.answer)+'</p>':'')+(q.risk?riskHtml('hint'):'')+'</div>').join(''):'')+
     ((DEMO||!Q.length)?'<div class="qa"><span class="st">Exemple de question et de réponse</span><p class="q">'+esc(QA_EXAMPLE.q)+'</p><p class="a">'+esc(QA_EXAMPLE.a)+'</p></div>':'')+
@@ -239,10 +410,10 @@ function viewAntonio(){
 }
 function viewLetter(){
   const i=state.letter;const l=i>=0?D().letters[i]:null;const txt=l?l.text:LETTER_EXAMPLE;
-  return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+(l?'Le mot d’Antonio du '+esc(fmtDate(l.date)):'Un exemple de ce que sera le mot d’Antonio')+'</span><h1 class="t1">'+(D().me?'Bonjour '+esc(D().me)+',':'Bonjour,')+'</h1></div>'+
-    '<div class="letter">'+txt.split('\n').map(p=>'<p>'+esc(p)+'</p>').join('')+'<div class="from" style="margin-top:6px"><span class="av" aria-hidden="true">A</span><div><b>Antonio Company</b><span>travailleur social</span></div></div></div>'+
+  return '<main id="main" tabindex="-1" class="view v-feuille"><div class="feuille f-lettre"><div class="f-tete"><span class="label">'+(l?'Le mot d’Antonio du '+esc(fmtDate(l.date)):'Un exemple de ce que sera le mot d’Antonio')+'</span><h1 class="t1">'+(D().me?'Bonjour '+esc(D().me)+',':'Bonjour,')+'</h1></div>'+
+    '<div class="mots-a mots-grand">'+txt.split('\n').map(p=>'<p>'+esc(p)+'</p>').join('')+'<div class="from" style="margin-top:6px"><span class="av" aria-hidden="true">A</span><div><b>Antonio Company</b><small>travailleur social</small></div></div></div>'+
     (l?'':'<p class="hint">Ceci est un exemple. Dans la version complète, Antonio écrira ce mot chaque mois à partir des dépôts que vous aurez partagés, de votre humeur et de vos étapes. Il ne citera jamais de prénom et ne posera jamais de diagnostic.</p>')+
-    '<div class="quick"><button type="button" class="btn" data-act="porte" data-v="deposer">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="go" data-view="antonio">'+I.question+'Poser une question</button></div></main>';
+    '<div class="quick"><button type="button" class="btn" data-act="porte" data-v="deposer">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="go" data-view="antonio">'+I.question+'Poser une question</button></div></div></main>';
 }
 /* ---------- données / à propos ---------- */
 function consentCard(){
@@ -262,9 +433,9 @@ function viewData(){
 }
 function viewAbout(){
   const peek=!D().onboarded;
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0">'+
+  return '<main id="main" tabindex="-1" class="view v-feuille histoire" style="padding-top:0">'+
     '<div class="band story bleed" style="background-image:url('+HERO+')"><h1 class="t1">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</h1></div>'+
-    '<div class="story">'+
+    '<div class="feuille f-histoire"><div class="story">'+
     '<p>Je m’appelle Antonio. Avant de vous proposer cet espace, j’aimerais vous raconter un peu mon histoire, pour que vous sachiez qui est derrière.</p>'+
     '<ul class="places">'+
     '<li><h2>À dix ans</h2><p>J’ai été placé dans une famille d’accueil. Mes parents d’accueil sont devenus mon pilier et aujourd’hui encore, je les appelle Mami et Papi.</p><p>C’est chez eux que j’ai compris qu’une famille peut se construire autrement que ce qu’on avait prévu.</p></li>'+
@@ -292,7 +463,7 @@ function viewAbout(){
     '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent Écouté, Parent Éclairé, une goutte qui tombe sur un étang dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
     '</div>'+
     (peek?'<button type="button" class="btn primary wide" data-act="entrer" data-v="today">'+I.sun2+'Commencer gratuitement</button>':'')+
-    '<div class="card green"><h2 class="label">Ce que cet espace n’est pas</h2><ul class="list"><li>Ce n’est pas un diagnostic ni une thérapie. Pour cela, il y a votre pédiatre, votre médecin et les thérapeutes.</li><li>Ce n’est pas un service d’urgence. En cas de danger, appelez le '+tel('144')+'. Si vous êtes à bout, appelez le '+tel('143')+'.</li><li>Cela ne remplace pas les personnes qui vous entourent. C’est plutôt un pont vers elles.</li></ul></div><p class="hint">Version de test.</p></main>';
+    '<div class="card green"><h2 class="label">Ce que cet espace n’est pas</h2><ul class="list"><li>Ce n’est pas un diagnostic ni une thérapie. Pour cela, il y a votre pédiatre, votre médecin et les thérapeutes.</li><li>Ce n’est pas un service d’urgence. En cas de danger, appelez le '+tel('144')+'. Si vous êtes à bout, appelez le '+tel('143')+'.</li><li>Cela ne remplace pas les personnes qui vous entourent. C’est plutôt un pont vers elles.</li></ul></div><p class="hint">Version de test.</p></div></main>';
 }
 /* ---------- onglets, feuilles ---------- */
 function tabs(){
@@ -318,7 +489,7 @@ function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;fo
 
 /* ---------- actions ---------- */
 function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
-function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):''].join('|');}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;const view0=state.view;
   switch(act){
@@ -347,7 +518,8 @@ function handle(act,d,el){
     case 'resp':{if(!RESP[d.v])return;respGarde(d.v,0);respChoixMaj();return;}
     case 'cad':{const r=respReglage();const c=Math.max(CAD_MIN,Math.min(CAD_MAX,r.c+(d.v==='lent'?1:-1)));if(c!==r.c)respGarde('libre',c);respChoixMaj();return;}
     /* Le son : un geste pour l'entendre, le même geste pour le couper. La respiration, elle, continue. */
-    case 'son':{const nom=d.v==='instant'?'instant':'etang';
+    case 'son':{if(d.v==='antonio'){if(SON.etat!=='off'&&SON.piste==='antonio')sonCoupe();else if(state.view==='avec')sonJoue('antonio','avec',null);return;}
+      const nom=d.v==='instant'?'instant':'etang';
       if(SON.etat!=='off'&&SON.piste===nom){if(nom==='etang')SON.voulu=false;sonCoupe();}
       else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonSouffle();}
       else sonJoue('instant','dose',null);
@@ -372,7 +544,7 @@ function handle(act,d,el){
     /* Le bouton Retour de l'écran fait la même chose que celui du téléphone : il revient à la page d'avant.
        Quand il n'y a pas de page d'avant (on est arrivé ici par un lien), il remonte d'un niveau. */
     case 'back':{if(HIST.ok&&HIST.i>0){try{history.back();return;}catch(e){}}
-      if(!data.onboarded){state.view='intro';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
+      if(!data.onboarded){state.view=['apercu','avec','commande'].includes(state.view)?'plans':'intro';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['apercu','avec','commande'].includes(v))t='plans';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
     case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
     case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();break;
     case 'sit':state.sit=d.id;nav('sit');noteRecent('sit',d.id);break;
@@ -385,7 +557,17 @@ function handle(act,d,el){
     case 'dose-perso':dosePerso();return;
     case 'share':data.shared[d.id]=!!(el&&el.checked);save();return;
     case 'upgrade':openUpgrade(d.f);break;
-    case 'tier':if(!TIERS[d.v])return;data.tier=d.v;state.sheet=null;save();if(!data.onboarded){entrer('formule');state.view='today';}toast('La formule « '+TIERS[d.v].t+' » est activée, sans paiement dans cette version de test.');break;
+    /* Les aperçus, puis la commande en démonstration. Choisir une formule payante ouvre la commande, et c'est seulement « paiement accepté » qui change la formule. */
+    case 'apercu':state.ap={k:0,g:'',mot:''};state.sch=1;state.sheet=null;nav('apercu');break;
+    case 'ap':{const k=Math.max(0,Math.min(3,Number(d.k)||0));state.ap.k=k;if(k===3)repere('apercu');break;}
+    case 'ap-g':{const m=document.getElementById('ap-mot');if(m)state.ap.mot=m.value;state.ap.g=state.ap.g===d.v?'':d.v;break;}
+    case 'ap-garde':if(!apGarde()){toast('Choisissez un geste, ou écrivez le vôtre.');return;}state.ap.k=2;break;
+    case 'avec':state.sheet=null;nav('avec');break;
+    case 'commande':if(!TIERS[d.v]||d.v==='free')return;state.cmd={f:d.v,k:'recap',de:d.de||''};state.sheet=null;repere('choix',d.v);nav('commande');break;
+    case 'cmd':{const c=state.cmd;if(!c||!TIERS[c.f]||['recap','ok','refus','abandon'].indexOf(d.v)<0)return;if(d.v==='ok'){data.tier=c.f;entrer('formule');repere('achat',c.f);save();}c.k=d.v;break;}
+    case 'arret':if(tier()==='free')return;state.cmd={f:tier(),k:'arret',de:''};nav('commande');break;
+    case 'arret-ok':data.tier='free';save();state.cmd={f:'',k:'recap',de:''};nav('plans');toast('Vous êtes revenu à Découverte. Rien de ce que vous avez écrit n’a été effacé.');break;
+    case 'rien':return;
     case 'step':{const i=Number(d.i);const e=stepEtat(i);
       if(e.k==='formule'){openUpgrade('parcours');break;}
       if(e.k==='bientot'){toast('Cette étape s’ouvrira '+dansJours(e.n)+'. Chaque étape demande une semaine de pratique.');return;}
@@ -442,9 +624,9 @@ function handle(act,d,el){
     case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
-  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','tier','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil'].includes(act);
+  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','ap','ap-garde','avec','commande','cmd','arret','arret-ok'].includes(act);
   /* Chaque nouvel écran est une page de l'historique. Ce qui se passe à l'intérieur d'un même écran (une rubrique de la boîte à outils, le choix d'une photo) remplace la page au lieu d'en ajouter une. */
-  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done');fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
+  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||act==='arret-ok');fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
@@ -508,6 +690,8 @@ brouillonLit();
 if(SITE)window.addEventListener('hashchange',()=>{
   /* L'adresse …/#atelier, tapée alors que l'espace est déjà ouvert, allume l'aperçu d'Antonio sans recharger la page. */
   if(location.hash==='#atelier'){const d=D();d.atelier=true;d.tout=true;save();histPush(true);if(d.onboarded)render();toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');}
+  /* Les adresses des formules et des 2 aperçus, tapées alors que l'espace est ouvert. */
+  else if(VUES_HASH[location.hash]&&state.view!==VUES_HASH[location.hash]){const v=VUES_HASH[location.hash];if(v==='apercu'){state.ap={k:0,g:'',mot:''};state.sch=1;}nav(v);histPush(true);render();window.scrollTo(0,0);}
   /* L'adresse …/#accueil, tapée alors que l'espace est ouvert, montre la vitrine. */
   else if(location.hash==='#accueil'&&state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}
 });

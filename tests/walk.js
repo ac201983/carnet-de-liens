@@ -25,7 +25,12 @@ async function walk(page, visit) {
     }
     await page.evaluate(() => { document.querySelector('.acc-faq').scrollIntoView({ block: 'start' }); document.querySelectorAll('main.intro details').forEach(d => { d.open = true; }); }); await w(200); await visit('accueil-questions-ouvertes');
     await masque.evaluate(e => e.remove()); await page.evaluate(() => scrollTo(0, 0)); await w(250); }
-  await page.click(A('peek-plans')); await w(80); await visit('formules-apercu'); await page.click(A('back')); await w(200);
+  await page.click(A('peek-plans')); await w(80); await visit('formules-apercu');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('formules-apercu-bas'); await page.evaluate(() => scrollTo(0, 0));
+  // un visiteur peut essayer une étape et voir un échange avec Antonio avant d'être entré dans l'espace
+  await page.click('.formule ' + A('avec')); await w(150); await visit('avec-antonio-visiteur');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('avec-antonio-visiteur-bas'); await page.click(A('back')); await w(200);
+  await page.click(A('back')); await w(200);
   await page.click(A('peek-about')); await w(150); await visit('histoire-apercu'); await page.click(A('back')); await w(200);
   // le SOS, ouvert par un visiteur
   await page.click('.herofull .sos'); await w(100); await visit('sos-visiteur'); await page.click('.sosview .back'); await w(200);
@@ -121,8 +126,25 @@ async function walk(page, visit) {
   await page.click(A('reset')); await visit('donnees-confirmation'); await page.click(A('reset-no')); await page.click(A('back')); await w(200);
   await page.click(A('go', '[data-view="about"]')); await w(150); await page.$eval('img.medal', i => i.scrollIntoView()); await page.waitForFunction(() => { const i = document.querySelector('img.medal'); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 5000 }).catch(() => {}); await page.evaluate(() => scrollTo(0, 0)); await visit('histoire'); await page.click(A('back')); await w(80);
   await page.click(A('go', '[data-view="plans"]')); await w(60); await visit('formules');
+  await page.click('.f-detail summary'); await w(100); await page.$eval('.f-detail', e => e.scrollIntoView({ block: 'start' })); await w(100); await visit('formules-comparaison');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('formules-bas'); await page.evaluate(() => scrollTo(0, 0));
+  // ----- l'aperçu du parcours : la vague, un geste, le carnet, la semaine prochaine
+  await page.click('.formule ' + A('apercu')); await w(150); await visit('apercu-vague');
+  for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); }
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('apercu-vague-bas');
+  await page.click(A('ap', '[data-k="1"]')); await w(150); await visit('apercu-geste');
+  await page.click('.ap-g[data-v="souffle"]'); await w(80); await page.fill('#ap-mot', 'Je compte 5 longues expirations à la fenêtre.'); await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('apercu-geste-choisi');
+  await page.click(A('ap-garde')); await w(150); await visit('apercu-carnet');
+  await page.click(A('ap', '[data-k="3"]')); await w(150); await visit('apercu-semaine');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('apercu-semaine-bas');
+  // ----- la commande en démonstration : refusée, abandonnée, acceptée
+  await page.click('.offre ' + A('commande')); await w(150); await visit('commande');
+  await page.click(A('cmd', '[data-v="refus"]')); await w(120); await visit('commande-refusee');
+  await page.click(A('cmd', '[data-v="recap"]')); await w(100); await page.click(A('cmd', '[data-v="abandon"]')); await w(120); await visit('commande-abandonnee');
+  await page.click(A('cmd', '[data-v="recap"]')); await w(100); await page.click(A('cmd', '[data-v="ok"]')); await w(150); await visit('commande-confirmee');
   // ----- formule « Le parcours »
-  await page.click(A('tier', '[data-v="parcours"]')); await w(120); await visit('formules-parcours');
+  await tab('me'); await w(80); await page.click(A('go', '[data-view="plans"]')); await w(120); await visit('formules-parcours');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(100); await page.click('.f-arret ' + A('arret')); await w(150); await visit('formule-arret'); await page.click(A('back')); await w(200);
   await tab('parcours'); await w(80); await visit('parcours-ouvert');
   // une étape qui n'est pas encore ouverte : un message, et l'écran ne change pas
   await page.click(A('step', '[data-i="1"]')); await w(80); await visit('parcours-attente');
@@ -144,7 +166,10 @@ async function walk(page, visit) {
   await page.click(A('photoback')); await w(250); await visit('photolangage-changer'); await page.click(A('photopick', '[data-id="chemin"]')); await w(250);
   if (await page.$(A('back'))) await page.click(A('back')); await w(150);
   // ----- formule « Avec Antonio »
-  await tab('me'); await page.click(A('go', '[data-view="plans"]')); await page.click(A('tier', '[data-v="antonio"]')); await w(120);
+  await tab('me'); await page.click(A('go', '[data-view="plans"]')); await w(120);
+  await page.click('.formule ' + A('avec')); await w(150); await visit('avec-antonio');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('avec-antonio-bas');
+  await page.click('.offre ' + A('commande')); await w(150); await visit('commande-antonio'); await page.click(A('cmd', '[data-v="ok"]')); await w(150); await visit('commande-antonio-confirmee');
   await tab('today'); await w(100); await visit('aujourdhui-antonio');
   await tab('me'); await visit('moi-antonio'); await page.click(A('go', '[data-view="antonio"]')); await w(80); await visit('antonio-vide');
   await page.fill('#qdraft', 'court'); await page.click(A('qsend')); await visit('antonio-erreur');

@@ -74,16 +74,18 @@ function ficheDesc(s){
 const LISTE_DESC='Le coucher, les crises, l’école, les écrans, le passage à l’âge adulte ou la vie en institution. '+SITS.length+' situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.';
 if(PRE){try{globalThis.__PEPE_PRERENDER__({fiches:SITS.map(s=>({id:s.id,slug:FICHE_SLUG[s.id],t:s.t,s:s.s,ages:liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])),desc:ficheDesc(s)})),listeDesc:LISTE_DESC});}catch(e){}}
 /* Lire l'adresse : quelle fiche, ou quel écran public, demande-t-elle ? */
+const VUES_HASH={'#formules':'plans','#apercu':'apercu','#avec-antonio':'avec'};
 function routeDe(){
   if(!SITE)return null;
   let p='';try{p=decodeURIComponent(location.pathname||'');}catch(e){p=location.pathname||'';}
-  if(RACINE&&p.indexOf(RACINE)===0)p=p.slice(RACINE.length);else return location.hash===STORY_HASH?{v:'about'}:null;
+  if(RACINE&&p.indexOf(RACINE)===0)p=p.slice(RACINE.length);else return location.hash===STORY_HASH?{v:'about'}:(VUES_HASH[location.hash]?{v:VUES_HASH[location.hash]}:null);
   p=p.replace(/index\.html$/,'');
   const m=p.match(/^fiches\/([a-z0-9-]+)\/?$/);
   if(m&&SLUG_FICHE[m[1]])return {v:'sit',sit:SLUG_FICHE[m[1]]};
   if(/^fiches\/?$/.test(p))return {v:'kit',kit:'sits'};
   if(location.hash===STORY_HASH)return {v:'about'};
   if(location.hash==='#accueil')return {v:'intro'};
+  if(VUES_HASH[location.hash])return {v:VUES_HASH[location.hash]};
   return null;
 }
 /* L'adresse de l'écran affiché. Seuls les écrans publics ont la leur : une fiche, la liste des situations et « Mon histoire ».
@@ -92,23 +94,32 @@ function urlDe(){
   if(state.view==='sit'&&FICHE_SLUG[state.sit])return ficheUrl(state.sit);
   if(state.view==='kit'&&state.kit==='sits')return RACINE+'fiches/';
   if(state.view==='about')return RACINE+STORY_HASH;
+  if(state.view==='plans')return RACINE+'#formules';
+  if(state.view==='apercu')return RACINE+'#apercu';
+  if(state.view==='avec')return RACINE+'#avec-antonio';
   /* La vitrine d'un parent déjà entré a son adresse. Sans elle, l'adresse du site ouvre son espace, et c'est ce qu'il attend. */
   if(state.view==='intro'&&D().onboarded)return RACINE+'#accueil';
   return RACINE;
 }
 function titreDe(){
   if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent Écouté, Parent Éclairé';
+  if(state.view==='plans')return 'Les formules de Parent Écouté, Parent Éclairé';
+  if(state.view==='apercu')return 'Essayer une étape du parcours, en 3 minutes';
+  if(state.view==='avec')return 'À quoi ressemble un échange avec Antonio';
   if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent Écouté, Parent Éclairé';}
   if(state.view==='kit'&&state.kit==='sits'&&!D().onboarded)return SITS.length+' situations de la vraie vie, avec des pistes pour les parents';
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
   state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
   state.sheet=null;state.confirmReset=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.prev=null;state.lien='';
+  state.ap.k=Math.max(0,Math.min(3,Number(s.ap)||0));state.cmd={f:s.cf||'',k:s.ck||'recap',de:''};
+  if(state.view==='commande'&&(!TIERS[state.cmd.f]||(state.cmd.f==='free'&&state.cmd.k!=='arret')))state.view='plans';
+  if(state.view==='apercu'&&state.ap.k>=2&&!noteDe('reguler'))state.ap.k=1;
   /* Un écran qui n'a plus de sens (une étape pas encore ouverte, une fiche inconnue) ramène à « Aujourd'hui ». */
   if(state.view==='step'&&(state.step===null||!D().onboarded||stepLocked(state.step)))state.view='parcours';
   if(state.view==='sit'&&!SITS.some(x=>x.id===state.sit))state.view='kit';
@@ -483,6 +494,7 @@ function sonCharge(nom){
 function sonMenage(){
   if(state.view!=='souffle'){delete SON.tampons.notes;delete SON.tampons.eau;}
   if(state.view!=='today')delete SON.tampons.instant;
+  if(state.view!=='avec')delete SON.tampons.antonio;
 }
 /* Une « voix » est ce qui joue : un réglage de volume général et une ou plusieurs sources. Quand sa dernière source s'est tue, elle est rangée. */
 function sonSource(v,src,noeuds,fin){
@@ -512,8 +524,9 @@ function sonDepart(buf,j){
     src=ctx.createBufferSource();g=ctx.createGain();const t=ctx.currentTime;
     src.buffer=buf;src.connect(g);g.connect(ctx.destination);
     /* L'entrée : presque rien pendant la première seconde, puis le son s'installe. */
-    g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(SON_VOL*0.2,t+SON_ENTREE*0.5);g.gain.linearRampToValueAtTime(SON_VOL,t+SON_ENTREE);
-    const v={g:g,srcs:[],niv:x=>{const e=(x-t)/SON_ENTREE;return SON_VOL*(e>=1?1:(e<.5?Math.max(0,e)*.4:.2+(e-.5)*1.6));}};
+    const E=SON.proprio==='avec'?0.12:SON_ENTREE;
+    g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(SON_VOL*0.2,t+E*0.5);g.gain.linearRampToValueAtTime(SON_VOL,t+E);
+    const v={g:g,srcs:[],niv:x=>{const e=(x-t)/E;return SON_VOL*(e>=1?1:(e<.5?Math.max(0,e)*.4:.2+(e-.5)*1.6));}};
     sonSource(v,src,null,()=>{if(SON.voix===v){SON.voix=null;try{g.disconnect();}catch(e){}if(j===SON.jeton){SON.jeton++;sonSession(false);sonEtat('off');}}});
     src.start(0,o);SON.voix=v;
   }catch(e){sonRate(j);return;}
@@ -524,9 +537,9 @@ function sonDepart(buf,j){
 function sonElement(){
   if(SON.el)return SON.el;
   const a=new Audio();a.preload='auto';
-  a.addEventListener('ended',()=>{if(SON.mode==='el'&&SON.proprio==='dose'&&SON.etat!=='off'){SON.jeton++;sonEtat('off');}});
+  a.addEventListener('ended',()=>{if(SON.mode==='el'&&SON.proprio!=='souffle'&&SON.etat!=='off'){SON.jeton++;sonEtat('off');}});
   /* Le téléphone peut couper le son lui-même (un appel, des écouteurs retirés) : le bouton dit alors la vérité. */
-  a.addEventListener('pause',()=>{if(SON.mode==='el'&&SON.proprio==='dose'&&SON.etat==='on'&&!a.ended){SON.jeton++;sonEtat('off');}});
+  a.addEventListener('pause',()=>{if(SON.mode==='el'&&SON.proprio!=='souffle'&&SON.etat==='on'&&!a.ended){SON.jeton++;sonEtat('off');}});
   SON.el=a;return a;
 }
 function sonElJoue(nom,j){
@@ -677,6 +690,7 @@ function sonCoupe(vite){
 function sonChezLui(){
   if(SON.proprio==='souffle')return state.view==='souffle'&&(state.souffle.k==='cours'||state.souffle.k==='fini');
   if(SON.proprio==='dose')return state.view==='today'&&!state.sheet;
+  if(SON.proprio==='avec')return state.view==='avec'&&!state.sheet;
   return false;
 }
 /* Après chaque rendu : si l'écran n'est plus celui du son, le son s'arrête. C'est ce qui couvre Arrêter, Retour, SOS et tous les autres chemins. */
@@ -685,10 +699,11 @@ function sonGarde(){
   if((SON.etat!=='off'||SON.reprise)&&!sonChezLui()){SON.reprise=null;sonCoupe();}
   sonMenage();
 }
-const SON_TXT={souffle:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Couper le son'},dose:{off:'Prendre un instant',charge:'L’étang arrive…',on:'Revenir au silence'}};
+const SON_TXT={souffle:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Couper le son'},dose:{off:'Prendre un instant',charge:'L’étang arrive…',on:'Revenir au silence'},avec:{off:'Écouter Antonio, 30 secondes',charge:'Un instant…',on:'Arrêter'}};
+const SON_NOMS={souffle:'etang',dose:'instant',avec:'antonio'};
 function sonBoutonHtml(ou){
   if(!SON_OK||(ou==='souffle'&&!sonWA()))return '';
-  const nom=ou==='souffle'?'etang':'instant';
+  const nom=SON_NOMS[ou]||'instant';
   const e=(SON.piste===nom&&SON.proprio===ou)?SON.etat:'off';
   return '<button type="button" class="son-b son-'+ou+'" data-act="son" data-v="'+nom+'" data-etat="'+e+'"'+(e==='charge'?' aria-busy="true"':'')+'>'+(e==='off'?I.son:I.silence)+'<span class="tx"><b>'+SON_TXT[ou][e]+'</b>'+(ou==='dose'&&e==='off'?' <small>40 secondes d’étang, avec le son</small>':'')+'</span></button>';
 }
@@ -697,7 +712,7 @@ function sonBoutons(){
   try{
     const L=document.querySelectorAll('.son-b');
     for(let i=0;i<L.length;i++){
-      const b=L[i],ou=b.classList.contains('son-souffle')?'souffle':'dose';
+      const b=L[i],ou=b.classList.contains('son-souffle')?'souffle':(b.classList.contains('son-avec')?'avec':'dose');
       const t=document.createElement('div');t.innerHTML=sonBoutonHtml(ou);const n=t.firstChild;if(!n)continue;
       const e=n.getAttribute('data-etat');b.setAttribute('data-etat',e);
       if(e==='charge')b.setAttribute('aria-busy','true');else b.removeAttribute('aria-busy');
@@ -722,7 +737,7 @@ function sheetVoix(sheetIn){
 
 /* ---------- pour un visiteur arrivé par un lien : le haut et le bas des pages publiques ---------- */
 function barPub(){
-  return '<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
+  return '<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
 }
 function piedPub(){
   return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent Écouté, Parent Éclairé » a été créé par Antonio Company, travailleur social et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
@@ -738,5 +753,5 @@ function essaiCarte(){
   const n=essaiNotes();
   return '<div class="card essai"><span class="label">Version d’essai</span><p class="hint">Vous êtes sur une version d’essai de l’espace, à une adresse à part. Ce que vous y écrivez est rangé séparément, et le site habituel ne change pas.</p>'+
     (n?'<button type="button" class="btn" data-act="essai-copie" style="align-self:flex-start">Ouvrir ici une copie de mes notes</button><p class="hint">Vos dépôts, votre carnet et votre progression de parent-ecoute.ch sont recopiés ici. Les originaux ne sont pas modifiés.</p>':'')+
-    (state.confirmEssai?'<div class="confirm" role="alert"><span>Effacer ce que contient la version d’essai sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="essai-zero-oui">Oui, effacer</button><button type="button" class="btn" data-act="essai-zero-non">Annuler</button></div></div>':'<button type="button" class="btn" data-act="essai-zero" style="align-self:flex-start">Revoir la version d’essai depuis le début</button>')+'</div>';
+    (state.confirmEssai?'<div class="confirm" role="alert"><span>Effacer ce que contient la version d’essai sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="essai-zero-oui">Oui, effacer</button><button type="button" class="btn" data-act="essai-zero-non">Annuler</button></div></div>':'<button type="button" class="btn" data-act="essai-zero" style="align-self:flex-start">Revoir la version d’essai depuis le début</button>')+reperesHtml()+'</div>';
 }

@@ -17,9 +17,12 @@ const COLLECT = () => {
   const path = e => { const out = []; for (let x = e, i = 0; x && x !== document.body && i < 4; x = x.parentElement, i++) out.unshift(x.tagName.toLowerCase() + (x.id ? '#' + x.id : '') + (typeof x.className === 'string' && x.className.trim() ? '.' + x.className.trim().split(/\s+/).slice(0, 3).join('.') : '')); return out.join(' > '); };
   const opac = e => { let o = 1; for (let x = e; x; x = x.parentElement) o *= parseFloat(getComputedStyle(x).opacity); return o; };
   const toast = document.querySelector('.toast'), tr = toast ? toast.getBoundingClientRect() : null;
+  // Le bouton flottant de la vitrine pose un fondu sur le bas de l'écran, qui laisse passer les clics : un texte qui glisse dessous est assombri le temps d'un défilement. On ne le mesure pas à ce moment-là.
+  const flot = document.querySelector('.cta-flot'), fr = flot && getComputedStyle(flot).visibility !== 'hidden' ? flot.getBoundingClientRect() : null;
   const hit = (el, x, y) => { const t = document.elementFromPoint(x, y); return !!t && (t === el || el.contains(t) || t.contains(el)); };
   const visible = (el, r) => { // le texte est-il entièrement visible (pas même en partie sous une barre fixe, une feuille ou un message) ?
     if (r.top < 0 || r.bottom > vh || r.left < 0 || r.right > vw) return false;
+    if (fr && fr.height > 0 && !flot.contains(el) && r.bottom > fr.top && r.top < fr.bottom) return false;
     // le message bref projette une ombre autour de lui : un texte pris dans cette ombre serait mesuré plus sombre qu'il ne l'est au repos
     if (tr && !toast.contains(el) && !(r.right < tr.left - 40 || r.left > tr.right + 40 || r.bottom < tr.top - 40 || r.top > tr.bottom + 40)) return false;
     return hit(el, r.left + r.width / 2, r.top + r.height / 2) && hit(el, r.left + 1, r.top + 1) && hit(el, r.right - 1, r.top + 1) && hit(el, r.left + 1, r.bottom - 1) && hit(el, r.right - 1, r.bottom - 1);
@@ -30,6 +33,8 @@ const COLLECT = () => {
     const el = n.parentElement; if (!el || /^(script|style|noscript|textarea|option)$/i.test(el.tagName)) continue;
     const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
     if (el.closest('[disabled],[aria-disabled="true"],.sr')) continue;
+    // Le contenu d'un bloc « details » refermé n'est pas affiché, mais le navigateur lui garde une place : on ne le mesure pas.
+    const dt = el.closest('details:not([open])'); if (dt && !el.closest('summary')) continue;
     const rg = document.createRange(); rg.selectNodeContents(n);
     const rects = [...rg.getClientRects()].filter(r => r.width > 2 && r.height > 2 && visible(el, r)).map(r => [r.left, r.top, r.width, r.height]);
     if (!rects.length) continue;
