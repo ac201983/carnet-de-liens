@@ -24,19 +24,45 @@ function sitRow(s){const dedans='<span class="e'+(deuxImages(s.e)?' duo':'')+'">
   return SITE?'<a class="sit" href="'+ficheUrl(s.id)+'" data-act="sit" data-id="'+s.id+'">'+dedans+'</a>':'<button type="button" class="sit" data-act="sit" data-id="'+s.id+'">'+dedans+'</button>';}
 /* Le choix de l'âge : il range les situations, et dans « Trouver une idée » il choisit celles qu'on propose d'abord. */
 function agesChips(){return '<div class="chips scroll ages" role="group" aria-label="Âge">'+Object.keys(AGES).map(k=>'<button type="button" class="chip" data-act="age" data-v="'+k+'" aria-pressed="'+(state.age===k)+'">'+AGES[k]+'</button>').join('')+'</div>';}
+/* Sur grand écran, les thèmes sont rangés en colonnes de hauteurs voisines, pour ne laisser aucun trou entre 2 thèmes.
+   Une grille alignerait les thèmes par rangées : un thème de 2 lignes à côté d'un thème de 6 laisserait un vide sous lui.
+   On essaie toutes les répartitions (6 thèmes, 3 colonnes : 729 au plus) et on garde celle dont la plus haute colonne est la plus basse,
+   puis la plus régulière. Dans une colonne, les thèmes gardent leur ordre, et les colonnes se suivent dans l'ordre de leur premier thème. */
+function colonnesSits(){return large()?((MQ_TROIS&&MQ_TROIS.matches)?3:2):1;}
+function rangeEnColonnes(blocs,nc){
+  const n=blocs.length;if(n<=nc)return blocs.map(b=>[b]);
+  const poids=blocs.map(b=>b.n+0.6);let mieux=null,note=null;
+  const total=Math.pow(nc,n);
+  for(let k=0;k<total;k++){
+    const h=new Array(nc).fill(0);let x=k,vide=nc;const ou=[];
+    for(let i=0;i<n;i++){const c=x%nc;x=(x-c)/nc;if(!h[c])vide--;h[c]+=poids[i];ou.push(c);}
+    if(vide)continue;
+    const haut=Math.max.apply(null,h),bas=Math.min.apply(null,h);
+    /* à hauteur égale, on préfère la répartition la plus régulière, puis celle qui laisse les premiers thèmes en tête de colonne */
+    const tetes=ou.map((c,i)=>ou.indexOf(c)===i?i:-1).filter(i=>i>=0).reduce((s,i)=>s+i,0);
+    const s=[haut,haut-bas,tetes];
+    if(!note||s[0]<note[0]-1e-9||(Math.abs(s[0]-note[0])<1e-9&&(s[1]<note[1]-1e-9||(Math.abs(s[1]-note[1])<1e-9&&s[2]<note[2])))){note=s;mieux=ou;}
+  }
+  const cols=[];for(let c=0;c<nc;c++)cols.push(blocs.filter((b,i)=>mieux[i]===c));
+  return cols.filter(c=>c.length).sort((p,q)=>blocs.indexOf(p[0])-blocs.indexOf(q[0]));
+}
 function kitSits(){
   let list=SITS.filter(s=>state.age==='all'||s.ages.includes(state.age));
   const q=state.q.trim().toLowerCase();if(q)list=list.filter(s=>(s.t+' '+s.s+' '+s.comp).toLowerCase().includes(q));
+  const nc=colonnesSits();
   /* Les situations qui reviennent le plus à cette heure-ci, pour ne pas avoir à chercher. Si le parent a dit l'âge de son enfant,
      celles de cet âge passent devant. La liste complète reste entière : rien n'est caché d'après une réponse. */
   const mo=moment();const PT={matin:'Souvent, le matin',jour:'Souvent, dans la journée',soir:'Souvent, le soir',nuit:'Souvent, la nuit'};
   const souvent=(D().onboarded&&!q&&!state.piste)?'<div class="souvent"><span class="label" id="souvent-l">'+PT[mo]+'</span><div class="chips" role="group" aria-labelledby="souvent-l">'+pistesDuMoment(mo,state.age==='all'?'':state.age,D().age).map(id=>{const x=SITS.find(y=>y.id===id);return '<button type="button" class="chip" data-act="sit" data-id="'+id+'"><span aria-hidden="true">'+x.e+'</span> '+esc(x.t)+'</button>';}).join('')+'</div></div>':'';
   const corps=!list.length?'<div class="card vide"><p>Je n’ai rien trouvé pour ce mot. Vous pouvez essayer un autre mot, ou écrire ce qui se passe avec vos mots à vous.</p><button type="button" class="btn" data-act="porte" data-v="deposer" style="align-self:flex-start">'+I.drop+'Déposer ce qui pèse</button></div>':
     q?'<div class="grp"><div class="liste">'+list.map(sitRow).join('')+'</div></div>':
-    GROUPES.map(g=>{const L=list.filter(s=>s.th===g[0]);return L.length?'<section class="grp"><h2><span class="nom">'+g[1]+'</span><span class="nb" aria-hidden="true">'+L.length+'</span></h2><div class="liste">'+L.map(sitRow).join('')+'</div></section>':'';}).join('');
+    (()=>{const blocs=GROUPES.map(g=>{const L=list.filter(s=>s.th===g[0]);return L.length?{n:L.length,h:'<section class="grp"><h2><span class="nom">'+g[1]+'</span><span class="nb" aria-hidden="true">'+L.length+'</span></h2><div class="liste">'+L.map(sitRow).join('')+'</div></section>'}:null;}).filter(Boolean);
+      if(nc<2||blocs.length<2)return blocs.map(x=>x.h).join('');
+      return rangeEnColonnes(blocs,nc).map(c=>'<div class="th-col">'+c.map(x=>x.h).join('')+'</div>').join('');})();
+  const enCols=nc>1&&!q&&list.length>0;
   return '<div class="search">'+I.search+'<input type="search" id="q" aria-label="Chercher une situation" maxlength="'+LIM.search+'" placeholder="Coucher, ado, âge adulte…" value="'+esc(state.q)+'" autocomplete="off" enterkeyhint="search"></div>'+
     (state.piste?'':agesChips())+
-    souvent+'<div class="sits groupes'+(q?' trouve':'')+'">'+corps+'</div>';
+    souvent+'<div class="sits groupes'+(q?' trouve':'')+(enCols?' en-cols':'')+'">'+corps+'</div>';
 }
 function viewSit(){
   const s=SITS.find(x=>x.id===state.sit);if(!s){state.view='kit';return viewKit();}
@@ -313,12 +339,17 @@ function handle(act,d,el){
     case 'accueil':nav('intro');break;
     case 'fiches':state.kit='sits';state.q='';nav('kit');break;
     /* « Encore 2 minutes » : si le parent écoutait l'étang, le son repart avec la respiration. Sinon, tout recommence en silence. */
-    case 'souffle-go':{const avecSon=SON.voulu;souffleStart();if(avecSon)sonJoue('etang','souffle',soufflePos);break;}
+    case 'souffle-go':{const avecSon=SON.voulu;souffleStart();if(avecSon)sonSouffle();break;}
     case 'souffle-stop':SON.voulu=false;souffleStop();break;
+    /* « Changer de respiration » : le choix s'ouvre et se referme sans arrêter l'exercice. Un choix ou un réglage prend effet au mouvement suivant. */
+    case 'resp-ouvre':state.souffle.choix=true;state.souffle.foc='.resp-o[aria-pressed="true"]';break;
+    case 'resp-ferme':state.souffle.choix=false;state.souffle.foc='.resp-l';break;
+    case 'resp':{if(!RESP[d.v])return;respGarde(d.v,0);respChoixMaj();return;}
+    case 'cad':{const r=respReglage();const c=Math.max(CAD_MIN,Math.min(CAD_MAX,r.c+(d.v==='lent'?1:-1)));if(c!==r.c)respGarde('libre',c);respChoixMaj();return;}
     /* Le son : un geste pour l'entendre, le même geste pour le couper. La respiration, elle, continue. */
     case 'son':{const nom=d.v==='instant'?'instant':'etang';
       if(SON.etat!=='off'&&SON.piste===nom){if(nom==='etang')SON.voulu=false;sonCoupe();}
-      else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonJoue('etang','souffle',soufflePos);}
+      else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonSouffle();}
       else sonJoue('instant','dose',null);
       return;}
     case 'voix':state.sheet='voix';break;
@@ -454,7 +485,9 @@ let atelierMsg=false;
 try{if(location.hash==='#atelier'){state.data.atelier=true;state.data.tout=true;save();atelierMsg=true;if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
 fxSync();
 /* La fenêtre passe d'un format à l'autre (fenêtre agrandie ou réduite, tablette qu'on tourne) : l'écran est réécrit dans le bon ordre, sans perdre ce qui est en cours de saisie. */
-if(MQ_LARGE){const relayout=()=>{const keep={};document.querySelectorAll('#app input[id],#app textarea[id]').forEach(el=>{if(el.type!=='range'&&el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value;});render();Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id])el.value=keep[id];});};if(MQ_LARGE.addEventListener)MQ_LARGE.addEventListener('change',relayout);else if(MQ_LARGE.addListener)MQ_LARGE.addListener(relayout);}
+if(MQ_LARGE){const relayout=()=>{const keep={};document.querySelectorAll('#app input[id],#app textarea[id]').forEach(el=>{if(el.type!=='range'&&el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value;});render();Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id])el.value=keep[id];});};if(MQ_LARGE.addEventListener)MQ_LARGE.addEventListener('change',relayout);else if(MQ_LARGE.addListener)MQ_LARGE.addListener(relayout);
+  /* le passage de 2 à 3 colonnes ne concerne que la boîte à outils */
+  if(MQ_TROIS){const trois=()=>{if(state.view==='kit')relayout();};if(MQ_TROIS.addEventListener)MQ_TROIS.addEventListener('change',trois);else if(MQ_TROIS.addListener)MQ_TROIS.addListener(trois);}}
 window.addEventListener('scroll',lectureScroll,{passive:true});window.addEventListener('resize',lectureScroll,{passive:true});
 if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:true});document.addEventListener('pointerup',fxLeve,{passive:true,capture:true});document.addEventListener('pointercancel',()=>{fxPt.vt=false;},{passive:true,capture:true});document.addEventListener('click',fxDouble,true);document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, l'adresse dit quel écran ouvrir : une fiche (…/fiches/le-coucher-et-la-nuit/), la liste des situations (…/fiches/) ou « Mon histoire » (…/#histoire).
@@ -482,14 +515,14 @@ if(SITE)window.addEventListener('popstate',histRetour);
 /* La respiration s'arrête quand l'écran s'éteint ou que l'on change d'onglet, et reprend là où elle en était. */
 document.addEventListener('visibilitychange',()=>{const z=state.souffle;if(z.k!=='cours')return;
   if(document.visibilityState==='hidden'){if(!z.hid)z.hid=performance.now();veilleOff();}
-  else{if(z.hid){z.t0+=performance.now()-z.hid;z.hid=0;}veilleOn();souffleApres();}});
+  else{if(z.hid){souffleDecale(performance.now()-z.hid);z.hid=0;}veilleOn();souffleApres();}});
 /* Le son s'arrête dès que la page passe à l'arrière-plan. Au retour, celui de la respiration reprend là où en est l'exercice. Celui de la dose reste coupé. */
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){if(SON.etat!=='off'){SON.reprise=(SON.proprio==='souffle'&&state.souffle.k==='cours')?1:null;const r=SON.reprise;sonCoupe(true);SON.reprise=r;}}
   else{
     /* Si le téléphone a figé le son avant la fin de son extinction, ce qui restait se tait pour de bon au retour. */
     sonTaire();
-    if(SON.reprise){SON.reprise=null;if(state.view==='souffle'&&state.souffle.k==='cours'&&SON.voulu)sonJoue('etang','souffle',soufflePos);}
+    if(SON.reprise){SON.reprise=null;if(state.view==='souffle'&&state.souffle.k==='cours'&&SON.voulu)sonSouffle();}
   }
 });
 window.addEventListener('pagehide',()=>{SON.reprise=null;sonCoupe(true);});

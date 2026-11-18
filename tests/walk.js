@@ -43,7 +43,13 @@ async function walk(page, visit) {
   // « Écouter l'étang » : le bouton pendant que le son joue, puis de nouveau en silence
   await page.click('.son-souffle'); await w(800); await visit('souffle-son'); await page.click('.son-souffle'); await w(200);
   await w(3100); await visit('souffle-expirez');
+  // « Changer de respiration » : le choix ouvert pendant l'exercice, puis « À mon rythme » avec sa cadence
+  await page.click('.resp-l'); await w(250); await visit('souffle-choix');
+  await page.click('.resp-o[data-v="libre"]'); await w(200); await visit('souffle-choix-rythme');
+  await page.click('.resp-o[data-v="long"]'); await w(100); await page.click(A('resp-ferme')); await w(150);
   await page.click(A('souffle-stop')); await w(100); await visit('souffle-pret');
+  await page.click('.resp-l'); await w(250); await visit('souffle-pret-choix'); await page.click(A('back')); await w(300);
+  await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await w(300); await page.click(A('souffle-stop')); await w(150);
   // « Retour » ramène à la vitrine, celle d'un parent déjà entré, qui propose « Ouvrir mon espace »
   await page.click(A('back')); await w(300); await visit('vitrine-parent');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('vitrine-parent-bas'); await page.evaluate(() => scrollTo(0, 0)); await w(150);

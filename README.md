@@ -63,27 +63,40 @@ cd pub/sources && git add -A && git commit -m "Ce qui change" && git push origin
 
 ## Le son de l'étang
 
-C'est une création originale, entièrement calculée par `outils/son/compose.py` : aucun enregistrement, aucun échantillon, aucune musique existante. Il y a 2 matières seulement, de l'eau (du bruit filtré qui va et vient) et un piano feutré (des notes additives, à l'attaque douce).
+C'est une création originale, entièrement calculée par `outils/son/compose.py` et `outils/son/compose2.py` : aucun enregistrement, aucun échantillon, aucune musique existante. Il y a 2 matières seulement, de l'eau (du bruit filtré) et un piano feutré (des notes additives, à l'attaque douce).
+
+### La musique qui guide la respiration (depuis le 18 novembre 2026 au soir)
+
+La musique de « Souffler 2 minutes » n'est plus un morceau écrit d'avance. La page la joue note après note, en suivant le minutage de l'exercice : c'est ce qui lui permet de suivre 3 respirations différentes et une cadence que le parent règle.
+
+- **Un seul minutage.** `state.souffle.seq` (dans `pparts/v2-c.js`) est la suite des mouvements décidés : inspirer ou souffler, l'instant du début, la durée. Le cercle, les mots « Inspirez » et « Expirez » et la musique lisent tous cette suite. Un mouvement est décidé 450 ms avant de commencer, avec le réglage du moment : changer de respiration ou de cadence prend donc effet au mouvement suivant, sans rien couper.
+- **Les 3 respirations** (`RESP`) : « Le souffle régulier » (5 s et 5 s), « L'expiration prolongée » (4 s et 6 s, celle d'un parent qui n'a rien choisi), « À mon rythme » (de 5 à 14 secondes par respiration, deux cinquièmes pour inspirer). L'exercice se termine toujours à la fin d'une expiration, entre 1 minute 55 et 2 minutes 06.
+- **La phrase musicale.** À l'inspiration, 3 notes montent (ré, fa dièse, la) et une note grave les porte (ré, si, sol, la, à tour de rôle). À l'expiration, les notes redescendent pas à pas (fa dièse, mi, ré), avec une quatrième note plus basse (la) quand l'expiration est la plus longue. L'eau s'éclaircit et avance quand on inspire, s'assombrit et se retire quand on souffle.
+- **Les fichiers.** `site-src/son/notes.mp3` contient les 9 notes, rangées dans des cases de 6,5 secondes. `site-src/son/eau.mp3` est une boucle de 28 secondes. Les nombres de `compose2.py` (hauteurs, volumes, filtre de l'eau) sont les mêmes que ceux de `v2-c.js` (`RS_…`) : le script fabrique les fichiers et simule le résultat pour le mesurer.
 
 ```
-python3 outils/son/compose.py etang etang.wav       # 2 minutes 11 : 12 respirations de 4 s et 6 s, puis une fin qui s'éteint
-python3 outils/son/compose.py instant instant.wav   # 40 secondes
-ffmpeg -i etang.wav -c:a libmp3lame -b:a 80k -ar 44100 -joint_stereo 1 -map_metadata -1 site-src/son/etang.mp3
-python3 outils/son/analyse.py etang.wav etang.png   # niveaux, spectre, et l'eau qui avance et se retire avec la respiration
-python3 outils/son/balance.py etang.wav             # le piano reste-t-il devant l'eau sur un petit haut-parleur ? (après compose.py … --pistes)
+python3 outils/son/compose2.py notes notes.wav      # les 9 notes, une par case
+python3 outils/son/compose2.py eau eau.wav          # la boucle d'eau
+python3 outils/son/compose2.py instant instant.wav  # les 40 secondes de la dose, sur la même phrase
+python3 outils/son/compose2.py essai long essai.wav # simulation de ce que joue la page, pour les mesures (egal, long ou libre)
+ffmpeg -i notes.wav -c:a libmp3lame -b:a 80k -ar 44100 -joint_stereo 1 -map_metadata -1 -write_xing 1 -id3v2_version 0 site-src/son/notes.mp3
 ```
 
-Le repère pour qui ferme les yeux : l'eau avance pendant l'inspiration et se retire pendant l'expiration, 2 notes qui montent ouvrent l'inspiration, et 1 note plus basse ouvre l'expiration. Ensuite la note s'éteint, et il ne reste que l'eau jusqu'à la respiration suivante.
-
-Dans l'application (`pparts/v2-c.js`, « le son de l'étang ») : le son ne part jamais sans un geste du parent, il est chargé à ce moment-là seulement, une seule piste joue à la fois, et il s'arrête dès qu'on quitte l'écran qui l'a lancé. Sur iPhone, la page se déclare comme un lecteur pour que le bouton « silencieux » ne coupe pas le son (possible depuis iOS 17). Sur un iPhone plus ancien, le lecteur audio ordinaire prend le relais, sans fondu.
+Dans l'application : le son ne part jamais sans un geste du parent (« Écouter l'étang »), il est chargé à ce moment-là seulement, une seule musique joue à la fois, et tout se tait dès qu'on quitte l'écran qui l'a lancé. Sur iPhone, la page se déclare comme un lecteur pour que le bouton « silencieux » ne coupe pas le son (possible depuis iOS 17). La musique de la respiration a besoin du son calculé dans la page : sur un iPhone plus ancien, un message rappelle de vérifier le bouton silencieux. L'instant de la dose, lui, garde le lecteur audio ordinaire en secours.
 
 Trois détails qui comptent sur un téléphone :
 
-- Le fichier est téléchargé une seule fois par visite et gardé tel quel (1,3 Mo). Le son décodé, lui, pèse plusieurs dizaines de mégaoctets : il est rendu dès qu'on quitte son écran, et décodé de nouveau si le parent y revient.
-- L'écran reste allumé pendant la respiration et tant qu'un son joue (`veilleSync`). Sans cela, un téléphone réglé sur 30 secondes se verrouille au milieu de l'exercice. Dès que c'est fini, le téléphone reprend son réglage.
-- Quand la page passe à l'arrière-plan, le son se coupe. Au retour, celui de la respiration reprend là où en est l'exercice, qui s'était arrêté lui aussi. Celui de la dose reste coupé.
+- Chaque fichier est téléchargé une seule fois par visite et gardé tel quel. Le son décodé pèse plusieurs mégaoctets : il est rendu dès qu'on quitte son écran, et décodé de nouveau si le parent y revient.
+- L'écran reste allumé pendant la respiration et tant qu'un son joue (`veilleSync`). Dès que c'est fini, le téléphone reprend son réglage.
+- Quand la page passe à l'arrière-plan, le son se coupe et le minutage attend. Au retour, tout est décalé d'autant (`souffleDecale`) et la musique reprend au début du mouvement suivant. Le son de la dose reste coupé.
 
-`tests/finition.js` rejoue tout cela dans Chrome, Firefox et WebKit. Il ne peut pas écouter : il relève ce que la page envoie vers la sortie audio (une seule piste, son point de départ, son volume, le signal). Le timbre, lui, se juge à l'oreille sur un vrai téléphone.
+### Les essais du son
+
+- `tests/respiration.js` rejoue la respiration dans Chrome, Firefox et WebKit : le silence, « Changer de respiration », et, là où le son est mesurable, chaque note posée par la page (son instant, sa hauteur, son volume) comparée au mot affiché, jusqu'à la dernière respiration.
+- `tests/ecoute.js` puis `tests/ecoute.py` font l'essai « les yeux fermés » : le premier enregistre ce que la page envoie réellement vers la sortie audio, le second analyse cet enregistrement seul, sans rien savoir de l'écran. Il retrouve les notes, en déduit quand inspirer et quand souffler, puis compare avec les mots affichés.
+- `tests/finition.js` garde l'instant de la dose, l'accueil et la navigation.
+
+Aucun de ces essais n'écoute : ils mesurent. Le timbre et le plaisir d'écoute se jugent à l'oreille, sur un vrai téléphone.
 
 ## La version d'essai
 

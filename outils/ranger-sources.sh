@@ -12,7 +12,7 @@ rm -rf "$BRANCHE/pparts" "$BRANCHE/eparts" "$BRANCHE/site-src" "$BRANCHE/tests" 
 mkdir -p "$BRANCHE/eparts" "$BRANCHE/outils/eau"
 
 cp build_site.py "$BRANCHE/"
-find pparts site-src tests -type f ! -name '*.bak' ! -path '*/node_modules/*' -print0 | tar --null -cf - -T - | tar -xf - -C "$BRANCHE"
+find pparts site-src tests -type f ! -name '*.bak' ! -name '*.pyc' ! -path '*/node_modules/*' ! -path '*/__pycache__/*' -print0 | tar --null -cf - -T - | tar -xf - -C "$BRANCHE"
 cp eparts/p2-content.js "$BRANCHE/eparts/"
 cp outils/*.sh "$BRANCHE/outils/"
 cp outils/*.py "$BRANCHE/outils/" 2>/dev/null || true
@@ -22,10 +22,10 @@ cp -r outils/pictos "$BRANCHE/outils/" 2>/dev/null || true
 cp build/doux/lab.html build/doux/eau.js "$BRANCHE/outils/eau/" 2>/dev/null || true
 # Ce qui a composé l'ambiance sonore de l'étang (une création originale, entièrement calculée) et ce qui la mesure
 mkdir -p "$BRANCHE/outils/son"
-cp outils/son/compose.py outils/son/analyse.py outils/son/balance.py "$BRANCHE/outils/son/" 2>/dev/null || true
+cp outils/son/compose.py outils/son/compose2.py outils/son/analyse.py outils/son/balance.py "$BRANCHE/outils/son/" 2>/dev/null || true
 # Ce qui sert à fabriquer, à regarder et à vérifier la version d'essai (dans l'atelier, ces fichiers sont dans build/essai/)
 mkdir -p "$BRANCHE/outils/essai"
-cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/vite.sh build/essai/reste.sh build/essai/vue.js build/essai/planche.py "$BRANCHE/outils/essai/" 2>/dev/null || true
+cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/vite.sh build/essai/vite3.sh build/essai/reste.sh build/essai/vue.js build/essai/planche.py "$BRANCHE/outils/essai/" 2>/dev/null || true
 
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

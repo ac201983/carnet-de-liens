@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Passe du 18 novembre au soir (grille des Outils et respiration guidée par la musique) : ce qui les touche, sur la version d'essai puis sur la version de travail.
+# Résultats dans /tmp/vite3.log.
+cd /home/claude/tests
+export NODE_PATH=/home/claude/.npm-global/lib/node_modules:/home/claude/tools/node_modules PEPE_ORIGIN=https://localhost:8445 PEPE_BASE=/ PEPE_APPDIR= PEPE_PUBLIC=https://parent-ecoute.ch PEPE_SITE_DIR=/home/claude/dev/site
+L=/tmp/vite3.log; : > $L
+un() { local nom="$1"; shift; local t0=$(date +%s); "$@" > /tmp/vite3-$nom.txt 2>&1; local c=$?; echo "$(date +%H:%M) [$c] $nom ($(( $(date +%s) - t0 )) s) : $(grep -v '^\s*$' /tmp/vite3-$nom.txt | tail -n 1 | cut -c1-200)" >> $L; }
+E="env PEPE_ORIGIN=https://localhost:8446 PEPE_BASE=/essai/ PEPE_PUBLIC=https://parent-ecoute.ch/essai/ PEPE_KEY=pepe-essai-v1"
+un respiration-essai $E node respiration.js --court
+un finition-essai $E node finition.js --court
+un geste-essai $E node premier-geste.js --court
+un essai env PEPE_ORIGIN=https://localhost:8446 PEPE_BASE=/essai/ node essai.js
+un voix node voix.js
+un refonte node refonte.js
+un ordi node ordi.js
+un e2e node e2e.js
+for w in 320 390 768 1280 1920; do un overflow-$w node overflow.js $w; done
+un axe-390 node extra/axe-ordi.js 390 844
+un axe-1280 node extra/axe-ordi.js 1280 800
+un fx node fx.js 390
+un doigt node doigt.js 390
+PEPE_HEURE=21 un contraste-390 sh -c 'node contrast.js 390 >/dev/null 2>&1; python3 contrast.py 390 | grep -E "sous le seuil AA|passe sous le seuil|bord des champs|^  [0-9.]+ \(min"'
+un finition node finition.js
+echo "$(date +%H:%M) FIN" >> $L
