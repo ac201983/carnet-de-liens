@@ -32,22 +32,33 @@ if [ ! -f site/essai/index.html ]; then
   exit 0
 fi
 cd outils/essais
-if ! { npm init -y >/dev/null 2>&1 && npm install --no-audit --no-fund "playwright@$(cat version-playwright.txt)" >/tmp/essais-installation.txt 2>&1 && npx playwright install --with-deps "$nav" >>/tmp/essais-installation.txt 2>&1; }; then
-  echo "::warning title=Essais en ligne dans $nom::Le navigateur d'essai n'a pas pu être installé sur la machine de GitHub. Rien n'a été rejoué dans ce navigateur."
-  tail -n 5 /tmp/essais-installation.txt
-  exit 0
-fi
+etape() { echo "$(date -u +%H:%M:%S) $*"; }   # l'heure de chaque préparatif, pour voir dans le journal lequel prend du temps
 # La machine de GitHub n'a pas de carte son. Chrome s'en passe : il a sa propre sortie factice, et une vraie sortie factice le bloque.
-# WebKit, lui, a besoin d'une sortie pour jouer : on lui en fabrique une. Si elle ne s'installe pas, rien n'est bloqué,
-# et l'essai dit en note que le son n'a pas pu être mesuré.
+# WebKit, lui, a besoin d'une sortie pour jouer : on lui en fabrique une, avant d'installer le navigateur. Si elle ne s'installe pas,
+# rien n'est bloqué, et l'essai dit en note que le son n'a pas pu être mesuré.
 if [ "$nav" = webkit ]; then
-  if sudo apt-get install -y -qq pulseaudio gstreamer1.0-pulseaudio >/tmp/essais-audio.txt 2>&1; then
+  etape "sortie audio factice : installation"
+  sudo apt-get update -qq >/tmp/essais-audio.txt 2>&1 || true
+  if sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get install -y -qq pulseaudio gstreamer1.0-pulseaudio >>/tmp/essais-audio.txt 2>&1; then
     pulseaudio --start --exit-idle-time=-1 >>/tmp/essais-audio.txt 2>&1 || true
     pactl load-module module-null-sink sink_name=essai >>/tmp/essais-audio.txt 2>&1 || true
     pactl set-default-sink essai >>/tmp/essais-audio.txt 2>&1 || true
   fi
   tail -n 2 /tmp/essais-audio.txt 2>/dev/null || true
 fi
+etape "outil d'essai : installation"
+if ! { npm init -y >/dev/null 2>&1 && npm install --no-audit --no-fund "playwright@$(cat version-playwright.txt)" >/tmp/essais-installation.txt 2>&1; }; then
+  echo "::warning title=Essais en ligne dans $nom::L'outil d'essai n'a pas pu être installé sur la machine de GitHub. Rien n'a été rejoué dans ce navigateur."
+  tail -n 5 /tmp/essais-installation.txt
+  exit 0
+fi
+etape "navigateur $nav : installation"
+if ! DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a npx playwright install --with-deps "$nav" >>/tmp/essais-installation.txt 2>&1; then
+  echo "::warning title=Essais en ligne dans $nom::Le navigateur d'essai n'a pas pu être installé sur la machine de GitHub. Rien n'a été rejoué dans ce navigateur."
+  tail -n 5 /tmp/essais-installation.txt
+  exit 0
+fi
+etape "essais : départ"
 export PEPE_ORIGIN="${ADRESSE%/}" PEPE_BASE=/essai/ PEPE_PUBLIC="${ADRESSE%/}/essai/" PEPE_KEY=pepe-essai-v1 PEPE_NAV="$nav"
 total=0
 # un essai : son titre dans les notes (sans virgule : GitHub couperait le titre à la première), puis la commande
@@ -67,4 +78,5 @@ essai() {
 }
 [ "$nav" = chromium ] && essai "Premier geste dans Chrome" node premier-geste.js
 essai "Finition dans $nom" node finition.js
+etape "essais : fin"
 exit "$total"

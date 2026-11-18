@@ -40,7 +40,7 @@ jobs:
     name: Essais en ligne (${{ matrix.navigateur }})
     needs: mise-en-ligne
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
