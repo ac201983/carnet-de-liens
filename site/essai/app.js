@@ -8,7 +8,7 @@ const RACINE="/essai/";
 const PUBLIC="https://parent-ecoute.ch/essai/";
 const ESSAI=true;
 const TITRE_SITE="Parent Écouté, Parent Éclairé, un espace d’écoute pour les parents";
-const SON_V="8348827a";
+const SON_V="ca276355";
 const I={
   back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
@@ -949,7 +949,7 @@ const HELP=[
    « perso » : il a rempli (ou enregistré) « Personnaliser mon espace ». « recents » : les dernières fiches et les derniers outils ouverts. */
 const PRE=typeof globalThis!=='undefined'&&typeof globalThis.__PEPE_PRERENDER__==='function';
 const DEF={fxOff:false,tier:'free',me:'',age:'',situation:'',perso:false,persoTard:false,recents:[],via:'',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
-const state={photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0},lien:'',piste:false,confirmEssai:false};
+const state={photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
@@ -1064,6 +1064,8 @@ const FX_RM=FX_OK&&window.matchMedia?window.matchMedia('(prefers-reduced-motion:
    la colonne d'abord (nom de l'espace, onglets, SOS), puis le contenu. Sur téléphone, l'ordre reste barre du haut, contenu, onglets. */
 const MQ_LARGE=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1024px)'):null;
 const large=()=>!!(MQ_LARGE&&MQ_LARGE.matches);
+/* À partir de 1280 px de large, les thèmes de la boîte à outils tiennent sur 3 colonnes. */
+const MQ_TROIS=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1280px)'):null;
 /* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
 const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
 const FX_SEL='main.fiche>.couv,main.fiche>.grp,.sits.groupes>.grp,main.etape>.couv,main.etape>.chap,main.etape>.mission,.final>.fin-couv,.final>.fin-bloc>*,.intro .acc-h,.intro .acc-c>*:not(.acc-perms),.intro .acc-perms>li,.intro>.voice,.intro>.acc-fin,.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
@@ -2242,10 +2244,30 @@ function viewDeposer(){
 }
 
 /* ---------- souffler 2 minutes : l'étang respire avec le parent ---------- */
-/* 4 secondes pour inspirer, 6 pour expirer, 12 fois : cela fait 2 minutes, comme le dit le bouton.
+/* Trois respirations au choix, et chacune dure environ 2 minutes, comme le dit le bouton.
+   « Le souffle régulier » : 5 secondes pour inspirer, 5 secondes pour souffler.
+   « L'expiration prolongée » : 4 secondes pour inspirer, 6 secondes pour souffler. C'est celle d'un parent qui n'a rien choisi.
+   « À mon rythme » : le parent règle la durée d'une respiration, de 5 à 14 secondes. Deux cinquièmes servent à inspirer, trois cinquièmes à souffler.
    Un cercle posé sur l'eau s'élargit quand on inspire et se referme quand on expire. Avec les effets visuels, une onde part sur l'étang à chaque expiration.
-   Sans les effets (réglage du téléphone ou de « Moi »), le cercle ne bouge pas et seuls les mots changent. */
-const SOUFFLE={in:4,out:6,n:12};
+   Sans les effets (réglage du téléphone ou de « Moi »), le cercle ne bouge pas et seuls les mots changent.
+
+   UN SEUL MINUTAGE. « state.souffle.seq » est la suite des mouvements décidés : chacun dit s'il faut inspirer ou souffler, quand il commence et combien il dure.
+   Le cercle, les mots et la musique lisent tous cette même suite. Un mouvement est décidé un peu avant de commencer (« avance »),
+   avec le réglage du moment : changer de respiration ou de cadence prend donc effet en douceur, au mouvement suivant, sans rien couper. */
+const SOUFFLE={n:12,avant:1400,duree:115,avance:450};
+const RESP={
+  egal:{t:'Le souffle régulier',s:'Vous inspirez pendant 5 secondes, puis vous soufflez pendant 5 secondes.',p:'Vous inspirez par le nez pendant 5 secondes, puis vous soufflez par la bouche pendant 5 secondes.',in:5,out:5},
+  long:{t:'L’expiration prolongée',s:'Vous inspirez pendant 4 secondes, puis vous soufflez plus longtemps, pendant 6 secondes.',p:'Vous inspirez par le nez pendant 4 secondes, puis vous soufflez par la bouche plus longtemps, pendant 6 secondes.',in:4,out:6},
+  libre:{t:'À mon rythme',s:'Vous choisissez la cadence, et vous pouvez la ralentir ou l’accélérer.',p:'Vous inspirez par le nez, puis vous soufflez par la bouche un peu plus longtemps, à la cadence que vous avez choisie.'}
+};
+const RESP_ORDRE=['egal','long','libre'],CAD_MIN=5,CAD_MAX=14,CAD_DEF=8;
+const SOUFFLE_CLE='Quand les notes montent, inspirez. Quand elles redescendent, soufflez doucement.';
+/* Le choix du parent est gardé sur son appareil avec le reste : il retrouve sa respiration la fois suivante. */
+function respReglage(){const r=D().souffle||{};const c=Math.round(Number(r.c));return {m:RESP[r.m]?r.m:'long',c:(c>=CAD_MIN&&c<=CAD_MAX)?c:CAD_DEF};}
+function respDurees(){const r=respReglage();if(r.m==='libre')return {m:'libre',in:r.c*.4,out:r.c*.6};return {m:r.m,in:RESP[r.m].in,out:RESP[r.m].out};}
+function respGarde(m,c){const r=respReglage();D().souffle={m:RESP[m]?m:r.m,c:c||r.c};save();}
+function respCadTxt(c){return 'Une respiration dure '+c+' secondes.';}
+function respPret(){const r=respReglage();return RESP[r.m].p+(r.m==='libre'?' '+respCadTxt(r.c):'')+' Le cercle posé sur l’eau vous guide.';}
 /* L'écran reste allumé pendant la respiration, et tant qu'un son de la page joue : sans cela, un téléphone réglé sur 30 secondes
    se verrouille au milieu de l'exercice ou avant la fin de l'instant d'écoute. Dès que c'est fini, le téléphone reprend son réglage. */
 let veille=null,veilleP=false;
@@ -2265,14 +2287,33 @@ function veilleOff(){const v=veille;veille=null;try{if(v){const p=v.release();if
 function veilleSync(){if(veilleVoulue())veilleOn();else veilleOff();}
 function souffleStart(){
   const s=state.souffle;souffleStop();
-  s.k='cours';s.ph='';s.cyc=-1;s.t0=performance.now()+1400;s.hid=0;
+  const d0=respDurees();
+  s.k='cours';s.ph='';s.cyc=-1;s.ix=-1;s.tr=-1;s.t0=performance.now()+SOUFFLE.avant;s.hid=0;s.fin=0;s.cle=-1;s.choix=false;
+  /* La première inspiration est décidée tout de suite : si le parent écoute l'étang, ses premières notes sont prêtes avant qu'elle commence. */
+  s.seq=[{ty:'in',a:s.t0,d:d0.in*1000,c:0,m:d0.m}];
   veilleOn();
 }
 function souffleStop(){
   const s=state.souffle;if(s.raf){(window.cancelAnimationFrame||clearTimeout)(s.raf);s.raf=0;}
   if(s.k==='cours')s.k='pret';
+  s.choix=false;
   veilleSync();
 }
+/* Décider la suite. Après une inspiration vient une expiration, puis une nouvelle inspiration,
+   tant qu'elle commencerait avant 1 minute 55. L'exercice se termine donc toujours à la fin d'une expiration, autour de 2 minutes. */
+function souffleSuite(now){
+  const s=state.souffle;
+  for(let garde=0;garde<6&&!s.fin;garde++){
+    const L=s.seq[s.seq.length-1];if(!L)return;
+    const fin=L.a+L.d;
+    if(fin-now>SOUFFLE.avance)return;
+    if(L.ty==='in'){const d=respDurees();s.seq.push({ty:'out',a:fin,d:d.out*1000,c:L.c,m:d.m});}
+    else if(fin-s.t0>=SOUFFLE.duree*1000-1)s.fin=fin;
+    else{const d=respDurees();s.seq.push({ty:'in',a:fin,d:d.in*1000,c:L.c+1,m:d.m});}
+  }
+}
+/* La page a passé un moment à l'arrière-plan : tout le minutage est décalé d'autant, et la respiration reprend là où elle en était. */
+function souffleDecale(dt){const s=state.souffle;s.t0+=dt;if(s.fin)s.fin+=dt;(s.seq||[]).forEach(p=>{p.a+=dt;});}
 /* Où est la goutte sur la photo affichée ? Le cercle se pose autour du point où elle touche l'eau. */
 function soufflePose(){
   const host=document.querySelector('.souffle .band');const r=document.querySelector('.souffle .ronds');if(!host||!r||!r.style)return;
@@ -2281,31 +2322,47 @@ function soufflePose(){
   const w=Math.max(150,Math.min(g.w*.92,470*g.k*1.25));
   r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.27)+'px';
 }
-function souffleMots(ph,cyc){
+const SOUFFLE_MOT={avant:'Installez-vous',in:'Inspirez',out:'Expirez'};
+/* La ligne sous le grand mot. En silence, elle dit comment respirer. Avec le son, elle donne la clé d'écoute pendant les premières respirations,
+   puis elle se tait : la musique et ses silences guident le moment. */
+function souffleAide(){
+  const s=state.souffle,son=SON.proprio==='souffle'?SON.etat:'off',ph=s.ph||'avant';
+  if(ph==='avant')return son!=='off'?SOUFFLE_CLE:'Posez vos épaules et vos pieds. Le cercle va vous guider.';
+  if(son==='charge')return SOUFFLE_CLE;
+  if(son==='on')return s.cyc<=s.cle?SOUFFLE_CLE:'';
+  return ph==='in'?'Par le nez, pendant que le cercle s’ouvre.':'Par la bouche, lentement, pendant que le cercle se referme.';
+}
+function souffleMots(){
+  const s=state.souffle;if(s.k!=='cours')return;
   const mot=document.getElementById('souffle-mot'),aide=document.getElementById('souffle-aide'),tours=document.querySelector('.souffle .tours');
-  const M={avant:['Installez-vous','Posez vos épaules et vos pieds. Le cercle va vous guider.'],in:['Inspirez','Par le nez, pendant que le cercle s’ouvre.'],out:['Expirez','Par la bouche, lentement, pendant que le cercle se referme.']}[ph];
-  if(mot&&M&&mot.textContent!==M[0])mot.textContent=M[0];
-  if(aide&&M&&aide.textContent!==M[1])aide.textContent=M[1];
-  if(tours&&tours.children)for(let i=0;i<tours.children.length;i++){const c=i<cyc?'f':(i===cyc?'c':'');if(tours.children[i].className!==c)tours.children[i].className=c;}
+  const M=SOUFFLE_MOT[s.ph||'avant'];
+  if(mot&&M&&mot.textContent!==M)mot.textContent=M;
+  if(aide){const a=souffleAide();if(aide.textContent!==a)aide.textContent=a;}
+  /* Les 12 points comptent le temps, 10 secondes par point, quelle que soit la cadence choisie. */
+  if(tours&&tours.children)for(let i=0;i<tours.children.length;i++){const c=i<s.tr?'f':(i===s.tr?'c':'');if(tours.children[i].className!==c)tours.children[i].className=c;}
 }
 function souffleFrame(){
   const s=state.souffle;s.raf=0;
-  if(s.k!=='cours'||state.view!=='souffle')return;
-  const T=SOUFFLE.in+SOUFFLE.out,t=(performance.now()-s.t0)/1000;
+  /* Page à l'arrière-plan : le minutage attend. Il sera décalé au retour, et la respiration reprendra là où elle en était. */
+  if(s.k!=='cours'||state.view!=='souffle'||s.hid)return;
+  const now=performance.now();
+  souffleSuite(now);
+  if(s.fin&&now>=s.fin){rsSuite(now);s.k='fini';s.choix=false;veilleSync();noteRecent('exo','breath');render();return;}
+  let i=typeof s.ix==='number'?s.ix:-1;
+  while(i+1<s.seq.length&&s.seq[i+1].a<=now)i++;
   let ph='avant',cyc=-1,e=0;
-  if(t>=0){
-    cyc=Math.floor(t/T);
-    if(cyc>=SOUFFLE.n){s.k='fini';veilleSync();noteRecent('exo','breath');render();return;}
-    const u=t-cyc*T;ph=u<SOUFFLE.in?'in':'out';
-    const p=ph==='in'?u/SOUFFLE.in:1-(u-SOUFFLE.in)/SOUFFLE.out;e=.5-.5*Math.cos(Math.PI*p);
-  }
-  if(ph!==s.ph||cyc!==s.cyc){
-    s.ph=ph;s.cyc=cyc;souffleMots(ph,cyc);
+  if(i>=0){const p=s.seq[i],x=Math.max(0,Math.min(1,(now-p.a)/p.d));ph=p.ty;cyc=p.c;e=p.ty==='in'?.5-.5*Math.cos(Math.PI*x):.5+.5*Math.cos(Math.PI*x);}
+  const tr=now<s.t0?-1:Math.min(SOUFFLE.n-1,Math.floor((now-s.t0)/10000));
+  if(i!==s.ix||ph!==s.ph||tr!==s.tr){
+    const neuf=i!==s.ix||ph!==s.ph;
+    s.ix=i;s.ph=ph;s.cyc=cyc;s.tr=tr;souffleMots();
     /* À chaque expiration, une onde part de la goutte et s'éloigne sur l'étang. */
-    if(ph==='out'&&fxOn())eauReady(()=>{if(state.view!=='souffle'||state.souffle.k!=='cours')return;const host=document.querySelector('.souffle .band');if(host&&eauHost(host)){eauAdd(434,259,.75,0);eauAdd(434,259,.4,.6);}});
+    if(neuf&&ph==='out'&&fxOn())eauReady(()=>{if(state.view!=='souffle'||state.souffle.k!=='cours')return;const host=document.querySelector('.souffle .band');if(host&&eauHost(host)){eauAdd(434,259,.75,0);eauAdd(434,259,.4,.6);}});
   }
   const r=document.querySelector('.souffle .ronds');
   if(r&&r.style&&fxOn())r.style.setProperty('--s',(.36+.64*e).toFixed(3));
+  /* La musique reçoit les mouvements décidés par ce même minutage. */
+  rsSuite(now);
   s.raf=(window.requestAnimationFrame||(f=>setTimeout(f,50)))(souffleFrame);
 }
 /* Après chaque rendu de l'écran : le cercle retrouve sa place, et la respiration reprend là où elle en était. */
@@ -2313,50 +2370,90 @@ function souffleApres(){
   if(state.view!=='souffle')return;
   soufflePose();
   const s=state.souffle;
-  if(s.k==='cours'){souffleMots(s.ph||'avant',s.cyc);if(!s.raf)s.raf=(window.requestAnimationFrame||(f=>setTimeout(f,50)))(souffleFrame);}
+  if(s.k==='cours'){souffleMots();if(!s.raf)s.raf=(window.requestAnimationFrame||(f=>setTimeout(f,50)))(souffleFrame);}
+  /* Quand le choix s'ouvre ou se referme, le curseur du clavier et du lecteur d'écran suit. */
+  if(s.foc){const q=s.foc;s.foc='';try{const el=document.querySelector(q);if(el)el.focus({preventScroll:true});}catch(e){}}
+}
+/* « Changer de respiration » : le choix s'ouvre sous l'étang, sans arrêter l'exercice. Le cercle reste visible et continue. */
+function respChoixHtml(){
+  const s=state.souffle,r=respReglage();
+  const opts=RESP_ORDRE.map(m=>'<button type="button" class="resp-o" data-act="resp" data-v="'+m+'" aria-pressed="'+(r.m===m)+'"><span class="resp-p" aria-hidden="true"></span><span class="tx"><b>'+RESP[m].t+'</b><span>'+RESP[m].s+'</span></span></button>').join('');
+  const cad='<div class="resp-cad" id="resp-cad"'+(r.m==='libre'?'':' hidden')+'><button type="button" class="btn small" data-act="cad" data-v="lent"'+(r.c>=CAD_MAX?' aria-disabled="true"':'')+'>Plus lent</button><p id="resp-cad-t" role="status">'+respCadTxt(r.c)+'</p><button type="button" class="btn small" data-act="cad" data-v="vite"'+(r.c<=CAD_MIN?' aria-disabled="true"':'')+'>Plus vite</button></div>';
+  return '<div class="resp-choix"><h2 id="resp-h">Changer de respiration</h2><div class="resp-os" role="group" aria-labelledby="resp-h">'+opts+'</div>'+cad+
+    (s.k==='cours'?'<p class="resp-note">Le changement se fait en douceur, au prochain souffle.</p>':'')+
+    '<div class="actions">'+(s.k==='cours'?'<button type="button" class="btn primary" data-act="resp-ferme">'+I.check+'Continuer</button>':'<button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button>')+'</div></div>';
+}
+/* Un choix ou un réglage de cadence change l'écran sur place, sans le redessiner : le cercle et la musique ne sont pas dérangés. */
+function respChoixMaj(){
+  const r=respReglage();
+  try{
+    const L=document.querySelectorAll('.resp-o');
+    for(let i=0;i<L.length;i++)L[i].setAttribute('aria-pressed',String(L[i].getAttribute('data-v')===r.m));
+    const c=document.getElementById('resp-cad');if(c)c.hidden=r.m!=='libre';
+    const t=document.getElementById('resp-cad-t');if(t&&t.textContent!==respCadTxt(r.c))t.textContent=respCadTxt(r.c);
+    const B=document.querySelectorAll('.resp-cad [data-act="cad"]');
+    for(let i=0;i<B.length;i++){const bout=B[i].getAttribute('data-v')==='lent'?r.c>=CAD_MAX:r.c<=CAD_MIN;if(bout)B[i].setAttribute('aria-disabled','true');else B[i].removeAttribute('aria-disabled');}
+  }catch(e){}
 }
 function viewSouffle(){
-  const s=state.souffle;const k=s.k;
+  const s=state.souffle;const k=s.k;const choix=!!s.choix&&k!=='fini';
   const tours='<div class="tours" aria-hidden="true">'+Array.from({length:SOUFFLE.n},()=>'<i></i>').join('')+'</div>';
+  const changer='<button type="button" class="resp-l" data-act="resp-ouvre">'+I.swap+'Changer de respiration</button>';
   let bas='';
-  if(k==='cours')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Installez-vous</p><p class="aide" id="souffle-aide">Posez vos épaules et vos pieds. Le cercle va vous guider.</p>'+tours+
-    /* L'exercice commence en silence. « Écouter l'étang » ajoute le son, et le même bouton le coupe sans arrêter la respiration. */
-    '<div class="actions">'+sonBoutonHtml('souffle')+'<button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>';
+  if(k==='cours')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">'+SOUFFLE_MOT[s.ph||'avant']+'</p>'+
+    (choix?respChoixHtml():'<p class="aide" id="souffle-aide">'+souffleAide()+'</p>'+tours+
+    /* L'exercice commence en silence. « Écouter l'étang » ajoute la musique, et le même bouton la coupe sans arrêter la respiration. */
+    '<div class="actions">'+sonBoutonHtml('souffle')+'<button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>'+changer);
   else if(k==='fini')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Voilà.</p><p class="aide">Vous venez de prendre 2 minutes rien que pour vous. Vous êtes aussi une personne, et pas seulement un parent.</p>'+
     /* Un parent arrivé par la porte de l'accueil n'a pas encore vu « Aujourd'hui » : le bouton lui dit ce qu'il va y trouver d'abord. */
     '<div class="actions col"><button type="button" class="btn primary wide" data-act="go" data-view="today">'+I.sun2+(state.vuAuj?'Revenir à aujourd’hui':'Lire la dose du jour')+'</button><button type="button" class="btn wide" data-act="porte" data-v="deposer">'+I.drop+'Déposer ce qui pèse</button><button type="button" class="btn ghost wide" data-act="souffle-go">'+I.wind+'Encore 2 minutes</button></div>'+
     /* Les dernières notes s'éteignent d'elles-mêmes. Le parent peut aussi les couper. */
     (SON.etat!=='off'&&SON.proprio==='souffle'?'<div class="actions fin-son">'+sonBoutonHtml('souffle')+'</div>':'');
-  else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1><p class="aide">Vous inspirez par le nez pendant 4 secondes, puis vous expirez par la bouche pendant 6 secondes. Le cercle posé sur l’eau vous guide.</p>'+
-    '<div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>';
-  return '<main id="main" tabindex="-1" class="view souffle s-'+k+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
+  else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1>'+
+    (choix?respChoixHtml():'<p class="aide">'+respPret()+'</p><div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>'+changer);
+  return '<main id="main" tabindex="-1" class="view souffle s-'+k+(choix?' s-choix':'')+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
     '<div class="band bleed" style="background-image:url('+HERO+')"><span class="ronds" aria-hidden="true"><i></i><i></i></span></div>'+
     '<div class="resp">'+bas+'</div></main>';
 }
 
 /* ---------- le son de l'étang ---------- */
-/* Deux morceaux composés pour cet espace (du son calculé, sans aucun enregistrement), chargés seulement quand le parent les demande :
-   « etang » dure 2 minutes et suit la respiration, « instant » dure 40 secondes et accompagne la dose.
-   Les règles : silence par défaut, une seule piste à la fois, une entrée et une sortie en douceur,
+/* Tout est composé pour cet espace (du son calculé, sans aucun enregistrement) et chargé seulement quand le parent le demande.
+   Pour la respiration, la musique n'est pas un morceau écrit d'avance : la page la joue note après note, en suivant le minutage de l'exercice.
+   « notes » contient 9 notes de piano feutré, rangées l'une après l'autre dans des cases de 6,5 secondes, et « eau » une boucle d'étang.
+   Quand on inspire, 3 notes montent, une note grave les porte et l'eau s'éclaircit. Quand on souffle, les notes redescendent et l'eau se retire.
+   « instant » dure 40 secondes et accompagne la dose.
+   Les règles : silence par défaut, une seule musique à la fois, une entrée et une sortie en douceur,
    et plus aucun son dès qu'on quitte l'écran qui l'a lancé (Arrêter, Retour, SOS, autre écran, page à l'arrière-plan). */
 I.son='<svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.6 6.4a8 8 0 0 1 0 11.2"/></svg>';
 I.silence='<svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M16.5 9.5l4.5 5M21 9.5l-4.5 5"/></svg>';
 const SON_OK=SITE&&!PRE;
-const SON={mode:'',ctx:null,voix:null,fins:[],el:null,octets:{},tampons:{},attente:{},piste:'',proprio:'',pos:null,etat:'off',jeton:0,voulu:false,reprise:null,veille:0};
+const SON={mode:'',ctx:null,voix:null,fins:[],el:null,octets:{},tampons:{},attente:{},piste:'',proprio:'',pos:null,etat:'off',jeton:0,voulu:false,reprise:null,veille:0,dit:false};
 const SON_VOL=0.9,SON_ENTREE=2.4,SON_SORTIE=0.4;
+/* La musique de la respiration. Les mêmes nombres servent à « outils/son/compose2.py », qui fabrique les fichiers et simule le résultat pour le mesurer. */
+const RS_CASE=6.5,RS_AVANT=0.03,RS_CASES={43:0,45:1,47:2,50:3,57:4,62:5,64:6,66:7,69:8};
+const RS_MONTE=[62,66,69],RS_DESC={egal:[66,64,62],long:[66,64,62,57],libre:[66,64,62,57]},RS_BASSES=[50,47,43,45];
+const RS_G_MONTE=[.62,.74,.86],RS_G_DESC=[.70,.60,.52,.46],RS_G_BASSE=.50;
+const RS_VOL=.85,RS_ENTREE=1.6,RS_EAU=.62,RS_EAU_BAS=.40,RS_CLAIR=3600,RS_SOMBRE=1100,RS_BOUCLE=[.5,28.5];
 let SON_IOS=false;try{SON_IOS=/iP(hone|ad|od)/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}catch(e){}
 function sonUrl(nom){return RACINE+'son/'+nom+'.mp3?v='+SON_V;}
-/* Deux façons de jouer. La première calcule le son dans la page : elle permet les fondus et une synchronisation exacte avec la respiration.
+/* Deux façons de jouer. La première calcule le son dans la page : elle permet les fondus et de poser chaque note au bon moment.
    Sur iPhone, le bouton « silencieux » la coupe, sauf si la page se déclare comme un lecteur, ce qui est possible depuis iOS 17.
-   Sur un iPhone plus ancien, on passe donc par le lecteur audio ordinaire, que ce bouton ne coupe pas. Il n'a pas de fondu, mais il s'entend. */
+   Pour l'instant de la dose, un iPhone plus ancien passe donc par le lecteur audio ordinaire, que ce bouton ne coupe pas.
+   La musique de la respiration, elle, a besoin de la première façon : sur un iPhone plus ancien, un message rappelle de vérifier le bouton silencieux. */
+function sonWA(){return !!((window.AudioContext||window.webkitAudioContext)&&window.fetch);}
 function sonMode(){
   if(SON.mode)return SON.mode;
-  const C=window.AudioContext||window.webkitAudioContext;
-  SON.mode=(C&&window.fetch&&(!SON_IOS||navigator.audioSession))?'wa':'el';
+  SON.mode=(sonWA()&&(!SON_IOS||navigator.audioSession))?'wa':'el';
   return SON.mode;
 }
 function sonSession(lecteur){try{if(navigator.audioSession)navigator.audioSession.type=lecteur?'playback':'auto';}catch(e){}}
-/* Le fichier n'est téléchargé qu'une fois par visite, à la première demande. Il est gardé tel quel (1,3 Mo pour l'étang),
+function sonCtx(){
+  sonSession(true);
+  if(!SON.ctx){const C=window.AudioContext||window.webkitAudioContext;SON.ctx=new C();}
+  if(SON.ctx.state!=='running'&&SON.ctx.resume){const r=SON.ctx.resume();if(r&&r.catch)r.catch(()=>{});}
+  return SON.ctx;
+}
+/* Un fichier n'est téléchargé qu'une fois par visite, à la première demande. Il est gardé tel quel,
    et décodé à chaque passage sur son écran : le décodeur reçoit une copie, parce qu'il vide ce qu'on lui confie. */
 function sonCharge(nom){
   if(SON.tampons[nom])return Promise.resolve(SON.tampons[nom]);
@@ -2367,15 +2464,27 @@ function sonCharge(nom){
     .then(buf=>{delete SON.attente[nom];SON.tampons[nom]=buf;sonMenage();return buf;},e=>{delete SON.attente[nom];throw e;});
   SON.attente[nom]=p;return p;
 }
-/* Un morceau décodé pèse plusieurs dizaines de mégaoctets dans la mémoire du téléphone : il est rendu dès qu'on quitte son écran. */
+/* Un son décodé pèse plusieurs mégaoctets dans la mémoire du téléphone : il est rendu dès qu'on quitte son écran. */
 function sonMenage(){
-  if(state.view!=='souffle')delete SON.tampons.etang;
+  if(state.view!=='souffle'){delete SON.tampons.notes;delete SON.tampons.eau;}
   if(state.view!=='today')delete SON.tampons.instant;
 }
-/* Ce qui finissait de s'éteindre se tait tout de suite avant un nouveau départ : 2 pistes ne se recouvrent jamais. */
+/* Une « voix » est ce qui joue : un réglage de volume général et une ou plusieurs sources. Quand sa dernière source s'est tue, elle est rangée. */
+function sonSource(v,src,noeuds,fin){
+  v.srcs.push(src);
+  src.onended=()=>{
+    try{src.disconnect();(noeuds||[]).forEach(n=>{try{n.disconnect();}catch(e){}});}catch(e){}
+    const k=v.srcs.indexOf(src);if(k>=0)v.srcs.splice(k,1);
+    if(!v.srcs.length&&SON.voix!==v){SON.fins=SON.fins.filter(x=>x!==v);try{v.g.disconnect();}catch(e){}}
+    if(fin)fin();
+  };
+}
+/* Ce qui finissait de s'éteindre se tait tout de suite avant un nouveau départ : 2 musiques ne se recouvrent jamais. */
 function sonTaire(){
   const ctx=SON.ctx;
-  SON.fins.forEach(v=>{try{const t=ctx.currentTime;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(0.0001,t);v.src.stop(t+0.02);}catch(e){try{v.src.stop();}catch(x){}}});
+  SON.fins.forEach(v=>{
+    try{const t=ctx.currentTime;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(0.0001,t);v.srcs.slice().forEach(x=>{try{x.stop(t+0.02);}catch(e){try{x.stop();}catch(z){}}});}catch(e){}
+  });
   SON.fins=[];
 }
 function sonDepart(buf,j){
@@ -2389,8 +2498,8 @@ function sonDepart(buf,j){
     src.buffer=buf;src.connect(g);g.connect(ctx.destination);
     /* L'entrée : presque rien pendant la première seconde, puis le son s'installe. */
     g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(SON_VOL*0.2,t+SON_ENTREE*0.5);g.gain.linearRampToValueAtTime(SON_VOL,t+SON_ENTREE);
-    const v={src:src,g:g};
-    src.onended=()=>{try{src.disconnect();g.disconnect();}catch(e){}SON.fins=SON.fins.filter(x=>x!==v);if(SON.voix===v){SON.voix=null;if(j===SON.jeton){SON.jeton++;sonSession(false);sonEtat('off');}}};
+    const v={g:g,srcs:[],niv:x=>{const e=(x-t)/SON_ENTREE;return SON_VOL*(e>=1?1:(e<.5?Math.max(0,e)*.4:.2+(e-.5)*1.6));}};
+    sonSource(v,src,null,()=>{if(SON.voix===v){SON.voix=null;try{g.disconnect();}catch(e){}if(j===SON.jeton){SON.jeton++;sonSession(false);sonEtat('off');}}});
     src.start(0,o);SON.voix=v;
   }catch(e){sonRate(j);return;}
   sonEtat('on');
@@ -2400,9 +2509,9 @@ function sonDepart(buf,j){
 function sonElement(){
   if(SON.el)return SON.el;
   const a=new Audio();a.preload='auto';
-  a.addEventListener('ended',()=>{if(SON.mode==='el'&&SON.etat!=='off'){SON.jeton++;sonEtat('off');}});
+  a.addEventListener('ended',()=>{if(SON.mode==='el'&&SON.proprio==='dose'&&SON.etat!=='off'){SON.jeton++;sonEtat('off');}});
   /* Le téléphone peut couper le son lui-même (un appel, des écouteurs retirés) : le bouton dit alors la vérité. */
-  a.addEventListener('pause',()=>{if(SON.mode==='el'&&SON.etat==='on'&&!a.ended){SON.jeton++;sonEtat('off');}});
+  a.addEventListener('pause',()=>{if(SON.mode==='el'&&SON.proprio==='dose'&&SON.etat==='on'&&!a.ended){SON.jeton++;sonEtat('off');}});
   SON.el=a;return a;
 }
 function sonElJoue(nom,j){
@@ -2414,35 +2523,139 @@ function sonElJoue(nom,j){
   const ok=()=>{if(j!==SON.jeton)return;cale();sonEtat('on');};
   if(p&&p.then)p.then(ok,()=>sonRate(j));else ok();
 }
-function sonEtat(e){SON.etat=e;sonBoutons();veilleSync();}
+/* L'état du son change : le bouton, l'écran qui reste allumé et la ligne d'aide de la respiration suivent. */
+function sonEtat(e){SON.etat=e;sonBoutons();veilleSync();if(state.view==='souffle')souffleMots();}
 function sonRate(j){if(j!==SON.jeton)return;SON.jeton++;sonEtat('off');toast('Le son n’a pas pu se charger. Tout le reste fonctionne en silence.');}
-/* « pos » dit où en est le morceau au moment où le son part. Pour la respiration, c'est l'horloge de l'exercice : le son et le cercle restent ensemble. */
+/* Un morceau entier, joué du début à la fin : c'est l'instant qui suit la dose. */
 function sonJoue(nom,proprio,pos){
   if(!SON_OK)return;
   if(SON.etat!=='off')sonCoupe(true);
   const j=++SON.jeton;SON.piste=nom;SON.proprio=proprio;SON.pos=pos||null;SON.reprise=null;sonEtat('charge');
   if(sonMode()==='wa'){
-    try{
-      sonSession(true);
-      if(!SON.ctx){const C=window.AudioContext||window.webkitAudioContext;SON.ctx=new C();}
-      if(SON.ctx.state!=='running'&&SON.ctx.resume){const r=SON.ctx.resume();if(r&&r.catch)r.catch(()=>{});}
-    }catch(e){SON.mode='el';}
+    try{sonCtx();}catch(e){SON.mode='el';}
     if(SON.mode==='wa'){sonCharge(nom).then(buf=>sonDepart(buf,j),()=>sonRate(j));return;}
   }
   sonElJoue(nom,j);
 }
+
+/* ----- la musique de la respiration ----- */
+/* Le minutage de l'exercice compte en millisecondes de la page. Le son, lui, a sa propre horloge.
+   « rsTemps » dit à quel instant de l'horloge du son il faut poser une note pour qu'elle s'entende à un instant donné de la page.
+   Le temps que le son met à sortir du téléphone est retiré quand le navigateur le donne. */
+function rsTemps(tPage){
+  const ctx=SON.ctx;let lat=0;
+  try{lat=Math.min(.3,Math.max(0,(Number(ctx.outputLatency)||0)+(Number(ctx.baseLatency)||0)));}catch(e){}
+  return ctx.currentTime+(tPage-performance.now())/1000-lat;
+}
+/* Où commence vraiment la première note dans le fichier décodé ? Les navigateurs ne décodent pas tous le début d'un fichier de la même façon,
+   à quelques centièmes de seconde près. On le mesure une fois, et toutes les notes sont posées en conséquence. */
+function rsCale(buf){
+  try{const d=buf.getChannelData(0),n=Math.min(d.length,Math.floor(buf.sampleRate*.25));for(let i=0;i<n;i++){if(d[i]>.004||d[i]<-.004)return Math.max(0,Math.min(.12,i/buf.sampleRate));}}catch(e){}
+  return RS_AVANT;
+}
+function rsEau(e){return {f:RS_SOMBRE+(RS_CLAIR-RS_SOMBRE)*e,g:RS_EAU*(RS_EAU_BAS+(1-RS_EAU_BAS)*e)};}
+/* Une note de piano : la bonne case du fichier, à son volume, à l'instant voulu. Une note qui arriverait trop tard n'est pas jouée du tout. */
+function rsNote(v,midi,gain,t){
+  const ctx=SON.ctx,tn=ctx.currentTime;
+  if(t<tn-.12||!(midi in RS_CASES))return;
+  const src=ctx.createBufferSource(),g=ctx.createGain();
+  src.buffer=v.bn;g.gain.value=gain;src.connect(g);g.connect(v.g);
+  sonSource(v,src,[g]);
+  src.start(Math.max(tn,t-v.avant),RS_CASES[midi]*RS_CASE,RS_CASE-.05);
+}
+/* Un mouvement de la respiration devient de la musique : l'eau avance ou se retire pendant toute sa durée, et les notes se partagent ce temps. */
+function rsMouvement(v,p){
+  const ctx=SON.ctx,tn=ctx.currentTime,t=rsTemps(p.a),d=p.d/1000,haut=p.ty==='in';
+  const a=rsEau(haut?0:1),b=rsEau(haut?1:0);
+  if(t+d>tn+.02){
+    if(t>=tn){v.f.frequency.setValueAtTime(a.f,t);v.ge.gain.setValueAtTime(a.g,t);}
+    else{const x=(tn-t)/d,m=rsEau(haut?x:1-x);v.f.frequency.setValueAtTime(m.f,tn);v.ge.gain.setValueAtTime(m.g,tn);}
+    v.f.frequency.linearRampToValueAtTime(b.f,t+d);v.ge.gain.linearRampToValueAtTime(b.g,t+d);
+  }
+  const N=haut?RS_MONTE:(RS_DESC[p.m]||RS_DESC.long),G=haut?RS_G_MONTE:RS_G_DESC;
+  for(let i=0;i<N.length;i++)rsNote(v,N[i],G[i],t+d*i/N.length);
+  if(haut)rsNote(v,RS_BASSES[p.c%RS_BASSES.length],RS_G_BASSE,t);
+}
+/* La fin : un dernier accord égrené, puis tout s'éteint lentement. */
+function rsFinale(v,fin){
+  const ctx=SON.ctx,tn=ctx.currentTime,t=Math.max(tn,rsTemps(fin));
+  rsNote(v,50,.5,t);rsNote(v,57,.5,t+.3);rsNote(v,66,.6,t+.6);
+  v.tf=t;
+  try{v.g.gain.setValueAtTime(RS_VOL,Math.max(t+1.5,v.t0+RS_ENTREE+.01));v.g.gain.linearRampToValueAtTime(0.0001,t+9);}catch(e){}
+  const j=SON.jeton;
+  v.fin=setTimeout(()=>{
+    if(SON.voix!==v)return;
+    SON.voix=null;v.srcs.slice().forEach(x=>{try{x.stop();}catch(e){}});SON.fins.push(v);
+    if(j===SON.jeton){SON.jeton++;sonSession(false);sonEtat('off');}
+  },Math.max(0,(t+9.2-tn)*1000));
+}
+/* Appelée à chaque image par le minutage de l'exercice : tout mouvement nouvellement décidé reçoit sa musique. */
+function rsSuite(now){
+  const v=SON.voix;if(!v||!v.resp||SON.etat!=='on')return;
+  const s=state.souffle,ctx=SON.ctx;
+  /* Si le téléphone a suspendu le son (un appel, par exemple), le bouton le dit : il redevient « Écouter l'étang ». */
+  if(ctx.state!=='running'){if(!v.arret)v.arret=now;else if(now-v.arret>1500){sonCoupe(true);return;}}else v.arret=0;
+  try{
+    while(v.jx<s.seq.length){rsMouvement(v,s.seq[v.jx]);v.jx++;}
+    if(s.fin&&!v.finale){v.finale=true;rsFinale(v,s.fin);}
+  }catch(e){sonCoupe(true);}
+}
+function rsDepart(bn,be,j){
+  if(j!==SON.jeton)return;
+  const s=state.souffle,ctx=SON.ctx;
+  if(state.view!=='souffle'||s.k!=='cours'){SON.jeton++;sonEtat('off');return;}
+  sonTaire();
+  let v;
+  try{
+    const t=ctx.currentTime,now=performance.now();
+    const g=ctx.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(RS_VOL,t+RS_ENTREE);g.connect(ctx.destination);
+    const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),ge=ctx.createGain();
+    src.buffer=be;src.loop=true;src.loopStart=RS_BOUCLE[0];src.loopEnd=RS_BOUCLE[1];
+    f.type='lowpass';f.Q.value=.6;
+    src.connect(f);f.connect(ge);ge.connect(g);
+    v={resp:true,g:g,srcs:[],bn:bn,f:f,ge:ge,t0:t,tf:0,avant:rsCale(bn),jx:0,finale:false,fin:0,arret:0};
+    v.niv=x=>{let n=RS_VOL*Math.max(0,Math.min(1,(x-v.t0)/RS_ENTREE));if(v.tf&&x>v.tf+1.5)n=Math.min(n,RS_VOL*Math.max(0,1-(x-v.tf-1.5)/7.5));return n;};
+    /* Où en est la respiration à cet instant ? L'eau prend tout de suite la place qu'elle aurait eue, et finit le mouvement en cours. */
+    let i=-1;while(i+1<s.seq.length&&s.seq[i+1].a<=now)i++;
+    let e=0;
+    if(i>=0){const p=s.seq[i],x=Math.max(0,Math.min(1,(now-p.a)/p.d));e=p.ty==='in'?x:1-x;}
+    const m=rsEau(e);f.frequency.setValueAtTime(m.f,t);ge.gain.setValueAtTime(m.g,t);
+    if(i>=0){const p=s.seq[i],tf=rsTemps(p.a+p.d),b=rsEau(p.ty==='in'?1:0);if(tf>t+.02){f.frequency.linearRampToValueAtTime(b.f,tf);ge.gain.linearRampToValueAtTime(b.g,tf);}}
+    /* Les notes, elles, entrent au début du mouvement suivant : la première chose que l'on entend est une phrase entière, qui monte ou qui redescend. */
+    v.jx=i+1;
+    sonSource(v,src,[f,ge]);
+    src.start(t,RS_BOUCLE[0]);
+  }catch(e){sonRate(j);return;}
+  SON.voix=v;
+  /* La clé d'écoute reste affichée pendant la respiration en cours et la suivante. */
+  s.cle=Math.max(0,s.cyc)+1;
+  sonEtat('on');
+  if(SON_IOS&&!navigator.audioSession&&!SON.dit){SON.dit=true;toast('Si vous n’entendez rien, vérifiez le bouton silencieux du téléphone.');}
+  clearTimeout(SON.veille);SON.veille=setTimeout(()=>{if(j===SON.jeton&&SON.etat==='on'&&SON.ctx&&SON.ctx.state!=='running')sonCoupe(true);},900);
+}
+/* « Écouter l'étang » pendant la respiration. */
+function sonSouffle(){
+  if(!SON_OK||!sonWA())return;
+  if(SON.etat!=='off')sonCoupe(true);
+  const j=++SON.jeton;SON.piste='etang';SON.proprio='souffle';SON.pos=null;SON.reprise=null;sonEtat('charge');
+  try{sonCtx();}catch(e){sonRate(j);return;}
+  Promise.all([sonCharge('notes'),sonCharge('eau')]).then(b=>rsDepart(b[0],b[1],j),()=>sonRate(j));
+}
 /* Couper : le son s'éteint en moins d'une demi-seconde. « vite » sert quand on quitte la page, où il ne doit rien rester. */
 function sonCoupe(vite){
   SON.jeton++;clearTimeout(SON.veille);
-  if(SON.mode==='wa'){
-    const v=SON.voix;SON.voix=null;
-    if(v&&SON.ctx){
-      const d=vite?0.05:SON_SORTIE;
-      try{const t=SON.ctx.currentTime;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(Math.max(0.0001,v.g.gain.value),t);v.g.gain.linearRampToValueAtTime(0.0001,t+d);v.src.stop(t+d+0.03);SON.fins.push(v);}
-      catch(e){try{v.src.stop();}catch(x){}}
-    }
+  const v=SON.voix;SON.voix=null;
+  if(v&&SON.ctx){
+    const d=vite?0.05:SON_SORTIE;clearTimeout(v.fin);
+    try{
+      const t=SON.ctx.currentTime;const n=v.niv?v.niv(t):1;
+      v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(Math.max(0.0001,n),t);v.g.gain.linearRampToValueAtTime(0.0001,t+d);
+      v.srcs.slice().forEach(x=>{try{x.stop(t+d+0.03);}catch(e){}});
+      if(v.srcs.length)SON.fins.push(v);
+    }catch(e){v.srcs.slice().forEach(x=>{try{x.stop();}catch(z){}});}
     const j=SON.jeton;setTimeout(()=>{if(j===SON.jeton)sonSession(false);},700);
-  }else if(SON.el){try{SON.el.pause();}catch(e){}}
+  }
+  if(SON.el){try{SON.el.pause();}catch(e){}}
   if(SON.etat!=='off')sonEtat('off');
 }
 /* Le son appartient à l'écran qui l'a lancé : la respiration en cours (ou tout juste finie), ou « Aujourd'hui » pour l'instant de la dose. */
@@ -2457,11 +2670,9 @@ function sonGarde(){
   if((SON.etat!=='off'||SON.reprise)&&!sonChezLui()){SON.reprise=null;sonCoupe();}
   sonMenage();
 }
-/* Où en est le morceau de la respiration : il commence avec l'exercice, 1,4 seconde avant la première inspiration. */
-function soufflePos(){return (performance.now()-state.souffle.t0)/1000+1.4;}
 const SON_TXT={souffle:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Couper le son'},dose:{off:'Prendre un instant',charge:'L’étang arrive…',on:'Revenir au silence'}};
 function sonBoutonHtml(ou){
-  if(!SON_OK)return '';
+  if(!SON_OK||(ou==='souffle'&&!sonWA()))return '';
   const nom=ou==='souffle'?'etang':'instant';
   const e=(SON.piste===nom&&SON.proprio===ou)?SON.etat:'off';
   return '<button type="button" class="son-b son-'+ou+'" data-act="son" data-v="'+nom+'" data-etat="'+e+'"'+(e==='charge'?' aria-busy="true"':'')+'>'+(e==='off'?I.son:I.silence)+'<span class="tx"><b>'+SON_TXT[ou][e]+'</b>'+(ou==='dose'&&e==='off'?' <small>40 secondes d’étang, avec le son</small>':'')+'</span></button>';
@@ -2540,19 +2751,45 @@ function sitRow(s){const dedans='<span class="e'+(deuxImages(s.e)?' duo':'')+'">
   return SITE?'<a class="sit" href="'+ficheUrl(s.id)+'" data-act="sit" data-id="'+s.id+'">'+dedans+'</a>':'<button type="button" class="sit" data-act="sit" data-id="'+s.id+'">'+dedans+'</button>';}
 /* Le choix de l'âge : il range les situations, et dans « Trouver une idée » il choisit celles qu'on propose d'abord. */
 function agesChips(){return '<div class="chips scroll ages" role="group" aria-label="Âge">'+Object.keys(AGES).map(k=>'<button type="button" class="chip" data-act="age" data-v="'+k+'" aria-pressed="'+(state.age===k)+'">'+AGES[k]+'</button>').join('')+'</div>';}
+/* Sur grand écran, les thèmes sont rangés en colonnes de hauteurs voisines, pour ne laisser aucun trou entre 2 thèmes.
+   Une grille alignerait les thèmes par rangées : un thème de 2 lignes à côté d'un thème de 6 laisserait un vide sous lui.
+   On essaie toutes les répartitions (6 thèmes, 3 colonnes : 729 au plus) et on garde celle dont la plus haute colonne est la plus basse,
+   puis la plus régulière. Dans une colonne, les thèmes gardent leur ordre, et les colonnes se suivent dans l'ordre de leur premier thème. */
+function colonnesSits(){return large()?((MQ_TROIS&&MQ_TROIS.matches)?3:2):1;}
+function rangeEnColonnes(blocs,nc){
+  const n=blocs.length;if(n<=nc)return blocs.map(b=>[b]);
+  const poids=blocs.map(b=>b.n+0.6);let mieux=null,note=null;
+  const total=Math.pow(nc,n);
+  for(let k=0;k<total;k++){
+    const h=new Array(nc).fill(0);let x=k,vide=nc;const ou=[];
+    for(let i=0;i<n;i++){const c=x%nc;x=(x-c)/nc;if(!h[c])vide--;h[c]+=poids[i];ou.push(c);}
+    if(vide)continue;
+    const haut=Math.max.apply(null,h),bas=Math.min.apply(null,h);
+    /* à hauteur égale, on préfère la répartition la plus régulière, puis celle qui laisse les premiers thèmes en tête de colonne */
+    const tetes=ou.map((c,i)=>ou.indexOf(c)===i?i:-1).filter(i=>i>=0).reduce((s,i)=>s+i,0);
+    const s=[haut,haut-bas,tetes];
+    if(!note||s[0]<note[0]-1e-9||(Math.abs(s[0]-note[0])<1e-9&&(s[1]<note[1]-1e-9||(Math.abs(s[1]-note[1])<1e-9&&s[2]<note[2])))){note=s;mieux=ou;}
+  }
+  const cols=[];for(let c=0;c<nc;c++)cols.push(blocs.filter((b,i)=>mieux[i]===c));
+  return cols.filter(c=>c.length).sort((p,q)=>blocs.indexOf(p[0])-blocs.indexOf(q[0]));
+}
 function kitSits(){
   let list=SITS.filter(s=>state.age==='all'||s.ages.includes(state.age));
   const q=state.q.trim().toLowerCase();if(q)list=list.filter(s=>(s.t+' '+s.s+' '+s.comp).toLowerCase().includes(q));
+  const nc=colonnesSits();
   /* Les situations qui reviennent le plus à cette heure-ci, pour ne pas avoir à chercher. Si le parent a dit l'âge de son enfant,
      celles de cet âge passent devant. La liste complète reste entière : rien n'est caché d'après une réponse. */
   const mo=moment();const PT={matin:'Souvent, le matin',jour:'Souvent, dans la journée',soir:'Souvent, le soir',nuit:'Souvent, la nuit'};
   const souvent=(D().onboarded&&!q&&!state.piste)?'<div class="souvent"><span class="label" id="souvent-l">'+PT[mo]+'</span><div class="chips" role="group" aria-labelledby="souvent-l">'+pistesDuMoment(mo,state.age==='all'?'':state.age,D().age).map(id=>{const x=SITS.find(y=>y.id===id);return '<button type="button" class="chip" data-act="sit" data-id="'+id+'"><span aria-hidden="true">'+x.e+'</span> '+esc(x.t)+'</button>';}).join('')+'</div></div>':'';
   const corps=!list.length?'<div class="card vide"><p>Je n’ai rien trouvé pour ce mot. Vous pouvez essayer un autre mot, ou écrire ce qui se passe avec vos mots à vous.</p><button type="button" class="btn" data-act="porte" data-v="deposer" style="align-self:flex-start">'+I.drop+'Déposer ce qui pèse</button></div>':
     q?'<div class="grp"><div class="liste">'+list.map(sitRow).join('')+'</div></div>':
-    GROUPES.map(g=>{const L=list.filter(s=>s.th===g[0]);return L.length?'<section class="grp"><h2><span class="nom">'+g[1]+'</span><span class="nb" aria-hidden="true">'+L.length+'</span></h2><div class="liste">'+L.map(sitRow).join('')+'</div></section>':'';}).join('');
+    (()=>{const blocs=GROUPES.map(g=>{const L=list.filter(s=>s.th===g[0]);return L.length?{n:L.length,h:'<section class="grp"><h2><span class="nom">'+g[1]+'</span><span class="nb" aria-hidden="true">'+L.length+'</span></h2><div class="liste">'+L.map(sitRow).join('')+'</div></section>'}:null;}).filter(Boolean);
+      if(nc<2||blocs.length<2)return blocs.map(x=>x.h).join('');
+      return rangeEnColonnes(blocs,nc).map(c=>'<div class="th-col">'+c.map(x=>x.h).join('')+'</div>').join('');})();
+  const enCols=nc>1&&!q&&list.length>0;
   return '<div class="search">'+I.search+'<input type="search" id="q" aria-label="Chercher une situation" maxlength="'+LIM.search+'" placeholder="Coucher, ado, âge adulte…" value="'+esc(state.q)+'" autocomplete="off" enterkeyhint="search"></div>'+
     (state.piste?'':agesChips())+
-    souvent+'<div class="sits groupes'+(q?' trouve':'')+'">'+corps+'</div>';
+    souvent+'<div class="sits groupes'+(q?' trouve':'')+(enCols?' en-cols':'')+'">'+corps+'</div>';
 }
 function viewSit(){
   const s=SITS.find(x=>x.id===state.sit);if(!s){state.view='kit';return viewKit();}
@@ -2829,12 +3066,17 @@ function handle(act,d,el){
     case 'accueil':nav('intro');break;
     case 'fiches':state.kit='sits';state.q='';nav('kit');break;
     /* « Encore 2 minutes » : si le parent écoutait l'étang, le son repart avec la respiration. Sinon, tout recommence en silence. */
-    case 'souffle-go':{const avecSon=SON.voulu;souffleStart();if(avecSon)sonJoue('etang','souffle',soufflePos);break;}
+    case 'souffle-go':{const avecSon=SON.voulu;souffleStart();if(avecSon)sonSouffle();break;}
     case 'souffle-stop':SON.voulu=false;souffleStop();break;
+    /* « Changer de respiration » : le choix s'ouvre et se referme sans arrêter l'exercice. Un choix ou un réglage prend effet au mouvement suivant. */
+    case 'resp-ouvre':state.souffle.choix=true;state.souffle.foc='.resp-o[aria-pressed="true"]';break;
+    case 'resp-ferme':state.souffle.choix=false;state.souffle.foc='.resp-l';break;
+    case 'resp':{if(!RESP[d.v])return;respGarde(d.v,0);respChoixMaj();return;}
+    case 'cad':{const r=respReglage();const c=Math.max(CAD_MIN,Math.min(CAD_MAX,r.c+(d.v==='lent'?1:-1)));if(c!==r.c)respGarde('libre',c);respChoixMaj();return;}
     /* Le son : un geste pour l'entendre, le même geste pour le couper. La respiration, elle, continue. */
     case 'son':{const nom=d.v==='instant'?'instant':'etang';
       if(SON.etat!=='off'&&SON.piste===nom){if(nom==='etang')SON.voulu=false;sonCoupe();}
-      else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonJoue('etang','souffle',soufflePos);}
+      else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonSouffle();}
       else sonJoue('instant','dose',null);
       return;}
     case 'voix':state.sheet='voix';break;
@@ -2970,7 +3212,9 @@ let atelierMsg=false;
 try{if(location.hash==='#atelier'){state.data.atelier=true;state.data.tout=true;save();atelierMsg=true;if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
 fxSync();
 /* La fenêtre passe d'un format à l'autre (fenêtre agrandie ou réduite, tablette qu'on tourne) : l'écran est réécrit dans le bon ordre, sans perdre ce qui est en cours de saisie. */
-if(MQ_LARGE){const relayout=()=>{const keep={};document.querySelectorAll('#app input[id],#app textarea[id]').forEach(el=>{if(el.type!=='range'&&el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value;});render();Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id])el.value=keep[id];});};if(MQ_LARGE.addEventListener)MQ_LARGE.addEventListener('change',relayout);else if(MQ_LARGE.addListener)MQ_LARGE.addListener(relayout);}
+if(MQ_LARGE){const relayout=()=>{const keep={};document.querySelectorAll('#app input[id],#app textarea[id]').forEach(el=>{if(el.type!=='range'&&el.type!=='checkbox'&&el.type!=='radio')keep[el.id]=el.value;});render();Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id])el.value=keep[id];});};if(MQ_LARGE.addEventListener)MQ_LARGE.addEventListener('change',relayout);else if(MQ_LARGE.addListener)MQ_LARGE.addListener(relayout);
+  /* le passage de 2 à 3 colonnes ne concerne que la boîte à outils */
+  if(MQ_TROIS){const trois=()=>{if(state.view==='kit')relayout();};if(MQ_TROIS.addEventListener)MQ_TROIS.addEventListener('change',trois);else if(MQ_TROIS.addListener)MQ_TROIS.addListener(trois);}}
 window.addEventListener('scroll',lectureScroll,{passive:true});window.addEventListener('resize',lectureScroll,{passive:true});
 if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:true});document.addEventListener('pointerup',fxLeve,{passive:true,capture:true});document.addEventListener('pointercancel',()=>{fxPt.vt=false;},{passive:true,capture:true});document.addEventListener('click',fxDouble,true);document.addEventListener('pointerdown',eauTouch,{passive:true});window.addEventListener('resize',()=>{EAU.geo=null;},{passive:true});window.addEventListener('popstate',e=>{if(e&&e.hasUAVisualTransition)fxSkip=Date.now();});if(FX_RM&&FX_RM.addEventListener)FX_RM.addEventListener('change',()=>{fxSync();});}
 /* Sur le site, l'adresse dit quel écran ouvrir : une fiche (…/fiches/le-coucher-et-la-nuit/), la liste des situations (…/fiches/) ou « Mon histoire » (…/#histoire).
@@ -2998,14 +3242,14 @@ if(SITE)window.addEventListener('popstate',histRetour);
 /* La respiration s'arrête quand l'écran s'éteint ou que l'on change d'onglet, et reprend là où elle en était. */
 document.addEventListener('visibilitychange',()=>{const z=state.souffle;if(z.k!=='cours')return;
   if(document.visibilityState==='hidden'){if(!z.hid)z.hid=performance.now();veilleOff();}
-  else{if(z.hid){z.t0+=performance.now()-z.hid;z.hid=0;}veilleOn();souffleApres();}});
+  else{if(z.hid){souffleDecale(performance.now()-z.hid);z.hid=0;}veilleOn();souffleApres();}});
 /* Le son s'arrête dès que la page passe à l'arrière-plan. Au retour, celui de la respiration reprend là où en est l'exercice. Celui de la dose reste coupé. */
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){if(SON.etat!=='off'){SON.reprise=(SON.proprio==='souffle'&&state.souffle.k==='cours')?1:null;const r=SON.reprise;sonCoupe(true);SON.reprise=r;}}
   else{
     /* Si le téléphone a figé le son avant la fin de son extinction, ce qui restait se tait pour de bon au retour. */
     sonTaire();
-    if(SON.reprise){SON.reprise=null;if(state.view==='souffle'&&state.souffle.k==='cours'&&SON.voulu)sonJoue('etang','souffle',soufflePos);}
+    if(SON.reprise){SON.reprise=null;if(state.view==='souffle'&&state.souffle.k==='cours'&&SON.voulu)sonSouffle();}
   }
 });
 window.addEventListener('pagehide',()=>{SON.reprise=null;sonCoupe(true);});

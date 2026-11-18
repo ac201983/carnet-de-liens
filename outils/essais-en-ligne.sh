@@ -2,15 +2,17 @@
 # Après la mise en ligne : rejoue des parcours de parent dans un vrai navigateur, sur la version d'essai en ligne,
 # au format téléphone puis au format ordinateur.
 #
-#   outils/essais-en-ligne.sh chromium   les 3 parcours du premier geste (premier-geste.js), puis la passe de finition (finition.js), dans Chrome
-#   outils/essais-en-ligne.sh webkit     la passe de finition dans WebKit, le moteur de Safari
-#   outils/essais-en-ligne.sh firefox    la passe de finition dans Firefox
+#   outils/essais-en-ligne.sh chromium   les 3 parcours du premier geste (premier-geste.js), la respiration (respiration.js) et la passe de finition (finition.js), dans Chrome
+#   outils/essais-en-ligne.sh webkit     la respiration et la passe de finition dans WebKit, le moteur de Safari
+#   outils/essais-en-ligne.sh firefox    la respiration et la passe de finition dans Firefox
 #
 #   premier-geste.js :
 #     1. Il est 21 h 40, un nouveau parent veut souffler immédiatement.   2. Un parent d'adulte reçoit une fiche par lien direct.
 #     3. Un parent déjà venu souhaite reprendre son étape.
+#   respiration.js :
+#     la respiration en silence, « Changer de respiration » et ses 3 possibilités, puis, là où le son est mesurable, la musique :
+#     chaque note comparée au mot affiché, les sorties en cours d'exercice, et les 2 minutes entières jusqu'à la dernière respiration.
 #   finition.js :
-#     la respiration en silence puis avec « Écouter l'étang », les sorties en cours d'exercice, la fin des 2 minutes,
 #     « Prendre un instant » après la dose, la troisième entrée, « Accueil », « Reprendre mon parcours » et le sens de « Retour ».
 #
 # Le son n'est pas écouté, il est mesuré. Sur une machine sans sortie audio, un navigateur peut ne rien jouer : le test le dit alors en note.
@@ -77,6 +79,7 @@ essai() {
   fi
 }
 [ "$nav" = chromium ] && essai "Premier geste dans Chrome" node premier-geste.js
+essai "Respiration dans $nom" node respiration.js
 essai "Finition dans $nom" node finition.js
 etape "essais : fin"
 exit "$total"

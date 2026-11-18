@@ -12,3 +12,7 @@ fonts/LICENSE-Fraunces.txt
 # Le tableau de bord vivait à la racine du site jusqu'au 16 novembre 2026. Il est maintenant dans le dossier antonio/.
 antonio.html
 antonio.js
+
+# L'ancien morceau de 2 minutes de la respiration, dans la version d'essai. Depuis le 18 novembre 2026 au soir,
+# la musique de la respiration est jouée note après note à partir de son/notes.mp3 et son/eau.mp3.
+essai/son/etang.mp3

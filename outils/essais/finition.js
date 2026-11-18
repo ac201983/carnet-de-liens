@@ -1,11 +1,9 @@
 // La passe de finition, de bout en bout, comme la vivrait un parent :
-//   - « Souffler 2 minutes » en silence, puis avec « Écouter l'étang » : le son part quand on le demande, suit la respiration,
-//     se coupe d'un geste, ne se superpose jamais, s'arrête avec Arrêter, Retour, SOS, la flèche du navigateur et l'arrière-plan,
-//     et s'éteint de lui-même à la fin des 2 minutes ;
-//   - « Prendre un instant » après la dose ;
+//   - la vitrine silencieuse et « Souffler 2 minutes » qui commence en silence (la musique de la respiration est vérifiée dans respiration.js) ;
+//   - « Prendre un instant » après la dose : le son part quand on le demande, se coupe d'un geste, et s'arrête dès qu'on quitte l'écran ;
 //   - la troisième entrée de la vitrine ;
 //   - « Accueil » à tout moment, le logo, « Reprendre mon parcours », et le sens de « Retour ».
-// usage : node finition.js [--court]      (--court : sans attendre la fin des 2 minutes ni celle des 40 secondes)
+// usage : node finition.js [--court]      (--court : sans attendre la fin des 40 secondes)
 // Variables : PEPE_ORIGIN, PEPE_BASE, PEPE_KEY, PEPE_NAV (chromium, firefox ou webkit), PEPE_CHROME.
 // Le son n'est pas écouté ici, il est mesuré : ce que la page envoie vers la sortie audio est relevé à chaque étape.
 const pw = require('playwright');
@@ -121,7 +119,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     const accueilSel = tel ? '.bar .va-accueil' : '.tabs a.tab-accueil';
 
     // =====================================================================================================================
-    // 1. En silence : rien ne se charge, rien ne joue, et le guidage visuel est complet.
+    // 1. La vitrine est silencieuse, et « Souffler 2 minutes » commence en silence. (la musique de la respiration a son propre essai : respiration.js)
     // =====================================================================================================================
     {
       const { ctx, page, errs, sons } = await ouvre(fmt);
@@ -129,7 +127,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       ok((await page.$$('.son-b')).length === 0 && sons.length === 0, P('1. la vitrine est silencieuse : pas de bouton de son, aucun morceau chargé'));
       const porte3 = await page.evaluate(() => { const p = document.querySelector('.herofull .porte[data-v="piste"]'); return [p.querySelector('b').textContent, p.querySelector('.tx span').textContent]; });
       ok(net(porte3[0]) === 'Trouver une idée pour ce soir' && net(porte3[1]) === 'Vous choisissez ce que vous vivez, avec un enfant, un ado ou un adulte.', P('3. la troisième entrée : « Trouver une idée pour ce soir », pour un enfant, un ado ou un adulte ' + JSON.stringify(porte3)));
-      const tPorte = await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]'));
+      await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]'));
       await page.waitForTimeout(2600);
       const b0 = await bouton(page, B); const s0 = await son(page);
       ok(b0 && b0.etat === 'off' && b0.texte === 'Écouter l’étang', P('1. l’exercice commence en silence, avec la commande « Écouter l’étang » ' + JSON.stringify(b0)));
@@ -139,131 +137,12 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       const g1 = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, aide: document.getElementById('souffle-aide').textContent, tours: document.querySelectorAll('.souffle .tours i').length, s: getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s') }));
       await attendMot(page, 'Expirez'); await page.waitForTimeout(700);
       const g2 = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s') }));
-      ok(g1.mot === 'Inspirez' && g2.mot === 'Expirez' && g1.tours === 12 && g1.s !== g2.s && /cercle/.test(g1.aide), P('1. en silence, le guidage visuel est complet : le mot, la consigne, le cercle et les 12 respirations ' + JSON.stringify([g1, g2])));
+      ok(g1.mot === 'Inspirez' && g2.mot === 'Expirez' && g1.tours === 12 && g1.s !== g2.s && /cercle/.test(g1.aide), P('1. en silence, le guidage visuel est complet : le mot, la consigne, le cercle et les 12 points ' + JSON.stringify([g1, g2])));
       const z = await page.$eval(B, e => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), r.bottom <= innerHeight, getComputedStyle(e).fontSize]; });
       ok(z[1] >= 44 && z[2] && parseFloat(z[3]) >= 15, P('1. la commande est lisible et assez grande pour le doigt ' + JSON.stringify(z)));
-
-      // =====================================================================================================================
-      // 2. Avec le son : il part quand le parent le choisit, suit la respiration, et se coupe d'un geste.
-      // =====================================================================================================================
-      if (lit) {
-        await page.click(B);
-        const b1 = await bouton(page, B);
-        ok(b1 && (b1.etat === 'charge' || b1.etat === 'on'), P('2. un geste, et l’étang arrive ' + JSON.stringify(b1)));
-        ok(await attendEtat(page, B, 'on'), P('2. le son est lancé'));
-        await page.waitForTimeout(250);
-        const s1 = await son(page); const b2 = await bouton(page, B);
-        ok(b2.texte === 'Couper le son' && sons.join(',') === 'etang.mp3', P('2. le bouton dit maintenant « Couper le son », et un seul morceau a été chargé ' + JSON.stringify([b2.texte, sons])));
-        const attendu = (s1.dernier.at - tPorte) / 1000;
-        ok(s1.actives === 1 && Math.abs(s1.dernier.offset - attendu) < 0.25 && s1.dernier.dur > 125, P('2. le morceau part là où en est la respiration (départ à ' + s1.dernier.offset.toFixed(2) + ' s, attendu ' + attendu.toFixed(2) + ' s, ' + s1.visib + ' passage à l’arrière-plan)'));
-        ok(s1.volume < 0.25, P('2. l’entrée est progressive : le volume part de presque rien (' + s1.volume.toFixed(3) + ')'));
-        ok(s1.session === 'playback', P('2. pendant qu’elle joue, la page se déclare comme un lecteur, pour que le bouton silencieux de l’iPhone ne coupe pas le son (' + s1.session + ')'));
-        await page.waitForTimeout(2600);
-        const s2 = await son(page);
-        ok(s2.volume > 0.85 && s2.volume <= 0.91 && s2.rms > 0.002 && s2.etatCtx[0] === 'running', P('2. après 2,5 secondes, le son est installé, à un volume doux (volume ' + s2.volume.toFixed(2) + ', signal ' + s2.rms.toFixed(4) + ')'));
-        notesFin.push(nom + ' : le morceau part à ' + s1.dernier.offset.toFixed(2) + ' s quand la respiration en est à ' + attendu.toFixed(2) + ' s. Volume ' + s1.volume.toFixed(3) + ' au départ, ' + s2.volume.toFixed(2) + ' après 2,6 s, signal mesuré ' + s2.rms.toFixed(4) + '.');
-        const [m1, m2] = await motChange(page);
-        ok(m1 !== m2 && !!(await page.$('main.souffle.s-cours')), P('2. la respiration continue pendant que le son joue (' + m1 + ' puis ' + m2 + ')'));
-        // couper d'un geste
-        await page.click(B); const b3 = await bouton(page, B);
-        ok(b3.etat === 'off' && b3.texte === 'Écouter l’étang', P('2. un geste coupe le son, et le bouton repropose « Écouter l’étang »'));
-        const s3 = await silence(page);
-        ok(s3.muet && s3.audibles === 0 && s3.delai < 1500, P('2. le son s’éteint tout de suite après le geste ' + dit(s3)));
-        const [m3, m4] = await motChange(page);
-        ok(!!(await page.$('main.souffle.s-cours')) && m3 !== m4, P('2. couper le son n’interrompt pas la respiration (' + m3 + ' puis ' + m4 + ')'));
-        // des pressions rapides : jamais 2 pistes à la fois
-        let pire = 0;
-        for (let i = 0; i < 7; i++) { await page.click(B); await page.waitForTimeout(45); pire = Math.max(pire, (await son(page)).audibles); }
-        await page.waitForTimeout(3300);
-        const s4 = await son(page); const b4 = await bouton(page, B);
-        ok(pire <= 1 && s4.actives === 1 && s4.audibles === 1 && b4.etat === 'on' && sons.length === 1, P('2. 7 pressions rapides : une seule piste joue, jamais 2 à la fois (au pire ' + pire + ' audible, ' + s4.actives + ' active, ' + sons.length + ' chargement)'));
-        const att4 = (s4.dernier.at - tPorte) / 1000;
-        ok(Math.abs(s4.dernier.offset - att4) < 0.25, P('2. après ces pressions, le son est toujours calé sur la respiration (' + s4.dernier.offset.toFixed(2) + ' s pour ' + att4.toFixed(2) + ' s)'));
-        for (let i = 0; i < 6; i++) { await page.click(B); await page.waitForTimeout(45); }
-        await page.waitForTimeout(800);
-        const s5 = await son(page); const b5 = await bouton(page, B);
-        ok(b5.etat === 'on' ? s5.actives === 1 : s5.actives === 0, P('2. le bouton et le son disent toujours la même chose (' + b5.etat + ', ' + s5.actives + ' piste)'));
-        if (b5.etat !== 'on') { await page.click(B); await attendEtat(page, B, 'on'); }
-        // l'arrière-plan : le son s'arrête, puis reprend au bon endroit au retour
-        await page.waitForTimeout(600);
-        const tCache = await cacher(page, 'hidden');
-        const s6 = await silence(page);
-        ok(s6.muet && s6.audibles === 0 && s6.delai < 1200, P('2. page à l’arrière-plan : le son s’arrête tout de suite ' + dit(s6)));
-        ok(s6.ecran === 0, P('2. à l’arrière-plan, l’écran n’est plus retenu'));
-        await page.waitForTimeout(900); const tVu = await cacher(page, 'visible');
-        ok(await attendEtat(page, B, 'on', 5000), P('2. au retour sur la page, le son reprend'));
-        await page.waitForTimeout(300);
-        const s7 = await son(page); const att7 = (s7.dernier.at - tPorte - (tVu - tCache)) / 1000;
-        ok(s7.actives === 1 && Math.abs(s7.dernier.offset - att7) < 0.3, P('2. il reprend là où en est la respiration, qui s’était arrêtée elle aussi (' + s7.dernier.offset.toFixed(2) + ' s pour ' + att7.toFixed(2) + ' s)'));
-        ok(s7.ecran === 1, P('2. au retour, l’écran est de nouveau tenu allumé'));
-
-        // les sorties : Arrêter, Retour, SOS, la flèche du navigateur
-        await page.click(A('souffle-stop'));
-        const s8 = await silence(page);
-        ok(s8.muet && !!(await page.$('main.souffle.s-pret')) && !(await page.$(B)), P('2. « Arrêter » coupe le son avec la respiration ' + dit(s8)));
-        ok(s8.ecran === 0, P('2. après « Arrêter », le téléphone retrouve sa mise en veille habituelle'));
-        await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(500);
-        const s8b = await son(page);
-        ok((await bouton(page, B)).etat === 'off' && s8b.actives === 0, P('2. après « Arrêter », « Commencer » repart en silence'));
-        ok(s8b.session === 'auto', P('2. une fois le son coupé, la page rend au téléphone son réglage habituel (' + s8b.session + ')'));
-        await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
-        await page.click('.souffle .bar .back'); await page.waitForSelector('main.intro');
-        const s9 = await silence(page);
-        ok(s9.muet && !!(await page.$('main.intro')), P('2. « Retour » coupe le son et ramène à la vitrine, d’où l’exercice avait été lancé ' + dit(s9)));
-        const tP2 = await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(300);
-        ok((await bouton(page, B)).etat === 'off', P('2. rouvrir l’exercice : il recommence en silence'));
-        await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
-        await page.click('.souffle .bar .sos'); await page.waitForTimeout(300);
-        const s10 = await silence(page);
-        ok(s10.muet && !(await page.$('main.souffle')) && (await page.$$('.son-b')).length === 0, P('2. le SOS coupe le son, et l’écran du SOS est silencieux ' + dit(s10)));
-        await page.goBack(); await page.waitForTimeout(700);
-        if (await page.$('main.souffle.s-pret')) { await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); } else if (!(await page.$('main.souffle.s-cours'))) { await page.goto(APP + '#accueil'); await page.waitForSelector('.herofull .porte'); await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); }
-        await page.waitForTimeout(300); await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
-        await page.goBack(); await page.waitForTimeout(300);
-        const s11 = await silence(page);
-        ok(s11.muet && !(await page.$('main.souffle')), P('2. la flèche du navigateur coupe le son en quittant l’exercice ' + dit(s11)));
-        ok(s9.ecran === 0 && s10.ecran === 0 && s11.ecran === 0 && s11.ecranPire === 1, P('2. en quittant l’exercice, l’écran n’est plus retenu, et il ne l’a jamais été 2 fois en même temps ' + JSON.stringify([s9.ecran, s10.ecran, s11.ecran, s11.ecranPire, s11.ecranDemandes])));
-        ok((await son(page)).contextes === 1 && sons.length === 1 && sons[0] === 'etang.mp3', P('2. tout cela avec un seul téléchargement du morceau (' + sons.length + ')'));
-      } else {
-        // ce navigateur d'essai ne peut pas jouer le morceau : le bouton doit revenir à « Écouter l'étang », et la respiration continuer
-        await page.click(B); await page.waitForTimeout(3500);
-        const b = await bouton(page, B);
-        ok((b.etat === 'off' ? b.texte === 'Écouter l’étang' : (b.etat === 'on' && b.texte === 'Couper le son')) && !!(await page.$('main.souffle.s-cours')), P('2. sans sortie audio mesurable, le bouton reste cohérent et la respiration continue ' + JSON.stringify(b)));
-        if (b.etat === 'on') { await page.click(B); await page.waitForTimeout(600); ok((await bouton(page, B)).etat === 'off', P('2. et un geste le ramène à « Écouter l’étang »')); }
-        await page.click(A('souffle-stop')); await page.waitForTimeout(500);
-        ok(!!(await page.$('main.souffle.s-pret')), P('2. « Arrêter » arrête la respiration'));
-      }
-      ok(errs.length === 0, P('1 et 2. aucune erreur ' + errs.slice(0, 3).join(' | ')));
-      await ctx.close();
-    }
-
-    // =====================================================================================================================
-    // 2 bis. La fin des 2 minutes avec le son : les dernières notes s'éteignent d'elles-mêmes. Puis « Encore 2 minutes ».
-    // =====================================================================================================================
-    if (lit && tel && !COURT) {
-      const { ctx, page, errs } = await ouvre(fmt);
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(300);
-      const tPorte = await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]'));
-      await page.waitForTimeout(1500); await page.click(B); await attendEtat(page, B, 'on');
-      await page.waitForSelector('main.souffle.s-fini', { timeout: 130000 });
-      const tFini = (await maintenant(page) - tPorte) / 1000; await page.waitForTimeout(400);
-      const f1 = await son(page); const bf = await bouton(page, '.fin-son ' + B);
-      ok(Math.abs(tFini - 121.4) < 1.5 && f1.actives === 1 && f1.rms > 0.0005 && bf && bf.texte === 'Couper le son', P('2 bis. à la fin des 2 minutes (' + tFini.toFixed(1) + ' s), le son continue un instant et peut encore être coupé'));
-      ok(f1.ecran === 1, P('2 bis. l’écran reste allumé jusqu’à la dernière note'));
-      const niveaux = [f1.rms]; for (let i = 0; i < 4; i++) { await page.waitForTimeout(2200); niveaux.push((await son(page)).rms); }
-      let fin = null; for (let i = 0; i < 40; i++) { const s = await son(page); if (s.actives === 0) { fin = s; break; } await page.waitForTimeout(250); }
-      const tFin = (await maintenant(page) - tPorte) / 1000;
-      ok(fin && fin.dernier.ended && fin.dernier.stop === null && Math.abs(fin.dernier.offset + fin.dernier.joue - fin.dernier.dur) < 0.6, P('2 bis. le morceau va jusqu’à sa dernière note, sans être coupé (' + (fin ? (fin.dernier.offset + fin.dernier.joue).toFixed(1) + ' s sur ' + fin.dernier.dur.toFixed(1) : '?') + ')'));
-      notesFin.push(nom + ' : fin des 2 minutes à ' + tFini.toFixed(1) + ' s, puis le signal descend ' + niveaux.map(v => v.toFixed(4)).join(' → ') + ' et le silence arrive à ' + tFin.toFixed(1) + ' s.');
-      ok(niveaux[niveaux.length - 1] < niveaux[0] * 0.5 && tFin > 128 && tFin < 134, P('2 bis. il s’éteint naturellement, en une dizaine de secondes (signal ' + niveaux.map(v => v.toFixed(4)).join(' → ') + ', silence à ' + tFin.toFixed(1) + ' s)'));
-      await page.waitForTimeout(300);
-      ok(await page.$eval('.fin-son', e => e.hidden && e.getBoundingClientRect().height === 0).catch(() => true), P('2 bis. une fois le silence revenu, le bouton du son se retire'));
-      ok((await son(page)).ecran === 0, P('2 bis. et le téléphone retrouve sa mise en veille habituelle'));
-      await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); ok(await attendEtat(page, B, 'on', 5000), P('2 bis. « Encore 2 minutes » : le son repart avec la respiration, puisque le parent l’écoutait'));
-      await page.waitForTimeout(300); const f2 = await son(page);
-      ok(f2.actives === 1 && f2.dernier.offset < 1.2, P('2 bis. et il repart du début (' + f2.dernier.offset.toFixed(2) + ' s)'));
-      await page.click(A('souffle-stop')); { const q = await silence(page); ok(q.muet, P('2 bis. « Arrêter » le coupe de nouveau ' + dit(q))); }
-      ok(errs.length === 0, P('2 bis. aucune erreur ' + errs.slice(0, 3).join(' | ')));
+      await page.click(A('souffle-stop')); await page.waitForSelector('main.souffle.s-pret');
+      ok((await son(page)).ecran === 0, P('1. après « Arrêter », le téléphone retrouve sa mise en veille habituelle'));
+      ok(errs.length === 0, P('1. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }
 
@@ -350,7 +229,9 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       const logoSel = tel ? '.bar a.wordmark' : '.tabs a.rail-brand';
       await page.click(logoSel); await page.waitForSelector('main.intro'); await page.waitForTimeout(600);
       ok(page.url() === APP + '#accueil' && !!(await page.$('.herofull .porte')), P('5. le logo mène à la vitrine'));
-      await page.goBack(); await page.waitForTimeout(800); ok((await h1(page)) === 'Bonsoir.', P('5. et « Retour » ramène à « Aujourd’hui »'));
+      // (on attend le titre plutôt qu'un délai fixe : sur une machine occupée, le retour en arrière peut prendre plus d'une seconde)
+      await page.goBack(); { const t = Date.now(); while ((await h1(page)) !== 'Bonsoir.' && Date.now() - t < 4000) await page.waitForTimeout(150); } await page.waitForTimeout(300);
+      ok((await h1(page)) === 'Bonsoir.', P('5. et « Retour » ramène à « Aujourd’hui »'));
       await page.goForward(); await page.waitForTimeout(800); ok(!!(await page.$('main.intro')), P('5. la flèche « Suivant » du navigateur retrouve la vitrine'));
       await page.goBack(); await page.waitForTimeout(800);
 
@@ -385,21 +266,25 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     }
 
     // =====================================================================================================================
-    // 5. Le chemin de secours : sans son calculé dans la page, le lecteur audio ordinaire prend le relais (anciens iPhone).
+    // 5. Le chemin de secours : sans son calculé dans la page (très ancien navigateur), l'instant de la dose passe par le lecteur audio ordinaire,
+    //    et la respiration, dont la musique en a besoin, se fait en silence.
     // =====================================================================================================================
     if (NAV === 'chromium') {
       const { ctx, page, errs, sons } = await ouvre(fmt, { sansWebAudio: true });
       await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(300);
-      const tPorte = await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(2200);
-      await page.click(B); ok(await attendEtat(page, B, 'on'), P('6. sans son calculé dans la page, le lecteur ordinaire prend le relais')); await page.waitForTimeout(1500);
-      const e1 = await son(page); const att = (await maintenant(page) - tPorte) / 1000;
-      ok(e1.contextes === 0 && e1.audios.length === 1 && !e1.audios[0].paused && e1.audios[0].src === 'etang.mp3' && Math.abs(e1.audios[0].t - att) < 0.8, P('6. un seul lecteur joue, calé sur la respiration (' + (e1.audios[0] ? e1.audios[0].t.toFixed(2) : '?') + ' s pour ' + att.toFixed(2) + ' s)'));
-      for (let i = 0; i < 6; i++) { await page.click(B); await page.waitForTimeout(45); } await page.waitForTimeout(900);
-      const e2 = await son(page); const be = await bouton(page, B);
+      await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(1500);
+      ok(!(await page.$(B)) && (await attendMot(page, 'Inspirez')) === 'Inspirez', P('6. sans son calculé dans la page, la respiration ne propose pas de musique et guide en silence'));
+      await page.click('.souffle .bar .back'); await page.waitForSelector('main.intro'); await page.waitForTimeout(300);
+      await page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click()); await page.waitForSelector('.dose ' + D); await page.waitForTimeout(500);
+      await page.click(D); ok(await attendEtat(page, D, 'on'), P('6. pour l’instant de la dose, le lecteur ordinaire prend le relais')); await page.waitForTimeout(1500);
+      const e1 = await son(page);
+      ok(e1.contextes === 0 && e1.audios.length === 1 && !e1.audios[0].paused && e1.audios[0].src === 'instant.mp3' && e1.audios[0].t > 0.5 && sons.join(',') === 'instant.mp3', P('6. un seul lecteur joue le morceau de 40 secondes (' + (e1.audios[0] ? e1.audios[0].t.toFixed(2) : '?') + ' s)'));
+      for (let i = 0; i < 6; i++) { await page.click(D); await page.waitForTimeout(45); } await page.waitForTimeout(900);
+      const e2 = await son(page); const be = await bouton(page, D);
       ok(e2.audios.length === 1 && (be.etat === 'on') === !e2.audios[0].paused, P('6. après des pressions rapides, il n’y a toujours qu’un lecteur, et le bouton dit ce qu’il fait (' + be.etat + ')'));
-      if (be.etat !== 'on') { await page.click(B); await attendEtat(page, B, 'on'); }
-      await page.click(A('souffle-stop')); await page.waitForTimeout(500);
-      ok((await son(page)).audios[0].paused, P('6. « Arrêter » coupe ce lecteur aussi'));
+      if (be.etat !== 'on') { await page.click(D); await attendEtat(page, D, 'on'); }
+      await page.click('.tabs ' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(500);
+      ok((await son(page)).audios[0].paused, P('6. changer d’onglet coupe ce lecteur aussi'));
       ok(errs.length === 0, P('6. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }
