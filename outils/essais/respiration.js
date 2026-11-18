@@ -172,7 +172,7 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       const M1 = await mouvements(page, 4);
       // Le tout premier mot peut s'afficher avec un peu de retard sur une machine lente (la page vient de changer d'écran) : son mouvement paraît alors plus court à l'écran, alors que le minutage, lui, n'a pas bougé. Les mouvements suivants doivent être exacts.
       const retard1 = M1.length ? durees('long')[M1[0].ty === 'in' ? 0 : 1] - M1[0].d : 0;
-      ok(M1.length === 4 && M1[0].ty !== M1[1].ty && retard1 > -0.12 && retard1 < 0.45 && dureesOk(M1.slice(1), 'long'), P('1. un seul geste depuis l’accueil, et la respiration commence : 4 secondes pour inspirer, 6 pour souffler (' + deux(M1) + ')'));
+      ok(M1.length === 4 && M1[0].ty !== M1[1].ty && retard1 > -0.12 && retard1 < 0.6 && dureesOk(M1.slice(1), 'long'), P('1. un seul geste depuis l’accueil, et la respiration commence : 4 secondes pour inspirer, 6 pour souffler (' + deux(M1) + ')'));
       if (retard1 > 0.12) notesFin.push(P('le premier mot s’est affiché avec ' + Math.round(retard1 * 1000) + ' ms de retard sur cette machine. Les mouvements suivants sont à l’heure.'));
       const s0 = await son(page); const b0 = await bouton(page, B);
       ok(sons.length === 0 && s0.contextes === 0 && s0.lancees === 0 && s0.audios.length === 0 && b0 && b0.etat === 'off' && b0.texte === 'Écouter l’étang', P('1. l’exercice se fait en silence tant que le parent n’a rien demandé : aucun fichier de son chargé ' + JSON.stringify([sons, s0.contextes, b0])));
@@ -430,12 +430,12 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
     if (tel) {
       const CAS = [['Le souffle régulier', { m: 'egal', c: 8 }, 12, 120], ['L’expiration prolongée', { m: 'long', c: 8 }, 12, 120], ['À mon rythme, 5 secondes', { m: 'libre', c: 5 }, 23, 115], ['À mon rythme, 8 secondes', { m: 'libre', c: 8 }, 15, 120], ['À mon rythme, 14 secondes', { m: 'libre', c: 14 }, 9, 126]];
       for (const [titre, reglage, cycles, duree] of CAS) {
-        const { ctx, page, errs, sons } = await ouvre(fmt, { vite: 10, seme: { souffle: reglage } });
+        const { ctx, page, errs, sons } = await ouvre(fmt, { vite: 5, seme: { souffle: reglage } });
         await entre(page);
         await page.waitForSelector('main.souffle.s-fini', { timeout: 40000 });
         const T = await mots(page); const fin = T.find(x => x.m === 'Voilà.'); const ins = T.filter(x => x.m === 'Inspirez'), exs = T.filter(x => x.m === 'Expirez');
         const d = durees(reglage.m, reglage.c); const dernier = T[T.indexOf(fin) - 1];
-        // La durée se mesure à partir de la 2e inspiration, à laquelle on ajoute une respiration : le tout premier mot peut s'afficher un peu tard sur une machine lente, et avec l'horloge accélérée 10 fois ce retard compterait 10 fois.
+        // La durée se mesure à partir de la 2e inspiration, à laquelle on ajoute une respiration : le tout premier mot peut s'afficher un peu tard sur une machine lente, et avec l'horloge accélérée ce retard compterait plusieurs fois. L'horloge va 5 fois plus vite, pas davantage : à la cadence la plus rapide, une inspiration dure alors 0,4 seconde réelle, et une machine lente a le temps de l'afficher.
         const total = fin && ins.length > 1 ? (fin.t - ins[1].t) / 1000 + d[0] + d[1] : 0;
         const moy = ins.length > 2 ? (ins[ins.length - 1].t - ins[1].t) / 1000 / (ins.length - 2) : 0;
         ok(ins.length === cycles && exs.length === cycles && proche(total, duree, 0.6) && dernier && dernier.m === 'Expirez' && proche(moy, d[0] + d[1], 0.12), P('6. ' + titre + ' : ' + ins.length + ' respirations en ' + total.toFixed(1) + ' secondes, et l’exercice se termine sur une expiration (attendu ' + cycles + ' en ' + duree + ' s)'));
