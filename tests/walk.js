@@ -55,6 +55,8 @@ async function walk(page, visit) {
   await page.fill('#draft', 'Je n’ai plus envie de vivre comme ça.'); await page.click(A('dsend')); await w(250); await visit('deposer-detresse');
   await page.click(A('back')); await w(250); await visit('aujourdhui-depot');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('aujourdhui-depot-bas'); await page.evaluate(() => scrollTo(0, 0));
+  // la porte « Une piste », depuis « Aujourd'hui » : les situations du moment d'abord, la boîte à outils entière en dessous
+  await w(150); await page.click('.portes ' + A('porte', '[data-v="piste"]')); await w(300); await visit('piste-du-moment');
   await tab('parcours'); await w(100);
   await page.click('.quick ' + A('go', '[data-view="evo"]')); await w(100); await visit('evolution');
   await page.click(A('evosave')); await w(300); await visit('parcours-apres-depart');

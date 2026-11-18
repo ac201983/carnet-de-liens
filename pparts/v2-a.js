@@ -754,6 +754,7 @@ function persoCarte(){
   return '<div class="card perso reveal d4"><span class="label">Facultatif</span><p class="lesson" style="font-size:20px">Personnaliser mon espace</p><p class="hint">Vous pouvez donner votre prénom, l’âge de votre enfant et ce qui pèse en ce moment. L’espace vous proposera d’abord les situations qui vous concernent.</p><div class="row"><button type="button" class="btn small" data-act="onboard">'+I.user+'Personnaliser</button><button type="button" class="btn small ghost" data-act="perso-tard">Plus tard</button></div></div>';
 }
 function viewToday(){
+  state.vuAuj=true;   /* le parent a vu « Aujourd'hui » pendant cette visite */
   const d=D();const t=todayIso();const m=d.moods[t];const st=allSteps()[currentStepIdx()];const rd=recentDepot();const mo=moment();
   const td=d.depots.filter(x=>x.date===t).slice(-1)[0];
   let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(jourLong())+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1><p class="besoin">'+besoinHtml(mo,false)+'</p></div>';
@@ -763,6 +764,8 @@ function viewToday(){
   if(can('antonio'))html+=letterCard();
   html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p>'+(d.doseDate===t&&d.doseText?'<span class="sig">Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio</span>':'<div class="sigrow"><span class="sig">Antonio<button type="button" class="qui-b" data-act="voix" aria-label="Qui écrit cette dose ?">'+I.info+'</button></span><button type="button" class="linkbtn" data-act="go" data-view="about">Lire mon histoire</button></div>')+
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
+  /* Une raison simple de revenir : la dose change chaque jour, et l'espace le dit sans rien exiger. */
+  html+='<p class="hint demain">Une nouvelle dose vous attend ici chaque matin.</p>';
   /* Pour celui qui suit le parcours : le fil des 24 étapes, puis l'étape de la semaine, en grand, avec un seul geste. */
   const stFait=!!d.steps[st.id];const stAp=st.idx<23?stepEtat(st.idx+1):null;const stSuiv=st.idx<23?allSteps()[st.idx+1]:null;
   const neuf=st.idx===0&&!stFait&&!d.seen[st.id];
@@ -842,7 +845,7 @@ async function sendDepot(){
   state.draft='';brouillonOte();state.busy=true;render();
   if(!state.sample){
     dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
-    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
   }
   state.ctl=new AbortController();
   try{
@@ -859,7 +862,7 @@ async function sendDepot(){
     dep.question=dep.question||LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=dep.lumiere||'C’est déposé. Même sans réponse, ce que vous avez écrit est maintenant en dehors de vous.';
     if(e&&e.code!=='cancelled'&&e.code!=='not_granted')toast('La réponse n’est pas venue cette fois. Votre dépôt est gardé.');
   }
-  d.depots.push(dep);state.busy=false;state.ctl=null;state.fresh=dep.id;save();render();setTimeout(()=>{state.fresh=null;},1900);
+  d.depots.push(dep);state.busy=false;state.ctl=null;state.fresh=dep.id;save();render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);
 }
 async function concret(id){
   const d=D();const dep=d.depots.find(x=>x.id===id);if(!dep||!state.sample)return;

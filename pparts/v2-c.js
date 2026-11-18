@@ -95,10 +95,10 @@ function titreDe(){
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
-  state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';
+  state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
   state.sheet=null;state.confirmReset=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.prev=null;state.lien='';
   /* Un écran qui n'a plus de sens (une étape pas encore ouverte, une fiche inconnue) ramène à « Aujourd'hui ». */
   if(state.view==='step'&&(state.step===null||!D().onboarded||stepLocked(state.step)))state.view='parcours';
@@ -149,6 +149,18 @@ function histRetour(e){
   /* « apres » : un message à dire une fois revenu sur l'écran d'avant (par exemple après avoir enregistré le point de départ). */
   const dire=state.apres||'';state.apres='';
   fxGo(()=>{render();window.scrollTo(0,y);if(dire)toast(dire);},'back');
+}
+
+/* ---------- après un dépôt : la réponse vient sous les yeux ---------- */
+/* La question et la lumière s'affichent sous la zone d'écriture. Sur un téléphone, le bas de l'écran les cacherait.
+   La page descend donc d'elle-même jusqu'à elles, doucement, ou d'un coup si le téléphone demande moins d'animations. */
+function montreReponse(){
+  const el=document.querySelector('.mirror.surface');if(!el||!el.getBoundingClientRect)return;
+  const barre=document.querySelector('header.bar');const haut=barre?Math.max(0,barre.getBoundingClientRect().bottom):0;
+  const r=el.getBoundingClientRect();
+  if(r.top>=haut&&r.bottom<=window.innerHeight-96)return;   /* déjà entièrement à l'écran : la page ne bouge pas */
+  const y=Math.max(0,Math.round(r.top+window.scrollY-haut-14));
+  try{window.scrollTo({top:y,behavior:fxOn()?'smooth':'auto'});}catch(e){window.scrollTo(0,y);}
 }
 
 /* ---------- envoyer une fiche ---------- */
@@ -304,7 +316,8 @@ function viewSouffle(){
   if(k==='cours')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Installez-vous</p><p class="aide" id="souffle-aide">Posez vos épaules et vos pieds. Le cercle va vous guider.</p>'+tours+
     '<div class="actions"><button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>';
   else if(k==='fini')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Voilà.</p><p class="aide">Vous venez de prendre 2 minutes rien que pour vous. Vous êtes aussi une personne, et pas seulement un parent.</p>'+
-    '<div class="actions col"><button type="button" class="btn primary wide" data-act="go" data-view="today">'+I.sun2+'Revenir à aujourd’hui</button><button type="button" class="btn wide" data-act="porte" data-v="deposer">'+I.drop+'Déposer ce qui pèse</button><button type="button" class="btn ghost wide" data-act="souffle-go">'+I.wind+'Encore 2 minutes</button></div>';
+    /* Un parent arrivé par la porte de l'accueil n'a pas encore vu « Aujourd'hui » : le bouton lui dit ce qu'il va y trouver d'abord. */
+    '<div class="actions col"><button type="button" class="btn primary wide" data-act="go" data-view="today">'+I.sun2+(state.vuAuj?'Revenir à aujourd’hui':'Lire la dose du jour')+'</button><button type="button" class="btn wide" data-act="porte" data-v="deposer">'+I.drop+'Déposer ce qui pèse</button><button type="button" class="btn ghost wide" data-act="souffle-go">'+I.wind+'Encore 2 minutes</button></div>';
   else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1><p class="aide">Vous inspirez par le nez pendant 4 secondes, puis vous expirez par la bouche pendant 6 secondes. Le cercle posé sur l’eau vous guide.</p>'+
     '<div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>';
   return '<main id="main" tabindex="-1" class="view souffle s-'+k+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+

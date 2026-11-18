@@ -83,6 +83,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
         await page.waitForSelector('main.souffle.s-fini', { timeout: 125000 }); const tFin = Date.now();
         ok(Math.abs((tFin - tIn) - 120000) < 1500, P('1. la respiration s’arrête d’elle-même après 2 minutes (' + ((tFin - tIn) / 1000).toFixed(1) + ' s)'));
         ok(/Voilà/.test(await page.textContent('#souffle-mot')) && (await page.$$('.souffle .actions .btn')).length === 3, P('1. à la fin : un mot, et 3 suites possibles'));
+        ok(net(await page.textContent('.souffle .actions .btn.primary')) === 'Lire la dose du jour', P('1. le premier bouton dit au nouveau parent ce qu’il va trouver ensuite'));
         await page.click('.souffle ' + A('go', '[data-view="today"]')); await page.waitForTimeout(700);
         // le bouton Retour du téléphone reste dans l'espace : il revient à l'écran de la respiration, puis on repart vers « Aujourd'hui »
         await page.goBack(); await page.waitForTimeout(500);
@@ -99,8 +100,45 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       const auj = await page.evaluate(() => { const m = document.getElementById('main'); const d = m && m.querySelector('.dose'); const r = d && d.getBoundingClientRect(); return { h: document.querySelector('h1').textContent, tabs: !!document.querySelector('.tabs'), dose: !!d, doseHaut: r ? Math.round(r.top) : -1, vh: innerHeight, perso: !!document.querySelector('.card.perso'), quest: !!document.querySelector('#main [data-view="evo"]'), rouvrir: [...document.querySelectorAll('.rouvrir .chip')].map(e => e.textContent.trim()) }; });
       ok(auj.tabs && auj.h === 'Bonsoir.' && auj.dose && auj.doseHaut < auj.vh && !auj.quest, P('1. après : « Aujourd’hui », avec la dose visible sans défiler et aucun questionnaire devant elle ' + JSON.stringify(auj)));
       ok(auj.perso, P('1. la personnalisation est proposée après, comme un choix'));
+      ok(net(await page.textContent('.hint.demain').catch(() => '')) === 'Une nouvelle dose vous attend ici chaque matin.', P('1. sous la dose, une ligne dit qu’une autre attend le parent le lendemain'));
       if (!COURT && tel) ok(auj.rouvrir.includes('Souffler 2 minutes'), P('1. la respiration faite jusqu’au bout se retrouve dans « Rouvrir » ' + auj.rouvrir.join(',')));
       ok(errs.length === 0, P('1. aucune erreur ' + errs.slice(0, 3).join(' | ')));
+      await ctx.close();
+    }
+
+    // =====================================================================================================================
+    // 1 bis. Les 2 autres portes tiennent elles aussi la promesse de leur libellé, en un geste.
+    // =====================================================================================================================
+    {
+      const { ctx, page, errs } = await ouvre(fmt);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(500);
+      // ce qui est visible : entre la barre du haut et, sur téléphone, la barre d'onglets du bas
+      const visibles = (sel) => page.evaluate(sel => { const b = document.querySelector('header.bar'); const hb = b && getComputedStyle(b).display !== 'none' ? b.getBoundingClientRect().bottom : 0; const t = document.querySelector('.tabs'); const tr = t ? t.getBoundingClientRect() : null; const bas = tr && tr.top > innerHeight / 2 ? tr.top : innerHeight;
+        const L = [...document.querySelectorAll(sel)]; return { n: L.length, vus: L.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= hb - 1 && r.bottom <= bas + 1; }).length, entames: L.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= hb - 1 && r.top < bas - 24; }).length, textes: L.map(e => (e.querySelector('b') || e).textContent.trim()) }; }, sel);
+      // « Une piste pour ce soir » : les pistes du soir d'abord, à ouvrir en un geste
+      await page.click('.herofull ' + A('porte', '[data-v="piste"]')); await page.waitForSelector('main.k-piste'); await page.waitForTimeout(1300);
+      const ps = await visibles('.ce-soir .sit');
+      ok((await h1(page)) === 'Une piste pour ce soir' && ps.n === 4 && ps.textes.slice(0, 3).join('|') === 'Le coucher et la nuit|La crise|Le refus', P('1 bis. « Une piste pour ce soir » ouvre sur les situations du soir annoncées par la porte ' + JSON.stringify(ps.textes)));
+      ok(ps.vus >= 3 && ps.entames === 4 && !(await page.$('.souvent')) && !(await page.$('.sheet')), P('1 bis. ces pistes sont à l’écran sans défiler, sans formulaire devant (' + ps.vus + ' entières, ' + ps.entames + ' visibles sur ' + ps.n + ')'));
+      await page.click('.ce-soir .sit'); await page.waitForSelector('main.fiche'); await page.waitForTimeout(600);
+      ok((await h1(page)) === 'Le coucher et la nuit' && page.url() === APP + 'fiches/le-coucher-et-la-nuit/', P('1 bis. une piste s’ouvre en un geste (' + page.url().replace(ORIGIN, '') + ')'));
+      await page.goBack(); await page.waitForTimeout(800);
+      ok((await h1(page)) === 'Une piste pour ce soir' && (await page.$$('.ce-soir .sit')).length === 4, P('1 bis. le bouton Retour du téléphone ramène aux pistes du soir'));
+      await page.click('.tabs ' + A('go', '[data-view="kit"]')); await page.waitForTimeout(800);
+      ok((await h1(page)) === 'La boîte à outils' && !(await page.$('.ce-soir')) && !!(await page.$('.souvent')), P('1 bis. l’onglet « Outils » montre ensuite la boîte entière'));
+      // « Déposer ce qui pèse » : après l'envoi, la question et la lumière sont sous les yeux
+      await page.click('.tabs ' + A('go', '[data-view="today"]')); await page.waitForSelector('.portes.mini'); await page.waitForTimeout(500);
+      await page.click('.portes.mini ' + A('porte', '[data-v="deposer"]')); await page.waitForSelector('main.deposer #draft'); await page.waitForTimeout(500);
+      ok(!(await page.$('.sheet')) && (await visibles('main.deposer #draft, main.deposer ' + A('dsend'))).vus === 2, P('1 bis. « Déposer » ouvre sur la zone d’écriture et son bouton, sans rien devant'));
+      await page.fill('#draft', 'Je suis épuisée. Le coucher a duré 2 heures et je culpabilise d’avoir crié.'); await page.click('main.deposer ' + A('dsend'));
+      await page.waitForSelector('main.deposer .mirror .q', { timeout: 6000 }); await page.waitForTimeout(1700);
+      const rep = await visibles('main.deposer .mirror .q, main.deposer .mirror .l');
+      ok(rep.n === 2 && rep.vus === 2, P('1 bis. après « Déposer », la question et la lumière sont à l’écran sans défiler (' + rep.vus + ' sur ' + rep.n + ')'));
+      const pd = await visibles('main.deposer .pistes-depot .sit');
+      ok(pd.n >= 1 && pd.n <= 2 && pd.textes.includes('Le coucher et la nuit') && pd.entames >= 1, P('1 bis. une piste en rapport avec les mots du parent suit la réponse ' + JSON.stringify(pd.textes)));
+      const dn = await notes(page);
+      ok(dn && dn.depots.length === 1 && dn.depots[0].text.indexOf('Je suis épuisée') === 0 && (await page.inputValue('#draft')) === '', P('1 bis. le dépôt est gardé sur l’appareil, et la zone d’écriture est vide de nouveau'));
+      ok(errs.length === 0, P('1 bis. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }
 
