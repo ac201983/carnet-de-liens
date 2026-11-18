@@ -844,7 +844,8 @@ canvas.eau{display:none}
 .grp .liste .sit+.sit{border-top:1px solid var(--line)}
 @media (hover:hover){.grp .liste .sit:hover{background:rgba(169,201,160,.07)}}
 /* « Pour moi » : la même carte à lignes */
-.ex{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+/* « clip » coupe aux coins arrondis comme « hidden », sans faire de la liste une zone de défilement à part : ses lignes suivent ainsi le défilement de la page pour venir se poser. */
+.ex{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;overflow:clip}
 .ex .sit{border:0;border-radius:0;background:none;padding:12px 14px}
 .ex .sit+.sit{border-top:1px solid var(--line)}
 /* la fiche d'une situation : une couverture, un texte ouvert, puis ce qu'on peut essayer mis en avant */
@@ -1071,6 +1072,8 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .mirror .lbl,.fil .ou,.step .tx .ou{font-size:14px}
 .cmp thead th,.cmp td.tx,.card.prog .anneau small,.legend,.legend span{font-size:13px}
 .logi .d{font-size:13.5px}
+/* sur les plus petits téléphones (320 px), le tableau des formules garde ses 12 px pour tenir dans l'écran */
+@media (max-width:359px){.cmp thead th,.cmp td.tx{font-size:12px}}
 .picto .ou,.bartrack i em{font-size:13px}
 /* la boîte à outils : ce qui revient souvent à cette heure-ci */
 .souvent{display:flex;flex-direction:column;gap:7px}
@@ -1088,8 +1091,8 @@ a.sit{text-decoration:none;color:var(--fg)}
 /* la fiche : l'envoyer */
 .partage{display:flex;flex-direction:column;gap:8px;padding:16px 18px;border:1px solid rgba(216,223,126,.42);border-radius:20px;background:linear-gradient(180deg,rgba(216,223,126,.1),rgba(216,223,126,.02))}
 .partage .btn{align-self:flex-start;background:var(--sun);border-color:var(--sun);color:#243A12}
-.partage input[readonly]{font-size:15px;padding:11px 12px}
-.partage input[readonly]::selection{background:var(--sun);color:#243A12}
+.partage input[readonly]{font-size:15px;font-weight:700;padding:11px 12px;background:var(--sun);border-color:var(--sun);color:#243A12}
+.partage input[readonly]::selection{background:#F4EFD8;color:#243A12}
 /* sans la barre d'onglets, le message bref se pose plus bas */
 .app.nobar .toast{bottom:calc(22px + env(safe-area-inset-bottom,0px))}
 /* les pages publiques : la barre du haut, et l'invitation en bas de fiche */

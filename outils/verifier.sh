@@ -93,8 +93,12 @@ note "Adresses" \
 # 3 bis. La version d'essai, quand il y en a une : son accueil, une fiche ouverte par son adresse (avec et sans la barre finale), son image d'aperçu
 if [ -f site/essai/index.html ]; then
   fiche="essai/fiches/quand-il-ou-elle-vit-ailleurs"
-  titre="non"; va "$adresse/$fiche/" 2>/dev/null | grep -q '<h1[^>]*>Quand il ou elle vit ailleurs</h1>' && titre="oui"
-  consigne="non"; va "$adresse/essai/" 2>/dev/null | grep -q 'name="robots" content="noindex,nofollow"' && consigne="oui"
+  # Chaque page est d'abord enregistrée, puis lue. Chercher dans ce que curl envoie au fil de l'eau coupait la lecture dès le premier mot trouvé,
+  # et la note disait « non » pour une consigne pourtant bien présente en haut de page.
+  va -o "$tmp/essai-fiche" "$adresse/$fiche/" 2>/dev/null || true
+  va -o "$tmp/essai-accueil" "$adresse/essai/" 2>/dev/null || true
+  titre="non"; grep -q '<h1[^>]*>Quand il ou elle vit ailleurs</h1>' "$tmp/essai-fiche" 2>/dev/null && titre="oui"
+  consigne="non"; grep -q 'name="robots" content="noindex,nofollow"' "$tmp/essai-accueil" 2>/dev/null && consigne="oui"
   note "Version d'essai" \
     "$(vue "accueil de l'essai" "$adresse/essai/") | consigne noindex : $consigne" \
     "$(vue "liste des situations" "$adresse/essai/fiches/")" \
