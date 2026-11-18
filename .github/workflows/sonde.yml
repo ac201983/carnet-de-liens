@@ -1,0 +1,28 @@
+# Mesure, depuis une machine de GitHub, le temps que le site met à répondre. Ne dépose rien, ne reçoit aucun mot de passe.
+# Sert quand une mise en ligne traîne : on sait en 1 minute si le chemin entre GitHub et l'hébergeur est lent à ce moment-là.
+name: Sonde
+
+on:
+  push:
+    branches: [sonde]
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    name: Vitesse du site vue de GitHub
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Mesurer
+        run: |
+          {
+            echo "code connexion chiffrement premier-octet total octets adresse"
+            for u in "https://parent-ecoute.ch/version.txt" "https://parent-ecoute.ch/essai/" "https://parent-ecoute.ch/essai/app.js" "https://parent-ecoute.ch/essai/son/notes.mp3" "https://parent-ecoute.ch/essai/fiches/la-crise/"; do
+              for i in 1 2 3; do
+                curl -s -o /dev/null --max-time 30 -A "controle-de-mise-en-ligne" -w "%{http_code} %{time_connect} %{time_appconnect} %{time_starttransfer} %{time_total} %{size_download} $u\n" "$u?c=$RANDOM$RANDOM" || echo "pas de réponse en 30 s : $u"
+              done
+            done
+          } | tee /tmp/sonde.txt
+          echo "::notice title=Sonde::$(sed ':a;N;$!ba;s/\n/%0A/g' /tmp/sonde.txt)"
