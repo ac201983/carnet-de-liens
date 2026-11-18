@@ -264,7 +264,7 @@ const DOSES=[
    rap : l'étape dont on relit la note ; link : un ou plusieurs boutons (evo, photo, breath, advice, ou « sit_nom » pour une situation). */
 const PARCOURS=[
   {m:'Mon point de départ',steps:[
-    {id:'depart',t:'D’où je pars',
+    {id:'depart',t:'D’où je pars',acc:'Vous poserez votre point de départ en 3 minutes, et vous écrirez pourquoi vous commencez ce parcours.',
      idee:['Avant d’avancer, je vous propose de regarder où vous en êtes. Le but n’est pas de vous juger. Il est d’avoir un point de comparaison pour plus tard, parce que la fatigue joue un mauvais tour à la mémoire. Les jours difficiles, elle nous fait croire que rien n’a changé, alors que nous avons parfois beaucoup avancé. Les parents qui tiennent dans la durée sont souvent ceux qui voient le chemin qu’ils ont parcouru.',
        'Aujourd’hui, vous faites donc votre premier point sur 5 choses qui pèsent dans la vie d’un parent, à savoir votre stress, votre sentiment de compétence, votre solitude, votre regard sur votre enfant et votre confiance dans l’avenir. Vous le referez au milieu du parcours, puis à la fin. Il n’y a pas de bonne réponse, il y a seulement la vôtre aujourd’hui.'],
      sch:'points',
@@ -1038,7 +1038,7 @@ const MQ_LARGE=FX_OK&&window.matchMedia?window.matchMedia('(min-width:1024px)'):
 const large=()=>!!(MQ_LARGE&&MQ_LARGE.matches);
 /* Les blocs qui se posent suivent le défilement quand le navigateur sait le faire sans risque ; sinon ils se posent une fois, à leur arrivée. */
 const FX_SD=!!(FX_OK&&window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view(block 0px 86px)')&&CSS.supports('animation-range','entry 0% entry min(100%, 260px)'));
-const FX_SEL='main.etape>.couv,main.etape>.chap,main.etape>.mission,.final>.fin-couv,.final>.fin-bloc>*,.intro .acc-h,.intro .acc-c>*:not(.acc-perms),.intro .acc-perms>li,.intro>.voice,.intro>.acc-fin,.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.sits>.sit,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
+const FX_SEL='main.fiche>.couv,main.fiche>.grp,.sits.groupes>.grp,main.etape>.couv,main.etape>.chap,main.etape>.mission,.final>.fin-couv,.final>.fin-bloc>*,.intro .acc-h,.intro .acc-c>*:not(.acc-perms),.intro .acc-perms>li,.intro>.voice,.intro>.acc-fin,.duo-a>*,.duo-b>*,main.view:not(.sosview)>.card,main.view:not(.sosview)>.dose,main.view>.comfort,main.view>.exo,main.view>.mirror,main.view>.qa,main.view>.letter,main.view>.demo-note,main.view>.step,main.view:not(.sosview)>.hint,.months .month>h2,.months .step,.ex>.sit,.depots>.mirror,.plans>.plan,.log>.logi,.perm>div,main.view>.menu-list,.story>p,.story>h2,.story .places>li,.story>.sign,.pillars>.pillar,.voice,.cta-stack';
 let fxIO=null,fxSeq=0,fxSkip=0,fxVT=null;
 function fxOn(){return FX_OK&&!(FX_RM&&FX_RM.matches)&&!(state.data&&state.data.fxOff);}
 function fxSync(){if(!FX_OK)return;const c=document.documentElement.classList;const on=fxOn();c.toggle('fx',on);c.toggle('fxsd',on&&FX_SD);if(!on)eauStop();}
@@ -1624,7 +1624,7 @@ function depotBox(){
   html+='</div>';return html;
 }
 function depotHtml(x,compact){
-  let out='<div class="mirror'+(x.id===state.fresh?' surface':'')+'"><span class="lbl">'+esc(fmtDate(x.date))+(x.time?' à '+esc(hm(x.time)):'')+'</span>'+(compact?'':'<p class="depot you">« '+esc(x.text.length>220?x.text.slice(0,220)+'…':x.text)+' »</p>');
+  let out='<div class="mirror'+(x.id===state.fresh?' surface':'')+'"><span class="lbl">Le '+esc(dateLongue(x.date)||fmtDate(x.date))+(x.time?' à '+esc(hm(x.time).replace(/^0/,'')):'')+'</span>'+(compact?'':'<p class="depot you">« '+esc(x.text.length>220?x.text.slice(0,220)+'…':x.text)+' »</p>');
   if(x.risk)out+=riskHtml('q');
   if(x.miroir)out+='<p class="m">'+esc(x.miroir)+'</p>';
   if(x.question)out+='<p class="q">'+esc(x.question)+'</p>';
@@ -1703,13 +1703,15 @@ const nl2=t=>esc(t).replace(/\n/g,'<br>');
 function viewParcours(){
   const d=D();const cur=currentStepIdx();const steps=allSteps();const done=doneCount();const pct=Math.round(done/24*100);const nn=nbNotes();
   const ici=steps[cur]||steps[0];
+  /* Au bout du sentier, l'arrivée : la page qui garde tout le chemin. Elle s'ouvre quand les 24 étapes sont faites. */
+  const arrivee=done>=24?'<button type="button" class="arrivee ouverte" data-act="go" data-view="final"><span class="n">'+I.sun2+'</span><span class="tx"><b>Mon chemin</b><span>Tout votre parcours tient sur une page, avec vos mots.</span></span><span class="chev">'+I.chev+'</span></button>':'<div class="arrivee"><span class="n">'+I.sun2+'</span><span class="tx"><b>L’arrivée</b><span>Au bout du chemin, tout votre parcours tiendra sur une page, avec vos mots.</span></span></div>';
   const sous=(st,e,dn)=>dn?'Faite':(st.idx===cur&&e.k==='open')?'Cette semaine':e.k==='open'?'Ouverte':e.k==='bientot'?'S’ouvre '+dansJours(e.n):e.k==='tard'?'Plus tard':'Étape '+(st.idx+1);
   return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:center 6%"><h1 class="t1">Le parcours</h1></div><p class="sub">Le parcours compte 24 étapes, sur 6 mois. Chaque semaine, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.</p>'+
     (d.tout?'<span class="pill sun apercu">Aperçu d’Antonio, tout est ouvert</span>':'')+
     '<div class="card prog"><div class="ou"><span class="anneau" style="--p:'+pct+'"><b>'+done+'</b><small>sur 24</small></span><div class="txt"><span class="label">Votre parcours</span><p class="lesson">'+(done>=24?'Parcours terminé':'Mois '+(ici.mi+1)+', '+esc(PARCOURS[ici.mi].m))+'</p><span class="hint">'+done+' étape'+(done>1?'s':'')+' faite'+(done>1?'s':'')+(nn?' et '+nn+' page'+(nn>1?'s':'')+' écrite'+(nn>1?'s':''):'')+'</span></div></div>'+
     '<div class="quick"><button type="button" class="btn" data-act="go" data-view="carnet">'+I.note+'Mon carnet'+(nn?' ('+nn+')':'')+'</button><button type="button" class="btn" data-act="go" data-view="evo">'+I.chart+'Mon évolution</button><button type="button" class="btn" data-act="go" data-view="photo">'+(can('parcours')?I.image:I.lock)+'Photolangage</button></div></div>'+
     (done>=24?'<button type="button" class="card fin-appel" data-act="go" data-view="final"><span class="label">Vous êtes au bout des 24 étapes</span><p class="lesson">Votre chemin tient maintenant sur une page, avec vos mots.</p><span class="btn primary small" style="align-self:flex-start">'+I.path+'Voir mon chemin</span></button>':'')+
-    '<div class="months">'+PARCOURS.map((m,mi)=>{const nf=m.steps.filter(s=>d.steps[s.id]).length;return '<div class="month"><h2><span class="n">'+(mi+1)+'</span><span class="nom">'+esc(m.m)+'</span><span class="mfait">'+(nf===m.steps.length?'Fait':nf+' sur '+m.steps.length)+'</span></h2><div class="sentier">'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';const av=st.idx>0?!!d.steps[steps[st.idx-1].id]:true;return '<button type="button" class="step'+(si%2?' d':' g')+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'">'+sentierSvg(si%2===1,av,dn,st.idx===23)+'<span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+'</div></div>';}).join('')+'</div>'+
+    '<div class="months">'+PARCOURS.map((m,mi)=>{const nf=m.steps.filter(s=>d.steps[s.id]).length;return '<div class="month"><h2><span class="n">'+(mi+1)+'</span><span class="nom">'+esc(m.m)+'</span><span class="mfait">'+(nf===m.steps.length?'Fait':nf+' sur '+m.steps.length)+'</span></h2><div class="sentier">'+m.steps.map((s,si)=>{const st=steps.find(x=>x.mi===mi&&x.si===si);const dn=!!d.steps[st.id];const e=stepEtat(st.idx);const lk=e.k!=='open';const av=st.idx>0?!!d.steps[steps[st.idx-1].id]:true;return '<button type="button" class="step'+(si%2?' d':' g')+(st.idx===cur&&!lk?' now':'')+(dn?' done':'')+(lk?' locked':'')+(e.k==='bientot'?' soon':'')+'" data-act="step" data-i="'+st.idx+'">'+sentierSvg(si%2===1,av,dn,false)+'<span class="n">'+(lk?I.lock:dn?I.check:(st.idx+1))+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+sous(st,e,dn)+'</span></span><span class="chev">'+I.chev+'</span></button>';}).join('')+(mi===5?arrivee:'')+'</div></div>';}).join('')+'</div>'+
     (can('parcours')||d.tout?'<p class="hint">Une étape s’ouvre 7 jours après la précédente, pour vous laisser le temps d’essayer. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.</p>':lockline('Les 23 étapes suivantes font partie du Parcours, à 14 CHF par mois','parcours'))+'</main>';
 }
 /* Les boutons d'une étape vers un autre écran : « Mon évolution », le photolangage, la respiration, les situations, ou une situation précise (« sit_nom »). */
@@ -1740,7 +1742,8 @@ function viewStep(){
   const mn=minutesLecture(s);
   /* Une fois l'étape faite, le fil des 24 étapes montre le chemin parcouru. */
   const nf=doneCount();
-  const bravo=!dn?'':'<div class="bravo"><span class="pts" aria-hidden="true">'+steps.map((x,i)=>'<i class="'+(d.steps[x.id]?'f':'')+(i&&i%4===0?' m':'')+'"></i>').join('')+'</span><p>'+(nf>=24?'Vous avez fait les 24 étapes du parcours.':'Vous avez fait '+nf+' étape'+(nf>1?'s':'')+' sur 24.')+'</p></div>';
+  const neuf=!!(state.bravoAt&&Date.now()-state.bravoAt<1500);
+  const bravo=!dn?'':'<div class="bravo'+(neuf?' neuf':'')+'"><span class="pts" aria-hidden="true">'+steps.map((x,i)=>'<i class="'+(d.steps[x.id]?'f':'')+(i&&i%4===0?' m':'')+'" style="--k:'+i+'"></i>').join('')+'</span><p>'+(nf>=24?'Vous avez fait les 24 étapes du parcours.':'Vous avez fait '+nf+' étape'+(nf>1?'s':'')+' sur 24.')+'</p></div>';
   const chap=i=>'<h2 class="chap" id="t-'+TEMPS[i][0]+'" tabindex="-1"><span class="n" aria-hidden="true">'+(i+1)+'</span><span class="nom">'+TEMPS[i][1]+'</span></h2>';
   /* La couverture : le numéro en grand derrière le titre, ce que l'étape promet, puis ses 3 temps et le temps de lecture. */
   return '<main id="main" tabindex="-1" class="view etape"><div class="couv" data-n="'+(s.idx+1)+'"><span class="label">Étape '+(s.idx+1)+' sur 24, mois '+(s.mi+1)+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(PARCOURS[s.mi].m)+'</p>'+
@@ -1852,7 +1855,7 @@ function evoSync(r){
 }
 function viewEvo(){
   const e=D().evo;const t=state.evoTime;const cur=e[t]||{};const dr=(state.evoDraft||{})[t]||{};
-  const chips='<div class="chips">'+EVO_TIMES.map((x,i)=>{const lk=i>0&&!can('parcours');return '<button type="button" class="chip" data-act="evotime" data-v="'+x[0]+'" aria-pressed="'+(t===x[0])+'">'+(lk?I.lock+' ':'')+x[1]+(e[x[0]]?' ✓':'')+'</button>';}).join('')+'</div>';
+  const chips='<div class="chips points3" role="group" aria-label="Les 3 points du parcours">'+EVO_TIMES.map((x,i)=>{const lk=i>0&&!can('parcours');return '<button type="button" class="chip'+(e[x[0]]?' fait':'')+'" data-act="evotime" data-v="'+x[0]+'" aria-pressed="'+(t===x[0])+'">'+(lk?I.lock+' ':'')+x[1]+(e[x[0]]?' ✓':'')+'</button>';}).join('')+'</div>';
   const NUMS=[0,1,2,3,4,5,6,7,8,9,10];
   const scales=EVO_SCALES.map(s=>{
     const v=dr[s.id]!==undefined?dr[s.id]:(cur[s.id]!==undefined?cur[s.id]:5);
@@ -1904,24 +1907,32 @@ function viewKit(){
   if(state.kit==='sits')body=kitSits();else if(state.kit==='tools')body=kitTools();else body=kitMe();
   return '<main id="main" tabindex="-1" class="view k-'+state.kit+'" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">La boîte à outils</h1></div><p class="sub">'+(state.kit==='sits'?'Vous trouverez ici vingt-deux situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.':state.kit==='tools'?'Ce sont les outils que les éducateurs utilisent tous les jours, et vous pouvez les poser sur la table de la cuisine.':'Deux minutes rien que pour vous, parce que vous êtes aussi une personne et pas seulement un parent.')+'</p>'+seg+body+'</main>';
 }
+/* Les situations sont rangées par thèmes : chaque thème a son titre, son compte et sa liste. Une recherche donne une seule liste. */
+const GROUPES=[['comp','Le comportement'],['comm','La communication'],['quot','Le quotidien'],['ecole','L’école, les professionnels, l’avenir'],['fam','La famille'],['moi','Vous, parent']];
+function sitRow(s){return '<button type="button" class="sit" data-act="sit" data-id="'+s.id+'"><span class="e">'+s.e+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span><span class="chev">'+I.chev+'</span></button>';}
 function kitSits(){
-  let list=SITS.filter(s=>(state.theme==='all'||s.th===state.theme)&&(state.age==='all'||s.ages.includes(state.age)));
+  let list=SITS.filter(s=>state.age==='all'||s.ages.includes(state.age));
   const q=state.q.trim().toLowerCase();if(q)list=list.filter(s=>(s.t+' '+s.s+' '+s.comp).toLowerCase().includes(q));
+  const corps=!list.length?'<p class="hint">Je n’ai rien trouvé pour ce mot. Vous pouvez le déposer sur l’accueil, et vous recevrez une réponse.</p>':
+    q?'<div class="grp"><div class="liste">'+list.map(sitRow).join('')+'</div></div>':
+    GROUPES.map(g=>{const L=list.filter(s=>s.th===g[0]);return L.length?'<section class="grp"><h2><span class="nom">'+g[1]+'</span><span class="nb" aria-hidden="true">'+L.length+'</span></h2><div class="liste">'+L.map(sitRow).join('')+'</div></section>':'';}).join('');
   return '<div class="search">'+I.search+'<input type="search" id="q" aria-label="Chercher une situation" maxlength="'+LIM.search+'" placeholder="Coucher, crise, école…" value="'+esc(state.q)+'" autocomplete="off" enterkeyhint="search"></div>'+
     '<div class="chips scroll" role="group" aria-label="Âge">'+Object.keys(AGES).map(k=>'<button type="button" class="chip" data-act="age" data-v="'+k+'" aria-pressed="'+(state.age===k)+'">'+AGES[k]+'</button>').join('')+'</div>'+
-    '<div class="chips scroll" role="group" aria-label="Thème">'+Object.keys(THEMES).map(k=>'<button type="button" class="chip" data-act="theme" data-v="'+k+'" aria-pressed="'+(state.theme===k)+'">'+THEMES[k]+'</button>').join('')+'</div>'+
-    '<div class="sits">'+(list.length?list.map(s=>'<button type="button" class="sit" data-act="sit" data-id="'+s.id+'"><span class="e">'+s.e+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span><span class="chev">'+I.chev+'</span></button>').join(''):'<p class="hint">Je n’ai rien trouvé pour ce mot. Vous pouvez le déposer sur l’accueil, et vous recevrez une réponse.</p>')+'</div>';
+    '<div class="sits groupes'+(q?' trouve':'')+'">'+corps+'</div>';
 }
 function viewSit(){
   const s=SITS.find(x=>x.id===state.sit);if(!s){state.view='kit';return viewKit();}
   const li=a=>'<ul class="list">'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
-  return '<main id="main" tabindex="-1" class="view"><div><span class="label">'+esc(liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])))+'</span><h1 class="t1">'+s.e+' '+esc(s.t)+'</h1><p class="sub">'+esc(s.s)+'</p></div>'+
-    '<div class="card sec"><h2><span class="dot"></span>Ce qui se passe</h2><p>'+esc(s.comp)+'</p></div>'+
+  /* Les autres situations du même thème, pour continuer sans repasser par la liste. */
+  const pr=SITS.filter(x=>x.th===s.th&&x.id!==s.id).slice(0,3);
+  return '<main id="main" tabindex="-1" class="view fiche"><div class="couv"><span class="med" aria-hidden="true">'+s.e+'</span><span class="label">'+esc(liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])))+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(s.s)+'</p></div>'+
+    '<div class="card sec comp"><h2><span class="dot"></span>Ce qui se passe</h2><p>'+esc(s.comp)+'</p></div>'+
     '<div class="card sec ess"><h2><span class="dot"></span>Ce que vous pouvez essayer</h2>'+li(s.ess)+'</div>'+
     '<div class="card sec ev"><h2><span class="dot"></span>Ce qu’il vaut mieux éviter</h2>'+li(s.ev)+'</div>'+
-    '<div class="comfort">'+esc(s.moi)+'</div>'+
+    '<div class="comfort"><span class="label">Un mot pour vous</span><p>'+esc(s.moi)+'</p></div>'+
     '<div class="card sec aide"><h2><span class="dot"></span>Quand demander de l’aide</h2><p>'+esc(s.aide)+'</p></div>'+
-    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="today">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="kit" data-v="tools">'+I.tools+'Les outils</button></div></main>';
+    '<div class="quick"><button type="button" class="btn" data-act="go" data-view="today">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="kit" data-v="tools">'+I.tools+'Les outils</button></div>'+
+    (pr.length?'<section class="grp proches"><h2><span class="nom">Dans le même thème</span></h2><div class="liste">'+pr.map(sitRow).join('')+'</div></section>':'')+'</main>';
 }
 function kitTools(){
   const tabs=[['timer','Minuteur'],['ft','D’abord, ensuite'],['routine','Routine'],['abc','Journal'],['phr','Mes phrases']];
@@ -2024,13 +2035,14 @@ function viewSOS(){
 function moodDots(){const d=D();const out=[];for(let i=13;i>=0;i--){const dt=new Date(Date.now()-i*86400000);const k=dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());const m=d.moods[k];out.push('<i class="'+(m!==undefined?'m'+m:'')+'"></i>');}const n=out.filter(x=>x.indexOf('class="m')>0).length;return '<div class="mooddots" role="img" aria-label="Humeur notée '+n+' jour'+(n>1?'s':'')+' sur les quatorze derniers">'+out.join('')+'</div>';}
 function viewMe(){
   const d=D();const T=TIERS[tier()];const ld=lastDepot();const ql=questionsLeft();
-  return '<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1" data-act="atelier">Moi</h1></div><p class="sub">Vous retrouvez ici votre formule, vos dépôts, votre carnet, votre humeur et vos réglages.</p>'+
-    '<div class="duo"><div class="duo-a"><div class="card"><span class="label">Ma formule</span><div class="row" style="align-items:center;justify-content:space-between">'+badge()+'<span class="price" style="font-family:var(--font-display);font-size:22px">'+esc(T.p)+' CHF <small style="font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700">'+esc(T.per)+'</small></span></div>'+
+  const nf=doneCount(),np=nbNotes(),nd=d.depots.length;const dep=d.start?dateLongue(d.start):'';
+  /* Trois chiffres en haut : les étapes faites, les pages écrites, les dépôts. Chacun mène à son écran. */
+  const trio='<div class="trio"><button type="button" data-act="go" data-view="parcours"><b>'+nf+'</b><span>étape'+(nf>1?'s':'')+' faite'+(nf>1?'s':'')+'</span></button><button type="button" data-act="go" data-view="carnet"><b>'+np+'</b><span>page'+(np>1?'s':'')+' écrite'+(np>1?'s':'')+'</span></button><button type="button" data-act="go" data-view="depots"><b>'+nd+'</b><span>dépôt'+(nd>1?'s':'')+'</span></button></div>';
+  return '<main id="main" tabindex="-1" class="view moi" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1" data-act="atelier">Moi</h1></div><p class="sub">'+(dep?'Vous avez commencé le '+esc(dep)+'. ':'')+'Vous retrouvez ici votre formule, vos dépôts, votre carnet, votre humeur et vos réglages.</p>'+
+    '<div class="duo"><div class="duo-a">'+trio+'<div class="card"><span class="label">Ma formule</span><div class="row" style="align-items:center;justify-content:space-between">'+badge()+'<span class="price" style="font-family:var(--font-display);font-size:22px">'+esc(T.p)+' CHF <small style="font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700">'+esc(T.per)+'</small></span></div>'+
     (tier()==='free'?'<p class="hint">Vous avez la dose, la boîte à outils, le SOS, trois dépôts écoutés et la première étape. Il vous reste '+depotsLeft()+' dépôt'+(depotsLeft()>1?'s':'')+'.</p>':tier()==='parcours'?'<p class="hint">Vous avez les dépôts sans limite, la dose personnalisée, les 24 étapes, Mon évolution et le photolangage.</p>':'<p class="hint">Vous avez tout Le parcours, le mot d’Antonio chaque mois et deux questions par mois.</p>')+
     '<button type="button" class="btn'+(tier()==='free'?' primary':'')+'" data-act="go" data-view="plans" style="align-self:flex-start">'+I.tag+(tier()==='free'?'Voir les formules':'Changer de formule')+'</button></div>'+
     (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration avec un exemple de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+', il vous reste '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot par mois et deux questions</span></span><span class="chev">'+I.chev+'</span></button>')+
-    '<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+(d.depots.length?d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+', le dernier le '+esc(fmtDate(ld.date)):'Aucun dépôt pour l’instant')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
-    '<button type="button" class="sit" data-act="go" data-view="carnet"><span class="e">'+I.note+'</span><span class="tx"><b>Mon carnet de route</b><span>'+(nbNotes()?nbNotes()+' page'+(nbNotes()>1?'s':'')+' écrite'+(nbNotes()>1?'s':''):'Ce que vous écrivez à chaque étape')+'</span></span><span class="chev">'+I.chev+'</span></button>'+
     '<button type="button" class="sit" data-act="go" data-view="final"><span class="e">'+I.path+'</span><span class="tx"><b>Mon chemin</b><span>Tout votre parcours sur une page, à garder ou à imprimer</span></span><span class="chev">'+I.chev+'</span></button>'+
     '</div><div class="duo-b"><div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. C’est ce qu’Antonio regardera en premier dans la formule Avec Antonio.</p></div>'+
     '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre appareil':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button>'+(d.atelier?'<button type="button" data-act="tout" aria-pressed="'+(!!d.tout)+'">'+I.path+'<span>Tout voir, l’aperçu d’Antonio</span><span class="state">'+(d.tout?'Activé':'Désactivé')+'</span></button>':'')+'<button type="button" data-act="onboard">'+I.swap+'<span>Modifier le début (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
@@ -2051,11 +2063,11 @@ function viewPlans(){
     return t===k?'<button type="button" class="btn wide" disabled>'+I.check+'Votre formule</button>':'<button type="button" class="btn'+(k==='parcours'?' primary':'')+' wide" data-act="tier" data-v="'+k+'" aria-label="'+(k==='free'?'Revenir à Découverte, la formule gratuite':'Choisir la formule '+esc(name))+'">'+(k==='free'?'Revenir à Découverte':'Choisir')+'</button>';
   };
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Les formules</h1><p class="sub">Les formules sont sans engagement et vous pouvez arrêter à tout moment. Voici ce que chacune vous donne concrètement.</p></div>'+
-    '<div class="card"><table class="cmp"><caption class="sr">Ce que comprend chaque formule</caption><thead><tr><th scope="col"><span class="sr">Ce qui est compris</span></th><th scope="col">Découverte<br>0</th><th scope="col" class="best">Parcours<br>14/mois</th><th scope="col">Antonio<br>49/mois</th></tr></thead><tbody>'+FEATURES.map(f=>'<tr><th scope="row">'+esc(f[0])+'</th>'+cell(f[1])+cell(f[2])+cell(f[3])+'</tr>').join('')+'</tbody></table></div>'+
     '<div class="plans">'+
     '<div class="plan"><h2 class="t2">Découverte</h2><div class="price">0 CHF <small>pour toujours</small></div><p>Cette formule vous permet de voir si l’espace vous parle. Vous avez la dose chaque jour, toute la boîte à outils, trois dépôts écoutés et la première étape.</p>'+btn('free')+'</div>'+
     '<div class="plan best"><span class="pill sun">Recommandé</span><h2 class="t2">Le parcours</h2><div class="price">14 CHF <small>par mois</small></div><p>Tous les cadenas disparaissent. Vous déposez autant que nécessaire avec la phrase-miroir, vous recevez une dose écrite pour vous, vous suivez les 24 étapes et vous voyez votre chemin sur six mois.</p>'+btn('parcours')+'</div>'+
     '<div class="plan"><h2 class="t2">Avec Antonio</h2><div class="price">49 CHF <small>par mois</small></div><p>Vous avez tout Le parcours, avec en plus un travailleur social qui vous connaît. <b>Chaque mois, Antonio lit les dépôts que vous choisissez de lui partager et vous écrit un mot personnel</b>, qui s’affiche en haut de votre accueil. <b>Deux fois par mois, vous pouvez lui poser une question</b> et il vous répond par écrit dans les 48 heures. Il ne demande jamais le prénom de votre enfant et ne pose jamais de diagnostic.</p>'+btn('antonio')+'</div></div>'+
+    '<h2 class="t2 detail">Le détail de chaque formule</h2><div class="card"><table class="cmp"><caption class="sr">Ce que comprend chaque formule</caption><thead><tr><th scope="col"><span class="sr">Ce qui est compris</span></th><th scope="col">Découverte<br>0</th><th scope="col" class="best">Parcours<br>14/mois</th><th scope="col">Antonio<br>49/mois</th></tr></thead><tbody>'+FEATURES.map(f=>'<tr><th scope="row">'+esc(f[0])+'</th>'+cell(f[1])+cell(f[2])+cell(f[3])+'</tr>').join('')+'</tbody></table></div>'+
     '<p class="hint">Dans cette version de test, choisir une formule change simplement l’interface pour vous la montrer. Aucun paiement n’est demandé et rien n’est transmis à Antonio. Les prix sont ceux prévus pour la Suisse.'+(SITE?' <a href="conditions.html">Conditions générales</a>':'')+'</p></main>';
 }
 function sheetUpgrade(sheetIn){
@@ -2187,7 +2199,7 @@ function handle(act,d,el){
       if(e.k!=='open'){toast('Cette étape s’ouvrira plus tard, quand vous aurez ouvert celles qui la précèdent.');return;}
       const s=allSteps()[i];if(!data.tout&&!data.seen[s.id]){data.seen[s.id]=todayIso();save();}
       state.step=i;state.sch=1;nav('step');break;}
-    case 'stepdone':{const id=d.id;if(!id)return;data.steps[id]=!data.steps[id];save();if(data.steps[id])toast('Étape faite. Une par semaine, c’est le bon rythme.');break;}
+    case 'stepdone':{const id=d.id;if(!id)return;data.steps[id]=!data.steps[id];save();if(data.steps[id]){state.bravoAt=Date.now();toast('Étape faite. Une par semaine, c’est le bon rythme.');}break;}
     /* Le schéma avance d'un moment, sans redessiner l'écran. */
     case 'schnext':{const bx=document.querySelector('.sch');const S=bx?SCHEMAS[bx.dataset.sch]:null;if(!S)return;state.sch=Math.min(S.caps.length,(state.sch||1)+1);schSync(true);return;}
     case 'schagain':state.sch=1;schSync(false);return;
