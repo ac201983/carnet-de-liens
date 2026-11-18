@@ -1077,6 +1077,10 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .picto .ou,.bartrack i em{font-size:13px}
 /* la boîte à outils : ce qui revient souvent à cette heure-ci */
 .souvent{display:flex;flex-direction:column;gap:7px}
+.hint.demain{text-align:center;margin-top:-4px}
+/* Arrivé par la porte « Une piste pour ce soir » : les pistes d'abord, puis la boîte entière sous son propre titre. */
+.k-piste h2.suite{margin-top:14px}
+.app.wide .k-piste .ce-soir{max-width:620px}
 a.sit{text-decoration:none;color:var(--fg)}
 .sit .e.duo{font-size:16px;white-space:nowrap;letter-spacing:-3px}
 .fiche .couv .med.duo{font-size:27px;white-space:nowrap;letter-spacing:-4px}
