@@ -38,6 +38,18 @@ if [ ! -f site/essai/index.html ]; then
 fi
 cd outils/essais
 etape() { echo "$(date -u +%H:%M:%S) $*"; }   # l'heure de chaque préparatif, pour voir dans le journal lequel prend du temps
+# Les machines de GitHub ne sont pas toutes au même endroit. Certaines nuits, depuis certaines d'entre elles, le site répond en plusieurs
+# secondes : les essais y mesureraient la lenteur du chemin, pas le site. On le sait en 5 mesures, avant d'installer quoi que ce soit.
+lent=0
+for i in 1 2 3 4 5; do
+  t="$(curl -s -o /dev/null --max-time 20 -w '%{time_total}' "${ADRESSE%/}/version.txt?c=$RANDOM$RANDOM" 2>/dev/null)" || t=20
+  etape "chemin vers le site, mesure $i : $t s"
+  if awk "BEGIN{exit !(${t:-20} > 2.5)}"; then lent=$((lent + 1)); fi
+done
+if [ "$lent" -ge 3 ]; then
+  echo "::error title=Essais en ligne dans $nom::Depuis cette machine de GitHub, le site répond trop lentement ($lent mesures sur 5 au-dessus de 2,5 secondes). Les essais n'ont pas été rejoués ici, parce que leurs mesures de temps n'auraient pas de sens. Relancer cette étape : une autre machine sera attribuée."
+  exit 1
+fi
 # La machine de GitHub n'a pas de carte son. Chrome s'en passe : il a sa propre sortie factice, et une vraie sortie factice le bloque.
 # WebKit, lui, a besoin d'une sortie pour jouer : on lui en fabrique une, avant d'installer le navigateur. Si elle ne s'installe pas,
 # rien n'est bloqué, et l'essai dit en note que le son n'a pas pu être mesuré.

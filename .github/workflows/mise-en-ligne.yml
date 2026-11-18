@@ -26,6 +26,22 @@ jobs:
           git init -q .
           git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
           git checkout -q FETCH_HEAD
+      # Les machines de GitHub ne sont pas toutes au même endroit. Certaines nuits, depuis certaines d'entre elles, le site répond
+      # en plusieurs secondes : le dépôt, qui relit chaque fichier en ligne, n'aurait pas le temps de finir. On le sait en 5 mesures,
+      # et on s'arrête avant d'avoir rien déposé. Relancer la mise en ligne attribue une autre machine.
+      - name: Mesurer le chemin vers le site
+        run: |
+          . outils/reglages.env
+          lent=0
+          for i in 1 2 3 4 5; do
+            t="$(curl -s -o /dev/null --max-time 20 -w '%{time_total}' "${ADRESSE%/}/version.txt?c=$RANDOM$RANDOM" 2>/dev/null)" || t=20
+            echo "mesure $i : $t s"
+            if awk "BEGIN{exit !(${t:-20} > 2.5)}"; then lent=$((lent + 1)); fi
+          done
+          if [ "$lent" -ge 3 ]; then
+            echo "::error title=Chemin trop lent::Depuis cette machine de GitHub, le site répond trop lentement ($lent mesures sur 5 au-dessus de 2,5 secondes). Rien n'a été déposé. Relancer la mise en ligne : une autre machine sera attribuée."
+            exit 1
+          fi
       - name: Déposer le site
         env:
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
