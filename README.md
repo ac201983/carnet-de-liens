@@ -16,11 +16,11 @@ Le dépôt est public : rien ici n'est secret. On n'y met jamais de mot de passe
 ## Ce qu'il y a ici
 
 - `build_site.py` : fabrique le site à partir des morceaux. Un seul code, plusieurs sorties.
-- `pparts/` : les morceaux de l'application (`p1-head.html` pour les styles, `v2-a.js`, `v2-c.js`, `v2-b.js`, `p2b-parcours.js`, les images en ligne, le tableau de bord de démonstration). `v2-c.js` porte le premier geste (la question et ses trois portes), l'écran « Souffler 2 minutes », l'écran « Déposer », les adresses des fiches, le bouton Retour du téléphone et le partage.
+- `pparts/` : les morceaux de l'application (`p1-head.html` pour les styles, `v2-a.js`, `v2-c.js`, `v2-b.js`, `p2b-parcours.js`, les images en ligne, le tableau de bord de démonstration). `v2-c.js` porte le premier geste (la question et ses trois portes), l'écran « Souffler 2 minutes », l'écran « Déposer », les adresses des fiches, le bouton Retour du téléphone, le partage et le son de l'étang.
 - `eparts/p2-content.js` : les situations, les outils et les textes repris de la première application.
-- `site-src/` : ce qui entoure l'application sur le site (pages légales, polices, icônes, images, `site.js`) et les réglages : `config.json` pour l'ancienne adresse, `config.infomaniak.json` pour parent-ecoute.ch, `config.essai.json` pour la version d'essai. `site-src/img/fiches/` contient l'image d'aperçu de chaque fiche, celle qui s'affiche quand on envoie son lien (fabriquées par `tests/make-apercus.js`).
-- `tests/` : les vérifications (parcours complet, voix, liens, contraste, débordement, format ordinateur, effets). S'y ajoutent `premier-geste.js` (trois parcours de bout en bout, au format téléphone puis ordinateur), `doigt.js` (taille des zones à toucher et du texte) et `essai.js` (ce qui est propre à la version d'essai). `prerender.js` écrit d'avance l'accueil, la liste des fiches et chaque fiche dans sa propre page.
-- `outils/` : les scripts de rangement et de mise en ligne, le banc d'essai de l'eau (`outils/eau/`), et ce qui sert à la version d'essai (`preparer-essai.sh`, `outils/essai/`).
+- `site-src/` : ce qui entoure l'application sur le site (pages légales, polices, icônes, images, `site.js`) et les réglages : `config.json` pour l'ancienne adresse, `config.infomaniak.json` pour parent-ecoute.ch, `config.essai.json` pour la version d'essai. `site-src/img/fiches/` contient l'image d'aperçu de chaque fiche, celle qui s'affiche quand on envoie son lien (fabriquées par `tests/make-apercus.js`). `site-src/son/` contient l'ambiance de l'étang : `etang.mp3` (2 minutes, calées sur la respiration) et `instant.mp3` (40 secondes, pour la dose).
+- `tests/` : les vérifications (parcours complet, voix, liens, contraste, débordement, format ordinateur, effets). S'y ajoutent `premier-geste.js` (trois parcours de bout en bout, au format téléphone puis ordinateur), `finition.js` (le son de l'étang, la dose, « Accueil » et « Retour », dans le navigateur choisi par `PEPE_NAV`), `doigt.js` (taille des zones à toucher et du texte) et `essai.js` (ce qui est propre à la version d'essai). `prerender.js` écrit d'avance l'accueil, la liste des fiches et chaque fiche dans sa propre page.
+- `outils/` : les scripts de rangement et de mise en ligne, le banc d'essai de l'eau (`outils/eau/`), ce qui sert à la version d'essai (`preparer-essai.sh`, `outils/essai/`), et ce qui a composé le son de l'étang (`outils/son/`).
 
 ## Reprendre le travail ailleurs
 
@@ -61,6 +61,30 @@ outils/ranger-sources.sh
 cd pub/sources && git add -A && git commit -m "Ce qui change" && git push origin sources
 ```
 
+## Le son de l'étang
+
+C'est une création originale, entièrement calculée par `outils/son/compose.py` : aucun enregistrement, aucun échantillon, aucune musique existante. Il y a 2 matières seulement, de l'eau (du bruit filtré qui va et vient) et un piano feutré (des notes additives, à l'attaque douce).
+
+```
+python3 outils/son/compose.py etang etang.wav       # 2 minutes 11 : 12 respirations de 4 s et 6 s, puis une fin qui s'éteint
+python3 outils/son/compose.py instant instant.wav   # 40 secondes
+ffmpeg -i etang.wav -c:a libmp3lame -b:a 80k -ar 44100 -joint_stereo 1 -map_metadata -1 site-src/son/etang.mp3
+python3 outils/son/analyse.py etang.wav etang.png   # niveaux, spectre, et l'eau qui avance et se retire avec la respiration
+python3 outils/son/balance.py etang.wav             # le piano reste-t-il devant l'eau sur un petit haut-parleur ? (après compose.py … --pistes)
+```
+
+Le repère pour qui ferme les yeux : l'eau avance pendant l'inspiration et se retire pendant l'expiration, 2 notes qui montent ouvrent l'inspiration, et 1 note plus basse ouvre l'expiration. Ensuite la note s'éteint, et il ne reste que l'eau jusqu'à la respiration suivante.
+
+Dans l'application (`pparts/v2-c.js`, « le son de l'étang ») : le son ne part jamais sans un geste du parent, il est chargé à ce moment-là seulement, une seule piste joue à la fois, et il s'arrête dès qu'on quitte l'écran qui l'a lancé. Sur iPhone, la page se déclare comme un lecteur pour que le bouton « silencieux » ne coupe pas le son (possible depuis iOS 17). Sur un iPhone plus ancien, le lecteur audio ordinaire prend le relais, sans fondu.
+
+Trois détails qui comptent sur un téléphone :
+
+- Le fichier est téléchargé une seule fois par visite et gardé tel quel (1,3 Mo). Le son décodé, lui, pèse plusieurs dizaines de mégaoctets : il est rendu dès qu'on quitte son écran, et décodé de nouveau si le parent y revient.
+- L'écran reste allumé pendant la respiration et tant qu'un son joue (`veilleSync`). Sans cela, un téléphone réglé sur 30 secondes se verrouille au milieu de l'exercice. Dès que c'est fini, le téléphone reprend son réglage.
+- Quand la page passe à l'arrière-plan, le son se coupe. Au retour, celui de la respiration reprend là où en est l'exercice, qui s'était arrêté lui aussi. Celui de la dose reste coupé.
+
+`tests/finition.js` rejoue tout cela dans Chrome, Firefox et WebKit. Il ne peut pas écouter : il relève ce que la page envoie vers la sortie audio (une seule piste, son point de départ, son volume, le signal). Le timbre, lui, se juge à l'oreille sur un vrai téléphone.
+
 ## La version d'essai
 
 Elle sert à essayer une nouvelle version sur un vrai téléphone avant de la publier. Elle vit à une adresse à part, https://parent-ecoute.ch/essai/, que rien ne référence : chaque page porte la consigne `noindex,nofollow` et n'est pas dans le plan du site. Elle range ses notes sous sa propre clé dans le navigateur (`pepe-essai-v1`), donc elle ne touche pas à ce qu'un parent a écrit sur le site habituel. L'Espace Antonio n'y existe pas, parce qu'il n'y serait pas fermé par son mot de passe.
@@ -92,3 +116,5 @@ Publier la version d'essai comme site (seulement quand Antonio l'a essayée et v
 - L'espace dit toujours clairement qu'une intelligence artificielle écrit les réponses immédiates.
 - Chaque bouton tient la promesse de son libellé. Rien n'est coché à l'avance, et aucune question ne passe devant ce que le parent est venu chercher.
 - Le lien d'une fiche partagée ne contient que l'adresse de la fiche. Rien de ce que le parent a écrit ou choisi n'y figure.
+- Le silence est la règle. Aucun son ne part sans un geste du parent, et le même geste le coupe.
+- « Retour » ramène d'où l'on vient. La flèche du navigateur suit le même chemin.

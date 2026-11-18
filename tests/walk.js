@@ -39,10 +39,18 @@ async function walk(page, visit) {
   await page.click('.pubbar .wordmark'); await w(300);
   // ----- le premier geste : souffler (en cours, arrêté), puis « Aujourd'hui » tel que le découvre un nouveau parent
   await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await w(300); await visit('souffle-debut');
-  await w(1900); await visit('souffle-inspirez'); await w(4100); await visit('souffle-expirez');
+  await w(1900); await visit('souffle-inspirez');
+  // « Écouter l'étang » : le bouton pendant que le son joue, puis de nouveau en silence
+  await page.click('.son-souffle'); await w(800); await visit('souffle-son'); await page.click('.son-souffle'); await w(200);
+  await w(3100); await visit('souffle-expirez');
   await page.click(A('souffle-stop')); await w(100); await visit('souffle-pret');
-  await page.click(A('back')); await w(250); await visit('aujourdhui-nouveau');
+  // « Retour » ramène à la vitrine, celle d'un parent déjà entré, qui propose « Ouvrir mon espace »
+  await page.click(A('back')); await w(300); await visit('vitrine-parent');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('vitrine-parent-bas'); await page.evaluate(() => scrollTo(0, 0)); await w(150);
+  await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await w(250); await visit('aujourdhui-nouveau');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('aujourdhui-nouveau-bas'); await page.evaluate(() => scrollTo(0, 0));
+  // « Prendre un instant », sous la dose : le bouton pendant l'écoute
+  await page.$eval('.son-dose', e => e.scrollIntoView({ block: 'center' })); await w(150); await page.click('.son-dose'); await w(800); await visit('aujourdhui-instant'); await page.click('.son-dose'); await w(200); await page.evaluate(() => scrollTo(0, 0));
   await page.click('.dose ' + A('voix')); await w(150); await visit('qui-parle'); await page.keyboard.press('Escape'); await w(100);
   await page.click('.card.perso ' + A('onboard')); await w(150); await visit('entree');
   await page.fill('#ob-me', 'Camille'); await page.click(A('ob', '[data-k="age"][data-v="a"]')); await page.click(A('obw', '[data-v="fatigue"]')); await visit('entree-remplie');

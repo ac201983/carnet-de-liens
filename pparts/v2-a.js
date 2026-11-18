@@ -133,6 +133,8 @@ function allSteps(){const out=[];PARCOURS.forEach((m,mi)=>m.steps.forEach((s,si)
 /* L'étape du moment : la dernière qui est ouverte. Dans l'aperçu d'Antonio, où tout est ouvert, la première qui n'est pas faite. */
 function currentStepIdx(){const S=allSteps();if(D().tout){const f=S.findIndex(s=>!D().steps[s.id]);return f<0?S.length-1:f;}let c=0;for(let i=1;i<S.length;i++){if(stepEtat(i).k==='open')c=i;else break;}return c;}
 function doneCount(){return allSteps().filter(s=>D().steps[s.id]).length;}
+/* Le parcours est commencé dès qu'une étape a été ouverte ou cochée sur cet appareil. */
+function parcoursCommence(){const d=D();return allSteps().some(s=>d.seen[s.id]||d.steps[s.id]);}
 /* Nombre de jours du calendrier entre une date et aujourd'hui. */
 function joursDepuis(iso){const p=String(iso).split('-').map(Number);const n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime()-new Date(p[0],p[1]-1,p[2]).getTime())/86400000);}
 /* Où en est une étape : ouverte, bientôt (dans n jours), plus tard, ou réservée à la formule Le parcours.
@@ -517,7 +519,8 @@ function render(){
   /* Un visiteur arrivé par le lien d'une fiche la lit tout de suite, sans rien avoir à créer. */
   else if(visiteur&&SITE&&state.view==='sit'&&SITS.some(x=>x.id===state.sit)){base='app nobar pub';key='pub-sit';html=barPub()+viewSit()+piedPub();}
   else if(visiteur&&SITE&&state.view==='kit'){state.kit='sits';base='app nobar pub';key='pub-kit';html=barPub()+viewKit()+piedPub();}
-  else if(visiteur){base='app nobar';key='intro';html=viewIntro();}
+  /* La vitrine. Un visiteur y arrive, et un parent déjà entré la retrouve par « Accueil » : c'est un écran comme les autres, on y revient avec « Retour ». */
+  else if(visiteur||state.view==='intro'){base='app nobar';key='intro';html=viewIntro();}
   else{
     key=state.view;html+=(large()?tabs():'')+bar();
     switch(state.view){
@@ -579,6 +582,7 @@ function render(){
   if(key==='souffle')souffleApres();
   fxMark();
   eauSync(entering);if(entering)eauArrive();
+  sonGarde();
 }
 /* ---------- « Mon histoire » : adresse partageable (#histoire, sur le site) et un seul moment d'animation ---------- */
 const STORY_HASH='#histoire';const TITLE0=SITE?TITRE_SITE:document.title;
@@ -599,8 +603,9 @@ function bar(){
   /* Dans une étape, 3 traits sous la barre se remplissent pendant la lecture : comprendre, essayer, écrire. */
   const lect=state.view==='step'?'<span class="lecture" aria-hidden="true"><i><b></b></i><i><b></b></i><i><b></b></i></span>':'';
   if(large())return back?'<header class="bar sub">'+back+lect+'</header>':'';
-  const wm=back?'':'<span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span>';
-  return '<header class="bar'+(back?' sub':'')+'">'+back+wm+'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>'+lect+'</header>';
+  /* Le nom de l'espace mène à l'accueil, et un lien « Accueil » reste à côté du SOS sur tous les écrans de l'espace : la vitrine se retrouve en un geste. */
+  const wm=back?'':'<a class="wordmark" href="'+RACINE+'#accueil" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a>';
+  return '<header class="bar'+(back?' sub':'')+'">'+back+wm+'<span class="bar-d"><a class="acc-l" href="'+RACINE+'#accueil" data-act="accueil">'+I.home+'<span>Accueil</span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></span>'+lect+'</header>';
 }
 /* Les 3 temps d'une étape, dans l'ordre où on les vit. */
 const TEMPS=[['comprendre','Comprendre'],['essayer','Essayer'],['ecrire','Écrire']];
@@ -645,7 +650,9 @@ function updCount(t){
 function introDoseLabel(){if(new Date().getDay()===0)return 'Dose spéciale du dimanche';let j='';try{j=new Date().toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});}catch(e){}return 'La dose du '+(j||fmtDate(todayIso()));}
 function viewIntro(){
   const m=moment();
-  const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="entrer" data-v="today">'+I.sun2+'Commencer gratuitement</button>';
+  /* Un parent déjà entré retrouve la même vitrine. Les boutons disent alors ce qui l'attend : son espace, et son parcours s'il l'a commencé. */
+  const membre=!!D().onboarded,repr=membre&&parcoursCommence(),cur=currentStepIdx();
+  const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="entrer" data-v="today">'+I.sun2+(membre?'Ouvrir mon espace':'Commencer gratuitement')+'</button>';
   const priv=SITE?'Cette version de test est gratuite et tout ce que vous écrivez reste sur votre appareil. La phrase-miroir personnalisée arrivera avec la version complète. En attendant, chaque dépôt reçoit une question et une lumière.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
   const sec=(k,t,l,c)=>'<section class="acc acc-'+k+'" aria-labelledby="acc-'+k+'-t"><div class="acc-h"><h2 id="acc-'+k+'-t" class="acc-t">'+t+'</h2>'+(l?'<p class="acc-l">'+l+'</p>':'')+'</div><div class="acc-c">'+c+'</div></section>';
   const steps=allSteps();const etape=id=>steps.find(x=>x.id===id)||{};
@@ -671,7 +678,7 @@ function viewIntro(){
   const mois='<p class="acc-st">Les 6 mois, étape par étape</p><div class="acc-mois">'+PARCOURS.map((mm,mi)=>'<details class="mois"'+(mi===0?' open':'')+'><summary><span class="n">'+(mi+1)+'</span><span class="tx"><b>'+esc(mm.m)+'</b><span>Mois '+(mi+1)+'</span></span>'+I.chev+'</summary><ol start="'+(mi*4+1)+'">'+mm.steps.map(s=>'<li>'+esc(s.t)+'</li>').join('')+'</ol></details>').join('')+'</div>';
   const cr=etape('croire');const vec=Array.isArray(cr.vecu)?cr.vecu.slice(0,2):[];
   const vecu=!vec.length?'':'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio, à l’étape 2</small></div></div>'+vec.map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'<div class="vecu-lien"><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></div>';
-  const allerParcours='<button type="button" class="btn" data-act="entrer" data-v="parcours">'+I.path+'Commencer le parcours de 6 mois</button>';
+  const allerParcours=repr?'<button type="button" class="btn" data-act="step" data-i="'+cur+'">'+I.path+'Reprendre mon parcours</button>':'<button type="button" class="btn" data-act="entrer" data-v="parcours">'+I.path+'Commencer le parcours de 6 mois</button>';
   /* Les formules, avec les prix affichés dans l'espace. */
   const F=[['free','La dose chaque jour, toute la boîte à outils, 3 dépôts écoutés et la première étape du parcours.'],['parcours','Les 24 étapes, votre carnet de route, « Mon évolution », le photolangage et des dépôts sans limite.'],['antonio','Tout Le parcours, avec un mot personnel d’Antonio chaque mois et 2 questions par mois.']];
   const plans='<ul class="acc-plans">'+F.map(f=>{const T=TIERS[f[0]];return '<li'+(f[0]==='parcours'?' class="best"':'')+'><div class="h"><b>'+esc(T.t)+'</b><span class="prix">'+T.p+' CHF'+(T.p==='0'?'':' <small>par mois</small>')+'</span></div><p>'+f[1]+'</p></li>';}).join('')+'</ul><button type="button" class="btn" data-act="peek-plans">Voir le détail des formules</button>';
@@ -689,11 +696,12 @@ function viewIntro(){
   const ob=etape('objectifs');const cit=((typeof ob.vecu==='string'?ob.vecu:'').match(/Vous qui me lisez.*$/)||[''])[0];
   /* Le premier écran : une question, et 3 réponses qui tiennent chacune en un geste. Le nom de l'espace et le SOS sont en haut. */
   return '<main id="main" tabindex="-1" class="view intro" style="padding-top:0">'+
-    '<div class="herofull bleed"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high">'+
+    '<div class="herofull bleed" id="accueil"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high">'+
     '<div class="hbar"><span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></div>'+
     '<h1><span class="salut"'+heureAttr(SALUT)+'>'+SALUT[m]+'</span> <span class="besoin">'+besoinHtml(m,true)+'</span></h1>'+
     portes(true)+
-    '<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>'+
+    (repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'">'+I.path+'<span>Reprendre mon parcours</span></button>':'<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>')+
+    (membre?'<button type="button" class="voie" data-act="entrer" data-v="today">'+I.sun2+'<span>Ouvrir mon espace</span></button>':'')+
     '<p class="rassure">'+(SITE?'Version de test, gratuite et sans compte. Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div>'+
     sec('dose','Chaque matin, une dose de lumière','Voici celle d’aujourd’hui. Demain, une autre vous attendra.',dose)+
     sec('outils','Des pistes pour les jours difficiles','Vous y trouvez '+SITS.length+' situations de la vraie vie, avec des pistes à essayer dès ce soir. Chaque fiche se lit en 2 minutes'+(SITE?' et s’envoie à quelqu’un qui compte pour vous.':'.'),scenes+pictos)+
@@ -763,7 +771,9 @@ function viewToday(){
   html+='<div class="duo"><div class="duo-a">';
   if(can('antonio'))html+=letterCard();
   html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p>'+(d.doseDate===t&&d.doseText?'<span class="sig">Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio</span>':'<div class="sigrow"><span class="sig">Antonio<button type="button" class="qui-b" data-act="voix" aria-label="Qui écrit cette dose ?">'+I.info+'</button></span><button type="button" class="linkbtn" data-act="go" data-view="about">Lire mon histoire</button></div>')+
-    (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+'</div>';
+    (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+
+    /* Après la lecture, et seulement si le parent le choisit : 40 secondes d'étang pour rester avec ces mots. */
+    sonBoutonHtml('dose')+'</div>';
   /* Une raison simple de revenir : la dose change chaque jour, et l'espace le dit sans rien exiger. */
   html+='<p class="hint demain">Une nouvelle dose vous attend ici chaque matin.</p>';
   /* Pour celui qui suit le parcours : le fil des 24 étapes, puis l'étape de la semaine, en grand, avec un seul geste. */

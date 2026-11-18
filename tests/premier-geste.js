@@ -59,7 +59,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       await page.waitForTimeout(600);
       ok(tPortes < (EN_LIGNE ? 4000 : 1500), P('1. les 3 portes sont à l’écran en ' + tPortes + ' ms'));
       const acc = await page.evaluate(() => ({ salut: document.querySelector('.herofull .salut').textContent, besoin: document.querySelector('.herofull .besoin').textContent, portes: [...document.querySelectorAll('.herofull .porte b')].map(e => e.textContent), bandeau: !!document.getElementById('consent'), nuit: document.documentElement.className }));
-      ok(acc.salut === 'Bonsoir.' && net(acc.besoin) === 'De quoi auriez-vous besoin ce soir ?' && acc.portes.join('|') === 'Souffler 2 minutes|Déposer ce qui pèse|Une piste pour ce soir' && /\bh-soir\b/.test(acc.nuit), P('1. à 21 h 40 : « Bonsoir. De quoi auriez-vous besoin ce soir ? », 3 portes, la lumière du soir ' + JSON.stringify(acc)));
+      ok(acc.salut === 'Bonsoir.' && net(acc.besoin) === 'De quoi auriez-vous besoin ce soir ?' && acc.portes.map(net).join('|') === 'Souffler 2 minutes|Déposer ce qui pèse|Trouver une idée pour ce soir' && /\bh-soir\b/.test(acc.nuit), P('1. à 21 h 40 : « Bonsoir. De quoi auriez-vous besoin ce soir ? », 3 portes, la lumière du soir ' + JSON.stringify(acc)));
       ok(!acc.bandeau, P('1. aucun bandeau ne se met devant le premier écran'));
       ok(await dansEcran(page, '.herofull h1, .herofull .porte, .herofull .sos'), P('1. la question, les 3 portes et le SOS tiennent dans l’écran sans défiler'));
       ok((await notes(page)) === null, P('1. rien n’est enregistré avant le premier geste'));
@@ -92,9 +92,12 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       } else {
         await page.click(A('souffle-stop')); await page.waitForTimeout(200);
         ok(!!(await page.$('main.souffle.s-pret')), P('1. « Arrêter » rend la main tout de suite'));
-        // le bouton Retour du téléphone, depuis la respiration : il ne fait pas sortir du site, et le parent est dans son espace
-        await page.goBack(); await page.waitForTimeout(700);
-        ok(page.url() === APP && !!(await page.$('.tabs')), P('1. le bouton Retour du téléphone ne fait pas sortir du site (' + page.url().replace(ORIGIN, '') + ')'));
+        // le bouton Retour du téléphone, depuis la respiration : il ramène d'où l'on vient, ici la vitrine, sans sortir du site
+        await page.goBack(); await page.waitForTimeout(800);
+        const vit = await page.evaluate(() => ({ intro: !!document.querySelector('main.intro'), portes: document.querySelectorAll('.herofull .porte').length, liens: [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()) }));
+        ok(page.url() === APP + '#accueil' && vit.intro && vit.portes === 3, P('1. le bouton Retour du téléphone ramène à la vitrine, d’où le parent venait (' + page.url().replace(ORIGIN, '') + ')'));
+        ok(vit.liens.join('|') === 'Commencer le parcours de 6 mois|Ouvrir mon espace', P('1. la vitrine propose maintenant « Ouvrir mon espace » ' + JSON.stringify(vit.liens)));
+        await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForSelector('.tabs'); await page.waitForTimeout(700);
       }
       // ensuite : l'espace, avec la dose en premier, et le choix de personnaliser
       const auj = await page.evaluate(() => { const m = document.getElementById('main'); const d = m && m.querySelector('.dose'); const r = d && d.getBoundingClientRect(); return { h: document.querySelector('h1').textContent, tabs: !!document.querySelector('.tabs'), dose: !!d, doseHaut: r ? Math.round(r.top) : -1, vh: innerHeight, perso: !!document.querySelector('.card.perso'), quest: !!document.querySelector('#main [data-view="evo"]'), rouvrir: [...document.querySelectorAll('.rouvrir .chip')].map(e => e.textContent.trim()) }; });
@@ -115,15 +118,21 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       // ce qui est visible : entre la barre du haut et, sur téléphone, la barre d'onglets du bas
       const visibles = (sel) => page.evaluate(sel => { const b = document.querySelector('header.bar'); const hb = b && getComputedStyle(b).display !== 'none' ? b.getBoundingClientRect().bottom : 0; const t = document.querySelector('.tabs'); const tr = t ? t.getBoundingClientRect() : null; const bas = tr && tr.top > innerHeight / 2 ? tr.top : innerHeight;
         const L = [...document.querySelectorAll(sel)]; return { n: L.length, vus: L.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= hb - 1 && r.bottom <= bas + 1; }).length, entames: L.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= hb - 1 && r.top < bas - 24; }).length, textes: L.map(e => (e.querySelector('b') || e).textContent.trim()) }; }, sel);
-      // « Une piste pour ce soir » : les pistes du soir d'abord, à ouvrir en un geste
+      // « Trouver une idée pour ce soir » : 4 situations d'abord, pour un enfant, un ado, un adulte et pour le parent, à ouvrir en un geste
       await page.click('.herofull ' + A('porte', '[data-v="piste"]')); await page.waitForSelector('main.k-piste'); await page.waitForTimeout(1300);
       const ps = await visibles('.ce-soir .sit');
-      ok((await h1(page)) === 'Une piste pour ce soir' && ps.n === 4 && ps.textes.slice(0, 3).join('|') === 'Le coucher et la nuit|La crise|Le refus', P('1 bis. « Une piste pour ce soir » ouvre sur les situations du soir annoncées par la porte ' + JSON.stringify(ps.textes)));
+      ok(net(await h1(page)) === 'Trouver une idée pour ce soir' && ps.textes.join('|') === 'Le coucher et la nuit|L’adolescence et le corps|Quand il ou elle vit ailleurs|Je n’en peux plus', P('1 bis. « Trouver une idée pour ce soir » ouvre sur 4 situations : un enfant, un ado, un adulte, et le parent ' + JSON.stringify(ps.textes)));
+      // le choix de l'âge change les 4 propositions, sans quitter l'écran
+      const parAge = async v => { await page.click('.autres-ages ' + A('age', '[data-v="' + v + '"]')); await page.waitForTimeout(350); return (await visibles('.ce-soir .sit')).textes.join('|'); };
+      ok((await parAge('a')) === 'L’adolescence et le corps|Les écrans|Le coucher et la nuit|La crise', P('1 bis. « Ado » propose 4 situations de parents d’ados'));
+      ok((await parAge('g')) === 'Quand il ou elle vit ailleurs|Le passage à l’âge adulte|La crise|Je n’en peux plus', P('1 bis. « Adulte » propose 4 situations de parents d’adultes'));
+      ok((await parAge('e')) === 'Le coucher et la nuit|La crise|Le refus|Les écrans', P('1 bis. « Enfant » propose 4 situations de parents d’enfants'));
+      await parAge('all');
       ok(ps.vus >= 3 && ps.entames === 4 && !(await page.$('.souvent')) && !(await page.$('.sheet')), P('1 bis. ces pistes sont à l’écran sans défiler, sans formulaire devant (' + ps.vus + ' entières, ' + ps.entames + ' visibles sur ' + ps.n + ')'));
       await page.click('.ce-soir .sit'); await page.waitForSelector('main.fiche'); await page.waitForTimeout(600);
       ok((await h1(page)) === 'Le coucher et la nuit' && page.url() === APP + 'fiches/le-coucher-et-la-nuit/', P('1 bis. une piste s’ouvre en un geste (' + page.url().replace(ORIGIN, '') + ')'));
       await page.goBack(); await page.waitForTimeout(800);
-      ok((await h1(page)) === 'Une piste pour ce soir' && (await page.$$('.ce-soir .sit')).length === 4, P('1 bis. le bouton Retour du téléphone ramène aux pistes du soir'));
+      ok(net(await h1(page)) === 'Trouver une idée pour ce soir' && (await page.$$('.ce-soir .sit')).length === 4, P('1 bis. le bouton Retour du téléphone ramène aux idées du soir'));
       await page.click('.tabs ' + A('go', '[data-view="kit"]')); await page.waitForTimeout(800);
       ok((await h1(page)) === 'La boîte à outils' && !(await page.$('.ce-soir')) && !!(await page.$('.souvent')), P('1 bis. l’onglet « Outils » montre ensuite la boîte entière'));
       // « Déposer ce qui pèse » : après l'envoi, la question et la lumière sont sous les yeux
@@ -282,7 +291,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       await o2.page.goto(APP); await o2.page.waitForSelector('.dose p'); await o2.page.waitForTimeout(400);
       const b = await o2.page.evaluate(() => ({ h: document.querySelector('h1').textContent, dose: document.querySelector('.dose p').textContent, besoin: document.querySelector('.band .besoin').textContent, etape: document.querySelector('.step.semaine b').textContent, classe: document.getElementById('app').className, piste: document.querySelector('.portes.mini .porte[data-v="piste"]').getAttribute('aria-label') }));
       const dim = new Date(Date.now() + 86400000).getDay() === 0 || new Date().getDay() === 0;
-      ok(b.h === 'Bonjour, Camille.' && net(b.besoin) === 'De quoi auriez-vous besoin ce matin ?' && /\bh-matin\b/.test(b.classe) && b.piste === 'Une piste pour ce matin' && /^Croire en lui/.test(b.etape), P('3. le lendemain à 7 h 30 : le bonjour, la question et la lumière du matin, et la même étape ' + JSON.stringify([b.h, b.besoin, b.piste])));
+      ok(b.h === 'Bonjour, Camille.' && net(b.besoin) === 'De quoi auriez-vous besoin ce matin ?' && /\bh-matin\b/.test(b.classe) && net(b.piste) === 'Trouver une idée pour ce matin' && /^Croire en lui/.test(b.etape), P('3. le lendemain à 7 h 30 : le bonjour, la question et la lumière du matin, et la même étape ' + JSON.stringify([b.h, b.besoin, b.piste])));
       ok(dim || net(b.dose) !== net(a.dose), P('3. le lendemain : une autre dose l’attend'));
       await o2.ctx.close();
     }

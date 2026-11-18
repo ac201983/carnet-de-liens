@@ -14,7 +14,9 @@ un links node links.js
 un voix node voix.js
 un doigt node doigt.js 390
 un geste node premier-geste.js
+un finition node finition.js
 un geste-essai env PEPE_ORIGIN=https://localhost:8446 PEPE_BASE=/essai/ PEPE_PUBLIC=https://parent-ecoute.ch/essai/ PEPE_KEY=pepe-essai-v1 node premier-geste.js --court
+un finition-essai env PEPE_ORIGIN=https://localhost:8446 PEPE_BASE=/essai/ PEPE_KEY=pepe-essai-v1 node finition.js --court
 un essai env PEPE_ORIGIN=https://localhost:8446 PEPE_BASE=/essai/ node essai.js
 un artefact node artifact-smoke.js
 for w in 320 390 768 1024 1280 1920; do un overflow-$w node overflow.js $w; done

@@ -34,7 +34,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { if (c) pass++; else { fail++; con
   ok(r.vtn === 'rail', 'la colonne de gauche reste en place pendant une onde (' + r.vtn + ')');
   // l'ordre au clavier : le premier élément qu'on atteint est dans la colonne
   const f1 = await page.evaluate(() => { const e = document.querySelector('#app button, #app a[href], #app input, #app textarea'); return e ? e.className + ' / ' + e.textContent.trim() : ''; });
-  ok(/^tab\b/.test(f1), 'au clavier, on arrive d’abord dans la colonne de gauche (' + f1 + ')');
+  ok(/^(rail-brand|tab)\b/.test(f1), 'au clavier, on arrive d’abord dans la colonne de gauche (' + f1 + ')');
   // ----- l'onde part de la colonne, et l'application répond pendant qu'elle passe
   const pk = await mid('.tab' + A('go', '[data-view="kit"]')), pp = await mid('.tab' + A('go', '[data-view="parcours"]'));
   await tap(pk[0], pk[1]); await page.waitForTimeout(350);

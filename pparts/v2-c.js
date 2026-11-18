@@ -11,40 +11,46 @@ const BESOIN={matin:'De quoi auriez-vous besoin ce matin ?',jour:'De quoi auriez
 /* La question, écrite pour l'écran : « auriez-vous » ne se coupe pas au trait d'union, et seule la fin dépend de l'heure. */
 const BESOIN_FIN={matin:' ce matin ?',jour:' aujourd’hui ?',soir:' ce soir ?',nuit:', là, maintenant ?'};
 function besoinHtml(m,variantes){return 'De quoi <span class="nb">auriez-vous</span> besoin<span'+(variantes?heureAttr(BESOIN_FIN):'')+'>'+esc(BESOIN_FIN[m])+'</span>';}
-const PISTE_T={matin:'Une piste pour ce matin',jour:'Une piste pour aujourd’hui',soir:'Une piste pour ce soir',nuit:'Une piste pour cette nuit'};
+/* Une espace insécable garde « ce soir » ou « cette nuit » sur la même ligne. */
+const PISTE_T={matin:'Trouver une idée pour ce\u00a0matin',jour:'Trouver une idée pour aujourd’hui',soir:'Trouver une idée pour ce\u00a0soir',nuit:'Trouver une idée pour cette\u00a0nuit'};
 /* L'accueil est écrit à l'avance dans la page, à une heure qui n'est pas celle du visiteur : chaque mot qui dépend de l'heure
    porte ses 4 variantes, et un petit script de la page choisit la bonne avant le premier affichage (voir INLINE_HEURE dans build_site.py). */
 function heureAttr(o){return MOMENTS.map(m=>' data-'+m+'="'+esc(o[m])+'"').join('');}
 
 /* ---------- les pistes du moment : quelles situations proposer d'abord ---------- */
-const PISTE_ORDRE={
-  matin:['refus','transitions','ecole','dehors','repas','crise','epuise','pros'],
-  jour:['crise','transitions','repas','ecrans','dehors','regard','aide','pros'],
-  soir:['sommeil','crise','refus','ecrans','epuise','culpa','couple','regard'],
-  nuit:['sommeil','epuise','culpa','crise','couple','deuil','aide','regard']
+/* Sans âge choisi, les 4 propositions parlent à tous : une situation avec un enfant (e), une avec un ado (a), une avec un adulte (g),
+   et une pour le parent lui-même (v). Si le parent a dit l'âge de son enfant en personnalisant son espace, celle de cet âge passe devant. */
+const PISTE_MIXTE={
+  matin:{e:'refus',a:'ado',g:'grandir',v:'epuise'},
+  jour:{e:'crise',a:'ado',g:'grandir',v:'regard'},
+  soir:{e:'sommeil',a:'ado',g:'loin',v:'epuise'},
+  nuit:{e:'sommeil',a:'ado',g:'loin',v:'epuise'}
 };
-const PISTE_AGE={e:[],a:['ado'],g:['loin','grandir']};
-const PISTE_MOT={sommeil:'le coucher',crise:'une crise',refus:'un refus',ecrans:'les écrans',epuise:'l’épuisement',culpa:'la culpabilité',transitions:'un changement d’activité',ecole:'l’école',dehors:'une sortie',repas:'les repas',loin:'la vie en institution',grandir:'le passage à l’âge adulte',ado:'l’adolescence',pros:'un rendez-vous',aide:'une demande d’aide',couple:'le couple',regard:'le regard des autres',deuil:'l’enfant qu’on avait imaginé'};
-function pistesDuMoment(m,age){
-  const ids=(PISTE_AGE[age]||[]).concat(PISTE_ORDRE[m]||PISTE_ORDRE.jour);const out=[];
-  ids.forEach(id=>{const s=SITS.find(x=>x.id===id);if(s&&out.indexOf(id)<0&&(!age||s.ages.includes(age)))out.push(id);});
-  return out.slice(0,4);
+/* Avec un âge choisi, 4 situations de cet âge. Pour un ado ou un adulte, la fiche propre à cet âge vient toujours en premier. */
+const PISTE_PAR_AGE={
+  e:{matin:['refus','transitions','ecole','repas'],jour:['crise','transitions','repas','dehors'],soir:['sommeil','crise','refus','ecrans'],nuit:['sommeil','crise','epuise','culpa']},
+  a:{matin:['ado','ecole','refus','transitions'],jour:['ado','ecrans','ecole','crise'],soir:['ado','ecrans','sommeil','crise'],nuit:['ado','sommeil','epuise','culpa']},
+  g:{matin:['grandir','pros','refus','transitions'],jour:['grandir','pros','loin','regard'],soir:['loin','grandir','crise','epuise'],nuit:['loin','epuise','culpa','deuil']}
+};
+function pistesDuMoment(m,age,devant){
+  let ids=(PISTE_PAR_AGE[age]||{})[m];
+  if(!ids){const M=PISTE_MIXTE[m]||PISTE_MIXTE.jour;ids=(M[devant]?[M[devant]]:[]).concat([M.e,M.a,M.g,M.v]);}
+  return ids.filter((id,i)=>SITS.some(x=>x.id===id)&&ids.indexOf(id)===i).slice(0,4);
 }
-function pistesPhrase(m,age){const L=pistesDuMoment(m,age).slice(0,3).map(id=>PISTE_MOT[id]);return 'Vous y trouvez '+L.slice(0,-1).join(', ')+' ou '+L[L.length-1]+'.';}
 
 /* ---------- les 3 portes : souffler, déposer, trouver une piste ---------- */
 /* « grand » : sur l'accueil, chaque porte dit ce qu'on y trouve. Dans « Aujourd'hui », les 3 portes tiennent sur une ligne. */
 function portes(grand){
-  const m=moment(),age=D().onboarded?(D().age||''):'';
-  const sousPiste={};MOMENTS.forEach(k=>{sousPiste[k]=pistesPhrase(k,age);});
+  const m=moment();
   const P=[
-    ['souffle',I.wind,'Souffler 2 minutes','Souffler','L’étang respire avec vous.',null,null],
-    ['deposer',I.drop,'Déposer ce qui pèse','Déposer','Vous écrivez, et vous recevez une question et une lumière.',null,null],
-    ['piste',I.bulb,PISTE_T[m],'Une piste',sousPiste[m],PISTE_T,sousPiste]
+    ['souffle',I.wind,'Souffler 2 minutes','Souffler','L’étang respire avec vous.',null],
+    ['deposer',I.drop,'Déposer ce qui pèse','Déposer','Vous écrivez, et vous recevez une question et une lumière.',null],
+    /* La troisième porte : le parent y trouve une idée qui part de ce qu'il vit, que son enfant soit petit, ado ou adulte. */
+    ['piste',I.bulb,PISTE_T[m],'Une idée','Vous choisissez ce que vous vivez, avec un enfant, un ado ou un adulte.',PISTE_T]
   ];
   return '<div class="portes'+(grand?'':' mini')+'" role="group" aria-label="Ce dont vous avez besoin">'+P.map((p,i)=>
     '<button type="button" class="porte'+(i===0?' un':'')+'" data-act="porte" data-v="'+p[0]+'"'+(grand?'':' aria-label="'+esc(p[2])+'"')+'><span class="ic" aria-hidden="true">'+p[1]+'</span>'+
-    (grand?'<span class="tx"><b'+(p[5]?heureAttr(p[5]):'')+'>'+esc(p[2])+'</b><span'+(p[6]?heureAttr(p[6]):'')+'>'+esc(p[4])+'</span></span><span class="chev" aria-hidden="true">'+I.chev+'</span>':'<b>'+esc(p[3])+'</b>')+'</button>').join('')+'</div>';
+    (grand?'<span class="tx"><b'+(p[5]?heureAttr(p[5]):'')+'>'+esc(p[2])+'</b><span>'+esc(p[4])+'</span></span><span class="chev" aria-hidden="true">'+I.chev+'</span>':'<b>'+esc(p[3])+'</b>')+'</button>').join('')+'</div>';
 }
 /* Entrer dans l'espace : il n'y a ni compte ni formulaire. Le premier geste suffit, et la personnalisation vient après, si le parent le souhaite. */
 function entrer(via){
@@ -77,6 +83,7 @@ function routeDe(){
   if(m&&SLUG_FICHE[m[1]])return {v:'sit',sit:SLUG_FICHE[m[1]]};
   if(/^fiches\/?$/.test(p))return {v:'kit',kit:'sits'};
   if(location.hash===STORY_HASH)return {v:'about'};
+  if(location.hash==='#accueil')return {v:'intro'};
   return null;
 }
 /* L'adresse de l'écran affiché. Seuls les écrans publics ont la leur : une fiche, la liste des situations et « Mon histoire ».
@@ -85,6 +92,8 @@ function urlDe(){
   if(state.view==='sit'&&FICHE_SLUG[state.sit])return ficheUrl(state.sit);
   if(state.view==='kit'&&state.kit==='sits')return RACINE+'fiches/';
   if(state.view==='about')return RACINE+STORY_HASH;
+  /* La vitrine d'un parent déjà entré a son adresse. Sans elle, l'adresse du site ouvre son espace, et c'est ce qu'il attend. */
+  if(state.view==='intro'&&D().onboarded)return RACINE+'#accueil';
   return RACINE;
 }
 function titreDe(){
@@ -214,9 +223,9 @@ const PISTE_MOTS=[
   ['repas','repas|ne mange|mange rien|son assiette'],
   ['refus','refuse|ne veut pas|ne veut rien|dit non à tout'],
   ['fratrie','son frère|sa sœur|sa soeur|ses frères|ses sœurs|ses soeurs|fratrie|jalou'],
-  ['ado','(mon|notre) ado'+FIN_MOT+'|adolescen|puberté'],
-  ['loin','en institution|l[’\']institution|son foyer|en foyer|dans un foyer|internat'],
-  ['grandir','majorité|curatelle|ses 18 ans|a 18 ans'],
+  ['ado','(mon|ma|notre|un|une|cet|cette) ado'+FIN_MOT+'|adolescen|puberté'],
+  ['loin','en institution|l[’\']institution|son foyer|en foyer|dans un foyer|internat|son appartement|vit ailleurs'],
+  ['grandir','majorité|majeure?'+FIN_MOT+'|curatelle|curateur|curatrice|ses 18 ans|a 18 ans|l[’\']âge adulte|atelier protégé'],
   ['pros','médecin|pédiatre|thérapeute|rendez-vous|réseau'+FIN_MOT+'|éducatrice|éducateur|logopédiste'],
   ['annonce','diagnostic|on vient d[’\']apprendre'],
   ['regard','regard des|les gens'+FIN_MOT+'|leurs remarques|une remarque|me jugent|m[’\']a jugée?'],
@@ -254,9 +263,23 @@ function viewDeposer(){
    Un cercle posé sur l'eau s'élargit quand on inspire et se referme quand on expire. Avec les effets visuels, une onde part sur l'étang à chaque expiration.
    Sans les effets (réglage du téléphone ou de « Moi »), le cercle ne bouge pas et seuls les mots changent. */
 const SOUFFLE={in:4,out:6,n:12};
-let veille=null;
-function veilleOn(){try{if(navigator.wakeLock&&!veille&&document.visibilityState==='visible')navigator.wakeLock.request('screen').then(v=>{veille=v;if(state.souffle.k!=='cours')veilleOff();},()=>{});}catch(e){}}
-function veilleOff(){try{if(veille)veille.release();}catch(e){}veille=null;}
+/* L'écran reste allumé pendant la respiration, et tant qu'un son de la page joue : sans cela, un téléphone réglé sur 30 secondes
+   se verrouille au milieu de l'exercice ou avant la fin de l'instant d'écoute. Dès que c'est fini, le téléphone reprend son réglage. */
+let veille=null,veilleP=false;
+function veilleVoulue(){return state.souffle.k==='cours'||SON.etat!=='off';}
+function veilleOn(){
+  try{
+    if(!navigator.wakeLock||veille||veilleP||document.visibilityState!=='visible')return;
+    veilleP=true;
+    navigator.wakeLock.request('screen').then(v=>{
+      veilleP=false;veille=v;
+      try{v.addEventListener('release',()=>{if(veille===v)veille=null;});}catch(e){}
+      if(!veilleVoulue())veilleOff();
+    },()=>{veilleP=false;});
+  }catch(e){veilleP=false;}
+}
+function veilleOff(){const v=veille;veille=null;try{if(v){const p=v.release();if(p&&p.catch)p.catch(()=>{});}}catch(e){}}
+function veilleSync(){if(veilleVoulue())veilleOn();else veilleOff();}
 function souffleStart(){
   const s=state.souffle;souffleStop();
   s.k='cours';s.ph='';s.cyc=-1;s.t0=performance.now()+1400;s.hid=0;
@@ -265,7 +288,7 @@ function souffleStart(){
 function souffleStop(){
   const s=state.souffle;if(s.raf){(window.cancelAnimationFrame||clearTimeout)(s.raf);s.raf=0;}
   if(s.k==='cours')s.k='pret';
-  veilleOff();
+  veilleSync();
 }
 /* Où est la goutte sur la photo affichée ? Le cercle se pose autour du point où elle touche l'eau. */
 function soufflePose(){
@@ -289,7 +312,7 @@ function souffleFrame(){
   let ph='avant',cyc=-1,e=0;
   if(t>=0){
     cyc=Math.floor(t/T);
-    if(cyc>=SOUFFLE.n){s.k='fini';veilleOff();noteRecent('exo','breath');render();return;}
+    if(cyc>=SOUFFLE.n){s.k='fini';veilleSync();noteRecent('exo','breath');render();return;}
     const u=t-cyc*T;ph=u<SOUFFLE.in?'in':'out';
     const p=ph==='in'?u/SOUFFLE.in:1-(u-SOUFFLE.in)/SOUFFLE.out;e=.5-.5*Math.cos(Math.PI*p);
   }
@@ -314,15 +337,166 @@ function viewSouffle(){
   const tours='<div class="tours" aria-hidden="true">'+Array.from({length:SOUFFLE.n},()=>'<i></i>').join('')+'</div>';
   let bas='';
   if(k==='cours')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Installez-vous</p><p class="aide" id="souffle-aide">Posez vos épaules et vos pieds. Le cercle va vous guider.</p>'+tours+
-    '<div class="actions"><button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>';
+    /* L'exercice commence en silence. « Écouter l'étang » ajoute le son, et le même bouton le coupe sans arrêter la respiration. */
+    '<div class="actions">'+sonBoutonHtml('souffle')+'<button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>';
   else if(k==='fini')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Voilà.</p><p class="aide">Vous venez de prendre 2 minutes rien que pour vous. Vous êtes aussi une personne, et pas seulement un parent.</p>'+
     /* Un parent arrivé par la porte de l'accueil n'a pas encore vu « Aujourd'hui » : le bouton lui dit ce qu'il va y trouver d'abord. */
-    '<div class="actions col"><button type="button" class="btn primary wide" data-act="go" data-view="today">'+I.sun2+(state.vuAuj?'Revenir à aujourd’hui':'Lire la dose du jour')+'</button><button type="button" class="btn wide" data-act="porte" data-v="deposer">'+I.drop+'Déposer ce qui pèse</button><button type="button" class="btn ghost wide" data-act="souffle-go">'+I.wind+'Encore 2 minutes</button></div>';
+    '<div class="actions col"><button type="button" class="btn primary wide" data-act="go" data-view="today">'+I.sun2+(state.vuAuj?'Revenir à aujourd’hui':'Lire la dose du jour')+'</button><button type="button" class="btn wide" data-act="porte" data-v="deposer">'+I.drop+'Déposer ce qui pèse</button><button type="button" class="btn ghost wide" data-act="souffle-go">'+I.wind+'Encore 2 minutes</button></div>'+
+    /* Les dernières notes s'éteignent d'elles-mêmes. Le parent peut aussi les couper. */
+    (SON.etat!=='off'&&SON.proprio==='souffle'?'<div class="actions fin-son">'+sonBoutonHtml('souffle')+'</div>':'');
   else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1><p class="aide">Vous inspirez par le nez pendant 4 secondes, puis vous expirez par la bouche pendant 6 secondes. Le cercle posé sur l’eau vous guide.</p>'+
     '<div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>';
   return '<main id="main" tabindex="-1" class="view souffle s-'+k+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
     '<div class="band bleed" style="background-image:url('+HERO+')"><span class="ronds" aria-hidden="true"><i></i><i></i></span></div>'+
     '<div class="resp">'+bas+'</div></main>';
+}
+
+/* ---------- le son de l'étang ---------- */
+/* Deux morceaux composés pour cet espace (du son calculé, sans aucun enregistrement), chargés seulement quand le parent les demande :
+   « etang » dure 2 minutes et suit la respiration, « instant » dure 40 secondes et accompagne la dose.
+   Les règles : silence par défaut, une seule piste à la fois, une entrée et une sortie en douceur,
+   et plus aucun son dès qu'on quitte l'écran qui l'a lancé (Arrêter, Retour, SOS, autre écran, page à l'arrière-plan). */
+I.son='<svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.6 6.4a8 8 0 0 1 0 11.2"/></svg>';
+I.silence='<svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6l-5 4H4z"/><path d="M16.5 9.5l4.5 5M21 9.5l-4.5 5"/></svg>';
+const SON_OK=SITE&&!PRE;
+const SON={mode:'',ctx:null,voix:null,fins:[],el:null,octets:{},tampons:{},attente:{},piste:'',proprio:'',pos:null,etat:'off',jeton:0,voulu:false,reprise:null,veille:0};
+const SON_VOL=0.9,SON_ENTREE=2.4,SON_SORTIE=0.4;
+let SON_IOS=false;try{SON_IOS=/iP(hone|ad|od)/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}catch(e){}
+function sonUrl(nom){return RACINE+'son/'+nom+'.mp3?v='+SON_V;}
+/* Deux façons de jouer. La première calcule le son dans la page : elle permet les fondus et une synchronisation exacte avec la respiration.
+   Sur iPhone, le bouton « silencieux » la coupe, sauf si la page se déclare comme un lecteur, ce qui est possible depuis iOS 17.
+   Sur un iPhone plus ancien, on passe donc par le lecteur audio ordinaire, que ce bouton ne coupe pas. Il n'a pas de fondu, mais il s'entend. */
+function sonMode(){
+  if(SON.mode)return SON.mode;
+  const C=window.AudioContext||window.webkitAudioContext;
+  SON.mode=(C&&window.fetch&&(!SON_IOS||navigator.audioSession))?'wa':'el';
+  return SON.mode;
+}
+function sonSession(lecteur){try{if(navigator.audioSession)navigator.audioSession.type=lecteur?'playback':'auto';}catch(e){}}
+/* Le fichier n'est téléchargé qu'une fois par visite, à la première demande. Il est gardé tel quel (1,3 Mo pour l'étang),
+   et décodé à chaque passage sur son écran : le décodeur reçoit une copie, parce qu'il vide ce qu'on lui confie. */
+function sonCharge(nom){
+  if(SON.tampons[nom])return Promise.resolve(SON.tampons[nom]);
+  if(SON.attente[nom])return SON.attente[nom];
+  const ctx=SON.ctx;
+  const octets=SON.octets[nom]?Promise.resolve(SON.octets[nom]):fetch(sonUrl(nom)).then(r=>{if(!r.ok)throw new Error('son');return r.arrayBuffer();}).then(ab=>{SON.octets[nom]=ab;return ab;});
+  const p=octets.then(ab=>new Promise((ok,ko)=>{try{const q=ctx.decodeAudioData(ab.slice(0),ok,ko);if(q&&q.then)q.then(ok,ko);}catch(e){ko(e);}}))
+    .then(buf=>{delete SON.attente[nom];SON.tampons[nom]=buf;sonMenage();return buf;},e=>{delete SON.attente[nom];throw e;});
+  SON.attente[nom]=p;return p;
+}
+/* Un morceau décodé pèse plusieurs dizaines de mégaoctets dans la mémoire du téléphone : il est rendu dès qu'on quitte son écran. */
+function sonMenage(){
+  if(state.view!=='souffle')delete SON.tampons.etang;
+  if(state.view!=='today')delete SON.tampons.instant;
+}
+/* Ce qui finissait de s'éteindre se tait tout de suite avant un nouveau départ : 2 pistes ne se recouvrent jamais. */
+function sonTaire(){
+  const ctx=SON.ctx;
+  SON.fins.forEach(v=>{try{const t=ctx.currentTime;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(0.0001,t);v.src.stop(t+0.02);}catch(e){try{v.src.stop();}catch(x){}}});
+  SON.fins=[];
+}
+function sonDepart(buf,j){
+  if(j!==SON.jeton)return;
+  const ctx=SON.ctx,o=Math.max(0,SON.pos?SON.pos():0);
+  if(o>=buf.duration-0.5){sonEtat('off');return;}
+  sonTaire();
+  let src,g;
+  try{
+    src=ctx.createBufferSource();g=ctx.createGain();const t=ctx.currentTime;
+    src.buffer=buf;src.connect(g);g.connect(ctx.destination);
+    /* L'entrée : presque rien pendant la première seconde, puis le son s'installe. */
+    g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(SON_VOL*0.2,t+SON_ENTREE*0.5);g.gain.linearRampToValueAtTime(SON_VOL,t+SON_ENTREE);
+    const v={src:src,g:g};
+    src.onended=()=>{try{src.disconnect();g.disconnect();}catch(e){}SON.fins=SON.fins.filter(x=>x!==v);if(SON.voix===v){SON.voix=null;if(j===SON.jeton){SON.jeton++;sonSession(false);sonEtat('off');}}};
+    src.start(0,o);SON.voix=v;
+  }catch(e){sonRate(j);return;}
+  sonEtat('on');
+  /* Si le téléphone n'a pas laissé le son partir (une autre application le retient, par exemple), le bouton le dit : il redevient « Écouter ». */
+  clearTimeout(SON.veille);SON.veille=setTimeout(()=>{if(j===SON.jeton&&SON.etat==='on'&&SON.ctx&&SON.ctx.state!=='running')sonCoupe(true);},900);
+}
+function sonElement(){
+  if(SON.el)return SON.el;
+  const a=new Audio();a.preload='auto';
+  a.addEventListener('ended',()=>{if(SON.mode==='el'&&SON.etat!=='off'){SON.jeton++;sonEtat('off');}});
+  /* Le téléphone peut couper le son lui-même (un appel, des écouteurs retirés) : le bouton dit alors la vérité. */
+  a.addEventListener('pause',()=>{if(SON.mode==='el'&&SON.etat==='on'&&!a.ended){SON.jeton++;sonEtat('off');}});
+  SON.el=a;return a;
+}
+function sonElJoue(nom,j){
+  const a=sonElement(),url=sonUrl(nom);
+  if(a.getAttribute('src')!==url)a.setAttribute('src',url);
+  const cale=()=>{const o=SON.pos?SON.pos():0;if(Math.abs((a.currentTime||0)-o)>0.4){try{a.currentTime=Math.max(0,o);}catch(e){}}};
+  cale();
+  let p;try{p=a.play();}catch(e){sonRate(j);return;}
+  const ok=()=>{if(j!==SON.jeton)return;cale();sonEtat('on');};
+  if(p&&p.then)p.then(ok,()=>sonRate(j));else ok();
+}
+function sonEtat(e){SON.etat=e;sonBoutons();veilleSync();}
+function sonRate(j){if(j!==SON.jeton)return;SON.jeton++;sonEtat('off');toast('Le son n’a pas pu se charger. Tout le reste fonctionne en silence.');}
+/* « pos » dit où en est le morceau au moment où le son part. Pour la respiration, c'est l'horloge de l'exercice : le son et le cercle restent ensemble. */
+function sonJoue(nom,proprio,pos){
+  if(!SON_OK)return;
+  if(SON.etat!=='off')sonCoupe(true);
+  const j=++SON.jeton;SON.piste=nom;SON.proprio=proprio;SON.pos=pos||null;SON.reprise=null;sonEtat('charge');
+  if(sonMode()==='wa'){
+    try{
+      sonSession(true);
+      if(!SON.ctx){const C=window.AudioContext||window.webkitAudioContext;SON.ctx=new C();}
+      if(SON.ctx.state!=='running'&&SON.ctx.resume){const r=SON.ctx.resume();if(r&&r.catch)r.catch(()=>{});}
+    }catch(e){SON.mode='el';}
+    if(SON.mode==='wa'){sonCharge(nom).then(buf=>sonDepart(buf,j),()=>sonRate(j));return;}
+  }
+  sonElJoue(nom,j);
+}
+/* Couper : le son s'éteint en moins d'une demi-seconde. « vite » sert quand on quitte la page, où il ne doit rien rester. */
+function sonCoupe(vite){
+  SON.jeton++;clearTimeout(SON.veille);
+  if(SON.mode==='wa'){
+    const v=SON.voix;SON.voix=null;
+    if(v&&SON.ctx){
+      const d=vite?0.05:SON_SORTIE;
+      try{const t=SON.ctx.currentTime;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(Math.max(0.0001,v.g.gain.value),t);v.g.gain.linearRampToValueAtTime(0.0001,t+d);v.src.stop(t+d+0.03);SON.fins.push(v);}
+      catch(e){try{v.src.stop();}catch(x){}}
+    }
+    const j=SON.jeton;setTimeout(()=>{if(j===SON.jeton)sonSession(false);},700);
+  }else if(SON.el){try{SON.el.pause();}catch(e){}}
+  if(SON.etat!=='off')sonEtat('off');
+}
+/* Le son appartient à l'écran qui l'a lancé : la respiration en cours (ou tout juste finie), ou « Aujourd'hui » pour l'instant de la dose. */
+function sonChezLui(){
+  if(SON.proprio==='souffle')return state.view==='souffle'&&(state.souffle.k==='cours'||state.souffle.k==='fini');
+  if(SON.proprio==='dose')return state.view==='today'&&!state.sheet;
+  return false;
+}
+/* Après chaque rendu : si l'écran n'est plus celui du son, le son s'arrête. C'est ce qui couvre Arrêter, Retour, SOS et tous les autres chemins. */
+function sonGarde(){
+  if(state.view!=='souffle')SON.voulu=false;
+  if((SON.etat!=='off'||SON.reprise)&&!sonChezLui()){SON.reprise=null;sonCoupe();}
+  sonMenage();
+}
+/* Où en est le morceau de la respiration : il commence avec l'exercice, 1,4 seconde avant la première inspiration. */
+function soufflePos(){return (performance.now()-state.souffle.t0)/1000+1.4;}
+const SON_TXT={souffle:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Couper le son'},dose:{off:'Prendre un instant',charge:'L’étang arrive…',on:'Revenir au silence'}};
+function sonBoutonHtml(ou){
+  if(!SON_OK)return '';
+  const nom=ou==='souffle'?'etang':'instant';
+  const e=(SON.piste===nom&&SON.proprio===ou)?SON.etat:'off';
+  return '<button type="button" class="son-b son-'+ou+'" data-act="son" data-v="'+nom+'" data-etat="'+e+'"'+(e==='charge'?' aria-busy="true"':'')+'>'+(e==='off'?I.son:I.silence)+'<span class="tx"><b>'+SON_TXT[ou][e]+'</b>'+(ou==='dose'&&e==='off'?' <small>40 secondes d’étang, avec le son</small>':'')+'</span></button>';
+}
+/* Le bouton change sur place, sans redessiner l'écran : la respiration et la lecture ne sont pas dérangées. */
+function sonBoutons(){
+  try{
+    const L=document.querySelectorAll('.son-b');
+    for(let i=0;i<L.length;i++){
+      const b=L[i],ou=b.classList.contains('son-souffle')?'souffle':'dose';
+      const t=document.createElement('div');t.innerHTML=sonBoutonHtml(ou);const n=t.firstChild;if(!n)continue;
+      const e=n.getAttribute('data-etat');b.setAttribute('data-etat',e);
+      if(e==='charge')b.setAttribute('aria-busy','true');else b.removeAttribute('aria-busy');
+      b.innerHTML=n.innerHTML;
+      /* À la fin de la respiration, le bouton ne sert plus une fois les dernières notes éteintes. */
+      const fin=b.parentNode&&b.parentNode.classList&&b.parentNode.classList.contains('fin-son');if(fin&&e==='off')b.parentNode.hidden=true;
+    }
+  }catch(e){}
 }
 
 /* ---------- qui parle, dans cet espace ---------- */

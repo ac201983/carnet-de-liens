@@ -7,12 +7,13 @@ function viewKit(){
   const seg=pub?'':'<div class="seg" role="group" aria-label="Rubriques de la boîte à outils"><button type="button" data-act="kit" data-v="sits" aria-pressed="'+(state.kit==='sits')+'">Situations</button><button type="button" data-act="kit" data-v="tools" aria-pressed="'+(state.kit==='tools')+'">Outils</button><button type="button" data-act="kit" data-v="me" aria-pressed="'+(state.kit==='me')+'">Pour moi</button></div>';
   let body='';
   if(state.kit==='sits')body=kitSits();else if(state.kit==='tools')body=kitTools();else body=kitMe();
-  /* Arrivé par la porte « Une piste pour ce soir », le parent voit d'abord ce que la porte annonce : quelques situations fréquentes
-     à ce moment de la journée, à ouvrir en un geste. La boîte à outils entière suit, juste en dessous. */
+  /* Arrivé par la porte « Trouver une idée pour ce soir », le parent voit d'abord ce que la porte annonce : 4 situations à ouvrir en un geste,
+     choisies selon le moment de la journée et selon l'âge. Sans âge choisi, il y en a une pour un enfant, une pour un ado, une pour un adulte
+     et une pour le parent lui-même. La boîte à outils entière suit, juste en dessous. */
   const mo=moment();const piste=!pub&&state.piste&&state.kit==='sits';
-  const QUAND={matin:'le matin',jour:'dans la journée',soir:'le soir',nuit:'la nuit'};
-  const pisteBloc=piste?'<section class="grp ce-soir" aria-label="'+PISTE_T[mo]+'"><div class="liste">'+pistesDuMoment(mo,state.age==='all'?(D().age||''):state.age).map(id=>sitRow(SITS.find(y=>y.id===id))).join('')+'</div></section><h2 class="t2 suite">Toute la boîte à outils</h2>':'';
-  return '<main id="main" tabindex="-1" class="view k-'+state.kit+(piste?' k-piste':'')+'" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">'+(pub?SITS.length+' situations de la vraie vie':piste?PISTE_T[mo]:'La boîte à outils')+'</h1></div><p class="sub">'+(piste?'Voici des situations fréquentes '+QUAND[mo]+'. Touchez celle qui ressemble à la vôtre.':pub?'Chaque fiche dit ce qui se passe, ce que vous pouvez essayer et ce qu’il vaut mieux éviter, avec toujours un mot pour vous. Elle se lit en 2 minutes et s’envoie telle quelle.':state.kit==='sits'?'Vous trouverez ici '+SITS.length+' situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.':state.kit==='tools'?'Ce sont les outils que les éducateurs utilisent tous les jours, et vous pouvez les poser sur la table de la cuisine.':'Deux minutes rien que pour vous, parce que vous êtes aussi une personne et pas seulement un parent.')+'</p>'+pisteBloc+seg+body+'</main>';
+  const pisteBloc=piste?'<section class="grp ce-soir" aria-label="'+esc(PISTE_T[mo])+'"><div class="liste">'+pistesDuMoment(mo,state.age==='all'?'':state.age,D().age).map(id=>sitRow(SITS.find(y=>y.id===id))).join('')+'</div></section>'+
+    '<div class="autres-ages"><span class="label" id="ages-l">D’autres idées, selon l’âge</span>'+agesChips()+'</div><h2 class="t2 suite">Toute la boîte à outils</h2>':'';
+  return '<main id="main" tabindex="-1" class="view k-'+state.kit+(piste?' k-piste':'')+'" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:left 55%"><h1 class="t1">'+(pub?SITS.length+' situations de la vraie vie':piste?PISTE_T[mo]:'La boîte à outils')+'</h1></div><p class="sub">'+(piste?'Touchez ce qui ressemble à ce que vous vivez.':pub?'Chaque fiche dit ce qui se passe, ce que vous pouvez essayer et ce qu’il vaut mieux éviter, avec toujours un mot pour vous. Elle se lit en 2 minutes et s’envoie telle quelle.':state.kit==='sits'?'Vous trouverez ici '+SITS.length+' situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.':state.kit==='tools'?'Ce sont les outils que les éducateurs utilisent tous les jours, et vous pouvez les poser sur la table de la cuisine.':'Deux minutes rien que pour vous, parce que vous êtes aussi une personne et pas seulement un parent.')+'</p>'+pisteBloc+seg+body+'</main>';
 }
 /* Les situations sont rangées par thèmes : chaque thème a son titre, son compte et sa liste. Une recherche donne une seule liste. */
 const GROUPES=[['comp','Le comportement'],['comm','La communication'],['quot','Le quotidien'],['ecole','L’école, les professionnels, l’avenir'],['fam','La famille'],['moi','Vous, parent']];
@@ -21,18 +22,20 @@ const GROUPES=[['comp','Le comportement'],['comm','La communication'],['quot','L
 const deuxImages=e=>(String(e).match(/\p{Extended_Pictographic}/gu)||[]).length>1;
 function sitRow(s){const dedans='<span class="e'+(deuxImages(s.e)?' duo':'')+'">'+s.e+'</span><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span><span class="chev">'+I.chev+'</span>';
   return SITE?'<a class="sit" href="'+ficheUrl(s.id)+'" data-act="sit" data-id="'+s.id+'">'+dedans+'</a>':'<button type="button" class="sit" data-act="sit" data-id="'+s.id+'">'+dedans+'</button>';}
+/* Le choix de l'âge : il range les situations, et dans « Trouver une idée » il choisit celles qu'on propose d'abord. */
+function agesChips(){return '<div class="chips scroll ages" role="group" aria-label="Âge">'+Object.keys(AGES).map(k=>'<button type="button" class="chip" data-act="age" data-v="'+k+'" aria-pressed="'+(state.age===k)+'">'+AGES[k]+'</button>').join('')+'</div>';}
 function kitSits(){
   let list=SITS.filter(s=>state.age==='all'||s.ages.includes(state.age));
   const q=state.q.trim().toLowerCase();if(q)list=list.filter(s=>(s.t+' '+s.s+' '+s.comp).toLowerCase().includes(q));
   /* Les situations qui reviennent le plus à cette heure-ci, pour ne pas avoir à chercher. Si le parent a dit l'âge de son enfant,
      celles de cet âge passent devant. La liste complète reste entière : rien n'est caché d'après une réponse. */
   const mo=moment();const PT={matin:'Souvent, le matin',jour:'Souvent, dans la journée',soir:'Souvent, le soir',nuit:'Souvent, la nuit'};
-  const souvent=(D().onboarded&&!q&&!state.piste)?'<div class="souvent"><span class="label" id="souvent-l">'+PT[mo]+'</span><div class="chips" role="group" aria-labelledby="souvent-l">'+pistesDuMoment(mo,state.age==='all'?(D().age||''):state.age).map(id=>{const x=SITS.find(y=>y.id===id);return '<button type="button" class="chip" data-act="sit" data-id="'+id+'"><span aria-hidden="true">'+x.e+'</span> '+esc(x.t)+'</button>';}).join('')+'</div></div>':'';
+  const souvent=(D().onboarded&&!q&&!state.piste)?'<div class="souvent"><span class="label" id="souvent-l">'+PT[mo]+'</span><div class="chips" role="group" aria-labelledby="souvent-l">'+pistesDuMoment(mo,state.age==='all'?'':state.age,D().age).map(id=>{const x=SITS.find(y=>y.id===id);return '<button type="button" class="chip" data-act="sit" data-id="'+id+'"><span aria-hidden="true">'+x.e+'</span> '+esc(x.t)+'</button>';}).join('')+'</div></div>':'';
   const corps=!list.length?'<div class="card vide"><p>Je n’ai rien trouvé pour ce mot. Vous pouvez essayer un autre mot, ou écrire ce qui se passe avec vos mots à vous.</p><button type="button" class="btn" data-act="porte" data-v="deposer" style="align-self:flex-start">'+I.drop+'Déposer ce qui pèse</button></div>':
     q?'<div class="grp"><div class="liste">'+list.map(sitRow).join('')+'</div></div>':
     GROUPES.map(g=>{const L=list.filter(s=>s.th===g[0]);return L.length?'<section class="grp"><h2><span class="nom">'+g[1]+'</span><span class="nb" aria-hidden="true">'+L.length+'</span></h2><div class="liste">'+L.map(sitRow).join('')+'</div></section>':'';}).join('');
-  return '<div class="search">'+I.search+'<input type="search" id="q" aria-label="Chercher une situation" maxlength="'+LIM.search+'" placeholder="Coucher, crise, école…" value="'+esc(state.q)+'" autocomplete="off" enterkeyhint="search"></div>'+
-    '<div class="chips scroll" role="group" aria-label="Âge">'+Object.keys(AGES).map(k=>'<button type="button" class="chip" data-act="age" data-v="'+k+'" aria-pressed="'+(state.age===k)+'">'+AGES[k]+'</button>').join('')+'</div>'+
+  return '<div class="search">'+I.search+'<input type="search" id="q" aria-label="Chercher une situation" maxlength="'+LIM.search+'" placeholder="Coucher, ado, âge adulte…" value="'+esc(state.q)+'" autocomplete="off" enterkeyhint="search"></div>'+
+    (state.piste?'':agesChips())+
     souvent+'<div class="sits groupes'+(q?' trouve':'')+'">'+corps+'</div>';
 }
 function viewSit(){
@@ -269,7 +272,7 @@ function viewAbout(){
 function tabs(){
   const grp={today:['today','deposer'],parcours:['parcours','step','carnet','evo','photo'],kit:['kit','sit','exo'],me:['me','plans','depots','antonio','letter','data','about']};
   const cur=v=>grp[v].includes(state.view)?' aria-current="page"':'';
-  return '<nav class="tabs" aria-label="Navigation"><span class="rail-brand">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><div class="tabs-in"><button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
+  return '<nav class="tabs" aria-label="Navigation"><a class="rail-brand" href="'+RACINE+'#accueil" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><div class="tabs-in">'+(large()?'<a class="tab acc" href="'+RACINE+'#accueil" data-act="accueil">'+I.home+'Accueil</a>':'')+'<button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
 }
 /* « Faisons connaissance » : la personnalisation de l'espace. Elle est facultative, rien n'y est coché à l'avance,
    et les réponses ne sont gardées qu'au moment où le parent touche « Enregistrer » (state.ob est le brouillon). */
@@ -297,7 +300,7 @@ function handle(act,d,el){
     case 'peek-about':nav('about');break;
     /* Le premier geste : une porte ouvre l'espace et mène tout de suite à ce qu'elle annonce. Rien n'est demandé avant. */
     case 'porte':{entrer(d.v);
-      if(d.v==='souffle'){nav('souffle');souffleStart();}
+      if(d.v==='souffle'){nav('souffle');SON.voulu=false;souffleStart();}
       else if(d.v==='deposer')nav('deposer');
       else{state.kit='sits';state.q='';nav('kit');state.piste=true;}
       break;}
@@ -306,10 +309,18 @@ function handle(act,d,el){
       if(d.v==='parcours'&&stepEtat(0).k==='open'){nav('parcours');histPush();const s0=allSteps()[0];if(!data.tout&&!data.seen[s0.id]){data.seen[s0.id]=todayIso();save();}state.step=0;state.sch=1;nav('step');}
       else nav(d.v==='parcours'?'parcours':'today');
       break;}
-    case 'accueil':nav('today');break;
+    /* « Accueil » : la vitrine entière, pour un visiteur comme pour un parent déjà entré. */
+    case 'accueil':nav('intro');break;
     case 'fiches':state.kit='sits';state.q='';nav('kit');break;
-    case 'souffle-go':souffleStart();break;
-    case 'souffle-stop':souffleStop();break;
+    /* « Encore 2 minutes » : si le parent écoutait l'étang, le son repart avec la respiration. Sinon, tout recommence en silence. */
+    case 'souffle-go':{const avecSon=SON.voulu;souffleStart();if(avecSon)sonJoue('etang','souffle',soufflePos);break;}
+    case 'souffle-stop':SON.voulu=false;souffleStop();break;
+    /* Le son : un geste pour l'entendre, le même geste pour le couper. La respiration, elle, continue. */
+    case 'son':{const nom=d.v==='instant'?'instant':'etang';
+      if(SON.etat!=='off'&&SON.piste===nom){if(nom==='etang')SON.voulu=false;sonCoupe();}
+      else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonJoue('etang','souffle',soufflePos);}
+      else sonJoue('instant','dose',null);
+      return;}
     case 'voix':state.sheet='voix';break;
     case 'partager':partager(d.id);return;
     case 'perso-tard':data.persoTard=true;save();toast('D’accord. Vous retrouverez ce réglage dans « Moi ».');break;
@@ -318,7 +329,7 @@ function handle(act,d,el){
     case 'essai-copie':{const n=essaiNotes();if(!ESSAI||!n)return;state.data=migre(Object.assign(JSON.parse(JSON.stringify(DEF)),JSON.parse(JSON.stringify(n))));save();state.view='today';state.prev=null;state.sheet=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Une copie de vos notes est ouverte ici. Les originaux ne changent pas.');return;}
     case 'essai-zero':state.confirmEssai=true;break;
     case 'essai-zero-non':state.confirmEssai=false;break;
-    case 'essai-zero-oui':if(!ESSAI)return;souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmEssai=false;state.view='today';state.prev=null;state.sheet=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('La version d’essai repart du début.');return;
+    case 'essai-zero-oui':if(!ESSAI)return;souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmEssai=false;state.view='intro';state.prev=null;state.sheet=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('La version d’essai repart du début.');return;
     case 'imprimer':try{window.print();}catch(e){}return;
     case 'intro-suite':{const s=document.querySelector('.intro .acc');if(s&&s.scrollIntoView)s.scrollIntoView({behavior:fxOn()?'smooth':'auto',block:'start'});return;}
     /* La personnalisation : un brouillon (state.ob), gardé seulement quand le parent touche « Enregistrer ». Toucher une réponse déjà choisie la retire. */
@@ -330,7 +341,7 @@ function handle(act,d,el){
     /* Le bouton Retour de l'écran fait la même chose que celui du téléphone : il revient à la page d'avant.
        Quand il n'y a pas de page d'avant (on est arrivé ici par un lien), il remonte d'un niveau. */
     case 'back':{if(HIST.ok&&HIST.i>0){try{history.back();return;}catch(e){}}
-      if(!data.onboarded){state.view='today';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
+      if(!data.onboarded){state.view='intro';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
     case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
     case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();break;
     case 'sit':state.sit=d.id;nav('sit');noteRecent('sit',d.id);break;
@@ -387,7 +398,7 @@ function handle(act,d,el){
     case 'abcadd':{const a=clean(document.getElementById('a1').value,LIM.line),b=clean(document.getElementById('a2').value,LIM.line),c=clean(document.getElementById('a3').value,LIM.line);if(!a&&!b&&!c){fieldErr('a1','Écrivez au moins une des trois lignes.');return;}const n=new Date();data.abc.push({date:todayIso(),time:pad(n.getHours())+':'+pad(n.getMinutes()),a,b,c});save();render();toast('Noté.');return;}
     case 'phadd':{const v=clean(document.getElementById('ph').value,LIM.phrase);if(!v){fieldErr('ph','Écrivez la phrase à garder.');return;}if(data.phrases.includes(v)){fieldErr('ph','Cette phrase est déjà dans votre liste.');return;}data.phrases.push(v);save();render();toast('Gardée.');return;}
     case 'phdel':data.phrases.splice(Number(d.i),1);save();break;
-    case 'exo':if(d.id==='breath'){nav('souffle');souffleStart();break;}state.exo=d.id;nav('exo');noteRecent('exo',d.id);break;
+    case 'exo':if(d.id==='breath'){nav('souffle');SON.voulu=false;souffleStart();break;}state.exo=d.id;nav('exo');noteRecent('exo',d.id);break;
     case 'threeadd':{const items=['t1','t2','t3'].map(id=>clean(document.getElementById(id).value,LIM.three)).filter(Boolean);if(!items.length){fieldErr('t1','Une seule chose suffit, écrivez-la ici.');return;}data.three.push({date:todayIso(),items});save();render();toast('Gardé.');return;}
     case 'depose':{const t=document.getElementById('dep');if(t&&t.value&&fxOn()){t.classList.add('ink');setTimeout(()=>{t.value='';t.classList.remove('ink');},1150);}else if(t)t.value='';toast('C’est déposé, vous n’avez plus à le garder en vous.');return;}
     case 'letter':state.letter=Number(d.i);nav('letter');break;
@@ -397,7 +408,7 @@ function handle(act,d,el){
     case 'consent':if(window.PEPEConsent)window.PEPEConsent.set(d.v==='yes');break;
     case 'reset':state.confirmReset=true;break;
     case 'reset-no':state.confirmReset=false;break;
-    case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='today';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
+    case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
   const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','tier','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil'].includes(act);
@@ -450,6 +461,8 @@ if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:tr
    On peut envoyer ces adresses telles quelles, et le bouton Retour du téléphone fonctionne partout. */
 const r0=routeDe();
 if(r0){state.view=r0.v;if(r0.sit)state.sit=r0.sit;if(r0.kit)state.kit=r0.kit;}
+/* Un visiteur arrive sur la vitrine. Elle compte comme une page de l'historique : après « Souffler 2 minutes », « Retour » y ramène. */
+else if(!D().onboarded)state.view='intro';
 /* Le téléphone recharge parfois la page tout seul (on a changé d'application un instant, ou l'on revient d'une page de texte) :
    dans la demi-heure, le parent retrouve l'écran où il était, et le texte qu'il était en train d'écrire. Plus tard, il arrive sur « Aujourd'hui ». */
 let y0=0;
@@ -462,19 +475,31 @@ brouillonLit();
 if(SITE)window.addEventListener('hashchange',()=>{
   /* L'adresse …/#atelier, tapée alors que l'espace est déjà ouvert, allume l'aperçu d'Antonio sans recharger la page. */
   if(location.hash==='#atelier'){const d=D();d.atelier=true;d.tout=true;save();histPush(true);if(d.onboarded)render();toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');}
+  /* L'adresse …/#accueil, tapée alors que l'espace est ouvert, montre la vitrine. */
+  else if(location.hash==='#accueil'&&state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}
 });
 if(SITE)window.addEventListener('popstate',histRetour);
 /* La respiration s'arrête quand l'écran s'éteint ou que l'on change d'onglet, et reprend là où elle en était. */
 document.addEventListener('visibilitychange',()=>{const z=state.souffle;if(z.k!=='cours')return;
   if(document.visibilityState==='hidden'){if(!z.hid)z.hid=performance.now();veilleOff();}
   else{if(z.hid){z.t0+=performance.now()-z.hid;z.hid=0;}veilleOn();souffleApres();}});
+/* Le son s'arrête dès que la page passe à l'arrière-plan. Au retour, celui de la respiration reprend là où en est l'exercice. Celui de la dose reste coupé. */
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'){if(SON.etat!=='off'){SON.reprise=(SON.proprio==='souffle'&&state.souffle.k==='cours')?1:null;const r=SON.reprise;sonCoupe(true);SON.reprise=r;}}
+  else{
+    /* Si le téléphone a figé le son avant la fin de son extinction, ce qui restait se tait pour de bon au retour. */
+    sonTaire();
+    if(SON.reprise){SON.reprise=null;if(state.view==='souffle'&&state.souffle.k==='cours'&&SON.voulu)sonJoue('etang','souffle',soufflePos);}
+  }
+});
+window.addEventListener('pagehide',()=>{SON.reprise=null;sonCoupe(true);});
 window.addEventListener('resize',()=>{if(state.view==='souffle')soufflePose();},{passive:true});
 state.inClaude=!SITE&&!!(window.claude&&typeof window.claude.use==='function');
 if(SITE)state.sample=false;
 /* Sur le site, l'accueil, la liste des situations et chaque fiche sont déjà écrits dans leur page (affichage immédiat, lisible sans JavaScript
    par les moteurs et par les aperçus de lien) : pour un visiteur, on garde l'écran tel quel. Un parent déjà entré retrouve son espace. */
 {const pre=app.getAttribute('data-prerender');
-  if(!D().onboarded&&!PRE&&((pre==='intro'&&!r0)||(pre==='pub-sit'&&r0&&r0.v==='sit')||(pre==='pub-kit'&&r0&&r0.v==='kit'))){
+  if(!D().onboarded&&!PRE&&((pre==='intro'&&(!r0||r0.v==='intro'))||(pre==='pub-sit'&&r0&&r0.v==='sit')||(pre==='pub-kit'&&r0&&r0.v==='kit'))){
     state.lastKey=pre;app.removeAttribute('data-prerender');heureLive();titreSync();
     if(pre==='intro'){introLive();fxMark();eauArrive(true);}else fxMark();
   }else{render();if(y0)window.scrollTo(0,y0);}}

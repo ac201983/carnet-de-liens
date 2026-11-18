@@ -42,7 +42,7 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
     r.titres = E.map(s => net(s.t)); r.nomsMois = r.nomsM.join('|') === X.PARCOURS.map(m => net(m.m)).join('|'); r.vecu2 = E[1].vecu.slice(0, 2).map(net);
     r.sits = X.SITS.map(s => net(s.t)); r.nSits = X.SITS.length; r.nPictos = X.PICTOS.length; r.tiers = Object.values(X.TIERS).map(x => net(x.t)); r.fin4 = net(E[3].vecu);
     ok(r.sections.join(' ') === 'acc-dose acc-outils acc-depot acc-perm acc-parcours voice acc-formules acc-faq acc-fin' && r.h1 === 1 && r.h2 === 8, 'accueil : 9 chapitres, ce qui sert tout de suite en premier, un seul grand titre ' + JSON.stringify([r.sections, r.h1, r.h2]));
-    ok(/De quoi auriez-vous besoin/.test(r.h1t) && r.portes.length === 3 && r.portes[0] === 'Souffler 2 minutes' && r.portes[1] === 'Déposer ce qui pèse' && /^Une piste pour /.test(r.portes[2]), 'accueil : le grand titre est la question, suivie des 3 portes ' + JSON.stringify([r.h1t, r.portes]));
+    ok(/De quoi auriez-vous besoin/.test(r.h1t) && r.portes.length === 3 && r.portes[0] === 'Souffler 2 minutes' && r.portes[1] === 'Déposer ce qui pèse' && /^Trouver une idée pour /.test(r.portes[2]), 'accueil : le grand titre est la question, suivie des 3 portes ' + JSON.stringify([r.h1t, r.portes]));
     ok(r.perms.length === 4 && r.permsOk, 'accueil : les 4 permissions sont celles de l’espace');
     ok(r.dose && /^(La dose du (lundi|mardi|mercredi|jeudi|vendredi|samedi) \d{1,2} \S+|Dose spéciale du dimanche)$/.test(r.label), 'accueil : la dose affichée est celle du jour, avec sa date (' + r.label + ')');
     ok(r.q && r.l, 'accueil : la question et la lumière de l’exemple sont prises dans celles de l’espace');
@@ -92,7 +92,9 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
     ok(/Les formules/.test(await page.textContent('h1')), 'formules : le bouton ouvre le détail'); await page.click(A('back')); await page.waitForTimeout(400);
     await page.click('.acc-depot ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(400);
     ok(!!(await page.$('main.deposer #draft')), 'chapitre « Déposer » : son bouton mène à l’écran pour écrire'); await page.click(A('back')); await page.waitForTimeout(400);
-    ok(!!(await page.$('.tabs')) && !(await page.$('.herofull')), 'après ce premier geste, le parent est dans son espace');
+    ok(!!(await page.$('.herofull')) && (await page.evaluate(() => [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'après ce premier geste, « Retour » ramène à la vitrine, qui propose « Ouvrir mon espace »');
+    await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(500);
+    ok(!!(await page.$('.tabs')) && !(await page.$('.herofull')), '« Ouvrir mon espace » mène dans l’espace du parent');
     ok(errs.length === 0, 'accueil (liens) : aucune erreur ' + errs.slice(0, 2).join(' | '));
     await ctx.close();
   }

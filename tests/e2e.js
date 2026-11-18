@@ -48,7 +48,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     const { ctx, page } = await ctxPage(browser);
     const raw = await (await ctx.request.get(APP)).text();
     ok(/<h1><span class="salut"[^>]*>Bonjour\.<\/span> <span class="besoin">De quoi <span class="nb">auriez-vous<\/span> besoin<span[^>]*data-soir=" ce soir \?"[^>]*> aujourd’hui \?<\/span><\/span><\/h1>/.test(raw) && /class="herobg"[^>]*alt="[^"]{20,}"/.test(raw), 'accueil écrit dans le HTML (la question, ses variantes selon l’heure, et l’image avec texte alternatif)');
-    ok((raw.match(/class="porte[^"]*" data-act="porte"/g) || []).length === 3 && /Souffler 2 minutes/.test(raw) && /Déposer ce qui pèse/.test(raw) && /data-soir="Une piste pour ce soir"/.test(raw), 'les 3 portes sont écrites dans la page');
+    ok((raw.match(/class="porte[^"]*" data-act="porte"/g) || []).length === 3 && /Souffler 2 minutes/.test(raw) && /Déposer ce qui pèse/.test(raw) && /data-soir="Trouver une idée pour ce[\s\u00a0]soir"/.test(raw), 'les 3 portes sont écrites dans la page');
     ok(/<title>[^<]{20,70}<\/title>/.test(raw) && /<meta name="description" content="[^"]{80,180}">/.test(raw), 'titre et description meta');
     ok(new RegExp('<link rel="canonical" href="' + reEsc(PUBLIC_APP) + '">').test(raw), 'adresse canonique');
     ok(new RegExp('og:image" content="' + reEsc(PUBLIC_APP) + 'img\\/apercu\\.jpg"').test(raw) && /twitter:card" content="summary_large_image"/.test(raw), 'balises d’aperçu social');
@@ -65,8 +65,8 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await audit(page, 'accueil');
     // la question suit l'heure du visiteur, dès le premier affichage
     { const h = new Date().getHours(), m = (h < 5 || h >= 22) ? 'nuit' : h < 11 ? 'matin' : h < 18 ? 'jour' : 'soir';
-      const veut = { matin: ['Bonjour.', 'De quoi auriez-vous besoin ce matin ?', 'Une piste pour ce matin'], jour: ['Bonjour.', 'De quoi auriez-vous besoin aujourd’hui ?', 'Une piste pour aujourd’hui'], soir: ['Bonsoir.', 'De quoi auriez-vous besoin ce soir ?', 'Une piste pour ce soir'], nuit: ['Il est tard.', 'De quoi auriez-vous besoin, là, maintenant ?', 'Une piste pour cette nuit'] }[m];
-      const vu = await page.evaluate(() => [document.querySelector('.herofull .salut').textContent, document.querySelector('.herofull .besoin').textContent, document.querySelector('.herofull .porte[data-v="piste"] b').textContent, document.documentElement.className, document.getElementById('app').className]);
+      const veut = { matin: ['Bonjour.', 'De quoi auriez-vous besoin ce matin ?', 'Trouver une idée pour ce matin'], jour: ['Bonjour.', 'De quoi auriez-vous besoin aujourd’hui ?', 'Trouver une idée pour aujourd’hui'], soir: ['Bonsoir.', 'De quoi auriez-vous besoin ce soir ?', 'Trouver une idée pour ce soir'], nuit: ['Il est tard.', 'De quoi auriez-vous besoin, là, maintenant ?', 'Trouver une idée pour cette nuit'] }[m];
+      const vu = await page.evaluate(() => [document.querySelector('.herofull .salut').textContent, document.querySelector('.herofull .besoin').textContent, document.querySelector('.herofull .porte[data-v="piste"] b').textContent.split(String.fromCharCode(160)).join(' '), document.documentElement.className, document.getElementById('app').className]);
       ok(vu[0] === veut[0] && vu[1] === veut[1] && vu[2] === veut[2] && new RegExp('\\bh-' + m + '\\b').test(vu[3]) && new RegExp('\\bh-' + m + '\\b').test(vu[4]), 'accueil : le bonjour, la question et la lumière sont ceux de l’heure (' + m + ')'); }
     ok((await page.$$('.herofull .porte')).length === 3 && (await page.$$('.herofull ' + A('entrer', '[data-v="parcours"]'))).length === 1 && await has(page, '.herofull .sos'), 'premier écran : 3 portes, le parcours de 6 mois, et le SOS');
     ok((await page.$$eval(A('entrer', '[data-v="today"]'), L => L.length === 2 && L.every(b => b.textContent.trim() === 'Commencer gratuitement'))) && (await page.$$eval('.btn.primary', L => L.every(b => b.dataset.act === 'entrer' || !!b.closest('.sch')))), '« Commencer gratuitement » en bas et en flottant, et le seul autre bouton plein est celui du schéma');
@@ -106,8 +106,12 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await audit(page, 'souffle');
     await page.click(A('souffle-stop')); await page.waitForTimeout(100); ok(await has(page, 'main.souffle.s-pret') && await has(page, A('souffle-go')), 'respiration : « Arrêter » rend la main, « Commencer » la relance');
     await audit(page, 'souffle-pret');
-    await page.click(A('back')); await page.waitForTimeout(250);
-    ok(await has(page, '.tabs') && /\.$/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')), 'retour : le parent est dans son espace, sur « Aujourd’hui »');
+    await page.click(A('back')); await page.waitForTimeout(350);
+    // « Retour » ramène d'où l'on vient : ici la vitrine. Le parent y trouve maintenant « Ouvrir mon espace ».
+    ok(await has(page, 'main.intro .herofull') && !(await has(page, '.tabs')) && (await page.$$('.herofull .porte')).length === 3 && /#accueil$/.test(page.url()), 'retour : la vitrine, d’où le parent venait');
+    ok((await page.evaluate(() => [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'la vitrine d’un parent déjà entré propose « Ouvrir mon espace »');
+    await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(350);
+    ok(await has(page, '.tabs') && /\.$/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')), '« Ouvrir mon espace » : le parent est dans son espace, sur « Aujourd’hui »');
     // « Aujourd'hui » : la question, les 3 portes, puis la dose avant tout le reste
     ok((await page.$$('.portes.mini .porte')).length === 3 && /De quoi auriez-vous besoin/.test(await txt(page, '.band .besoin')), '« Aujourd’hui » : la question du moment et les 3 portes');
     ok(await page.evaluate(() => { const m = document.getElementById('main'), d = m.querySelector('.dose'), st = m.querySelector('.step.semaine'), q = m.querySelector('[data-view="evo"]'); return !!d && !!st && !q && (d.compareDocumentPosition(st) & Node.DOCUMENT_POSITION_FOLLOWING) > 0; }), '« Aujourd’hui » : la dose passe avant l’étape, et le questionnaire n’est plus devant elle');
@@ -334,6 +338,8 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.goto(APP); await page.waitForTimeout(150);
     await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(150); await audit(page, 'souffle-' + w); await page.click(A('back')); await page.waitForTimeout(200);
     await page.click(A('porte', '[data-v="deposer"]')); await page.waitForTimeout(100); await audit(page, 'deposer-' + w); await page.click(A('back')); await page.waitForTimeout(200);
+    // « Retour » a ramené à la vitrine, celle d'un parent déjà entré : on la contrôle à cette largeur, puis « Ouvrir mon espace »
+    await audit(page, 'vitrine-parent-' + w); await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(250);
     await page.click('.card.perso ' + A('onboard')); await audit(page, 'entree-' + w); await page.click(A('ob-done')); await page.waitForTimeout(100); await audit(page, 'aujourdhui-' + w);
     await page.click('.tab' + A('go', '[data-view="parcours"]')); await audit(page, 'parcours-' + w);
     await page.click('.tab' + A('go', '[data-view="kit"]')); await audit(page, 'outils-' + w);

@@ -2,13 +2,20 @@
 // usage : node serve.js <racine> <port> [dossier-projet pour le 404, ou / si le site est à la racine] [dossier du certificat pour HTTPS]
 const http = require('http'), fs = require('fs'), path = require('path'), zlib = require('zlib');
 const root = path.resolve(process.argv[2] || '.'), port = Number(process.argv[3] || 8765), proj = process.argv[4] || '';
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
+const TYPES = { '.mp3': 'audio/mpeg', '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
 const COMPRESS = new Set(['.html', '.css', '.js', '.json', '.webmanifest', '.xml', '.txt', '.svg']);
 function send(req, res, file, status) {
   const ext = path.extname(file).toLowerCase();
   let body = fs.readFileSync(file);
   const h = { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': 'max-age=600' };
   if (COMPRESS.has(ext) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) { body = zlib.gzipSync(body); h['Content-Encoding'] = 'gzip'; h['Vary'] = 'Accept-Encoding'; }
+  // Un lecteur audio demande souvent un morceau du fichier (« Range ») : on le sert comme le fait le serveur du site.
+  const rg = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+  if (rg && status === 200 && !h['Content-Encoding']) {
+    const total = body.length; let a = rg[1] === '' ? Math.max(0, total - Number(rg[2])) : Number(rg[1]); let b = rg[1] !== '' && rg[2] !== '' ? Math.min(Number(rg[2]), total - 1) : total - 1;
+    if (a > b || a >= total) { res.writeHead(416, { 'Content-Range': 'bytes */' + total }); return res.end(); }
+    h['Content-Range'] = 'bytes ' + a + '-' + b + '/' + total; h['Accept-Ranges'] = 'bytes'; body = body.subarray(a, b + 1); status = 206;
+  } else if (!h['Content-Encoding']) h['Accept-Ranges'] = 'bytes';
   h['Content-Length'] = body.length;
   res.writeHead(status, h); res.end(req.method === 'HEAD' ? undefined : body);
 }

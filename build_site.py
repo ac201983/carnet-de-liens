@@ -64,6 +64,16 @@ def typo(s):
 
 
 # ------------------------------------------------------------------ JavaScript de l'app
+def son_version():
+    """Empreinte courte des morceaux de site-src/son/ (l'ambiance de l'étang). Ils ne sont chargés qu'à la demande du parent."""
+    h = hashlib.sha256()
+    d = SRC + '/son'
+    for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        with open(d + '/' + f, 'rb') as fh:
+            h.update(fh.read())
+    return h.hexdigest()[:8]
+
+
 def build_js(site):
     """Renvoie le code de l'app (sans balise <script>)."""
     src = read(ROOT + '/eparts/p2-content.js')
@@ -76,7 +86,9 @@ def build_js(site):
     # RACINE : le chemin de l'app sur le site (toutes les adresses écrites par l'app partent de là, parce que les fiches ont leur propre adresse).
     # PUBLIC : l'adresse complète, pour les liens qu'un parent envoie. KEY_SITE : la clé de l'espace habituel, que la version d'essai sait recopier.
     consts = [('SITE', site), ('MENTIONS', bool(site and editeur_ok())), ('KEY', CLE if site else 'pepe-v1'), ('KEY_SITE', 'pepe-v1'),
-              ('RACINE', APP_PATH if site else ''), ('PUBLIC', APP_URL if site else 'https://parent-ecoute.ch/'), ('ESSAI', bool(site and ESSAI)), ('TITRE_SITE', TITRE)]
+              ('RACINE', APP_PATH if site else ''), ('PUBLIC', APP_URL if site else 'https://parent-ecoute.ch/'), ('ESSAI', bool(site and ESSAI)), ('TITRE_SITE', TITRE),
+              # SON_V : l'empreinte des 2 morceaux de l'étang. Elle change avec eux, pour qu'un téléphone ne garde pas une ancienne version en mémoire.
+              ('SON_V', son_version())]
     src = src.replace("const KEY='epaule-v1';", '\n'.join('const %s=%s;' % (k, json.dumps(v, ensure_ascii=False)) for k, v in consts))
     if site:
         media = "\nconst MEDAL=RACINE+'img/medaillon.webp';\nconst HERO=RACINE+'img/hero.webp';\n"
@@ -280,7 +292,7 @@ def build_site():
     os.makedirs(OUT, exist_ok=True)
     # --- fichiers statiques
     # Les dossiers sont recopiés à l'identique (sous-dossiers compris) : un fichier retiré des sources disparaît aussi du site fabriqué.
-    for d in ('fonts', 'img'):
+    for d in ('fonts', 'img', 'son'):
         if os.path.isdir(OUT + '/' + d):
             shutil.rmtree(OUT + '/' + d)
         shutil.copytree(SRC + '/' + d, OUT + '/' + d)
