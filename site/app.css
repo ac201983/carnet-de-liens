@@ -701,6 +701,53 @@ canvas.eau{display:none}
 .fin-lettre .lesson{font-size:20px;line-height:1.45}
 .fin-pied{text-align:center}
 .fin-appel{text-align:left;cursor:pointer;border-color:rgba(216,223,126,.5)}
+/* ---------- La refonte des écrans, premier temps : le fil du parcours, l'étape de la semaine, le sentier ---------- */
+.band .fil{align-self:flex-start;display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;background:none;border:0;padding:9px 2px 9px 0;margin:0 0 -8px;min-height:44px;text-align:left}
+.fil .pts{display:flex;align-items:center;gap:2.5px}
+.fil .pts i{width:6px;height:6px;border-radius:50%;background:rgba(244,239,216,.34);flex:none}
+.fil .pts i.m{margin-left:6px}
+.fil .pts i.f{background:var(--sun)}
+.fil .pts i.c{background:rgba(7,36,15,.5);box-shadow:0 0 0 2px var(--cream)}
+.fil .ou{font-size:13.5px;font-weight:800;color:var(--cream);text-shadow:0 1px 8px rgba(0,0,0,.65)}
+.step.semaine{flex-direction:column;align-items:stretch;gap:12px;padding:16px 16px 16px;border-radius:22px;border-color:rgba(216,223,126,.42);background:linear-gradient(180deg,rgba(216,223,126,.1),rgba(216,223,126,.02) 70%),var(--surface)}
+.step.semaine:hover{border-color:var(--sun)}
+.step.semaine .haut{display:flex;align-items:center;gap:14px}
+.step.semaine .n{width:58px;height:58px;font-size:20px;color:var(--cream);background:radial-gradient(closest-side,var(--surface-2) 0,var(--surface-2) 80%,rgba(0,0,0,0) 82%),conic-gradient(var(--sun) calc(var(--p,0)*1%),rgba(169,201,160,.3) 0)}
+.step.semaine.done .n{color:var(--green)}
+.step.semaine .tx b{font-family:var(--font-display);font-size:22px;line-height:1.14;font-weight:600;color:var(--cream)}
+.step.semaine .tx .label{font-size:13px;color:var(--sun-fg)}
+.step.semaine .promesse{font-size:15.5px;line-height:1.5;color:var(--fg)}
+.step.semaine .promesse b{color:var(--cream)}
+.step.semaine .aller{align-self:flex-start;pointer-events:none}
+.chips.attente{margin-top:-2px}
+.card.prog .ou{display:flex;align-items:center;gap:16px}
+.card.prog .anneau{width:84px;height:84px;border-radius:50%;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:radial-gradient(closest-side,var(--surface) 0,var(--surface) 82%,rgba(0,0,0,0) 84%),conic-gradient(var(--green) calc(var(--p,0)*1%),var(--surface-2) 0)}
+.card.prog .anneau b{font-family:var(--font-display);font-size:30px;line-height:1;color:var(--cream);font-weight:600}
+.card.prog .anneau small{font-size:12px;font-weight:800;color:var(--muted)}
+.card.prog .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.card.prog .txt .lesson{font-size:21px;line-height:1.15}
+.months{gap:22px}
+.months .month{gap:2px}
+.months .month h2{padding-left:34px;gap:12px;font-size:21px;line-height:1.15}
+.months .month h2 .nom{margin-right:auto}
+.months .month h2 .mfait{font-family:var(--font-ui);font-size:12.5px;font-weight:800;color:var(--muted);white-space:nowrap}
+.months .month h2 .n{position:relative;z-index:1}
+.sentier{display:flex;flex-direction:column}
+.months .step{position:relative;display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:0 4px;min-height:88px;padding:8px 10px 8px 0;background:none;border:1px solid rgba(0,0,0,0);border-radius:22px}
+.months .step:hover{border-color:rgba(0,0,0,0)}
+@media (hover:hover){.months .step:hover{background:rgba(169,201,160,.07)}}
+.months .step .trace{position:absolute;left:0;top:0;width:96px;height:100%;overflow:visible;pointer-events:none}
+.months .step .trace path{fill:none;stroke:rgba(169,201,160,.5);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1 8;vector-effect:non-scaling-stroke}
+.months .step .trace path.fait{stroke:var(--green-2);stroke-width:3;stroke-dasharray:none}
+.months .step .n{grid-column:1;justify-self:start;margin-left:6px;width:44px;height:44px;position:relative;z-index:1;background:var(--bg);border:2px solid var(--green-2);color:var(--green);font-size:16px}
+.months .step.d .n{margin-left:46px}
+.months .step.done .n{background:var(--green);border-color:var(--green);color:var(--green-fg)}
+.months .step.now .n{background:var(--sun);border-color:var(--sun);color:#243A12;box-shadow:0 0 0 7px rgba(216,223,126,.2),0 0 0 15px rgba(216,223,126,.09)}
+.months .step.locked .n{background:var(--bg);border:2px dashed rgba(169,201,160,.5);color:var(--muted)}
+.months .step .tx{grid-column:2}
+.months .step .tx b{font-size:17px;line-height:1.22}
+.months .step.now{background:linear-gradient(90deg,rgba(216,223,126,0) 0,rgba(216,223,126,.1) 34%,rgba(216,223,126,.1) 100%)}
+.months .step.now .tx span{color:var(--sun-fg);font-weight:800}
 .card.rap{border-style:dashed;border-color:rgba(244,239,216,.42)}
 .card.carnet{background:var(--surface-2);border-color:rgba(180,222,156,.3)}
 .card.carnet label.lesson{display:block}
@@ -837,8 +884,9 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 
   /* -- le parcours : les six mois d'un seul regard -- */
   .card.prog{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 30px;align-items:center}
-  .card.prog .kv,.card.prog .progress{grid-column:1}
-  .card.prog .quick{grid-column:2;grid-row:1 / span 2;flex-wrap:nowrap}
+  .card.prog .ou{grid-column:1}
+  .card.prog .txt .lesson{font-size:25px}
+  .card.prog .quick{grid-column:2;grid-row:1;flex-wrap:nowrap}
   .card.prog .quick .btn{flex:none;padding-inline:18px}
   .months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 26px;align-items:start;margin-top:6px}
   .month h2{min-height:2.3em;align-items:flex-start}
