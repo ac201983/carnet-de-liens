@@ -20,6 +20,9 @@ cp outils/*.py "$BRANCHE/outils/" 2>/dev/null || true
 cp -r outils/pictos "$BRANCHE/outils/" 2>/dev/null || true
 # Le banc d'essai de l'eau et de la goutte
 cp build/doux/lab.html build/doux/eau.js "$BRANCHE/outils/eau/" 2>/dev/null || true
+# Ce qui sert à fabriquer, à regarder et à vérifier la version d'essai (dans l'atelier, ces fichiers sont dans build/essai/)
+mkdir -p "$BRANCHE/outils/essai"
+cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/vue.js build/essai/planche.py "$BRANCHE/outils/essai/" 2>/dev/null || true
 
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

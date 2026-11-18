@@ -122,15 +122,15 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok((await sous(page, 1)) === 'S’ouvre demain', 'six jours après : « S’ouvre demain »');
     // sept jours après : ouverte
     await page.evaluate(d => { const x = JSON.parse(localStorage.getItem('pepe-v1')); x.seen.depart = d; localStorage.setItem('pepe-v1', JSON.stringify(x)); }, iso(-7));
-    await page.reload(); await page.waitForTimeout(350);
+    await page.goto(APP); await page.waitForTimeout(350);   // une nouvelle visite : « Aujourd'hui » (une page seulement rechargée retrouve, elle, l'écran où l'on était)
     ok(/Croire en lui/.test(await page.textContent('.step.now b')), 'sept jours après : « Aujourd’hui » propose l’étape 2');
-    // la refonte : le fil des 24 étapes sous le bonjour, et l'étape de la semaine en grande carte
+    // la refonte : le fil des 24 étapes et l'étape de la semaine en grande carte, ensemble, juste après la dose
     {
-      const f = await page.evaluate(() => { const pts = [...document.querySelectorAll('.band .fil .pts i')]; const c = document.querySelector('.step.semaine'); return { n: pts.length, cur: pts.findIndex(e => e.classList.contains('c')), faits: pts.filter(e => e.classList.contains('f')).length, ou: document.querySelector('.band .fil .ou').textContent, nom: document.querySelector('.band .fil').getAttribute('aria-label'), date: document.querySelector('.band .label, .band .pill') ? document.querySelector('.band .label, .band .pill').textContent : '', prom: c ? c.querySelector('.promesse').textContent : '', aller: c ? c.querySelector('.aller').textContent.trim() : '', p: c ? c.querySelector('.n').style.getPropertyValue('--p') : '', apresDose: c ? c.previousElementSibling && /dose/.test(c.previousElementSibling.className) : false }; });
+      const f = await page.evaluate(() => { const pts = [...document.querySelectorAll('.reprendre .fil .pts i')]; const c = document.querySelector('.step.semaine'); return { n: pts.length, cur: pts.findIndex(e => e.classList.contains('c')), faits: pts.filter(e => e.classList.contains('f')).length, ou: document.querySelector('.reprendre .fil .ou').textContent, nom: document.querySelector('.reprendre .fil').getAttribute('aria-label'), date: document.querySelector('.band .label, .band .pill') ? document.querySelector('.band .label, .band .pill').textContent : '', prom: c ? c.querySelector('.promesse').textContent : '', aller: c ? c.querySelector('.aller').textContent.trim() : '', p: c ? c.querySelector('.n').style.getPropertyValue('--p') : '', apresDose: c ? !!c.parentElement.previousElementSibling && /dose/.test(c.parentElement.previousElementSibling.className) && c.parentElement.classList.contains('reprendre') : false }; });
       ok(f.n === 24 && f.cur === 1 && f.faits === 0 && f.ou === 'Étape 2 sur 24' && /Voir le parcours\.$/.test(f.nom), 'le fil : 24 points, le deuxième marqué, « Étape 2 sur 24 » ' + JSON.stringify(f).slice(0, 160));
       ok(/ce que vous attendez de votre enfant change ce qu’il ose essayer/.test(f.prom) && f.aller === 'Ouvrir l’étape' && f.apresDose, 'l’étape de la semaine : sa phrase d’accroche, un seul bouton, juste après la dose ' + JSON.stringify([f.prom.slice(0, 40), f.aller, f.apresDose]));
       ok(/^(Lundi|Mardi|Mercredi|Jeudi|Vendredi|Samedi|Dimanche) \d{1,2}(er)? \S+$/.test(f.date.trim()), 'la date est écrite en mots (' + f.date + ')');
-      await page.click('.band .fil'); await page.waitForTimeout(200);
+      await page.click('.reprendre .fil'); await page.waitForTimeout(200);
       ok(/Le parcours/.test(await page.textContent('h1')), 'toucher le fil mène au parcours');
       const t = await page.evaluate(() => { const S = [...document.querySelectorAll('.months .step')]; const a = document.querySelector('.card.prog .anneau'); return { n: S.length, traces: S.filter(e => e.querySelector('svg.trace path')).length, alt: S.every((e, i) => e.classList.contains(i % 2 ? 'd' : 'g')), faits: S.filter(e => e.querySelector('.trace path.fait')).length, dernier: S[23].querySelectorAll('.trace path').length, arr: (() => { const a = document.querySelector('.months .month:last-child .sentier > .arrivee'); return a ? a.tagName + (a.classList.contains('ouverte') ? ' ouverte ' : ' ') + a.textContent : ''; })(), anneau: a.textContent, p: a.style.getPropertyValue('--p'), mois: [...document.querySelectorAll('.months .mfait')].map(e => e.textContent).join('|'), lieu: document.querySelector('.card.prog .lesson').textContent, ancien: !!document.querySelector('.card.prog .kv, .card.prog .progress') }; });
       ok(t.n === 24 && t.traces === 24 && t.alt && t.dernier === 2 && t.arr === 'DIV L’arrivéeAu bout du chemin, tout votre parcours tiendra sur une page, avec vos mots.', 'le sentier : 24 étapes reliées, une à gauche, une à droite, et au bout l’arrivée, encore fermée ' + JSON.stringify(t).slice(0, 260));
@@ -149,10 +149,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok((await page.$$('.step:not(.locked)')).length === 3 && (await sous(page, 3)) === 'Plus tard', 'après 40 jours d’absence : une seule étape nouvelle attend');
     // Aujourd'hui annonce la suite quand l'étape du moment est faite
     await page.evaluate(() => { const x = JSON.parse(localStorage.getItem('pepe-v1')); x.seen.croyances = x.seen.croire; x.steps.croyances = true; const d = new Date(); d.setDate(d.getDate() - 3); const p = v => String(v).padStart(2, '0'); x.seen.croyances = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); localStorage.setItem('pepe-v1', JSON.stringify(x)); });
-    await page.reload(); await page.waitForTimeout(350);
+    await page.goto(APP); await page.waitForTimeout(350);   // une nouvelle visite : « Aujourd'hui » (une page seulement rechargée retrouve, elle, l'écran où l'on était)
     ok(/Étape faite\. La suivante s’ouvre dans 4 jours\./.test(await page.textContent('.step.now .label')), '« Aujourd’hui » : étape faite, la suivante dans 4 jours');
     {
-      const f = await page.evaluate(() => { const c = document.querySelector('.step.semaine'); return { done: c.classList.contains('done'), b: c.querySelector('.promesse b') ? c.querySelector('.promesse b').textContent : '', aller: c.querySelector('.aller').textContent.trim(), faits: document.querySelectorAll('.band .fil .pts i.f').length }; });
+      const f = await page.evaluate(() => { const c = document.querySelector('.step.semaine'); return { done: c.classList.contains('done'), b: c.querySelector('.promesse b') ? c.querySelector('.promesse b').textContent : '', aller: c.querySelector('.aller').textContent.trim(), faits: document.querySelectorAll('.reprendre .fil .pts i.f').length }; });
       ok(f.done && /^Ensuite, .+\.$/.test(f.b) && f.aller === 'Relire l’étape' && f.faits === 1, 'l’étape faite : la carte annonce la suivante par « Ensuite », et le fil compte l’étape faite ' + JSON.stringify(f));
     }
     ok(errs.length === 0, 'aucune erreur (parcours) ' + errs.slice(0, 2).join(' | '));
@@ -240,7 +240,7 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     // la reprise n'est écrite qu'au premier enregistrement : on en provoque un
     await page.click(A('step', '[data-i="0"]')); await page.waitForTimeout(150); await page.fill('#note', 'x'); await page.waitForTimeout(600);
     const x = await store(page);
-    ok(x.pv === 2, 'reprise : marquée comme faite');
+    ok(x.pv === 3 && x.perso === true && x.onboarded === true && x.me === 'Camille' && x.age === 'e' && x.situation === 'hand', 'reprise : marquée comme faite, et un parent venu avant garde ses réponses sans se voir reproposer la personnalisation');
     ok(x.steps.depart && x.steps.croire && x.steps.emotions && x.steps.enfant && Object.keys(x.steps).length === 4, 'reprise : étapes faites rangées par leur nom (l’ancienne étape 20 n’existe plus)');
     ok(x.seen.depart === iso(-22) && x.seen.croire === iso(-15) && x.seen.croyances === iso(-8) && x.seen.objectifs === iso(-1), 'reprise : une étape ouverte par semaine écoulée');
     ok(!!x.seen.emotions && !!x.seen.enfant, 'reprise : les étapes déjà faites restent ouvertes');
@@ -369,10 +369,10 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     ok(errs.length === 0, 'aucune erreur (mois 2) ' + errs.slice(0, 2).join(' | '));
     await ctx.close();
     // la première question de « Mon évolution » suit la situation choisie à l'inscription
-    for (const [sit, attendu] of [['hand', /Que connaissiez-vous du handicap/], ['diff', /ce que vous traversez aujourd’hui/], ['parent', /la vie de parent, avant de le devenir/], ['autre', /Que connaissiez-vous du handicap/]]) {
+    for (const [sit, attendu] of [['hand', /Que connaissiez-vous du handicap/], ['diff', /ce que vous traversez aujourd’hui/], ['parent', /la vie de parent, avant de le devenir/], ['', /la vie de parent, avant de le devenir/], ['autre', /la vie de parent, avant de le devenir/]]) {
       const o = await ouvre(browser, Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(0), steps: {}, pv: 2, seen: {}, notes: {}, situation: sit }));
       await parcours(o.page); await o.page.click('.quick ' + A('go', '[data-view="evo"]')); await o.page.waitForTimeout(150);
-      ok(attendu.test(await o.page.textContent('label[for="evo-avant"]')) && o.errs.length === 0, 'Mon évolution, situation « ' + sit + ' » : la question est adaptée');
+      ok(attendu.test(await o.page.textContent('label[for="evo-avant"]')) && o.errs.length === 0, 'Mon évolution, situation « ' + (sit || 'non choisie') + ' » : la question est adaptée, et la plus générale quand rien n’est choisi');
       await o.ctx.close();
     }
   }

@@ -52,7 +52,7 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   await page.evaluate(() => localStorage.clear()); await page.goto(APP); await page.waitForTimeout(700);
   ok(await page.evaluate(() => document.documentElement.classList.contains('fx')), 'effets actifs quand le téléphone ne demande pas moins d’animations');
   ok((await page.evaluate(() => typeof document.startViewTransition === 'function')) === !OLD && (await page.evaluate(() => document.documentElement.classList.contains('fxsd'))) === !OLD, OLD ? 'navigateur ancien simulé : ni fondu d’écran ni défilement animé' : 'le navigateur de test sait faire le fondu d’écran et les animations liées au défilement');
-  await page.click('#consent [data-consent="no"]'); await page.click('.herofull ' + A('onboard')); await page.waitForTimeout(900); await page.fill('#ob-me', 'Camille');
+
   // touche un bouton, puis photographie et relève l'état à plusieurs instants
   const shot = async (sel, name, delays) => {
     const el = await page.waitForSelector(sel, { timeout: 5000 }); await el.scrollIntoViewIfNeeded(); await page.waitForTimeout(200);
@@ -64,11 +64,15 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     }
     await page.waitForTimeout(1700); return seen;
   };
-  let s = await shot(A('ob-done'), 'entree', [120, 300, 480, 660, 840, 1100]);
-  ok(/Camille/.test(await page.$eval('h1', e => e.textContent)), 'entrée : « Aujourd’hui » affiché');
+  let s = await shot('.herofull ' + A('entrer', '[data-v="parcours"]'), 'entree', [120, 300, 480, 660, 840, 1100]);
+  ok(/D’où je pars/.test(await page.$eval('h1', e => e.textContent)) && !!(await page.$('.tabs')), 'entrée : un geste, et la première étape du parcours est affichée');
   ok(s[0].vt === !OLD && (OLD ? s[0].nav : true), 'entrée : le changement d’écran est en cours juste après le toucher (' + JSON.stringify(s[0]) + ')');
   ok(OLD ? (s.some(x => x.voile > 0) && s[1].fxe >= 2) : (s[1].onde && s[1].fxe === 0), OLD ? 'entrée (navigateur ancien) : les blocs remontent l’un après l’autre' : 'entrée : l’onde de lumière traverse l’écran, et les blocs n’ont pas à arriver un par un (' + JSON.stringify(s[1]) + ')');
   ok(!(await page.evaluate(() => document.querySelector(':root').matches(':active-view-transition') || /fx-(nav|onde|ring)/.test(document.documentElement.className) || getComputedStyle(document.getElementById('onde') || document.body).display === 'block' && !!document.getElementById('onde'))), 'entrée : tout est terminé ensuite, l’anneau de lumière est retiré');
+  // le prénom, par la feuille de personnalisation
+  await page.click('.tab' + A('go', '[data-view="today"]')); await page.waitForTimeout(1900);
+  await page.click('.card.perso ' + A('onboard')); await page.waitForTimeout(900); await page.fill('#ob-me', 'Camille'); await page.click(A('ob-done')); await page.waitForTimeout(1900);
+  ok(/Camille/.test(await page.$eval('h1', e => e.textContent)) && !(await page.$('.sheet')), 'personnalisation : le prénom est pris, la feuille est refermée');
   s = await shot('.tab' + A('go', '[data-view="kit"]'), 'onglet', [100, 250, 400, 550, 700, 850, 1000]);
   ok(/outils/i.test(await page.$eval('h1', e => e.textContent)) && (OLD ? s.some(x => x.voile > 0) : s[2].onde), 'onglet : « La boîte à outils » affichée, ' + (OLD ? 'avec ses blocs qui arrivent' : 'derrière l’onde de lumière'));
   await page.click('.tab' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(1900);
@@ -105,10 +109,11 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   }
   // un nouvel affichage du même écran ne rejoue pas l'arrivée
   await page.click('.tab' + A('go', '[data-view="today"]')); await page.waitForTimeout(2400);
-  await page.click(A('dmode', '[data-v="advice"]')); await page.waitForTimeout(80);
+  await page.click(A('mood', '[data-i="2"]')); await page.waitForTimeout(80);
   ok((await page.evaluate(() => [...document.querySelectorAll('#app .card,#app .dose')].filter(e => parseFloat(getComputedStyle(e).opacity) < 0.98).length)) === 0, 'même écran redessiné : l’arrivée ne rejoue pas');
 
   // --- le dépôt : le texte se dissout, la réponse remonte
+  await page.click('.portes ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(1900);
   await page.fill('#draft', 'Ce soir j’ai crié et je m’en veux.'); await page.$eval('#draft', e => e.scrollIntoView({ block: 'center' })); await page.waitForTimeout(200);
   await page.click(A('dsend')); await page.waitForTimeout(260); await page.screenshot({ path: OUT + '/depot-0260.png' });
   await page.waitForTimeout(300); await page.screenshot({ path: OUT + '/depot-0560.png' }); await page.waitForTimeout(500); await page.screenshot({ path: OUT + '/depot-1060.png' }); await page.waitForTimeout(500); await page.screenshot({ path: OUT + '/depot-1560.png' }); await page.waitForTimeout(1600);
@@ -119,10 +124,19 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   // --- le message bref : il repart en douceur, et ne rejoue pas son apparition si l'écran est redessiné pendant qu'il est là
   await page.waitForTimeout(1200); ok(!(await page.$('.toast')), 'message bref : retiré après s’être effacé');
   await page.fill('#draft', 'Une autre chose qui pèse ce soir.'); await page.click(A('dsend')); await page.waitForSelector('.toast', { timeout: 4000 }); await page.waitForTimeout(700);
-  await page.click(A('dmode', '[data-v="listen"]')); await page.waitForTimeout(60);
+  await page.click('.hint ' + A('voix')); await page.waitForTimeout(60);
   const op = await page.evaluate(() => { const t = document.querySelector('.toast'); return t ? parseFloat(getComputedStyle(t).opacity) : -1; });
   ok(op > 0.9, 'message bref : toujours pleinement visible juste après un nouvel affichage de l’écran (opacité ' + op + ')');
   await page.waitForTimeout(3600); ok(!(await page.$('.toast')), 'message bref : retiré la deuxième fois aussi');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(900);
+  // --- souffler : le cercle s'ouvre et se referme, sans rien d'estompé, et le mot suit
+  await page.click(A('back')); await page.waitForTimeout(1900);
+  await page.click('.portes ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(2400);
+  { const a = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')) }));
+    await page.waitForTimeout(2600); const b = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')) }));
+    await page.waitForTimeout(4000); const c = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')), dim: [...document.querySelectorAll('.souffle *')].filter(e => parseFloat(getComputedStyle(e).opacity) < 0.98).length }));
+    ok(a.mot === 'Inspirez' && b.mot === 'Inspirez' && b.s > a.s + 0.2 && c.mot === 'Expirez' && c.s < b.s - 0.1 && c.dim === 0, 'souffler : le cercle s’ouvre à l’inspiration et se referme à l’expiration, rien n’est estompé ' + JSON.stringify([a, b, c])); }
+  await page.click(A('souffle-stop')); await page.waitForTimeout(300); await page.click(A('back')); await page.waitForTimeout(1900);
   // --- une feuille qui se referme : elle s'efface, et rien ne reste bloqué
   await page.click('.tab' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(1900);
   const lock = await page.$(A('upgrade'));
@@ -170,9 +184,14 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     await p.waitForTimeout(5200); ok(!(await eau('.herofull')), 'toucher la goutte : tout redevient calme ensuite');
     await p.screenshot({ path: OUT + '/accueil-calme3.png', clip: heroClip }); ok(diff(await rd('accueil-calme3.png'), calm) === 0, 'après le rebond, la photo est exactement comme avant');
     // « Aujourd'hui » : l'onde part aussi de la goutte du bandeau, puis tout redevient calme
-    await p.click('#consent [data-consent="no"]'); await p.click('.herofull ' + A('onboard')); await p.waitForTimeout(900); await p.click(A('ob-done')); await p.waitForTimeout(2600);
+    await p.click('.herofull ' + A('entrer', '[data-v="today"]')).catch(() => p.$eval('.acc-fin ' + A('entrer'), e => e.click())); await p.waitForTimeout(2600);
     ok((await eau('.band')) > 0, '« Aujourd’hui » : la goutte du bandeau saute, l’onde part');
     await p.waitForTimeout(5600); ok(!(await eau('.band')), '« Aujourd’hui » : le calque s’enlève ensuite');
+    // souffler : à chaque expiration, une onde part sur l'étang
+    await p.click('.portes ' + A('porte', '[data-v="souffle"]')); await p.waitForTimeout(1400 + 4000 + 900);
+    ok((await eau('.souffle .band')) > 0 && (await p.textContent('#souffle-mot')) === 'Expirez', 'souffler : à l’expiration, une onde part sur l’étang');
+    await p.click(A('souffle-stop')); await p.waitForTimeout(4600); ok(!(await eau('.souffle .band')), 'souffler : arrêté, l’étang redevient calme');
+    await p.click(A('back')); await p.waitForTimeout(2600);
     for (const [v, nom] of [['parcours', 'Parcours'], ['kit', 'Outils']]) { await p.click('.tab' + A('go', '[data-view="' + v + '"]')); await p.waitForTimeout(3000); ok((await eau('.band')) > 0, 'onglet « ' + nom + ' » : la goutte saute là aussi'); await p.waitForTimeout(4200); ok(!(await eau('.band')), 'onglet « ' + nom + ' » : puis tout redevient calme'); }
     await p.click('.tab' + A('go', '[data-view="me"]')); await p.waitForTimeout(2600);
     ok((await eau('.band')) > 0, 'onglet « Moi » : la goutte saute là aussi');

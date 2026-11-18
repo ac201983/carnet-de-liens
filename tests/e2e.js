@@ -47,48 +47,82 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   {
     const { ctx, page } = await ctxPage(browser);
     const raw = await (await ctx.request.get(APP)).text();
-    ok(/<h1>Parent Écouté,<br>Parent Éclairé<\/h1>/.test(raw) && /class="herobg"[^>]*alt="[^"]{20,}"/.test(raw), 'accueil écrit dans le HTML (titre + image avec texte alternatif)');
+    ok(/<h1><span class="salut"[^>]*>Bonjour\.<\/span> <span class="besoin">De quoi <span class="nb">auriez-vous<\/span> besoin<span[^>]*data-soir=" ce soir \?"[^>]*> aujourd’hui \?<\/span><\/span><\/h1>/.test(raw) && /class="herobg"[^>]*alt="[^"]{20,}"/.test(raw), 'accueil écrit dans le HTML (la question, ses variantes selon l’heure, et l’image avec texte alternatif)');
+    ok((raw.match(/class="porte[^"]*" data-act="porte"/g) || []).length === 3 && /Souffler 2 minutes/.test(raw) && /Déposer ce qui pèse/.test(raw) && /data-soir="Une piste pour ce soir"/.test(raw), 'les 3 portes sont écrites dans la page');
     ok(/<title>[^<]{20,70}<\/title>/.test(raw) && /<meta name="description" content="[^"]{80,180}">/.test(raw), 'titre et description meta');
     ok(new RegExp('<link rel="canonical" href="' + reEsc(PUBLIC_APP) + '">').test(raw), 'adresse canonique');
     ok(new RegExp('og:image" content="' + reEsc(PUBLIC_APP) + 'img\\/apercu\\.jpg"').test(raw) && /twitter:card" content="summary_large_image"/.test(raw), 'balises d’aperçu social');
-    ok(/rel="icon" href="favicon\.ico"/.test(raw) && /rel="icon" href="favicon\.svg"/.test(raw) && /apple-touch-icon/.test(raw) && /rel="manifest"/.test(raw), 'favicon, icône Apple, manifest');
+    ok(/rel="icon" href="[^"]*favicon\.ico"/.test(raw) && /rel="icon" href="[^"]*favicon\.svg"/.test(raw) && /apple-touch-icon/.test(raw) && /rel="manifest"/.test(raw), 'favicon, icône Apple, manifest');
     ok(/Content-Security-Policy/.test(raw) && /upgrade-insecure-requests/.test(raw), 'politique de sécurité (CSP) avec passage forcé en HTTPS');
     ok(!/fonts\.googleapis|gstatic/.test(raw), 'plus aucun appel à Google Fonts');
     ok(/class="voice[^>]*>.*accueilli dans une famille\..*travailleur social depuis mes 19 ans.*Lire mon histoire/s.test(raw), 'le mot d’Antonio est écrit dans la page (lisible sans JavaScript)');
     ok(!/[:;—]/.test((raw.match(/<section class="voice[\s\S]*?<\/section>/) || ['x:'])[0].replace(/<[^>]+>/g, ' ')), 'le mot d’Antonio se lit comme on parle, sans deux-points, point-virgule ni tiret long');
     for (const f of ['', 'app.js', 'confidentialite.html', 'conditions.html', 'antonio/', 'antonio/antonio.js', 'manifest.webmanifest']) ok(!/éducateur social/.test(await (await ctx.request.get(APP + f)).text()), '« éducateur social » ne figure plus dans ' + (f || 'index.html'));
     await page.goto(APP); await page.waitForTimeout(300);
-    ok(await has(page, '#consent'), 'bandeau de consentement affiché à la première visite');
-    ok((await page.$$('#consent button')).length === 2, 'bandeau : deux boutons de même poids');
-    await audit(page, 'accueil-bandeau');
-    ok(!(await has(page, '#cf-beacon')), 'aucun outil d’audience chargé avant le choix');
-    await page.click('#consent [data-consent="no"]');
-    ok(!(await has(page, '#consent')), 'bandeau fermé après « Refuser »');
-    const c = await store(page, 'pepe-consent'); ok(c && c.audience === false && c.v === 1, 'refus mémorisé');
+    ok(!(await has(page, '#consent')), 'aucun bandeau à l’arrivée, tant qu’aucune mesure d’audience n’est branchée');
+    ok(!(await has(page, '#cf-beacon')) && (await store(page, 'pepe-consent')) === null, 'aucun outil d’audience chargé, aucun choix inventé');
     ok(await page.evaluate(() => document.cookie === ''), 'aucun cookie déposé');
     await audit(page, 'accueil');
-    ok((await page.$$('.herofull ' + A('onboard'))).length === 1 && (await page.$$eval(A('onboard'), L => L.length === 3 && L.every(b => b.textContent.trim() === 'Commencer gratuitement'))) && (await page.$$eval('.btn.primary', L => L.filter(b => b.dataset.act !== 'onboard').every(b => !!b.closest('.sch')))), 'un seul appel à l’action (le même bouton en haut, en bas et en flottant), et le seul autre bouton plein est celui du schéma');
+    // la question suit l'heure du visiteur, dès le premier affichage
+    { const h = new Date().getHours(), m = (h < 5 || h >= 22) ? 'nuit' : h < 11 ? 'matin' : h < 18 ? 'jour' : 'soir';
+      const veut = { matin: ['Bonjour.', 'De quoi auriez-vous besoin ce matin ?', 'Une piste pour ce matin'], jour: ['Bonjour.', 'De quoi auriez-vous besoin aujourd’hui ?', 'Une piste pour aujourd’hui'], soir: ['Bonsoir.', 'De quoi auriez-vous besoin ce soir ?', 'Une piste pour ce soir'], nuit: ['Il est tard.', 'De quoi auriez-vous besoin, là, maintenant ?', 'Une piste pour cette nuit'] }[m];
+      const vu = await page.evaluate(() => [document.querySelector('.herofull .salut').textContent, document.querySelector('.herofull .besoin').textContent, document.querySelector('.herofull .porte[data-v="piste"] b').textContent, document.documentElement.className, document.getElementById('app').className]);
+      ok(vu[0] === veut[0] && vu[1] === veut[1] && vu[2] === veut[2] && new RegExp('\\bh-' + m + '\\b').test(vu[3]) && new RegExp('\\bh-' + m + '\\b').test(vu[4]), 'accueil : le bonjour, la question et la lumière sont ceux de l’heure (' + m + ')'); }
+    ok((await page.$$('.herofull .porte')).length === 3 && (await page.$$('.herofull ' + A('entrer', '[data-v="parcours"]'))).length === 1 && await has(page, '.herofull .sos'), 'premier écran : 3 portes, le parcours de 6 mois, et le SOS');
+    ok((await page.$$eval(A('entrer', '[data-v="today"]'), L => L.length === 2 && L.every(b => b.textContent.trim() === 'Commencer gratuitement'))) && (await page.$$eval('.btn.primary', L => L.every(b => b.dataset.act === 'entrer' || !!b.closest('.sch')))), '« Commencer gratuitement » en bas et en flottant, et le seul autre bouton plein est celui du schéma');
+    ok((await page.$$eval('.acc-scenes a[data-act="sit"]', L => L.length === 12 && L.every(a => /\/fiches\/[a-z0-9-]+\/$/.test(a.getAttribute('href'))))) && await has(page, 'a[data-act="fiches"][href$="/fiches/"]'), 'accueil : 12 situations par âge, chacune avec le lien de sa fiche');
+    // le SOS s'ouvre sans être entré dans l'espace
+    await page.click('.herofull .sos'); await page.waitForTimeout(150);
+    ok(await has(page, '.sosview') && (await page.$$eval('.emg a.tel', a => a.length)) === 3, 'SOS ouvert depuis l’accueil, sans inscription');
+    await page.click('.sosview .back'); await page.waitForTimeout(200); ok(await has(page, '.herofull') && (await store(page, 'pepe-v1')) === null, 'SOS : retour à l’accueil, rien n’a été créé');
     // aperçu des formules sans s’inscrire
     await page.click(A('peek-plans')); await page.waitForTimeout(100);
     ok((await txt(page, 'h1')) === 'Les formules' && await has(page, 'table.cmp caption'), 'formules consultables depuis l’accueil');
     await audit(page, 'formules-apercu');
-    await page.click(A('back')); ok(await has(page, '.herofull'), 'retour à l’accueil');
+    await page.click(A('back')); await page.waitForTimeout(200); ok(await has(page, '.herofull'), 'retour à l’accueil');
     await page.click(A('peek-about')); await page.waitForTimeout(200);
     ok(/^Avant d’accompagner des familles/.test(await txt(page, 'h1')) && /#histoire$/.test(page.url()) && /^Mon histoire/.test(await page.title()), '« Lire mon histoire » ouvre la page, avec son adresse et son titre');
     ok(!/[:;—]/.test(await page.$eval('.story', e => e.innerText)) && !/[:;—]/.test(await page.$eval('.band.story h1', e => e.innerText)), 'l’histoire se lit comme on parle, sans deux-points, point-virgule ni tiret long');
     ok((await page.$$('.places li')).length === 3 && (await page.$$('.verbs li')).length === 3 && (await txt(page, '.verbs li:nth-child(2)')).replace(/\s+/g, ' ') === 'Apprendre avec la différence', 'trois places, trois verbes');
-    ok((await page.$$('main .btn.primary')).length === 1 && await has(page, 'main ' + A('onboard')), 'histoire : un seul bouton d’action avant inscription');
+    ok((await page.$$('main .btn.primary')).length === 1 && await has(page, 'main ' + A('entrer')), 'histoire : un seul bouton d’action avant d’entrer');
     await audit(page, 'histoire-apercu');
-    await page.click(A('back')); await page.waitForTimeout(150);
+    await page.click(A('back')); await page.waitForTimeout(250);
     ok(await has(page, '.herofull') && !/#/.test(page.url()) && !/^Mon histoire/.test(await page.title()), 'retour à l’accueil : adresse et titre rétablis');
     await page.click(A('peek-about')); await page.waitForTimeout(200); await page.goBack(); await page.waitForTimeout(250);
     ok(await has(page, '.herofull') && !(await has(page, '.places')), 'le bouton Retour du téléphone ramène à l’accueil');
+    await page.goForward(); await page.waitForTimeout(250);
+    ok(/^Avant d’accompagner/.test(await txt(page, 'h1')) && /#histoire$/.test(page.url()), 'le bouton Suivant du navigateur rouvre l’histoire');
+    await page.goBack(); await page.waitForTimeout(250);
     await page.reload(); await page.waitForTimeout(200);
-    ok(!(await has(page, '#consent')), 'bandeau non réaffiché après rechargement');
+    ok(await has(page, '.herofull') && (await store(page, 'pepe-v1')) === null, 'après rechargement : toujours l’accueil, et rien n’a été enregistré tant qu’aucun geste n’est fait');
 
-    // ============ 2. Questionnaire d’entrée ============
-    await page.click('.herofull ' + A('onboard')); await page.waitForTimeout(150);
-    ok(await has(page, '.sheet[role="dialog"]'), 'feuille « Faisons connaissance » ouverte');
+    // ============ 2. Le premier geste : souffler tout de suite, sans rien remplir ============
+    await page.click('.herofull .porte[data-v="souffle"]'); await page.waitForTimeout(250);
+    ok(await has(page, 'main.souffle.s-cours') && !(await has(page, '.sheet')) && !(await has(page, '.tabs')), 'un geste : l’écran de respiration, sans question préalable');
+    { const d0 = await store(page, 'pepe-v1'); ok(d0.onboarded === true && d0.age === '' && d0.situation === '' && d0.weights.length === 0 && d0.me === '' && d0.perso === false, 'l’espace est créé par le geste, et rien n’est coché à la place du parent'); }
+    ok((await txt(page, '#souffle-mot')) === 'Installez-vous' && (await page.$$('.souffle .tours i')).length === 12, 'respiration : un mot pour s’installer, et 12 respirations annoncées');
+    await page.waitForTimeout(2000); ok((await txt(page, '#souffle-mot')) === 'Inspirez' && (await page.$$('.souffle .tours i.c')).length === 1, 'respiration : « Inspirez », première respiration en cours');
+    await page.waitForTimeout(4000); ok((await txt(page, '#souffle-mot')) === 'Expirez', 'respiration : « Expirez » après 4 secondes');
+    await audit(page, 'souffle');
+    await page.click(A('souffle-stop')); await page.waitForTimeout(100); ok(await has(page, 'main.souffle.s-pret') && await has(page, A('souffle-go')), 'respiration : « Arrêter » rend la main, « Commencer » la relance');
+    await audit(page, 'souffle-pret');
+    await page.click(A('back')); await page.waitForTimeout(250);
+    ok(await has(page, '.tabs') && /\.$/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')), 'retour : le parent est dans son espace, sur « Aujourd’hui »');
+    // « Aujourd'hui » : la question, les 3 portes, puis la dose avant tout le reste
+    ok((await page.$$('.portes.mini .porte')).length === 3 && /De quoi auriez-vous besoin/.test(await txt(page, '.band .besoin')), '« Aujourd’hui » : la question du moment et les 3 portes');
+    ok(await page.evaluate(() => { const m = document.getElementById('main'), d = m.querySelector('.dose'), st = m.querySelector('.step.semaine'), q = m.querySelector('[data-view="evo"]'); return !!d && !!st && !q && (d.compareDocumentPosition(st) & Node.DOCUMENT_POSITION_FOLLOWING) > 0; }), '« Aujourd’hui » : la dose passe avant l’étape, et le questionnaire n’est plus devant elle');
+    ok(/Le parcours de 6 mois commence ici/.test(await txt(page, '.step.semaine .label')) && await has(page, '.reprendre .fil'), '« Aujourd’hui » : le parcours de 6 mois a sa place, avec son fil de 24 étapes');
+    ok(await has(page, '.card.perso') && /Facultatif/.test(await txt(page, '.card.perso')), 'la personnalisation est proposée après, comme un choix');
+    await audit(page, 'aujourdhui-nouveau');
+    // qui parle ici
+    await page.click('.dose ' + A('voix')); await page.waitForTimeout(150);
+    ok(await has(page, '.sheet #voix-t') && (await page.$$('.sheet .qui')).length === 3 && /Personne ne lit ce que vous écrivez/.test(await txt(page, '.sheet')) && /le mot affiché est un exemple/.test(await txt(page, '.sheet')), '« Qui vous parle ici ? » : ce que l’application choisit, ce qui vient d’Antonio, ce que montre « Avec Antonio »');
+    await audit(page, 'qui-parle');
+    await page.keyboard.press('Escape'); await page.waitForTimeout(100);
+    // personnaliser : facultatif, rien de coché, gardé seulement avec « Enregistrer »
+    await page.click('.card.perso ' + A('onboard')); await page.waitForTimeout(150);
+    ok(await has(page, '.sheet[role="dialog"]') && /Faisons connaissance/.test(await txt(page, '#ob-title')), 'feuille « Faisons connaissance » ouverte');
+    ok((await page.$$('.sheet .chip[aria-pressed="true"]')).length === 0 && (await page.$eval('#ob-me', e => e.value)) === '', 'rien n’est présélectionné');
     ok(await page.evaluate(() => document.activeElement && document.activeElement.classList.contains('sheet')), 'le focus va sur la feuille, pas dans le champ (pas de clavier qui s’ouvre)');
     await audit(page, 'questionnaire-entree');
     await page.fill('#ob-me', '  Camille  ');
@@ -97,32 +131,47 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     ok(await page.$eval('#ob-me', e => e.value) === '  Camille  ', 'le prénom saisi survit au choix d’une pastille');
     ok(await page.$eval(A('ob', '[data-k="age"][data-v="a"]'), e => e.getAttribute('aria-pressed') === 'true' && document.activeElement === e), 'pastille cochée et focus conservé');
     ok(!(await has(page, '.sheet.in')), 'la feuille ne se ré-anime pas à chaque appui');
+    await page.click(A('ob', '[data-k="age"][data-v="a"]')); ok(await page.$eval(A('ob', '[data-k="age"][data-v="a"]'), e => e.getAttribute('aria-pressed') === 'false'), 'toucher une pastille cochée la retire');
+    await page.click(A('ob', '[data-k="age"][data-v="a"]'));
     await page.click(A('obw', '[data-v="fatigue"]'));
+    await page.click('.sheet ' + A('sheet-close')); await page.waitForTimeout(150);
+    { const d0 = await store(page, 'pepe-v1'); ok(d0.me === '' && d0.age === '' && d0.weights.length === 0 && d0.perso === false, 'fermer sans enregistrer ne garde rien'); }
+    await page.click('.card.perso ' + A('onboard')); await page.waitForTimeout(150);
+    await page.fill('#ob-me', '  Camille  '); await page.click(A('ob', '[data-k="age"][data-v="a"]')); await page.click(A('obw', '[data-v="fatigue"]'));
     await page.click(A('ob-done')); await page.waitForTimeout(150);
-    const d1 = await store(page, 'pepe-v1'); ok(d1.onboarded && d1.me === 'Camille' && d1.age === 'a' && d1.weights.includes('fatigue'), 'entrée enregistrée (prénom nettoyé)');
-    ok(/, Camille\./.test(await txt(page, 'h1')), 'accueil du jour personnalisé');
+    const d1 = await store(page, 'pepe-v1'); ok(d1.onboarded && d1.me === 'Camille' && d1.age === 'a' && d1.situation === '' && d1.weights.includes('fatigue') && d1.perso === true, '« Enregistrer » garde les réponses (prénom nettoyé)');
+    ok(/, Camille\./.test(await txt(page, 'h1')) && /enregistré/.test((await txt(page, '.toast')) || '') && !(await has(page, '.card.perso')), 'accueil du jour personnalisé, confirmation affichée, et la proposition ne revient plus');
 
-    // ============ 3. Aujourd’hui : validation du dépôt ============
+    // ============ 3. Déposer : un écran pour écrire, une réponse, une piste ============
     await audit(page, 'aujourdhui');
+    await page.click('.portes ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(200);
+    ok(await has(page, 'main.deposer #draft') && !(await has(page, '.chips.attente')) && await has(page, '.bar .back'), 'déposer : son écran, sans les 2 intentions qui donnaient la même réponse');
+    await audit(page, 'deposer');
     await page.click(A('dsend'));
     ok(await has(page, '#err-draft[role="alert"]') && await page.$eval('#draft', e => e.getAttribute('aria-invalid') === 'true' && document.activeElement === e), 'dépôt vide : message sous le champ, champ signalé et sélectionné');
-    await audit(page, 'aujourdhui-erreur');
+    await audit(page, 'deposer-erreur');
     await page.type('#draft', 'Ce');
     ok(!(await has(page, '#err-draft')), 'le message disparaît dès qu’on écrit');
     ok(await page.$eval('#draft', e => e.maxLength === 4000), 'longueur maximale posée sur le champ');
     await page.fill('#draft', 'x'.repeat(3700)); await page.dispatchEvent('#draft', 'input');
     ok(/3700 \/ 4000/.test(await txt(page, '#draft-count')), 'compteur affiché à l’approche de la limite');
-    await page.fill('#draft', 'Ce soir j’ai crié et je m’en veux. Je suis épuisé.');
+    await page.fill('#draft', 'Ce soir j’ai crié et je m’en veux. Je suis épuisé, et il ne veut pas dormir.');
     await page.click(A('dsend')); await page.waitForTimeout(200);
     const d2 = await store(page, 'pepe-v1'); ok(d2.depots.length === 1 && d2.depots[0].question && d2.depots[0].lumiere, 'dépôt gardé, question et lumière reçues');
     ok(await has(page, '.mirror .q') && (await page.$eval('#draft', e => e.value)) === '', 'réponse affichée, champ vidé');
+    ok(d2.depots[0].pistes.join() === 'culpa,sommeil' && (await page.$$eval('.pistes-depot .sit', L => L.map(a => a.dataset.id).join())) === 'culpa,sommeil' && /proposées par l’application d’après vos mots/.test(await txt(page, '.pistes-depot .label')), 'après le dépôt : 2 pistes au plus, une pour le parent et une pour la situation, dites comme un choix de l’application');
+    await audit(page, 'deposer-reponse');
+    await page.click(A('back')); await page.waitForTimeout(250);
+    ok(await has(page, '.depot-jour .mirror .q') && await has(page, '.tabs'), '« Aujourd’hui » retrouve le dépôt du jour et sa réponse');
     await audit(page, 'aujourdhui-depot');
 
-    // ============ 4. Questionnaire de départ (Mon évolution) ============
-    await page.click('button.card' + A('go', '[data-view="evo"]')); await page.waitForTimeout(100);
+    // ============ 4. Questionnaire de départ (Mon évolution), depuis le parcours ============
+    await page.click('.tab' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(100);
+    await page.click('.quick ' + A('go', '[data-view="evo"]')); await page.waitForTimeout(100);
+    ok(/Quelle idée vous faisiez-vous de la vie de parent/.test(await txt(page, '#main')), 'sans situation choisie, la première question est la plus générale');
     await audit(page, 'evolution');
-    await page.click(A('evosave')); await page.waitForTimeout(150);
-    ok((await store(page, 'pepe-v1')).evo.t1 && /Camille/.test(await txt(page, 'h1')), 'point de départ enregistré, retour à l’accueil');
+    await page.click(A('evosave')); await page.waitForTimeout(250);
+    ok((await store(page, 'pepe-v1')).evo.t1 && /Le parcours/.test(await txt(page, 'h1')) && /point de départ est enregistré/.test((await txt(page, '.toast')) || ''), 'point de départ enregistré : retour à l’écran d’où l’on venait, avec une confirmation');
 
     // ============ 5. Parcours, cadenas, feuille de formule ============
     await page.click('.tab' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(100);
@@ -135,13 +184,17 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.keyboard.press('Escape'); ok(!(await has(page, '.sheet')), 'Échap ferme la feuille');
     await page.click(A('step', '[data-i="0"]')); await page.waitForTimeout(100);
     await audit(page, 'etape');
-    await page.click(A('back'));
+    await page.click(A('back')); await page.waitForTimeout(150);
 
     // ============ 6. Boîte à outils ============
     await page.click('.tab' + A('go', '[data-view="kit"]')); await page.waitForTimeout(100);
-    ok((await page.$$('.sits .sit')).length === 22, '22 situations');
+    ok((await page.$$('.souvent .chip')).length === 4 && (await page.$eval('.souvent .chip', e => e.dataset.id)) === 'ado' && await page.$eval(A('age', '[data-v="all"]'), e => e.getAttribute('aria-pressed') === 'true'), '4 situations fréquentes à cette heure sont proposées, celle de l’âge donné (ado) en premier, et la liste reste entière');
+    ok((await page.$$('.sits .sit')).length === 22 && (await page.$$eval('.sits a.sit', L => L.every(a => /\/fiches\/[a-z0-9-]+\/$/.test(a.getAttribute('href'))))), '22 situations, chacune un vrai lien vers sa fiche');
     await audit(page, 'outils-situations');
-    await page.click('.sits .sit'); await page.waitForTimeout(100); await audit(page, 'situation'); await page.click(A('back'));
+    await page.click('.sits .sit'); await page.waitForTimeout(150);
+    ok(/\/fiches\/la-crise\/$/.test(page.url()) && /^La crise, une fiche de/.test(await page.title()) && await has(page, A('partager')), 'la fiche a son adresse et son titre, et un bouton pour l’envoyer');
+    await audit(page, 'situation'); await page.click(A('back')); await page.waitForTimeout(200);
+    ok(/\/fiches\/$/.test(page.url()) && (await page.$$('.sits .sit')).length === 22, 'retour à la liste, avec son adresse');
     await page.click(A('kit', '[data-v="tools"]')); await audit(page, 'outils-minuteur');
     for (const t of ['ft', 'routine', 'abc', 'phr']) { await page.click(A('tool', `[data-v="${t}"]`)); await page.waitForTimeout(60); if (t === 'routine') await page.click(A('rdone', '[data-i="0"]')); await audit(page, 'outils-' + t);
       if (t === 'ft') { ok(/Par exemple, d’abord les dents, ensuite l’histoire\./.test(await txt(page, '#main')) && /Ce qu’il doit faire/.test(await txt(page, '.ftcard')), '« d’abord, ensuite » : expliqué avec un exemple, cases qui disent quoi y mettre');
@@ -153,25 +206,24 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     for (const x of ['breath', 'trois', 'deposer', 'droit', 'minute', 'appeler']) { await page.click(A('exo', `[data-id="${x}"]`)); await page.waitForTimeout(60); await audit(page, 'exo-' + x);
       if (x === 'trois') { await page.click(A('threeadd')); ok(await has(page, '#err-t1'), 'trois choses vide : message sous le champ'); }
       if (x === 'appeler') { const hrefs = await page.$$eval('a.tel', a => a.map(e => e.getAttribute('href'))); ok(hrefs.includes('tel:143') && hrefs.includes('tel:0582616161') && hrefs.includes('tel:144'), 'numéros d’aide cliquables (' + hrefs.join(', ') + ')'); ok(await has(page, 'a[href^="https://www.proinfirmis.ch/"][rel~="noopener"]'), 'lien Pro Infirmis'); }
-      await page.click(A('back')); }
+      await page.click(A('back')); await page.waitForTimeout(150); }
 
     // ============ 7. SOS ============
     await page.click('.sos'); await page.waitForTimeout(100);
     const sos = await page.$$eval('.emg a.tel', a => a.map(e => e.getAttribute('href'))); ok(sos.join() === 'tel:144,tel:117,tel:143', 'SOS : 144, 117 et 143 cliquables');
     await audit(page, 'sos');
-    await page.click('.sosview .back');
+    await page.click('.sosview .back'); await page.waitForTimeout(150);
 
     // ============ 8. Moi, données, formules ============
     await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(100);
-    ok(await has(page, '.menu-list a[href="confidentialite.html"]') && await has(page, '.menu-list a[href="conditions.html"]'), 'liens vers les pages légales dans « Moi »');
+    ok(await has(page, '.menu-list a[href$="confidentialite.html"]') && await has(page, '.menu-list a[href$="conditions.html"]'), 'liens vers les pages légales dans « Moi »');
+    ok(/Personnaliser mon espace/.test(await txt(page, '.menu-list')) && /Qui vous parle ici/.test(await txt(page, '.menu-list')), '« Moi » : personnaliser, et savoir qui parle');
     await audit(page, 'moi');
-    await page.click(A('go', '[data-view="depots"]')); await audit(page, 'mes-depots'); await page.click(A('back'));
+    await page.click(A('go', '[data-view="depots"]')); await audit(page, 'mes-depots'); await page.click(A('back')); await page.waitForTimeout(150);
     await page.click(A('go', '[data-view="data"]')); await page.waitForTimeout(60);
-    ok(/refusé la mesure/.test(await txt(page, '#main')), 'le choix de consentement est rappelé dans « Vos données »');
-    await page.click(A('consent', '[data-v="yes"]')); ok((await store(page, 'pepe-consent')).audience === true, 'choix modifiable depuis l’app');
-    await page.click(A('consent', '[data-v="no"]'));
+    ok(!(await has(page, A('consent'))), '« Vos données » : pas de carte de consentement tant qu’aucune mesure d’audience n’est branchée');
     await page.click(A('reset')); await audit(page, 'donnees-confirmation'); await page.click(A('reset-no'));
-    await page.click(A('back'));
+    await page.click(A('back')); await page.waitForTimeout(150);
     ok(/L’histoire d’Antonio/.test(await txt(page, '.menu-list')), 'entrée « L’histoire d’Antonio » dans « Moi »');
     await page.click(A('go', '[data-view="about"]')); await page.waitForTimeout(200); await page.$eval('img.medal', i => i.scrollIntoView()); await page.waitForFunction(() => { const i = document.querySelector('img.medal'); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 5000 }).catch(() => {});
     ok(await page.$eval('img.medal', e => e.alt.length > 20 && e.complete && e.naturalWidth > 0), 'image du logo avec texte alternatif, chargée');
@@ -207,11 +259,8 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     const { ctx, page } = await ctxPage(browser);
     await page.goto(APP + '#histoire'); await page.waitForTimeout(350);
     ok(/^Avant d’accompagner/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')) && await page.evaluate(() => document.documentElement.classList.contains('returning')), 'lien direct vers l’histoire : la page s’ouvre dessus, sans passer par l’accueil');
-    await page.click('#consent [data-consent="no"]');
-    await page.click('main ' + A('onboard')); await page.waitForTimeout(150);
-    ok(await has(page, '.sheet[role="dialog"]'), 'depuis l’histoire, le bouton ouvre « Faisons connaissance »');
-    await page.click(A('ob-done')); await page.waitForTimeout(200);
-    ok(/\.$/.test(await txt(page, 'h1')) && await has(page, '.tabs') && !/#histoire/.test(page.url()), 'après l’entrée : « Aujourd’hui », adresse rétablie');
+    await page.click('main ' + A('entrer')); await page.waitForTimeout(250);
+    ok(/\.$/.test(await txt(page, 'h1')) && await has(page, '.tabs') && !(await has(page, '.sheet')) && !/#histoire/.test(page.url()), 'depuis l’histoire, « Commencer gratuitement » ouvre « Aujourd’hui » d’un seul geste, adresse rétablie');
     await page.goto(APP + '#histoire'); await page.waitForTimeout(350);
     ok(/^Avant d’accompagner/.test(await txt(page, 'h1')) && await has(page, '.tabs'), 'lien direct pour un habitué : l’histoire, avec ses onglets');
     await page.click('.bar ' + A('back')); await page.waitForTimeout(150);
@@ -226,11 +275,12 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
       const res = await page.goto(APP + f); await page.waitForTimeout(200);
       ok(res.status() === 200 && (await txt(page, 'h1')) === h, f + ' : page servie');
       ok(await has(page, 'link[rel="canonical"][href$="' + f + '"]') && (await page.$eval('meta[name="description"]', e => e.content.length)) > 80, f + ' : canonique et description');
-      ok(await has(page, '#consent'), f + ' : bandeau présent');
-      await audit(page, f.replace('.html', '') + '-bandeau');
-      await page.click('#consent [data-consent="yes"]');
+      ok(!(await has(page, '#consent')), f + ' : pas de bandeau à l’arrivée');
       await audit(page, f.replace('.html', ''));
       if (f === 'confidentialite.html') {
+        ok(/aucun outil de mesure d’audience n’est activé/.test(await txt(page, '#cookies')), 'la page dit qu’aucune mesure n’est active');
+        await page.click('[data-consent-open]'); ok(await has(page, '#consent'), '« Modifier mon choix » ouvre le bandeau'); await audit(page, 'confidentialite-bandeau');
+        await page.click('#consent [data-consent="yes"]');
         ok(/Vous avez accepté/.test(await txt(page, '[data-consent-state]')), 'état du choix affiché dans la page');
         ok(!(await has(page, '#cf-beacon')), 'sans jeton configuré, rien n’est chargé même après « Accepter »');
         await page.click('[data-consent-open]'); ok(await has(page, '#consent'), '« Modifier mon choix » rouvre le bandeau'); await page.click('#consent [data-consent="no"]');
@@ -263,6 +313,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     const before = errors.length;
     await page.goto(APP); await page.waitForTimeout(300);
     ok(beacon === 0, 'audience : rien avant le choix');
+    ok(await has(page, '#consent'), 'audience : avec un outil branché, le bandeau revient à la première visite');
     await page.click('#consent [data-consent="no"]'); await page.waitForTimeout(200); ok(beacon === 0, 'audience : rien après « Refuser »');
     await page.evaluate(() => localStorage.removeItem('pepe-consent')); await page.reload(); await page.waitForTimeout(300);
     await page.click('#consent [data-consent="yes"]'); await page.waitForTimeout(300);
@@ -276,10 +327,14 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   for (const w of [320, 360, 414, 768, 1280]) {
     const { ctx, page } = await ctxPage(browser, { viewport: { width: w, height: 800 } });
     await page.goto(APP); await page.waitForTimeout(150); await audit(page, 'accueil-' + w);
-    await page.click('#consent [data-consent="no"]');
-    await page.click(A('peek-plans')); await audit(page, 'formules-' + w); await page.click(A('back'));
-    await page.click(A('peek-about')); await page.waitForTimeout(150); await audit(page, 'histoire-' + w); await page.click(A('back')); await page.waitForTimeout(80);
-    await page.click('.herofull ' + A('onboard')); await audit(page, 'entree-' + w); await page.click(A('ob-done')); await page.waitForTimeout(100); await audit(page, 'aujourdhui-' + w);
+    await page.click(A('peek-plans')); await audit(page, 'formules-' + w); await page.click(A('back')); await page.waitForTimeout(150);
+    await page.click(A('peek-about')); await page.waitForTimeout(150); await audit(page, 'histoire-' + w); await page.click(A('back')); await page.waitForTimeout(150);
+    await page.goto(APP + 'fiches/quand-il-ou-elle-vit-ailleurs/'); await page.waitForTimeout(150); await audit(page, 'fiche-publique-' + w);
+    await page.goto(APP + 'fiches/'); await page.waitForTimeout(150); await audit(page, 'fiches-' + w);
+    await page.goto(APP); await page.waitForTimeout(150);
+    await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(150); await audit(page, 'souffle-' + w); await page.click(A('back')); await page.waitForTimeout(200);
+    await page.click(A('porte', '[data-v="deposer"]')); await page.waitForTimeout(100); await audit(page, 'deposer-' + w); await page.click(A('back')); await page.waitForTimeout(200);
+    await page.click('.card.perso ' + A('onboard')); await audit(page, 'entree-' + w); await page.click(A('ob-done')); await page.waitForTimeout(100); await audit(page, 'aujourdhui-' + w);
     await page.click('.tab' + A('go', '[data-view="parcours"]')); await audit(page, 'parcours-' + w);
     await page.click('.tab' + A('go', '[data-view="kit"]')); await audit(page, 'outils-' + w);
     await page.click('.tab' + A('go', '[data-view="me"]')); await audit(page, 'moi-' + w);
@@ -291,17 +346,19 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   // ============ 14. Détresse : l’aide reste affichée, avec des numéros cliquables ============
   {
     const { ctx, page } = await ctxPage(browser);
-    await page.goto(APP); await page.waitForTimeout(150); await page.click('#consent [data-consent="no"]');
-    await page.click('.herofull ' + A('onboard')); await page.click(A('ob-done')); await page.waitForTimeout(100);
-    await page.fill('#draft', 'Je n’ai plus envie de vivre comme ça.'); await page.click(A('dsend')); await page.waitForTimeout(250);
+    await page.goto(APP); await page.waitForTimeout(150);
+    await page.click('.herofull ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(150);
+    await page.fill('#draft', 'Je n’ai plus envie de vivre comme ça, je suis épuisée.'); await page.click(A('dsend')); await page.waitForTimeout(250);
     ok(/143/.test((await txt(page, '.toast')) || ''), 'détresse : message immédiat avec le 143');
     await audit(page, 'aujourdhui-detresse');
     await page.waitForTimeout(3400);
     const tels = await page.$$eval('.mirror a.tel', a => a.map(e => e.getAttribute('href')));
     ok(!(await has(page, '.toast')) && tels.includes('tel:143') && tels.includes('tel:144'), 'détresse : l’aide reste affichée sous le dépôt, numéros cliquables');
-    ok((await store(page, 'pepe-v1')).depots[0].risk === true, 'détresse : mémorisée avec le dépôt');
+    ok((await store(page, 'pepe-v1')).depots[0].risk === true && !(await store(page, 'pepe-v1')).depots[0].pistes && !(await has(page, '.pistes-depot')), 'détresse : mémorisée avec le dépôt, et aucune fiche n’est proposée à la place de l’aide');
     await page.reload(); await page.waitForTimeout(300);
-    ok((await page.$$eval('.mirror a.tel', a => a.length)) >= 2, 'détresse : l’aide est toujours là après rechargement');
+    ok(!!(await page.$('main.deposer')) && (await page.$$eval('.mirror a.tel', a => a.length)) >= 2, 'détresse : la page rechargée par le téléphone retrouve le même écran, et l’aide est toujours là');
+    await page.goto(APP); await page.waitForTimeout(300);
+    ok((await page.$$eval('.depot-jour .mirror a.tel', a => a.length)) >= 2, 'détresse : à la visite suivante, l’aide est aussi sur « Aujourd’hui »');
     await page.click('.tab' + A('go', '[data-view="me"]')); await page.click(A('go', '[data-view="depots"]')); await page.waitForTimeout(80);
     ok((await page.$$eval('.depots .mirror a.tel', a => a.length)) >= 2, 'détresse : l’aide figure aussi dans « Mes dépôts »');
     await ctx.close();

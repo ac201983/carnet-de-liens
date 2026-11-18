@@ -1,0 +1,44 @@
+// La version d'essai : rangée à part, jamais référencée, et elle ne touche jamais aux notes de l'espace habituel.
+// usage : PEPE_ORIGIN=https://localhost:8446 PEPE_BASE=/essai/ node essai.js
+const { chromium } = require('playwright');
+const ORIGIN = process.env.PEPE_ORIGIN || 'https://localhost:8446', BASE = process.env.PEPE_BASE || '/essai/', APP = ORIGIN + BASE;
+const A = (act, extra = '') => `[data-act="${act}"]${extra}`;
+let n = 0, ko = 0; const ok = (c, m) => { n++; if (!c) { ko++; console.log('  ÉCHEC : ' + m); } };
+const iso = d => { const x = new Date(Date.now() + d * 86400000); const p = v => String(v).padStart(2, '0'); return x.getFullYear() + '-' + p(x.getMonth() + 1) + '-' + p(x.getDate()); };
+const HABITUEL = JSON.stringify({ fxOff: false, tier: 'parcours', me: 'Antonio', age: 'e', situation: 'hand', weights: ['fatigue'], start: iso(-12), moods: {}, depots: [{ id: 'd1', date: iso(-3), time: '20:10', text: 'Un dépôt écrit sur le site habituel.', mode: 'listen', question: 'Q ?', lumiere: 'L.' }], shared: {}, steps: { depart: true }, notes: { depart: { t: 'Une page de carnet écrite sur le site habituel.', d: iso(-12) } }, seen: { depart: iso(-12), croire: iso(-5) }, pv: 2, atelier: true, tout: false, evo: {}, photo: null, photos: [], abc: [], phrases: [], routineDone: {}, ft: { first: null, then: null }, three: [], letters: [], questions: [], onboarded: true, doseDate: '', doseText: '' });
+(async () => {
+  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome', args: ['--ignore-certificate-errors'] });
+  const ctx = await b.newContext({ viewport: { width: 390, height: 664 }, locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: 'reduce', isMobile: true, hasTouch: true });
+  await ctx.addInitScript(h => { try { if (!sessionStorage.getItem('__pose')) { localStorage.setItem('pepe-v1', h); sessionStorage.setItem('__pose', '1'); } } catch (e) { } }, HABITUEL);
+  const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(String(e).slice(0, 200))); page.on('console', m => { if (m.type() === 'error') errs.push(m.text().slice(0, 200)); });
+  const lire = k => page.evaluate(k => localStorage.getItem(k), k);
+  const brut = await (await ctx.request.get(APP)).text();
+  ok(/<meta name="robots" content="noindex,nofollow">/.test(brut) && /pepe-essai-v1/.test(brut) && !/getItem\('pepe-v1'\)/.test(brut), 'la page d’essai n’est pas référencée, et son premier script lit la clé de l’essai');
+  for (const f of ['fiches/', 'fiches/la-crise/', 'conditions.html', 'confidentialite.html']) ok(/content="noindex,nofollow"/.test(await (await ctx.request.get(APP + f)).text()), f + ' : non référencée');
+  ok((await ctx.request.get(APP + 'antonio/')).status() === 404, 'l’Espace Antonio n’existe pas dans la version d’essai (il n’y serait pas fermé par son mot de passe)');
+  await page.goto(APP); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(400);
+  ok(!!(await page.$('.herofull')) && !(await page.$('.tabs')) && /version d’essai/.test(await page.textContent('.essai-l')), 'avec des notes dans l’espace habituel, l’essai commence quand même par le début, et dit qu’il est un essai');
+  await page.click('.herofull ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(400);
+  await page.fill('#draft', 'Un dépôt écrit dans la version d’essai.'); await page.click(A('dsend')); await page.waitForTimeout(600);
+  let e = JSON.parse(await lire('pepe-essai-v1'));
+  ok(e.onboarded && e.depots.length === 1 && e.me === '' && (await lire('pepe-v1')) === HABITUEL, 'ce qu’on écrit dans l’essai est rangé à part, et les notes habituelles n’ont pas changé d’un caractère');
+  await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(400);
+  ok(/Version d’essai/.test(await page.textContent('.card.essai')) && !!(await page.$(A('essai-copie'))) && !!(await page.$(A('essai-zero'))), '« Moi » : la carte de l’essai propose d’ouvrir une copie des notes, ou de revoir l’essai depuis le début');
+  await page.click(A('essai-copie')); await page.waitForTimeout(600);
+  e = JSON.parse(await lire('pepe-essai-v1'));
+  ok(e.me === 'Antonio' && e.depots.length === 1 && e.depots[0].text === 'Un dépôt écrit sur le site habituel.' && e.notes.depart.t === 'Une page de carnet écrite sur le site habituel.' && e.steps.depart === true && e.seen.croire === iso(-5) && e.pv === 3 && e.perso === true && e.atelier === true, 'la copie reprend le prénom, le dépôt, le carnet et la progression de l’espace habituel');
+  ok((await lire('pepe-v1')) === HABITUEL, 'après la copie, les notes habituelles n’ont toujours pas changé');
+  ok(/Antonio/.test(await page.textContent('h1')) && /Croire en lui/.test(await page.textContent('.step.semaine b')) && /copie de vos notes/.test((await page.textContent('.toast').catch(() => '')) || ''), '« Aujourd’hui » s’ouvre sur la copie, avec l’étape où il en était');
+  await page.fill('#app', '').catch(() => { });
+  await page.click(A('step', '[data-i="1"]')); await page.waitForTimeout(400); await page.fill('#note', 'Écrit pendant l’essai.'); await page.waitForTimeout(700);
+  ok(JSON.parse(await lire('pepe-essai-v1')).notes.croire.t === 'Écrit pendant l’essai.' && (await lire('pepe-v1')) === HABITUEL, 'écrire dans la copie ne change pas l’original');
+  await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(400);
+  await page.$eval(A('essai-zero'), x => x.scrollIntoView({ block: 'center' })); await page.click(A('essai-zero')); await page.waitForTimeout(200);
+  ok(!!(await page.$('.card.essai .confirm')), 'revoir depuis le début : une confirmation est demandée');
+  await page.click(A('essai-zero-oui')); await page.waitForTimeout(600);
+  ok(!!(await page.$('.herofull')) && (await lire('pepe-essai-v1')) === null && (await lire('pepe-v1')) === HABITUEL, 'l’essai repart du premier écran, et l’espace habituel est intact');
+  ok(errs.length === 0, 'aucune erreur ' + errs.slice(0, 3).join(' | '));
+  await b.close();
+  console.log('version d’essai : ' + n + ' vérifications, ' + ko + ' échec' + (ko > 1 ? 's' : ''));
+  process.exit(ko ? 1 : 0);
+})().catch(e => { console.error('CRASH', e); process.exit(2); });

@@ -707,7 +707,6 @@ canvas.eau{display:none}
 .fin-pied{text-align:center}
 .fin-appel{text-align:left;cursor:pointer;border-color:rgba(216,223,126,.5)}
 /* ---------- La refonte des écrans, premier temps : le fil du parcours, l'étape de la semaine, le sentier ---------- */
-.band .fil{align-self:flex-start;display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;background:none;border:0;padding:9px 2px 9px 0;margin:0 0 -8px;min-height:44px;text-align:left}
 .fil .pts{display:flex;align-items:center;gap:2.5px}
 .fil .pts i{width:6px;height:6px;border-radius:50%;background:rgba(244,239,216,.34);flex:none}
 .fil .pts i.m{margin-left:6px}
@@ -844,7 +843,8 @@ canvas.eau{display:none}
 .grp .liste .sit+.sit{border-top:1px solid var(--line)}
 @media (hover:hover){.grp .liste .sit:hover{background:rgba(169,201,160,.07)}}
 /* « Pour moi » : la même carte à lignes */
-.ex{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+/* « clip » coupe aux coins arrondis comme « hidden », sans faire de la liste une zone de défilement à part : ses lignes suivent ainsi le défilement de la page pour venir se poser. */
+.ex{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;overflow:clip}
 .ex .sit{border:0;border-radius:0;background:none;padding:12px 14px}
 .ex .sit+.sit{border-top:1px solid var(--line)}
 /* la fiche d'une situation : une couverture, un texte ouvert, puis ce qu'on peut essayer mis en avant */
@@ -989,6 +989,142 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
 .page .lesson{overflow-wrap:anywhere}
 .rap .lesson{overflow-wrap:anywhere}
 /* comme le premier bloc sous la photo et la dose, depuis toujours */
+/* ---------- Le premier geste (18 novembre) : une question, 3 portes, et tout ce qui en découle ---------- */
+/* L'accueil : le nom de l'espace et le SOS en haut, la question sur le bas de la photo, puis les 3 portes. La photo prend la place qui reste. */
+.herofull{--ih:clamp(190px,46vh,400px);gap:10px;padding-top:0;padding-bottom:10px}
+@supports (height:1svh){.herofull{--ih:clamp(190px,calc(100svh - 462px),400px)}}
+.hbar{display:flex;align-items:center;gap:10px;min-height:60px;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:22px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px));background:linear-gradient(to bottom,rgba(7,36,15,.9) 0%,rgba(7,36,15,.84) 62%,rgba(7,36,15,0) 100%)}
+.hbar .wordmark{text-shadow:0 1px 14px rgba(0,0,0,.65)}
+.hbar .sos,.pubbar .sos{margin-left:auto;background:var(--coral-strong);color:#fff;border:0;border-radius:999px;padding:8px 14px;min-height:44px;font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow-sm)}
+.bar .sos{min-height:44px}
+.herofull h1{font-size:clamp(29px,8.6vw,38px);line-height:1.06;font-weight:600;margin-top:calc(var(--ih)*.62 - 82px - env(safe-area-inset-top,0px));margin-bottom:6px;text-shadow:0 2px 24px rgba(0,0,0,.6)}
+.herofull h1 .salut{display:block;font-family:var(--font-ui);font-size:15.5px;line-height:1.3;font-weight:800;letter-spacing:.01em;color:var(--sun-fg);margin-bottom:6px;text-shadow:0 1px 10px rgba(0,0,0,.7)}
+.herofull h1 .besoin{display:block;text-wrap:balance}
+.nb{white-space:nowrap}
+.portes{display:flex;flex-direction:column;gap:10px}
+.porte{display:grid;grid-template-columns:50px minmax(0,1fr) 20px;align-items:center;gap:12px;width:100%;min-height:76px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:11px 14px 11px 12px;color:var(--fg)}
+.porte .ic{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--green-2);color:var(--green)}
+.porte .ic .i{width:24px;height:24px}
+.porte.un{border-color:rgba(216,223,126,.5);background:linear-gradient(180deg,rgba(216,223,126,.14),rgba(216,223,126,.03)),var(--surface)}
+.porte.un .ic{background:var(--sun);border-color:var(--sun);color:#243A12}
+.porte .tx{display:block;min-width:0}
+.porte .tx b{display:block;font-family:var(--font-display);font-size:20.5px;font-weight:600;line-height:1.15;color:var(--cream)}
+.porte .tx>span{display:block;font-size:14.5px;line-height:1.35;color:var(--muted);margin-top:2px}
+.porte .chev{color:var(--muted);display:grid}
+@media (hover:hover){.porte:hover{border-color:var(--green)}.porte.un:hover{border-color:var(--sun)}}
+.herofull .voie{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;background:none;border:0;padding:10px 2px;color:var(--green);font-weight:800;font-size:15.5px;line-height:1.4;text-align:left}
+.herofull .voie span{text-decoration:underline;text-underline-offset:4px}
+@media (hover:hover){.herofull .voie:hover{color:var(--cream)}}
+.herofull .rassure{font-size:14.5px;font-weight:700;color:var(--muted);text-shadow:none;margin-top:0}
+/* l'étang de l'accueil prend lui aussi la lumière de l'heure, dès le premier affichage (la classe est posée sur la page avant qu'elle s'affiche) */
+.h-matin .herofull::after{-webkit-backdrop-filter:hue-rotate(-12deg) saturate(1.08);backdrop-filter:hue-rotate(-12deg) saturate(1.08)}
+.h-soir .herofull::after{-webkit-backdrop-filter:hue-rotate(-48deg) saturate(1.18) brightness(.9);backdrop-filter:hue-rotate(-48deg) saturate(1.18) brightness(.9)}
+.h-nuit .herofull::after{-webkit-backdrop-filter:hue-rotate(74deg) saturate(.72) brightness(.62);backdrop-filter:hue-rotate(74deg) saturate(.72) brightness(.62)}
+/* les situations rangées par âge, sur l'accueil : chaque nom est un lien vers sa fiche */
+.acc-scenes{display:flex;flex-direction:column;gap:16px}
+.acc-scenes .sc{display:flex;flex-direction:column;gap:8px}
+.acc-scenes h3{font-family:var(--font-ui);font-size:14px;font-weight:800;color:var(--sun-fg);letter-spacing:.01em}
+.acc-chips li>a,.acc-chips li>span{display:inline-flex;align-items:center;gap:7px;color:var(--fg);text-decoration:none}
+.acc-scenes .acc-chips li{padding:0}
+.acc-scenes .acc-chips li>a,.acc-scenes .acc-chips li>span{min-height:44px;padding:9px 14px;border-radius:999px;font-size:15.5px}
+@media (hover:hover){.acc-scenes .acc-chips li:hover{border-color:var(--green)}}
+.acc-outils .acc-c>.btn,.acc-depot .acc-c>.btn,.acc-parcours .acc-c>.btn{align-self:flex-start}
+.acc-outils-l{margin-top:2px}
+.mirror .piste-ex{font-size:15px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.mirror .piste-ex a{color:var(--green);font-weight:800;text-underline-offset:3px}
+/* « Aujourd'hui » : la question du moment sous le bonjour, puis les 3 portes sur une ligne */
+.band .besoin{font-family:var(--font-display);font-size:19px;line-height:1.25;color:var(--fg);text-shadow:0 1px 12px rgba(0,0,0,.7);margin-top:2px}
+.portes.mini{flex-direction:row;gap:8px}
+.portes.mini .porte{grid-template-columns:minmax(0,1fr);justify-items:center;gap:7px;min-height:0;padding:12px 6px 11px;border-radius:18px;text-align:center}
+.portes.mini .porte .ic{width:44px;height:44px}
+.portes.mini .porte .ic .i{width:21px;height:21px}
+.portes.mini .porte>b{font-size:14.5px;font-weight:800;line-height:1.2;color:var(--fg)}
+.v-today .band~.portes{position:relative;z-index:2}
+.dose .qui-b{display:inline-grid;place-items:center;width:44px;height:44px;margin:-12px -6px -12px -4px;background:none;border:0;color:#2F4A16;vertical-align:middle}
+.dose .qui-b .i{width:17px;height:17px}
+/* reprendre : le fil des 24 étapes et l'étape de la semaine vont ensemble */
+.reprendre{display:flex;flex-direction:column;gap:0}
+.fil{align-self:flex-start;display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;background:none;border:0;padding:9px 2px 9px 0;min-height:44px;text-align:left}
+.reprendre .fil .pts i{background:rgba(169,201,160,.3)}
+.reprendre .fil .pts i.f{background:var(--sun)}
+.reprendre .fil .pts i.c{background:var(--bg);box-shadow:0 0 0 2px var(--cream)}
+.reprendre .fil .ou{color:var(--muted);text-shadow:none}
+.rouvrir{display:flex;flex-direction:column;gap:7px}
+.rouvrir .chip,.souvent .chip{color:var(--fg)}
+.card.perso{border-style:dashed;border-color:rgba(169,201,160,.4);background:none}
+.card.perso .row,.card.essai .row{display:flex;gap:8px;flex-wrap:wrap}
+.card.essai{border-color:rgba(216,223,126,.5)}
+.essai-l{color:var(--sun-fg)}
+/* les zones à toucher : 44 px au moins pour tout ce qui se touche du bout du doigt (les liens au fil d'une phrase suivent leur ligne) */
+.chip{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding-block:9px}
+.btn,.btn.small{min-height:44px}
+.seg button{min-height:44px}
+.moodrow button{min-height:48px}
+.bar .back,.bar a.wordmark,.lockline,.share{min-height:44px}
+.logi a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;align-self:flex-start}
+.hint .linkbtn{background:none;border:0;padding:12px 2px;margin:-12px 0;color:var(--green);font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+/* la taille des textes : rien sous 13 px, les étiquettes à 14 px, les sous-titres des listes à 14,5 px */
+.label,.step.semaine .tx .label{font-size:14px}
+.tab{font-size:12.5px}
+.pill,.tierbadge,.months .month h2 .mfait,.qa .st,.letter .from span,.share,.lockline{font-size:13.5px}
+.sit .tx span{font-size:14.5px}
+.mirror .lbl,.fil .ou,.step .tx .ou{font-size:14px}
+.cmp thead th,.cmp td.tx,.card.prog .anneau small,.legend,.legend span{font-size:13px}
+.logi .d{font-size:13.5px}
+/* sur les plus petits téléphones (320 px), le tableau des formules garde ses 12 px pour tenir dans l'écran */
+@media (max-width:359px){.cmp thead th,.cmp td.tx{font-size:12px}}
+.picto .ou,.bartrack i em{font-size:13px}
+/* la boîte à outils : ce qui revient souvent à cette heure-ci */
+.souvent{display:flex;flex-direction:column;gap:7px}
+a.sit{text-decoration:none;color:var(--fg)}
+.sit .e.duo{font-size:16px;white-space:nowrap;letter-spacing:-3px}
+.fiche .couv .med.duo{font-size:27px;white-space:nowrap;letter-spacing:-4px}
+.card.vide{border-style:dashed;background:none}
+/* déposer : un écran pour écrire */
+.deposer .depot-c{gap:12px}
+.depot-c .pill.reste{margin-left:auto}
+.pistes-depot{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.pistes-depot .liste{display:flex;flex-direction:column;gap:8px}
+.pistes-depot .sit,.depot-jour .sit{background:var(--surface-2)}
+.depot-jour .mirror{border:0;border-left:5px solid var(--green);border-radius:0 12px 12px 0;padding:4px 0 4px 14px;background:none}
+/* la fiche : l'envoyer */
+.partage{display:flex;flex-direction:column;gap:8px;padding:16px 18px;border:1px solid rgba(216,223,126,.42);border-radius:20px;background:linear-gradient(180deg,rgba(216,223,126,.1),rgba(216,223,126,.02))}
+.partage .btn{align-self:flex-start;background:var(--sun);border-color:var(--sun);color:#243A12}
+.partage input[readonly]{font-size:15px;font-weight:700;padding:11px 12px;background:var(--sun);border-color:var(--sun);color:#243A12}
+.partage input[readonly]::selection{background:#F4EFD8;color:#243A12}
+/* sans la barre d'onglets, le message bref se pose plus bas */
+.app.nobar .toast{bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+/* les pages publiques : la barre du haut, et l'invitation en bas de fiche */
+.pubbar .wordmark{text-decoration:none;min-height:44px}
+.invite{display:flex;flex-direction:column;gap:14px;margin-top:22px;padding-top:24px;border-top:1px solid var(--line)}
+.invite h2{font-size:25px;line-height:1.12;color:var(--cream)}
+.invite>p{font-size:16px;line-height:1.55;color:var(--muted)}
+.app.pub>.foot{padding-inline:max(16px,env(safe-area-inset-left,0px))}
+/* souffler 2 minutes : l'étang, un cercle posé sur l'eau, un mot */
+.souffle{gap:0}
+.souffle .band{height:clamp(230px,50vh,470px);margin-top:0;margin-bottom:0;padding:0;justify-content:flex-start;background-position:center 60%;--voile:linear-gradient(to bottom,rgba(7,36,15,.3) 0%,rgba(7,36,15,0) 26%,rgba(7,36,15,.12) 62%,var(--bg) 100%)}
+@supports (height:1svh){.souffle .band{height:clamp(230px,50svh,470px)}}
+.souffle .band>.ronds{position:absolute;left:50%;top:62%;width:300px;height:82px;transform:translate(-50%,-50%);--s:.62;z-index:1;pointer-events:none}
+.souffle .ronds i{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:50%;border:calc(2.2px / var(--s)) solid rgba(244,239,216,.92);box-shadow:0 0 22px rgba(244,239,216,.4),inset 0 0 20px rgba(244,239,216,.16);transform:scale(var(--s));will-change:transform}
+.souffle .ronds i+i{top:19%;right:19%;bottom:19%;left:19%;border-width:calc(1.5px / var(--s));border-color:rgba(216,223,126,.8);box-shadow:none}
+.souffle.s-pret .band>.ronds,.souffle.s-fini .band>.ronds{--s:.8}
+.souffle.s-fini .band{height:clamp(190px,36vh,360px)}
+@supports (height:1svh){.souffle.s-fini .band{height:clamp(190px,36svh,360px)}}
+.souffle .resp{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-top:-30px;padding:0 4px 26px}
+.souffle .mot{font-family:var(--font-display);font-size:clamp(38px,11.5vw,54px);font-weight:600;line-height:1.05;color:var(--cream);text-shadow:0 2px 22px rgba(0,0,0,.55)}
+.souffle .aide{font-size:16px;line-height:1.45;color:var(--muted);max-width:31ch;min-height:2.9em}
+.souffle .tours{display:flex;gap:7px;margin:8px 0 6px}
+.souffle .tours i{width:9px;height:9px;border-radius:50%;background:rgba(169,201,160,.26)}
+.souffle .tours i.f{background:var(--green)}
+.souffle .tours i.c{background:var(--sun);box-shadow:0 0 0 3px rgba(216,223,126,.25)}
+.souffle .actions{display:flex;gap:10px;justify-content:center;margin-top:8px}
+.souffle .actions.col{flex-direction:column;align-self:stretch;margin-top:12px}
+.souffle .bar .sos{margin-left:auto}
+/* « Qui vous parle ici ? » */
+.sheet .voix .qui{display:flex;flex-direction:column;gap:4px;padding-left:14px;border-left:3px solid var(--green-2)}
+.sheet .voix .qui h3{font-family:var(--font-ui);font-size:15.5px;font-weight:800;color:var(--cream)}
+.sheet .voix .qui p{font-size:15.5px;line-height:1.55;color:var(--fg)}
+.sheet .voix .qui:nth-of-type(2){border-left-color:var(--sun)}
 .rail-brand{display:none}
 @media (min-width:1024px){
   :root{--rail:248px;--pad:44px;--page:1080px;--lire:760px}
@@ -1158,6 +1294,37 @@ h1[data-act="atelier"]{touch-action:manipulation;-webkit-user-select:none;user-s
   .sosview{gap:16px}
   .story>p,.story .avec>p,.places p{font-size:19.5px}
   .notfound h1{font-size:54px}
+}
+@media (min-width:1024px){
+  /* -- le premier geste, sur grand écran : la question et les 3 portes à gauche, l'étang à droite -- */
+  .v-intro .herofull{min-height:min(680px,calc(100vh - 110px));padding:96px 56px 44px 24px;gap:12px;justify-content:center}
+  .v-intro .herofull .hbar{position:absolute;top:22px;left:24px;right:28px;min-height:48px;padding:0;margin:0;background:none}
+  .v-intro .herofull h1{font-size:clamp(40px,3.5vw,54px);line-height:1.04;margin-top:0;margin-bottom:10px;max-width:11.5em}
+  .v-intro .herofull h1 .salut{font-size:18px;margin-bottom:10px}
+  .v-intro .herofull .portes{max-width:500px}
+  .v-intro .herofull .porte{min-height:84px;padding:13px 18px 13px 14px}
+  .v-intro .herofull .porte .tx b{font-size:23px}
+  .v-intro .herofull .porte .tx>span{font-size:15.5px}
+  .v-intro .herofull .voie{font-size:16.5px}
+  .v-intro .herofull .rassure{font-size:15.5px;max-width:34em}
+  .acc-scenes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 28px}
+  /* -- Aujourd'hui -- */
+  .band .besoin{font-size:23px}
+  .v-today .portes.mini{gap:14px;margin-top:6px}
+  .v-today .portes.mini .porte{grid-template-columns:44px minmax(0,1fr);justify-items:start;text-align:left;gap:12px;padding:12px 16px}
+  .v-today .portes.mini .porte>b{font-size:17px}
+  /* -- les écrans qui se lisent en colonne : souffler, déposer, les pages publiques -- */
+  .souffle .band{border-radius:30px;aspect-ratio:auto;max-height:none;height:clamp(300px,52vh,520px);margin-bottom:0;padding:0}
+  .souffle .resp{margin-top:-34px}
+  .souffle .bar{margin-inline:0;padding-inline:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .souffle .actions.col{align-self:center;width:min(420px,100%)}
+  .app.pub>.bar{padding-inline:max(var(--pad),calc((100vw - var(--lire))/2))}
+  .app.v-pub-kit>main.view{max-width:calc(var(--page) + 2*var(--pad))}
+  .app.v-pub-kit>.bar{padding-inline:max(var(--pad),calc((100vw - var(--page))/2))}
+  .invite{max-width:calc(var(--lire) + 2*var(--pad));width:100%;margin-inline:auto;padding-inline:var(--pad)}
+  .invite .portes{max-width:520px}
+  .invite>.btn.wide{width:auto;align-self:flex-start}
+  .deposer .depot-c textarea{min-height:220px}
 }
 @media (min-width:1200px){
   .duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.14fr);gap:22px 26px;align-items:start}

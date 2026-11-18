@@ -69,7 +69,9 @@
 
   function start() {
     mails(); paint();
-    if (noConsent) return;
+    // Tant qu'aucun outil de mesure n'est branché sur le site (pas de jeton), il n'y a rien à accepter ni à refuser : le bandeau ne s'affiche pas tout seul.
+    // Il reste possible de l'ouvrir depuis la page de confidentialité (« Modifier mon choix »).
+    if (noConsent || !CFG.token) return;
     var c = get();
     if (!c) show(); else if (c.audience) loadAudience();
   }

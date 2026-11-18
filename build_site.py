@@ -28,6 +28,12 @@ MOVED = (cfg.get('moved_to') or '').strip()   # l'espace a déménagé : cette a
 if MOVED and not MOVED.endswith('/'):
     MOVED += '/'
 NAME = 'Parent Écouté, Parent Éclairé'
+# Une version d'essai vit dans son propre dossier, avec ses propres notes (une autre clé de rangement dans le navigateur),
+# pour qu'on puisse l'essayer sur le même appareil sans toucher à l'espace habituel. Elle n'est jamais référencée par les moteurs.
+ESSAI = bool(cfg.get('essai'))
+CLE = cfg.get('storage_key', 'pepe-v1')
+assert re.fullmatch(r'[a-z0-9-]+', CLE), CLE
+TITRE = NAME + ', un espace d’écoute pour les parents'
 
 LOGO = ('<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C24 5 15.5 15.5 15.5 21.5a8.5 8.5 0 0 0 17 0C32.5 15.5 24 5 24 5z" style="fill:var(--cream)"/>'
         '<path d="M21 19.5c0-2 .9-4.3 2.2-6.2" style="fill:none;stroke:var(--surface-2);stroke-width:1.6;stroke-linecap:round"/>'
@@ -67,12 +73,16 @@ def build_js(site):
     lines[33] = 'const LOGO_LIGHT=LOGO;'
     src = '\n'.join(lines[1:])
     assert src.count("const KEY='epaule-v1';") == 1
-    src = src.replace("const KEY='epaule-v1';", "const SITE=%s;\nconst MENTIONS=%s;\nconst KEY='pepe-v1';" % ('true' if site else 'false', 'true' if (site and editeur_ok()) else 'false'))
+    # RACINE : le chemin de l'app sur le site (toutes les adresses écrites par l'app partent de là, parce que les fiches ont leur propre adresse).
+    # PUBLIC : l'adresse complète, pour les liens qu'un parent envoie. KEY_SITE : la clé de l'espace habituel, que la version d'essai sait recopier.
+    consts = [('SITE', site), ('MENTIONS', bool(site and editeur_ok())), ('KEY', CLE if site else 'pepe-v1'), ('KEY_SITE', 'pepe-v1'),
+              ('RACINE', APP_PATH if site else ''), ('PUBLIC', APP_URL if site else 'https://parent-ecoute.ch/'), ('ESSAI', bool(site and ESSAI)), ('TITRE_SITE', TITRE)]
+    src = src.replace("const KEY='epaule-v1';", '\n'.join('const %s=%s;' % (k, json.dumps(v, ensure_ascii=False)) for k, v in consts))
     if site:
-        media = "\nconst MEDAL='img/medaillon.webp';\nconst HERO='img/hero.webp';\n"
+        media = "\nconst MEDAL=RACINE+'img/medaillon.webp';\nconst HERO=RACINE+'img/hero.webp';\n"
     else:
         media = "\nconst MEDAL='%s';\nconst HERO='%s';\n" % (data_uri(SRC + '/img/medaillon.webp', 'image/webp'), data_uri(SRC + '/img/hero.webp', 'image/webp'))
-    js = src + read(PARTS + '/p2b-parcours.js') + media + read(PARTS + '/v2-a.js') + read(PARTS + '/v2-b.js')
+    js = src + read(PARTS + '/p2b-parcours.js') + media + read(PARTS + '/v2-a.js') + read(PARTS + '/v2-c.js') + read(PARTS + '/v2-b.js')
     assert js.rstrip().endswith('</script>')
     js = js.rstrip()[:-len('</script>')].rstrip() + '\n'
     assert '<script' not in js and '</script' not in js
@@ -100,9 +110,16 @@ def app_css():
 # ------------------------------------------------------------------ pages
 # Avant le premier affichage : l'écran d'un parent déjà inscrit (returning), et les effets visuels (fx) s'ils ne sont ni coupés dans « Moi »
 # ni déconseillés par le téléphone, pour que les animations d'arrivée ne jouent qu'une fois, dans leur version douce.
-INLINE = ("try{var e=document.documentElement,h=location.hash==='#histoire',d=null;if(!/[?&](nouveau|reset|new)\\b/.test(location.search))d=JSON.parse(localStorage.getItem('pepe-v1')||'null');"
+# Il pose aussi le moment de la journée (h-matin, h-jour, h-soir, h-nuit) : la photo de l'étang prend la lumière de l'heure dès le premier affichage.
+INLINE = ("try{var e=document.documentElement,h=location.hash==='#histoire',d=null,H=new Date().getHours();"
+          "e.classList.add('h-'+((H<5||H>=22)?'nuit':H<11?'matin':H<18?'jour':'soir'));"
+          "if(!/[?&](nouveau|reset|new)\\b/.test(location.search))d=JSON.parse(localStorage.getItem('" + CLE + "')||'null');"
           "if(h||(d&&d.onboarded))e.classList.add('returning');"
           "if(!(d&&d.fxOff)&&window.matchMedia&&!matchMedia('(prefers-reduced-motion: reduce)').matches)e.classList.add('fx');}catch(e){}")
+# Juste après l'accueil écrit à l'avance : les mots qui dépendent de l'heure (« Bonsoir », « ce soir ») sont mis avant le premier affichage.
+# L'accueil porte ses variantes dans des attributs data-matin, data-jour, data-soir et data-nuit, écrits par l'app elle-même.
+INLINE_HEURE = ("(function(){try{var m=(document.documentElement.className.match(/\\bh-(nuit|matin|jour|soir)\\b/)||[])[1];if(!m)return;"
+                "var L=document.querySelectorAll('#app [data-'+m+']');for(var i=0;i<L.length;i++)L[i].textContent=L[i].getAttribute('data-'+m);}catch(e){}})();")
 
 
 def inline_moved():
@@ -132,18 +149,24 @@ def moved_page(fname, robots='noindex,follow'):
 
 def csp(inline=''):
     h = ''
-    if inline:
-        h = " 'sha256-" + base64.b64encode(hashlib.sha256(inline.encode('utf-8')).digest()).decode() + "'"
+    for one in ([inline] if isinstance(inline, str) else inline):
+        if one:
+            h += " 'sha256-" + base64.b64encode(hashlib.sha256(one.encode('utf-8')).digest()).decode() + "'"
     return ("default-src 'self'; script-src 'self'" + h + " https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; "
             "connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests")
 
 
-def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=True, noconsent=False, hero=True):
-    """a = préfixe des fichiers de l'app ('' pour une page du dossier de l'app, chemin absolu pour le 404)."""
+def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=True, noconsent=False, hero=True, og=None, corps=()):
+    """a = préfixe des fichiers de l'app ('' pour une page du dossier de l'app, chemin absolu pour le 404 et pour les fiches).
+    og = (adresse de l'image d'aperçu, sa description, le titre court) pour une page qui a la sienne.
+    corps = les scripts écrits dans le corps de la page, que la consigne de sécurité doit connaître."""
     e = html.escape
+    if ESSAI:
+        robots = 'noindex,nofollow'
+    inlines = [inline] + list(corps)
     out = ['<!doctype html>', '<html lang="fr"%s>' % (' data-noconsent' if noconsent else ''), '<head>', '<meta charset="utf-8">',
            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
-           '<meta http-equiv="Content-Security-Policy" content="%s">' % e(csp(inline)),
+           '<meta http-equiv="Content-Security-Policy" content="%s">' % e(csp(inlines)),
            '<title>%s</title>' % e(title),
            '<meta name="description" content="%s">' % e(desc),
            '<meta name="robots" content="%s">' % robots]
@@ -157,12 +180,12 @@ def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=
             '<link rel="manifest" href="%smanifest.webmanifest">' % a,
             '<meta name="apple-mobile-web-app-title" content="Parent écouté">']
     if social:
-        out += ['<meta property="og:type" content="website">', '<meta property="og:site_name" content="%s">' % e(NAME), '<meta property="og:locale" content="fr_CH">',
-                '<meta property="og:title" content="%s">' % e(title), '<meta property="og:description" content="%s">' % e(desc),
+        out += ['<meta property="og:type" content="%s">' % ('article' if og else 'website'), '<meta property="og:site_name" content="%s">' % e(NAME), '<meta property="og:locale" content="fr_CH">',
+                '<meta property="og:title" content="%s">' % e(og[2] if og else title), '<meta property="og:description" content="%s">' % e(desc),
                 '<meta property="og:url" content="%s">' % e(canonical),
-                '<meta property="og:image" content="%simg/apercu.jpg">' % APP_URL, '<meta property="og:image:type" content="image/jpeg">',
+                '<meta property="og:image" content="%s">' % e(og[0] if og else APP_URL + 'img/apercu.jpg'), '<meta property="og:image:type" content="image/jpeg">',
                 '<meta property="og:image:width" content="1200">', '<meta property="og:image:height" content="630">',
-                '<meta property="og:image:alt" content="Une goutte tombe sur un étang, dans la lumière d’une forêt. Parent Écouté, Parent Éclairé, par Antonio Company.">',
+                '<meta property="og:image:alt" content="%s">' % e(og[1] if og else 'Une goutte tombe sur un étang, dans la lumière d’une forêt. Parent Écouté, Parent Éclairé, par Antonio Company.'),
                 '<meta name="twitter:card" content="summary_large_image">']
     if hero:  # l'image du haut de page est l'élément le plus grand : on la demande tout de suite
         out.append('<link rel="preload" href="%simg/hero.webp" as="image" type="image/webp" fetchpriority="high">' % a)
@@ -225,8 +248,9 @@ def contact_block():
 def audience_status():
     if cfg.get('cf_token', '').strip():
         return 'Cet outil est actif sur le site et ne se déclenche que si vous l’avez accepté.'
-    return ('<b>Au %s</b>, l’outil n’est pas encore activé sur le site. Aucune donnée de visite n’est collectée, quel que soit votre choix. '
-            'Votre réponse est simplement gardée pour le jour où il le sera.' % cfg['updated_fr'])
+    return ('<b>Au %s</b>, aucun outil de mesure d’audience n’est activé sur le site, et aucune donnée de visite n’est collectée. '
+            'C’est pourquoi aucun bandeau ne s’affiche à votre arrivée. Si un outil est activé un jour, votre accord vous sera demandé avant toute mesure. '
+            'Vous pouvez déjà indiquer votre choix ci-dessous, et il sera respecté ce jour-là.' % cfg['updated_fr'])
 
 
 def host_blocks(body):
@@ -280,10 +304,11 @@ def build_site():
     # L'Espace Antonio vit dans son propre dossier (antonio/), pour pouvoir être fermé par un mot de passe chez l'hébergeur,
     # qui protège un dossier entier et non une page. À l'ancienne adresse (MOVED), il n'en reste qu'un renvoi.
     ajs = typo(read(SRC + '/antonio.js'))
-    ant_js = OUT + ('/antonio.js' if MOVED else '/antonio/antonio.js')
-    os.makedirs(os.path.dirname(ant_js), exist_ok=True)
-    write(ant_js, ajs)
-    node_check(ant_js)
+    if not ESSAI:
+        ant_js = OUT + ('/antonio.js' if MOVED else '/antonio/antonio.js')
+        os.makedirs(os.path.dirname(ant_js), exist_ok=True)
+        write(ant_js, ajs)
+        node_check(ant_js)
     if not MOVED:   # l'ancien emplacement, à la racine du site
         for f in ('antonio.html', 'antonio.js'):
             if os.path.exists(OUT + '/' + f):
@@ -297,21 +322,51 @@ def build_site():
     elif os.path.exists(OUT + '/demenage.js'):
         os.remove(OUT + '/demenage.js')
 
-    # --- accueil pré-écrit (même HTML que celui que l'app écrit elle-même)
-    pre = json.loads(subprocess.run(['node', ROOT + '/tests/prerender.js', OUT + '/app.js'], check=True, capture_output=True, text=True).stdout)
-    title = NAME + ', un espace d’écoute pour les parents'
-    desc = ('Déposez ce qui pèse, recevez chaque jour une dose de lumière et avancez six mois à votre rythme. '
+    # --- écrans pré-écrits (même HTML que celui que l'app écrit elle-même) : l'accueil, la liste des situations et chaque fiche
+    tout = json.loads(subprocess.run(['node', ROOT + '/tests/prerender.js', OUT + '/app.js', APP_PATH], check=True, capture_output=True, text=True).stdout)
+    pre = tout['intro']
+    # Le moment de la journée n'est pas connu à la fabrication : la classe h-… est posée par le script du haut de page, puis par l'app.
+    classe = lambda x: re.sub(r'\s+h-\w+', '', x['className'])
+    title = TITRE
+    assert pre['title'] == TITRE, pre['title']
+    desc = ('Souffler 2 minutes, déposer ce qui pèse ou trouver une piste pour ce soir. '
             'Un espace d’écoute pour tout parent, par Antonio Company, travailleur social.')
-    index = (head(title, desc, MOVED or APP_URL, '', v, inline=(inline_moved() + INLINE) if MOVED else INLINE)
-             + '<body>\n<div id="app" class="' + pre['className'] + '" data-prerender="intro">' + pre['html'] + '</div>\n'
+    # Les fichiers de la page sont appelés par leur chemin complet : l'adresse change quand on ouvre une fiche, et un chemin relatif ne mènerait plus au bon endroit.
+    index = (head(title, desc, MOVED or APP_URL, APP_PATH, v, inline=(inline_moved() + INLINE) if MOVED else INLINE, corps=(INLINE_HEURE,))
+             + '<body>\n<div id="app" class="' + classe(pre) + '" data-prerender="intro">' + pre['html'] + '</div>\n'
+             + '<script>' + INLINE_HEURE + '</script>\n'
              + '<noscript><p class="noscript">Cet espace a besoin de JavaScript pour fonctionner. Activez-le dans votre navigateur, puis rechargez la page.</p></noscript>\n'
-             + '<script src="site.js?v=' + v['site'] + '" defer></script>\n'
-             + (('<script src="demenage.js?v=' + sha8(djs) + '" defer></script>\n') if MOVED else '')
-             + '<script src="app.js?v=' + v['js'] + '" defer></script>\n</body>\n</html>\n')
+             + '<script src="' + APP_PATH + 'site.js?v=' + v['site'] + '" defer></script>\n'
+             + (('<script src="' + APP_PATH + 'demenage.js?v=' + sha8(djs) + '" defer></script>\n') if MOVED else '')
+             + '<script src="' + APP_PATH + 'app.js?v=' + v['js'] + '" defer></script>\n</body>\n</html>\n')
     write(OUT + '/index.html', index)
 
-    # --- pages de texte
+    # --- les fiches : chacune a sa page et son adresse, que l'on peut envoyer telle quelle. La page se lit tout de suite, même sans JavaScript.
     urls = [APP_URL]
+    if os.path.isdir(OUT + '/fiches'):
+        shutil.rmtree(OUT + '/fiches')
+    if not MOVED:
+        def ecran(x, cle, canonical, desc, og=None):
+            return (head(x['title'], desc, canonical, APP_PATH, v, inline=INLINE, hero=False, og=og)
+                    + '<body>\n<div id="app" class="' + classe(x) + '" data-prerender="' + cle + '">' + x['html'] + '</div>\n'
+                    + '<script src="' + APP_PATH + 'site.js?v=' + v['site'] + '" defer></script>\n'
+                    + '<script src="' + APP_PATH + 'app.js?v=' + v['js'] + '" defer></script>\n</body>\n</html>\n')
+        write(OUT + '/fiches/index.html', ecran(tout['liste'], 'pub-kit', APP_URL + 'fiches/', tout['liste']['desc']))
+        urls.append(APP_URL + 'fiches/')
+        sans_image = []
+        for f in tout['fiches']:
+            img = 'img/fiches/' + f['slug'] + '.jpg'
+            og = None
+            if os.path.exists(SRC + '/' + img):
+                og = (APP_URL + img, 'La fiche « %s », sur une photo d’étang en forêt. Parent Écouté, Parent Éclairé.' % f['t'], f['t'])
+            else:
+                sans_image.append(f['slug'])
+            write(OUT + '/fiches/' + f['slug'] + '/index.html', ecran(f, 'pub-sit', APP_URL + 'fiches/' + f['slug'] + '/', f['desc'], og))
+            urls.append(APP_URL + 'fiches/' + f['slug'] + '/')
+        if sans_image:
+            print('  attention : pas d’image d’aperçu pour ' + ', '.join(sans_image))
+
+    # --- pages de texte
     if MOVED:   # à l'ancienne adresse, les pages de texte ne font plus que renvoyer vers les nouvelles
         for f in ('confidentialite.html', 'conditions.html'):
             moved_page(f)
@@ -333,6 +388,9 @@ def build_site():
     # --- Espace Antonio (démonstration, non référencée)
     if MOVED:
         moved_page('antonio.html', robots='noindex,nofollow')
+    elif ESSAI:
+        if os.path.isdir(OUT + '/antonio'):
+            shutil.rmtree(OUT + '/antonio')
     else:
         ant = (head('Espace Antonio, démonstration de ' + NAME, 'Démonstration du tableau de bord d’Antonio. Parents et dépôts fictifs.', '', '../', v, robots='noindex,nofollow', social=False, noconsent=True)
                + '<body>\n<div id="app" class="app nobar"></div>\n<noscript><p class="noscript">Cette page a besoin de JavaScript.</p></noscript>\n'
@@ -363,7 +421,7 @@ def build_site():
 
     # --- manifest, robots, sitemap
     manifest = {
-        'name': NAME, 'short_name': 'Parent écouté', 'id': APP_PATH,
+        'name': NAME + (' (essai)' if ESSAI else ''), 'short_name': 'Parent écouté' + (' essai' if ESSAI else ''), 'id': APP_PATH,
         'description': 'Un espace d’écoute pour tout parent en chemin, avec la dose de lumière intérieure, Déposer, le parcours de six mois et les conseils et outils d’un travailleur social.',
         'lang': 'fr', 'dir': 'ltr', 'start_url': './', 'scope': './', 'display': 'standalone', 'background_color': '#07240F', 'theme_color': '#07240F',
         'categories': ['lifestyle', 'health', 'education'],
@@ -423,7 +481,7 @@ def build_artifact():
 
 if __name__ == '__main__':
     v = build_site()
-    sizes = {f: os.path.getsize(OUT + '/' + f) for f in ('index.html', 'app.css', 'app.js', 'site.js', 'confidentialite.html', 'conditions.html') + (('antonio.html', 'antonio.js') if MOVED else ('antonio/index.html', 'antonio/antonio.js'))}
+    sizes = {f: os.path.getsize(OUT + '/' + f) for f in ('index.html', 'app.css', 'app.js', 'site.js', 'confidentialite.html', 'conditions.html') + (('antonio.html', 'antonio.js') if MOVED else () if ESSAI else ('antonio/index.html', 'antonio/antonio.js'))}
     print('site ->', OUT, v, '(%s, %s)' % (HOST, APP_URL))
     print('  ' + ' · '.join('%s %.1f Ko' % (k, s / 1024) for k, s in sizes.items()))
     if os.environ.get('PEPE_SITE_ONLY'):   # fabrication d'une autre version du site : on ne touche pas à l'artefact

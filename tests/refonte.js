@@ -23,9 +23,10 @@ const NB_NOTES = Object.keys(D.notes).filter(k => D.notes[k] && D.notes[k].t).le
 
   // ----- la boîte à outils : les situations rangées par thèmes
   await tab('kit');
-  let r = await page.evaluate(() => { const G = [...document.querySelectorAll('.sits.groupes > .grp')]; return { g: G.map(e => e.querySelector('h2 .nom').textContent + ' ' + e.querySelector('h2 .nb').textContent + ' ' + e.querySelectorAll('.liste .sit').length), sits: document.querySelectorAll('.sits .sit').length, themes: document.querySelectorAll('[data-act="theme"]').length, ages: [...document.querySelectorAll('.chips [data-act="age"]')].map(e => e.textContent).join('|'), rangs: document.querySelectorAll('main .chips').length }; });
+  let r = await page.evaluate(() => { const G = [...document.querySelectorAll('.sits.groupes > .grp')]; return { g: G.map(e => e.querySelector('h2 .nom').textContent + ' ' + e.querySelector('h2 .nb').textContent + ' ' + e.querySelectorAll('.liste .sit').length), sits: document.querySelectorAll('.sits .sit').length, themes: document.querySelectorAll('[data-act="theme"]').length, ages: [...document.querySelectorAll('.chips [data-act="age"]')].map(e => e.textContent).join('|'), rangs: document.querySelectorAll('main .chips.scroll').length, souvent: [...document.querySelectorAll('.souvent .chip')].map(e => e.dataset.id) }; });
   ok(r.g.length === 6 && r.g.join('|') === 'Le comportement 2 2|La communication 2 2|Le quotidien 6 6|L’école, les professionnels, l’avenir 3 3|La famille 4 4|Vous, parent 5 5', 'boîte à outils : 6 thèmes, chacun avec son titre, son compte et ses lignes ' + r.g.join('|'));
   ok(r.sits === 22 && r.themes === 0 && r.rangs === 1 && r.ages === 'Tous âges|Enfant|Ado|Adulte', 'boîte à outils : 22 situations, une seule rangée de filtres, celle de l’âge ' + JSON.stringify(r).slice(0, 200));
+  ok(r.souvent.length === 4 && new Set(r.souvent).size === 4, 'boîte à outils : 4 situations fréquentes à cette heure, proposées avant la liste ' + r.souvent.join(','));
   await page.click(A('age', '[data-v="g"]')); await page.waitForTimeout(150);
   r = await page.evaluate(() => ({ g: [...document.querySelectorAll('.sits.groupes > .grp h2 .nom')].map(e => e.textContent), n: document.querySelectorAll('.sits .sit').length, comptes: [...document.querySelectorAll('.sits.groupes > .grp')].every(e => Number(e.querySelector('.nb').textContent) === e.querySelectorAll('.sit').length) }));
   ok(r.n === 17 && r.g.length === 6 && r.comptes, 'filtre « Adulte » : 17 situations, et chaque thème recompte ses lignes ' + JSON.stringify(r));
@@ -42,12 +43,14 @@ const NB_NOTES = Object.keys(D.notes).filter(k => D.notes[k] && D.notes[k].t).le
   await page.click('.sits ' + A('sit', '[data-id="crise"]')); await page.waitForTimeout(300);
   r = await page.evaluate(() => { const q = s => document.querySelector(s); const m = q('main.fiche'); return { fiche: !!m, h1: q('h1').textContent, med: q('.couv .med') ? q('.couv .med').getAttribute('aria-hidden') : '', ordre: m ? [...m.children].map(e => e.className.replace('card ', '').replace('sec ', '').split(' ')[0]).join(' ') : '', mot: q('.comfort .label') ? q('.comfort .label').textContent : '', motP: q('.comfort p') ? q('.comfort p').textContent.length : 0, coches: m.querySelectorAll('.sec.ess .list li').length, croix: m.querySelectorAll('.sec.ev .list li').length, proches: [...m.querySelectorAll('.proches .sit')].map(e => e.dataset.id), y: scrollY }; });
   ok(r.fiche && r.h1 === 'La crise' && r.med === 'true', 'fiche : le titre sans émoticône, l’image dans un médaillon à part ' + JSON.stringify([r.h1, r.med]));
-  ok(r.ordre === 'couv comp ess ev comfort aide quick grp', 'fiche : l’ordre des blocs (' + r.ordre + ')');
+  ok(r.ordre === 'couv comp ess ev comfort aide partage quick grp', 'fiche : l’ordre des blocs, avec le bouton pour l’envoyer (' + r.ordre + ')');
   ok(r.mot === 'Un mot pour vous' && r.motP > 40 && r.coches >= 3 && r.croix >= 2, 'fiche : « Un mot pour vous », des pistes à essayer et des choses à éviter ' + JSON.stringify([r.mot, r.motP, r.coches, r.croix]));
   ok(r.proches.length >= 1 && !r.proches.includes('crise') && r.proches.includes('automut'), 'fiche : « Dans le même thème » propose les autres situations du thème ' + r.proches.join(','));
   await page.click('.proches ' + A('sit', '[data-id="automut"]')); await page.waitForTimeout(600);
   r = await page.evaluate(() => ({ h1: document.querySelector('h1').textContent, y: scrollY, proches: [...document.querySelectorAll('.proches .sit')].map(e => e.dataset.id) }));
   ok(/se fait mal/.test(r.h1) && r.y < 5 && r.proches.includes('crise'), 'une situation proche s’ouvre en haut de page ' + JSON.stringify(r));
+  await page.click(A('back')); await page.waitForTimeout(400);
+  ok((await page.textContent('h1')) === 'La crise' && /\/fiches\/la-crise\/$/.test(page.url()), 'Retour revient à la fiche d’avant, comme le bouton du téléphone');
   await page.click(A('back')); await page.waitForTimeout(400);
   ok(/boîte à outils/.test(await h1()), 'Retour ramène à la boîte à outils, même après deux fiches (' + (await h1()) + ')');
   // « Pour moi » : une seule carte à lignes

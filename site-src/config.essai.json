@@ -1,0 +1,18 @@
+{
+  "site_url": "https://parent-ecoute.ch",
+  "base_path": "/",
+  "app_dir": "essai",
+  "host": "infomaniak",
+  "updated": "2026-11-18",
+  "updated_fr": "18 novembre 2026",
+  "cf_token": "",
+  "contact_email": "bonjour@parent-ecoute.ch",
+  "legal_name": "Antonio Company",
+  "postal_address": "Rue du Pays-d’Enhaut 80, 1630 Bulle",
+  "phone": "",
+  "ide": "",
+  "host_name": "Infomaniak Network SA",
+  "host_address": "Rue Eugène-Marziano 25, 1227 Les Acacias, Suisse",
+  "essai": true,
+  "storage_key": "pepe-essai-v1"
+}
