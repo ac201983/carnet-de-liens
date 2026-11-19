@@ -1605,6 +1605,183 @@ a.sit{text-decoration:none;color:var(--fg)}
   @keyframes sch-cap{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 }
 /* ---------- L'impression : fond blanc, texte sombre, sans menus ni boutons ---------- */
+/* ---------- La passe « lancement » : le premier écran, les 3 offres, « Passer le relais », la page à transmettre ---------- */
+/* Le premier écran dit à qui l'espace s'adresse, puis ce qu'il promet. La question et les 3 portes viennent juste dessous. */
+.herofull{--ih:clamp(170px,46vh,380px)}
+@supports (height:1svh){.herofull{--ih:clamp(170px,calc(100svh - 540px),380px)}}
+.herofull .pour{margin:calc(var(--ih)*.62 - 82px - env(safe-area-inset-top,0px)) 0 0;font-size:14px;line-height:1.3;font-weight:800;color:var(--sun-fg);text-shadow:0 1px 10px rgba(0,0,0,.7);max-width:24em}
+.herofull h1{font-size:clamp(23px,6.5vw,29px);line-height:1.14;font-weight:600;margin:0 0 2px;text-wrap:balance}
+.herofull h1 .ici{display:block}
+.herofull .besoin-l{margin:2px 0 0;font-size:16px;line-height:1.3;font-weight:800;color:var(--cream);text-shadow:0 1px 10px rgba(0,0,0,.7)}
+.herofull .besoin-l .salut{color:var(--sun-fg)}
+@media (min-width:1024px){
+  .v-intro .herofull .pour{margin-top:0;font-size:16.5px}
+  .v-intro .herofull h1{font-size:clamp(34px,3vw,46px);line-height:1.08;max-width:17em;margin-bottom:6px}
+  .v-intro .herofull .besoin-l{font-size:19px;margin-bottom:4px}
+}
+/* Sur « Aujourd'hui » : un mot après une absence, le geste gardé pendant l'essai, le retour d'un relais. */
+.revoila{margin:2px 0 0;font-family:var(--font-display);font-size:19.5px;line-height:1.4;color:var(--cream)}
+.reprise-geste,.rl-rappel{border-color:rgba(216,223,126,.42);background:linear-gradient(180deg,rgba(216,223,126,.12),rgba(216,223,126,.03))}
+.reprise-geste .btn,.rl-rappel .btn{align-self:flex-start}
+.rg-t{margin:0;font-family:var(--font-display);font-size:20px;line-height:1.4;color:var(--cream)}
+/* La vitrine : le début d'une fiche de relais, sur une feuille claire. */
+.rl-mini{background:#F7F2E1;color:#11301C;border-radius:20px;padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.rl-mini .label{color:#4B6352;font-size:13.5px}
+.rl-mini b{font-family:var(--font-display);font-size:21px;font-weight:600;line-height:1.2}
+.rl-mini ol{margin:0;padding:0;list-style:none;counter-reset:r;display:flex;flex-direction:column;gap:10px}
+.rl-mini li{counter-increment:r;position:relative;padding-left:34px;font-size:16px;line-height:1.45}
+.rl-mini li::before{content:counter(r);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:#0F331C;color:#F7F2E1;font-weight:800;font-size:13.5px;display:grid;place-items:center}
+.acc-relais-b{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px}
+.acc-relais-b .prix{font-weight:800;font-size:15.5px;color:var(--sun-fg)}
+.acc-offrir{align-self:flex-start;background:none;border:0;padding:8px 0;min-height:44px;color:var(--green);font-weight:800;font-size:15px;text-decoration:underline;text-underline-offset:4px}
+.partage .btn.wa{background:rgba(255,255,255,0);border-color:rgba(216,223,126,.6);color:var(--cream);text-decoration:none}
+/* Les 2 façons de payer Le parcours : même taille, même poids. */
+.f-payer{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:10px}
+.reprendre .etape-avant{margin-top:8px}
+.btn.f-mode{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:68px;padding:11px 16px;text-align:left;border-radius:18px;white-space:normal}
+.btn.f-mode b{font-size:17.5px;line-height:1.2}
+.btn.f-mode span{font-size:14.5px;line-height:1.3;font-weight:700}
+.feuille .btn.f-mode[aria-pressed="true"]{border:2px solid var(--green);background:var(--green-soft);padding:10px 15px}
+.feuille .btn.f-mode[aria-pressed="false"]{border-style:dashed}
+.f-total{margin:0;font-size:15px;line-height:1.4;font-weight:800;color:var(--fg)}
+.f-discret{display:flex;flex-wrap:wrap;gap:0 22px}
+.cmd-mode,.cmd-garde,.cmd-ech{display:flex;flex-direction:column;gap:10px}
+.cmd-mode h2,.cmd-garde h2,.cmd-ech h2{font-family:var(--font-display);font-size:22px;font-weight:600;line-height:1.2;margin:0}
+.cmd-garde .list li{font-size:16px;line-height:1.45}
+.ech{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.ech li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 14px;font-size:15.5px;line-height:1.35}
+.ech li+li{border-top:1px solid var(--line)}
+.ech li b{white-space:nowrap}
+.ech .ech-ok{color:var(--muted)}
+.ech .ech-total{background:var(--surface-2);font-weight:800}
+.mes-achats .kv{font-size:15.5px}
+/* Le banc de mesure. La fiche y est posée telle qu'elle sera imprimée, à la largeur utile d'une feuille A4 (182 mm), pour savoir si elle tient sur une page.
+   Ces règles répètent celles de l'impression, plus bas : on les change ensemble. */
+.rl-banc{position:absolute;left:-9999px;top:0;width:182mm;visibility:hidden;pointer-events:none;contain:layout style}
+.rl-fiche.rl-papier{border:0 !important;border-radius:0 !important;padding:0 !important;box-shadow:none !important;font-size:11.5pt;gap:10pt;background:#fff !important;color:#141a12 !important}
+.rl-fiche.rl-papier.rl-d1{font-size:10.3pt;gap:8pt}
+.rl-fiche.rl-papier.rl-d2{font-size:9.2pt;gap:6pt;line-height:1.36}
+.rl-papier .rl-trois{background:#fff !important;color:#141a12 !important;border:1.5pt solid #1E6A39}
+.rl-papier .rl-trois h3,.rl-papier .rl-trois .rl-h{color:#1E6A39 !important}
+.rl-papier .rl-trois li::before{background:#fff !important;border:1pt solid #1E6A39;color:#1E6A39 !important}
+.rl-papier .rl-moi{background:#fff !important}
+.rl-papier .rl-cols{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8pt 18pt !important}
+.rl-fiche.rl-papier.rl-d2 .rl-cols{gap:5pt 16pt !important}
+.rl-fiche.rl-papier.rl-d2 .rl-trois,.rl-fiche.rl-papier.rl-d2 .rl-moi{padding:8pt 10pt}
+.rl-page{display:flex;align-items:flex-start;gap:10px;margin:0;font-size:14.5px;line-height:1.4;font-weight:700;color:var(--muted)}
+.rl-page .i{flex:none;width:18px;height:18px;margin-top:1px;color:var(--green)}
+.rl-page.rl-trop{color:var(--sun-fg);background:var(--sun-soft);border-radius:12px;padding:10px 12px}
+.rl-page.rl-trop .i{color:var(--sun-fg)}
+@media (min-width:560px){.f-payer{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Le détail d'une offre se déplie sous le prix et le geste. */
+details.f-concret{display:block;padding-top:2px}
+details.f-concret>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;cursor:pointer;font-family:var(--font-ui);font-size:15.5px;font-weight:800;color:var(--green);border-radius:10px}
+details.f-concret>summary::-webkit-details-marker{display:none}
+details.f-concret>summary::after{content:"";flex:none;width:9px;height:9px;margin:0 6px 4px 0;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg)}
+details.f-concret[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
+details.f-concret>ul{margin-top:4px}
+details.f-concret>.f-note{margin-top:10px}
+.formule>.lien-f{margin-block:-4px}
+@media (min-width:900px){.formules .f-payer{grid-template-columns:minmax(0,1fr)}}
+/* « Passer le relais ». Une composition sobre : la feuille, des phrases à choisir, et la fiche telle qu'elle sera lue. */
+.rl-fil{grid-template-columns:repeat(5,minmax(0,1fr))}
+.rl-fil.rl-4,.v-relais.rl-e-reunion .rl-fil{grid-template-columns:repeat(4,minmax(0,1fr))}
+.rl-comment,.ap-semaine{margin:0}
+.rl-comment{list-style:none;padding:0;counter-reset:c;display:flex;flex-direction:column;gap:12px}
+.rl-comment li{counter-increment:c;position:relative;padding-left:38px;display:flex;flex-direction:column;gap:2px}
+.rl-comment li::before{content:counter(c);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--green);color:var(--green);font-weight:800;font-size:14px;display:grid;place-items:center}
+.rl-comment b{font-size:16.5px;line-height:1.3}
+.rl-comment span{font-size:15.5px;line-height:1.45;color:var(--muted)}
+.rl-carte,.rl-rub{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.rl-carte h2,.rl-rub h2,.rl-mes h2,.tr-suite h2,.tr-pro h2{font-family:var(--font-display);font-size:21px;font-weight:600;line-height:1.2;margin:0}
+.rl-carte p{margin:0;font-size:16px;line-height:1.5}
+.rl-carte .btn{align-self:flex-start}
+.rl-auretour,.rl-garde{border:2px solid var(--green);padding:15px}
+.rl-cite{font-family:var(--font-display);font-size:19px!important;line-height:1.5!important}
+.rl-mes{display:flex;flex-direction:column;gap:10px}
+.rl-mes .liste{display:flex;flex-direction:column;gap:8px}
+.rl-acquis,.rl-prive,.rl-alerte{display:flex;align-items:flex-start;gap:9px;margin:0;font-size:15px;line-height:1.45}
+.rl-acquis .i,.rl-prive .i,.rl-alerte .i{width:18px;height:18px;flex:none;margin-top:2px;color:var(--green)}
+.rl-acquis{font-weight:800}
+.rl-prive{color:var(--muted)}
+.rl-alerte{flex-wrap:wrap;background:var(--sun-soft);border-radius:14px;padding:10px 12px;font-weight:700;color:var(--sun-fg)}
+.rl-alerte .i{color:var(--sun-fg)}
+.rl-alerte .lien-f{min-height:44px;padding-block:0;color:var(--sun-fg)}
+.rl-ages{gap:8px}
+.rl-ligne{display:flex;align-items:flex-start;gap:6px}
+.rl-ligne textarea{flex:1;min-width:0}
+.v-relais textarea{font-size:16.5px;line-height:1.45;padding:10px 12px;border-radius:14px;width:100%;resize:vertical;min-height:0;field-sizing:content}
+.rl-ote{flex:none;width:44px;height:44px;border:0;background:none;color:var(--muted);display:grid;place-items:center;border-radius:12px}
+.rl-ote .i{width:19px;height:19px}
+@media (hover:hover){.rl-ote:hover{color:var(--coral)}}
+.rl-modeles,.rl-obs{display:flex;flex-direction:column;gap:8px}
+.rl-m{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:44px;padding:10px 13px;text-align:left;border:1.5px dashed rgba(30,106,57,.55);border-radius:14px;background:rgba(255,255,255,.55);color:var(--fg);font-family:inherit;font-size:15.5px;line-height:1.4;font-weight:600}
+.rl-m small{font-size:12.5px;font-weight:700;color:var(--muted)}
+.rl-m.rl-libre{flex-direction:row;align-items:center;gap:8px;border-style:solid;font-weight:800;color:var(--green)}
+.rl-m.rl-libre .i{width:18px;height:18px}
+.rl-m[aria-pressed="true"]{border:2px solid var(--green);background:var(--green-soft);padding:9.5px 12.5px}
+@media (hover:hover){.rl-m:hover{border-style:solid}}
+.rl-3{margin:0;padding:0;list-style:none;counter-reset:t;display:flex;flex-direction:column;gap:10px}
+.rl-3 li{counter-increment:t;position:relative;padding-left:40px}
+.rl-3 li::before{content:counter(t);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;background:var(--cream);color:var(--bg);font-family:var(--font-display);font-weight:600;font-size:17px;display:grid;place-items:center}
+.rl-tu{display:flex;flex-direction:column;gap:6px}
+.rl-tu .seg{max-width:240px}
+.rl-contact{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding-bottom:6px}
+.rl-perds{background:var(--sun-soft)!important;border-color:var(--sun-fg)!important;color:var(--sun-fg)!important;align-self:flex-start}
+.btn.rl-perds.wide{align-self:stretch}
+.rl-fichier{align-self:flex-start;cursor:pointer}
+.rl-recap{display:flex;flex-direction:column;gap:8px}
+.rl-recu-l{margin:0}
+.rl-sait li{font-size:16px;line-height:1.45}
+/* La fiche. Une page : le titre, les 3 repères sur le vert de l'étang, la parole de la personne, puis le quotidien. */
+.rl-fiche{background:#FFFEF8;color:#11301C;border:1px solid rgba(17,48,28,.22);border-radius:18px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:14px;box-shadow:0 2px 4px rgba(17,48,28,.08),0 16px 36px rgba(17,48,28,.16);font-size:15.5px;line-height:1.45}
+.rl-tete{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:2px solid #1E6A39}
+.rl-goutte{--cream:#F4EFD8;--green:#B4DE9C;--surface-2:#164426;flex:none;width:38px;height:38px;border-radius:50%;background:#0F331C;display:grid;place-items:center}
+.rl-goutte .logo{width:24px;height:24px}
+.rl-t{margin:0;font-family:var(--font-display);font-size:1.61em;font-weight:600;line-height:1.1;color:#11301C}
+.rl-st{margin:3px 0 0;font-size:.94em;line-height:1.35;font-weight:700;color:#4B6352}
+.rl-fiche h3,.rl-fiche .rl-h{margin:0;font-family:var(--font-display);font-size:1.16em;font-weight:600;line-height:1.2;color:#1E6A39}
+.rl-fiche ul,.rl-fiche ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.rl-trois{background:#0F331C;color:#F4EFD8;border-radius:14px;padding:14px 14px 15px;display:flex;flex-direction:column;gap:10px}
+.rl-fiche .rl-trois h3,.rl-fiche .rl-trois .rl-h{color:#D8DF7E;font-size:1.225em}
+.rl-trois ol{counter-reset:n;gap:10px}
+.rl-trois li{counter-increment:n;position:relative;padding-left:2.2em;font-size:1.065em;line-height:1.42}
+.rl-trois li::before{content:counter(n);position:absolute;left:0;top:0;width:1.58em;height:1.58em;border-radius:50%;background:#D8DF7E;color:#0F331C;font-family:var(--font-display);font-weight:600;font-size:1.03em;display:grid;place-items:center}
+.rl-vide{margin:0;font-size:15px;color:#C9D8C2}
+.rl-moi{border-left:4px solid #B9C24A;background:rgba(216,223,126,.3);border-radius:4px 14px 14px 4px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.rl-moi li,.rl-moi p{margin:0;font-family:var(--font-display);font-size:1.13em;line-height:1.4}
+.rl-fiche .rl-moi h3,.rl-fiche .rl-moi .rl-h{color:#4F5410}
+.rl-moi .rl-signe{font-family:var(--font-ui);font-size:.9em;font-weight:800;color:#4F5410;text-align:right}
+.rl-cols{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.rl-s{display:flex;flex-direction:column;gap:6px;break-inside:avoid}
+.rl-s li{position:relative;padding-left:16px}
+.rl-s li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:#1E6A39}
+.rl-tel{border-top:1px solid rgba(17,48,28,.18);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.rl-tel ul{flex-direction:row;flex-wrap:wrap;gap:4px 20px}
+.rl-tel a{color:#1E6A39;font-weight:800;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
+.rl-tel li{display:flex;align-items:center;gap:6px}
+.rl-papier .rl-tel a{display:inline;min-height:0;padding:0}
+.tr-liens{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.tr-liens li{display:flex;flex-direction:column;align-items:flex-start}
+.tr-liens li>span{margin:-4px 0 4px 28px;font-size:15px;line-height:1.4;color:var(--muted)}
+.rl-pied{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 16px;font-size:.84em;line-height:1.35;color:#4B6352}
+.rl-reu .rl-moi p{font-family:var(--font-display)}
+@media (min-width:560px){
+  .rl-fiche{padding:24px 26px 18px}
+  .rl-cols{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px}
+  .rl-contact{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* La page à transmettre. */
+.tr-suite,.tr-pro{display:flex;flex-direction:column;gap:10px}
+.tr-pro{border-top:1px solid var(--line);padding-top:20px;margin-top:4px}
+.tr-suite .list li,.tr-pro .list li{font-size:16px;line-height:1.5}
+.tr-pro p{margin:0;font-size:16px;line-height:1.5}
+.tr-suite .linkbtn{background:none;border:0;padding:0;color:var(--green);font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:4px}
+.tr-mot{margin:0;border-left:4px solid var(--sun);background:var(--surface);border-radius:4px 16px 16px 4px;padding:14px 16px}
+.tr-mot p{font-family:var(--font-display);font-size:19.5px;line-height:1.5}
+/* Une fiche reçue par lien : la page attend que la fiche soit lue dans l'adresse, pour ne pas montrer autre chose d'abord. */
+html.rl-attend #app{visibility:hidden;animation:rl-montre 0s 4s forwards}
+@keyframes rl-montre{to{visibility:visible}}
 @media print{
   :root,:root:not([data-theme="light"]){--bg:#fff;--surface:#fff;--surface-2:#eef1e6;--fg:#141a12;--cream:#141a12;--muted:#4a5546;--line:#cdd5c2;--green:#2f6b2f;--green-2:#6aa35a;--green-soft:#e6f0df;--sun:#b99a00;--sun-soft:#f5f0c8;--sun-fg:#6b5a00;--shadow:none;--shadow-sm:none;color-scheme:light}
   html,body{background:#fff !important;color:#141a12 !important}
@@ -1623,6 +1800,25 @@ a.sit{text-decoration:none;color:var(--fg)}
   .bartrack i{background:#e3e7da !important}
   .fin-photos{grid-template-columns:repeat(3,1fr)}
   @page{margin:16mm 14mm}
+}
+/* Imprimer une fiche de relais, ou la feuille d'une réunion : la page seule, en noir sur blanc, sur une feuille A4. */
+@media print{
+  .v-relais .feuille{background:#fff !important;padding:0 !important;margin:0 !important;border-radius:0 !important}
+  .v-relais .feuille>*:not(.rl-fiche):not(.rl-recap){display:none !important}
+  .v-relais .rl-recap>.label{display:none !important}
+  .rl-fiche{border:0 !important;border-radius:0 !important;padding:0 !important;box-shadow:none !important;font-size:11.5pt;gap:10pt;background:#fff !important;color:#141a12 !important}
+  .rl-fiche.rl-d1{font-size:10.3pt;gap:8pt}
+  .rl-fiche.rl-d2{font-size:9.2pt;gap:6pt;line-height:1.36}
+  .rl-fiche .rl-trois{background:#fff !important;color:#141a12 !important;border:1.5pt solid #1E6A39}
+  .rl-fiche .rl-trois h3,.rl-fiche .rl-trois .rl-h{color:#1E6A39 !important}
+  .rl-fiche .rl-trois li::before{background:#fff !important;border:1pt solid #1E6A39;color:#1E6A39 !important}
+  .rl-fiche .rl-moi{background:#fff !important}
+  .rl-fiche .rl-cols{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8pt 18pt !important}
+  .rl-fiche.rl-d2 .rl-cols{gap:5pt 16pt !important}
+  .rl-fiche.rl-d2 .rl-trois,.rl-fiche.rl-d2 .rl-moi{padding:8pt 10pt}
+  .rl-tel a{display:inline !important;min-height:0 !important;padding:0 !important}
+  .rl-goutte{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4;margin:14mm}
 }
 
 /* ---- Espace Antonio (démonstration) ---- */

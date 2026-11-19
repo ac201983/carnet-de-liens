@@ -215,7 +215,13 @@ const SITS=[
    ess:['Laissez venir la vague sans vous juger, parce qu’elle finit toujours par passer.','Mettez des mots précis sur ce que vous perdez. Ce qu’on arrive à nommer pèse un peu moins lourd.','Cherchez ce que vous n’auriez jamais connu sans votre enfant, comme une autre idée du temps, de la réussite ou de la joie.','Entourez-vous de parents qui connaissent ce chagrin. Eux ne vous répondront pas « mais il est tellement mignon ».'],
    ev:['Vous interdire d’être triste sous prétexte qu’il y a pire ailleurs.','Vous forcer à sourire les jours où vous avez besoin de pleurer.'],
    moi:'Vous pouvez pleurer ce qui ne sera pas et aimer de tout votre cœur l’enfant qui est là. Les deux sont vrais en même temps, et vous n’avez pas à choisir.',
-   aide:'Si la tristesse s’installe pendant des semaines sans vous laisser de répit, parlez-en à un ou une psychologue qui connaît le handicap, ou rejoignez un groupe de parents. Et pour les nuits trop longues, vous pouvez appeler La Main Tendue au 143.'}
+   aide:'Si la tristesse s’installe pendant des semaines sans vous laisser de répit, parlez-en à un ou une psychologue qui connaît le handicap, ou rejoignez un groupe de parents. Et pour les nuits trop longues, vous pouvez appeler La Main Tendue au 143.'},
+  {id:'relais',e:'🤝',t:'Confier son enfant à un proche',s:'Un week-end, une soirée, une première nuit ailleurs',ages:['e','a','g'],th:'fam',
+   comp:'Laisser votre enfant à quelqu’un d’autre, même pour une nuit, demande beaucoup. Vous savez mille choses que personne n’a jamais écrites, et vous craignez que l’autre ne les devine pas. Cette inquiétude est normale, elle dit que vous connaissez votre enfant. Un relais se passe mieux quand la personne qui le prend sait peu de choses, mais les bonnes. Et vous avez le droit de souffler pendant ce temps.',
+   ess:['Choisissez 3 repères, pas davantage. Ce sont ceux que la personne doit connaître même si elle ne lit rien d’autre.','Écrivez-les sur une page, avec des mots simples, et relisez-la avec elle avant de partir.','Commencez court. Une après-midi, puis une soirée, puis une nuit, pour que chacun prenne confiance.','Demandez à votre enfant, quel que soit son âge, ce qu’il souhaite que cette personne sache. Notez-le avec ses mots ou ses gestes.','Au retour, posez-vous une seule question. Qu’est-ce qui a bien marché, et que garderez-vous la prochaine fois ?'],
+   ev:['Tout expliquer en 20 minutes sur le pas de la porte. Presque rien n’est retenu.','Appeler toutes les heures. Convenez plutôt d’un message à un moment précis.','Attendre que tout se passe comme avec vous. Autrement ne veut pas dire moins bien.'],
+   moi:'Confier votre enfant ne fait pas de vous un parent qui abandonne. Vous lui montrez que d’autres adultes peuvent prendre soin de lui, et vous vous donnez les moyens de durer.',
+   aide:'Si vous n’avez personne à qui passer le relais, parlez-en à votre assistante sociale, à Pro Infirmis ou à une association de parents de votre canton. Il existe des services de relève à domicile et des accueils de courte durée. Demandez aussi ce qui peut être pris en charge.'}
 ];
 const THEMES={all:'Tout',comp:'Comportement',comm:'Communication',quot:'Quotidien',ecole:'École, pros, avenir',fam:'Famille',moi:'Pour moi'};
 const AGES={all:'Tous âges',e:'Enfant',a:'Ado',g:'Adulte'};
@@ -911,7 +917,10 @@ Object.assign(I,{
 Object.keys(I).forEach(k=>{I[k]=I[k].replace('<svg class="i"','<svg class="i" aria-hidden="true" focusable="false"');});
 
 /* ---------- formules ---------- */
-const TIERS={free:{t:'Découverte',p:'0',per:'gratuit',cls:''},parcours:{t:'Le parcours',p:'14',per:'par mois',cls:'parcours'},antonio:{t:'Avec Antonio',p:'49',per:'par mois',cls:'antonio'}};
+const TIERS={free:{t:'Découverte',p:'0',per:'gratuit',cls:''},parcours:{t:'Le parcours',p:'84',per:'en tout',cls:'parcours'}};
+/* Les 2 produits payants. Chacun s'achète une fois, et l'un n'oblige pas à prendre l'autre. */
+const PRODUITS={parcours:{t:'Le parcours',p:84},relais:{t:'Passer le relais',p:49}};
+const MENSU=14,NB_ECH=6;
 const FREE_DEPOTS=3, Q_PER_MONTH=2;
 const FEATURES=[
   ['La dose du jour',true,true,true],
@@ -922,16 +931,13 @@ const FEATURES=[
   ['Les 24 étapes','Étape 1',true,true],
   ['Mon évolution','Départ',true,true],
   ['Photolangage',false,true,true],
-  ['Mot mensuel d’Antonio',false,false,true],
-  ['2 questions par mois',false,false,true]
 ];
 const UP={
   depots:{t:'Déposer sans limite',s:'Vous avez utilisé vos trois dépôts Découverte. Avec Le parcours, vous déposez autant que nécessaire, avec la phrase-miroir à chaque fois.'},
   dose:{t:'Votre dose, à vous',s:'Avec Le parcours, la dose du jour est écrite d’après ce que vous avez déposé ces derniers jours.'},
   parcours:{t:'Les 24 étapes',s:'La première étape est offerte. Les vingt-trois suivantes, une par semaine pendant six mois, font partie du Parcours.'},
   evo:{t:'Voir le chemin',s:'Le point de départ est offert. Le point à trois mois et le bilan à six mois font partie du Parcours.'},
-  photo:{t:'Le photolangage',s:'Choisir une image pour dire votre vécu, au départ puis au bilan, fait partie du Parcours.'},
-  antonio:{t:'Avec Antonio',s:'Chaque mois, Antonio lit les dépôts que vous choisissez de lui partager et vous écrit un mot personnel. Deux fois par mois, vous pouvez aussi lui poser une question, et il vous répond par écrit dans les 48 heures.'}
+  photo:{t:'Le photolangage',s:'Choisir une image pour dire votre vécu, au départ puis au bilan, fait partie du Parcours.'}
 };
 const LETTER_EXAMPLE='J’ai lu ce que vous avez déposé ce mois-ci. Ce que j’entends d’abord, c’est la fatigue des soirs, et aussi le fait que vous êtes là, malgré tout. Vous savez, les enfants retiennent moins nos cris que le fait qu’on soit revenu vers eux.\nJ’ai aussi vu quelque chose bouger. Vous avez commencé à mettre des mots sur ce qui se passe juste avant les crises, et c’est souvent par là qu’une porte s’ouvre.\nPour le mois qui vient, je vous propose une seule piste. Au moment du coucher, dites-lui à chaque fois ce qui vient en premier et ce qui vient juste après, par exemple « d’abord le pyjama, ensuite l’histoire ». Essayez dix soirs de suite, sans chercher à ce que ce soit parfait. On en reparle dans mon prochain mot.';
 const QA_EXAMPLE={q:'Mon fils de 9 ans refuse d’aller à l’école le matin, ça finit en cris. Je fais quoi ?',a:'Je commencerais par la veille plutôt que par le matin. Préparez sa tenue, fermez son sac et dites-lui au coucher, en une phrase courte, ce qui se passera demain. Le matin, parlez peu, proposez-lui un seul choix, par exemple « chaussures ou veste d’abord ? », et gardez le même ordre chaque jour. Si le refus dure plus de deux semaines, demandez un rendez-vous à son enseignant ou à son enseignante, parce qu’il se passe peut-être quelque chose à l’école que vous ne pouvez pas voir depuis la maison. Et gardez en tête que ce refus n’est pas dirigé contre vous.'};
@@ -951,8 +957,8 @@ const HELP=[
 /* « age » et « situation » sont vides tant que le parent n'a rien choisi : rien n'est coché à sa place.
    « perso » : il a rempli (ou enregistré) « Personnaliser mon espace ». « recents » : les dernières fiches et les derniers outils ouverts. */
 const PRE=typeof globalThis!=='undefined'&&typeof globalThis.__PEPE_PRERENDER__==='function';
-const DEF={fxOff:false,tier:'free',me:'',age:'',situation:'',perso:false,persoTard:false,recents:[],via:'',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
-const state={ap:{k:0,g:'',mot:''},cmd:{f:'',k:'recap',de:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
+const DEF={fxOff:false,tier:'free',achats:{},vu:'',me:'',age:'',situation:'',perso:false,persoTard:false,recents:[],via:'',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
+const state={ap:{k:0,g:'',mot:''},cmd:{f:'',m:'une',k:'recap',de:''},rl:{e:'accueil',ex:'g',id:null,p:0,sec:'',r:null,lu:null,h:'',mots:false,attente:null,foc:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
@@ -1047,8 +1053,10 @@ function doseText(){const d=D();return d.doseDate===todayIso()&&d.doseText?d.dos
 function lastDepot(){const l=D().depots;return l.length?l[l.length-1]:null;}
 function recentDepot(){const ld=lastDepot();return ld&&(Date.now()-new Date(ld.date).getTime())<4*86400000?ld:null;}
 /* ---------- formules : droits ---------- */
-const tier=()=>D().tier||'free';
-function can(f){const t=tier();if(f==='parcours')return t!=='free';if(f==='antonio')return t==='antonio';return true;}
+/* Ce que le parent a acheté. L'ancienne formule « Avec Antonio » n'existe plus : celui qui l'avait essayée garde Le parcours. */
+function achats(){const d=D();if(!d.achats||typeof d.achats!=='object'||Array.isArray(d.achats))d.achats={};if(d.tier==='antonio')d.tier='parcours';if(d.tier==='parcours'&&!d.achats.parcours)d.achats.parcours={m:'une',le:d.start||todayIso(),n:1};if(d.tier!=='parcours'&&d.achats.parcours)delete d.achats.parcours;return d.achats;}
+const tier=()=>{achats();return D().tier==='parcours'?'parcours':'free';};
+function can(f){if(f==='parcours')return tier()!=='free';if(f==='relais')return !!achats().relais;if(f==='antonio')return false;return true;}
 function depotsLeft(){return can('parcours')?Infinity:Math.max(0,FREE_DEPOTS-D().depots.length);}
 function questionsLeft(){const mk=monthKey(todayIso());return Math.max(0,Q_PER_MONTH-D().questions.filter(q=>monthKey(q.date)===mk).length);}
 function sharedThisMonth(){const mk=monthKey(todayIso());return D().depots.filter(x=>D().shared[x.id]&&monthKey(x.date)===mk).length;}
@@ -1388,7 +1396,7 @@ function eauSync(entering){
 }
 /* ---------- rendu ---------- */
 const TAB_VIEWS=['today','parcours','kit','me'];
-const BACK_VIEWS=['sit','exo','step','carnet','final','photo','data','about','plans','evo','depots','antonio','letter','deposer','apercu','avec','commande'];
+const BACK_VIEWS=['sit','exo','step','carnet','final','photo','data','about','plans','evo','depots','antonio','letter','deposer','apercu','commande','relais','transmettre'];
 /* Retrouver, après un nouveau rendu, le bouton qui avait le focus (clavier, lecteurs d'écran). Jamais un champ de texte : sur téléphone cela rouvrirait le clavier. */
 function focusKey(el){
   if(!el||!el.matches||!el.closest||!el.closest('#app'))return null;
@@ -1401,16 +1409,22 @@ function focusKey(el){
 }
 function render(){
   const app=document.getElementById('app');let html='';let base='app';let key;
+  try{document.documentElement.classList.remove('rl-attend');}catch(e){}
   const fkey=focusKey(document.activeElement);
   const oldSheet=app.querySelector('.sheet');const sheetTop=oldSheet?oldSheet.scrollTop:0;
   const visiteur=!D().onboarded;
   /* Le SOS s'ouvre pour tout le monde, même pour un visiteur qui n'est pas encore entré dans l'espace. */
   if(state.view==='sos'){base='app nobar';key='sos';html=viewSOS();}
   else if(state.view==='souffle'&&!visiteur){base='app nobar';key='souffle';html=viewSouffle();}
-  else if(visiteur&&['plans','about','apercu','avec','commande'].includes(state.view)){base='app nobar';key='peek-'+state.view;html='<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+(state.view==='about'?viewAbout():state.view==='apercu'?viewApercu():state.view==='avec'?viewAvec():state.view==='commande'?viewCommande():viewPlans());}
+  else if(visiteur&&['plans','about','apercu','commande','relais'].includes(state.view)){base='app nobar';key='peek-'+state.view;
+    /* Le proche qui ouvre une fiche reçue lit la fiche, et rien d'autre ne la concurrence. Le logo mène à l'accueil. Le SOS du parent n'a pas sa place ici. */
+    const recue=state.view==='relais'&&state.rl.e==='lu';
+    html=(recue?'<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a></header>':'<header class="bar"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>')+(state.view==='about'?viewAbout():state.view==='apercu'?viewApercu():state.view==='relais'?viewRelais():state.view==='commande'?viewCommande():viewPlans());}
   /* Un visiteur arrivé par le lien d'une fiche la lit tout de suite, sans rien avoir à créer. */
   else if(visiteur&&SITE&&state.view==='sit'&&SITS.some(x=>x.id===state.sit)){base='app nobar pub';key='pub-sit';html=barPub()+viewSit()+piedPub();}
   else if(visiteur&&SITE&&state.view==='kit'){state.kit='sits';base='app nobar pub';key='pub-kit';html=barPub()+viewKit()+piedPub();}
+  /* La page à transmettre : un visiteur y arrive par le lien d'une association ou d'un professionnel. */
+  else if(visiteur&&SITE&&state.view==='transmettre'){base='app nobar pub';key='pub-transmettre';html=barPub()+viewTransmettre()+'<footer class="foot"><a href="'+RACINE+'" data-act="accueil">Accueil</a><a href="'+RACINE+'fiches/" data-act="fiches">Les situations</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a></footer>';}
   /* La vitrine. Un visiteur y arrive, et un parent déjà entré la retrouve par « Accueil » : c'est un écran comme les autres, on y revient avec « Retour ». */
   else if(visiteur||state.view==='intro'){base='app nobar';key='intro';html=viewIntro();}
   else{
@@ -1429,11 +1443,12 @@ function render(){
       case 'me':html+=viewMe();break;
       case 'plans':html+=viewPlans();break;
       case 'apercu':html+=viewApercu();break;
-      case 'avec':html+=viewAvec();break;
+      case 'relais':html+=viewRelais();break;
+      case 'transmettre':html+=viewTransmettre();break;
       case 'commande':html+=viewCommande();break;
       case 'depots':html+=viewDepots();break;
-      case 'antonio':html+=viewAntonio();break;
-      case 'letter':html+=viewLetter();break;
+      /* L'ancienne formule « Avec Antonio » n'existe plus : un écran gardé en mémoire par un ancien passage mène aux 3 offres. */
+      case 'antonio':case 'letter':case 'avec':state.view='plans';html+=viewPlans();break;
       case 'data':html+=viewData();break;
       case 'about':html+=viewAbout();break;
       case 'deposer':html+=viewDeposer();break;
@@ -1548,7 +1563,7 @@ function viewIntro(){
   /* Un parent déjà entré retrouve la même vitrine. Les boutons disent alors ce qui l'attend : son espace, et son parcours s'il l'a commencé. */
   const membre=!!D().onboarded,repr=membre&&parcoursCommence(),cur=currentStepIdx();
   const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="entrer" data-v="today">'+I.sun2+(membre?'Ouvrir mon espace':'Commencer gratuitement')+'</button>';
-  const priv=SITE?'Cette version de test est gratuite et tout ce que vous écrivez reste sur votre appareil. La phrase-miroir personnalisée arrivera avec la version complète. En attendant, chaque dépôt reçoit une question et une lumière.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
+  const priv=SITE?'Cette version de test est gratuite, et tout ce que vous écrivez reste sur votre appareil. Chaque dépôt reçoit une question et une lumière, choisies parmi des textes écrits à l’avance.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
   const sec=(k,t,l,c)=>'<section class="acc acc-'+k+'" aria-labelledby="acc-'+k+'-t"><div class="acc-h"><h2 id="acc-'+k+'-t" class="acc-t">'+t+'</h2>'+(l?'<p class="acc-l">'+l+'</p>':'')+'</div><div class="acc-c">'+c+'</div></section>';
   const steps=allSteps();const etape=id=>steps.find(x=>x.id===id)||{};
   /* La dose du jour, la vraie. Sur le site, la page est écrite à l'avance : introLive() remet la dose d'aujourd'hui. */
@@ -1575,15 +1590,14 @@ function viewIntro(){
   const vecu=!vec.length?'':'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio, à l’étape 2</small></div></div>'+vec.map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'<div class="vecu-lien"><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></div>';
   const allerParcours=repr?'<button type="button" class="btn" data-act="step" data-i="'+cur+'">'+I.path+'Reprendre mon parcours</button>':'<button type="button" class="btn" data-act="entrer" data-v="parcours">'+I.path+'Commencer le parcours de 6 mois</button>';
   /* Les formules, avec les prix affichés dans l'espace. */
-  const plans='<ul class="acc-plans">'+['free','parcours','antonio'].map(k=>{const T=TIERS[k],X=F_TXT[k];
-    const lien=k==='parcours'?'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape, en 3 minutes</button>':k==='antonio'?'<button type="button" class="linkbtn" data-act="avec">Voir à quoi ressemble un échange</button>':'';
-    return '<li'+(k==='parcours'?' class="best"':'')+'><div class="h"><b>'+esc(T.t)+'</b><span class="prix">'+T.p+' CHF'+(T.p==='0'?'':' <small>par mois</small>')+'</span></div><p class="acc-benef">'+X.b+'</p><p>'+X.c[k==='free'?4:k==='parcours'?0:2]+'</p>'+lien+'</li>';}).join('')+'</ul><button type="button" class="btn" data-act="peek-plans">Voir ce que chaque formule apporte</button>';
+  const plans='<ul class="acc-plans">'+[['free','Découverte','0 CHF','',F_TXT.free.c[0],'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape, en 3 minutes</button>'],['parcours','Le parcours','84 CHF','en tout','En une fois, ou en 6 fois 14 CHF. '+TOTAL_84,'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape avant de choisir</button>'],['relais','Passer le relais','49 CHF','une seule fois',F_TXT.relais.c[0],'<button type="button" class="linkbtn" data-act="rl" data-k="exemple">Voir un exemple de fiche terminée</button>']].map(x=>'<li><div class="h"><b>'+x[1]+'</b><span class="prix">'+x[2]+(x[3]?' <small>'+x[3]+'</small>':'')+'</span></div><p class="acc-benef">'+F_TXT[x[0]].b+'</p><p>'+x[4]+'</p>'+x[5]+'</li>').join('')+'</ul>'+'<button type="button" class="btn" data-act="peek-plans">Voir les 3 offres en détail</button><button type="button" class="linkbtn acc-offrir" data-act="cadeau">Offrir à un parent</button>';
   /* Les questions qu'un parent se pose avant de commencer. */
   const Q=[
     ['Faut-il créer un compte ?','Non. Il n’y a ni compte ni mot de passe. Votre espace se crée sur votre appareil dès votre premier geste, et vous pouvez ensuite le personnaliser si vous le souhaitez.'],
-    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace s’adresse à tous les parents, que votre enfant vive une situation de handicap, que votre famille traverse une période difficile, ou que vous soyez parent, simplement.'],
+    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace est pensé d’abord pour la mère ou le père d’une personne en situation de handicap, avec ou sans diagnostic, que votre enfant ait 5, 16 ou 35 ans. Si vous êtes parent et que vous traversez une période difficile, vous y êtes aussi le bienvenu.'],
+    ['Faut-il prendre un abonnement ?','Non. Tout ce qui est gratuit le reste, sans limite de durée. Le parcours et Passer le relais se paient une fois, et rien n’est prélevé ensuite. Le parcours peut aussi se payer en 6 fois, pour le même total.'],
     ['Qui lit ce que j’écris ?',SITE?'Personne. Dans cette version, tout ce que vous écrivez reste sur votre appareil, et rien n’est envoyé.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom, et une intelligence artificielle écrit la réponse.'],
-    ['Qui me répond ?',SITE?'Les textes de l’espace sont écrits à l’avance, sous la responsabilité d’Antonio Company. Dans cette version de test, chaque dépôt reçoit une question et une lumière. Dans la version complète, une intelligence artificielle écrira une réponse personnelle, et l’espace vous le dira clairement.':'Quand vous déposez, une intelligence artificielle écrit la réponse, avec la méthode d’Antonio, et l’espace vous le dit. Les autres textes sont écrits à l’avance, sous la responsabilité d’Antonio Company.'],
+    ['Qui me répond ?',SITE?'Les textes de l’espace sont écrits à l’avance, sous la responsabilité d’Antonio Company. Chaque dépôt reçoit une question et une lumière, que l’application choisit parmi ces textes. Aucune intelligence artificielle n’écrit de réponse, et personne ne lit ce que vous écrivez.':'Quand vous déposez, une intelligence artificielle écrit la réponse, avec la méthode d’Antonio, et l’espace vous le dit. Les autres textes sont écrits à l’avance, sous la responsabilité d’Antonio Company.'],
     ['Combien de temps cela demande-t-il ?','Vous pouvez venir 30 secondes pour lire la dose du jour, ou 2 minutes pour souffler. Si vous suivez le parcours, comptez 5 à 10 minutes par semaine pour lire une étape, puis un essai chez vous et quelques mots dans votre carnet. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.'],
     ['Est-ce que cela remplace un professionnel ?','Non. Cet espace vous soutient entre deux rendez-vous, et il ne remplace ni un médecin ni un thérapeute. En cas d’urgence, le bouton SOS vous donne les numéros à appeler.']
   ];
@@ -1594,7 +1608,9 @@ function viewIntro(){
   return '<main id="main" tabindex="-1" class="view intro" style="padding-top:0">'+
     '<div class="herofull bleed" id="accueil"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high">'+
     '<div class="hbar"><span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></div>'+
-    '<h1><span class="salut"'+heureAttr(SALUT)+'>'+SALUT[m]+'</span> <span class="besoin">'+besoinHtml(m,true)+'</span></h1>'+
+    '<p class="pour">Pour la mère ou le père d’une personne en situation de handicap</p>'+
+    '<h1>On vous demande souvent comment va votre enfant. <span class="ici">Ici, on commence par vous.</span></h1>'+
+    '<p class="besoin-l"><span class="salut"'+heureAttr(SALUT)+'>'+SALUT[m]+'</span> <span class="besoin">'+besoinHtml(m,true)+'</span></p>'+
     portes(true)+
     (repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'">'+I.path+'<span>Reprendre mon parcours</span></button>':'<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>')+
     (membre?'<button type="button" class="voie" data-act="entrer" data-v="today">'+I.sun2+'<span>Ouvrir mon espace</span></button>':'')+
@@ -1604,14 +1620,15 @@ function viewIntro(){
     sec('depot','Un endroit pour déposer ce qui pèse','Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
     sec('perm','Ici, vous avez le droit','',perms)+
     sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+'<button type="button" class="btn acc-essai" data-act="apercu">'+I.path+'Essayer cette étape, en 3 minutes</button>'+mois+vecu+allerParcours)+
+    sec('relais','Passer le relais, l’esprit plus léger','Un week-end chez un proche, une soirée, une première nuit ailleurs. Vous préparez une page pour la personne qui garde votre enfant, avec vos mots. Elle sait l’essentiel en 1 minute.',rlVitrineHtml())+
     '<section class="voice" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à 10 ans, je suis travailleur social depuis mes 19 ans et je suis père de 3 enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="btn small" data-act="peek-about">Lire mon histoire</button></div></section>'+
-    sec('formules','Vous commencez gratuitement','Voici ce que chaque formule vous apporte, avec les prix prévus pour la Suisse. Dans cette version d’essai, aucun montant réel n’est débité, et la formule « Avec Antonio » est une démonstration.',plans)+
+    sec('formules','Vous commencez gratuitement','Ensuite, vous payez une fois ce qui vous sert, sans abonnement. Voici les 3 offres, avec les prix prévus pour la Suisse. Dans cette version d’essai, aucun montant réel n’est débité.',plans)+
     sec('faq','Vos questions','',faq)+
     '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+HERO+'" alt="" width="866" height="470" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
     '<p class="hint" style="text-align:center">'+priv+'</p>'+
     (ESSAI?'<p class="hint essai-l" style="text-align:center">Vous êtes sur une version d’essai, à une adresse à part. Le site habituel ne change pas.</p>':'')+
     '<div class="cta-flot">'+cta(false)+'</div></main>'+
-    '<footer class="foot"><button type="button" class="linkbtn" data-act="peek-plans">Formules</button>'+(SITE?'<a href="'+RACINE+'fiches/" data-act="fiches">Les situations</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a><a href="'+RACINE+'conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">Mentions légales</a>':''):'')+'</footer>';
+    '<footer class="foot"><button type="button" class="linkbtn" data-act="peek-plans">Les 3 offres</button>'+(SITE?'<a href="'+RACINE+'fiches/" data-act="fiches">Les situations</a><a href="'+RACINE+'transmettre/" data-act="transmettre">Une page à transmettre</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a><a href="'+RACINE+'conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">Mentions légales</a>':''):'')+'</footer>';
 }
 /* Les mots et la lumière de l'heure, sur un écran écrit à l'avance dans la page : le moment de la journée, « Bonsoir », « ce soir ». */
 function heureLive(){
@@ -1663,23 +1680,30 @@ function viewToday(){
   const td=d.depots.filter(x=>x.date===t).slice(-1)[0];
   let html='<main id="main" tabindex="-1" class="view" style="padding-top:0"><div class="band bleed" style="background-image:url('+HERO+')"><span class="label">'+esc(jourLong())+'</span><h1 class="t1">'+esc(greeting())+(d.me?', '+esc(d.me):'')+'.</h1><p class="besoin">'+besoinHtml(mo,false)+'</p></div>';
   /* Pour celui qui a 30 secondes : les 3 portes, puis la dose du jour. */
-  html+=portes(false);
+  /* À la visite qui suit l'essai du parcours, le parent voit d'abord son propre geste et « Reprendre ici ». Une fois repris, la carte se range sous la dose.
+     Le retour d'un relais, s'il est attendu, se montre aussi tout de suite. */
+  const repr=repriseHtml(),reprHaut=!!repr&&!com().rp;
+  html+=revoila()+portes(false)+(reprHaut?repr:'')+rlRappelHtml();
   html+='<div class="duo"><div class="duo-a">';
-  if(can('antonio'))html+=letterCard();
   html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p>'+(d.doseDate===t&&d.doseText?'<span class="sig">Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio</span>':'<div class="sigrow"><span class="sig">Antonio<button type="button" class="qui-b" data-act="voix" aria-label="Qui écrit cette dose ?">'+I.info+'</button></span><button type="button" class="linkbtn" data-act="go" data-view="about">Lire mon histoire</button></div>')+
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+
     /* Après la lecture, et seulement si le parent le choisit : 40 secondes d'étang pour rester avec ces mots. */
     sonBoutonHtml('dose')+'</div>';
   /* Une raison simple de revenir : la dose change chaque jour, et l'espace le dit sans rien exiger. */
   html+='<p class="hint demain">Une nouvelle dose vous attend ici chaque matin.</p>';
+  /* Le geste gardé pendant l'essai du parcours, une fois qu'il a été repris. */
+  html+=(reprHaut?'':repr);
   /* Pour celui qui suit le parcours : le fil des 24 étapes, puis l'étape de la semaine, en grand, avec un seul geste. */
   const stFait=!!d.steps[st.id];const stAp=st.idx<23?stepEtat(st.idx+1):null;const stSuiv=st.idx<23?allSteps()[st.idx+1]:null;
-  const neuf=st.idx===0&&!stFait&&!d.seen[st.id];
+  const neuf=st.idx===0&&!stFait&&!d.seen[st.id];const stAv=st.idx>0?allSteps()[st.idx-1]:null;
   const stLab=neuf?'Le parcours de 6 mois commence ici':(!stFait?'L’étape de la semaine':(stAp&&stAp.k==='bientot'?'Étape faite. La suivante s’ouvre '+dansJours(stAp.n)+'.':'Étape faite'));
   html+='<div class="reprendre reveal d2">'+filHtml()+'<button type="button" class="step now semaine'+(stFait?' done':'')+'" data-act="step" data-i="'+st.idx+'"><span class="haut"><span class="n" style="--p:'+Math.round(doneCount()/24*100)+'">'+(stFait?I.check:(st.idx+1))+'</span><span class="tx"><span class="label">'+stLab+'</span><b>'+esc(st.t)+'</b><span class="ou">Étape '+(st.idx+1)+' sur 24, '+esc(PARCOURS[st.mi].m)+'</span></span></span>'+
     (!stFait&&st.acc?'<span class="promesse">'+esc(st.acc)+'</span>':'')+
     (stFait&&stSuiv&&stSuiv.acc?'<span class="promesse"><b>Ensuite, '+esc(stSuiv.t)+'.</b> '+esc(stSuiv.acc)+'</span>':'')+
-    '<span class="btn primary small aller">'+I.path+(stFait?'Relire l’étape':(d.seen[st.id]?'Reprendre l’étape':'Ouvrir l’étape'))+'</span></button></div>';
+    '<span class="btn primary small aller">'+I.path+(stFait?'Relire l’étape':(d.seen[st.id]?'Reprendre l’étape':'Ouvrir l’étape'))+'</span></button>'+
+    /* Une étape s'est ouverte pendant l'absence du parent, alors qu'il n'avait pas terminé la précédente : il sait où la retrouver, avec ses notes.
+       La ligne disparaît dès qu'il a ouvert la nouvelle étape. */
+    (stAv&&!d.seen[st.id]&&d.seen[stAv.id]&&!d.steps[stAv.id]?'<button type="button" class="lien-f etape-avant" data-act="step" data-i="'+stAv.idx+'">'+I.path+'<span>L’étape d’avant, « '+esc(stAv.t)+' », reste ouverte, avec '+(noteDe(stAv.id)?'vos notes':'son carnet')+'.</span></button>':'')+'</div>';
   /* Ce que le parent a ouvert dernièrement, pour le rouvrir sans chercher. */
   html+=recentsHtml();
   html+='</div><div class="duo-b">';
@@ -1712,7 +1736,7 @@ function depotBox(){
       '<textarea id="draft" maxlength="'+LIM.draft+'" placeholder="Écrivez comme ça vient, sans prénom." style="min-height:150px">'+esc(state.draft)+'</textarea>'+
       '<div class="row" style="align-items:center">'+(state.busy?'<button type="button" class="btn" data-act="dstop">'+I.stop+'Arrêter</button>':'<button type="button" class="btn primary" data-act="dsend">'+I.drop+'Déposer</button>')+'<span class="count" id="draft-count" aria-hidden="true"></span>'+(left!==Infinity&&left>0?'<span class="pill reste">'+left+' dépôt'+(left>1?'s':'')+' offert'+(left>1?'s':'')+'</span>':'')+'</div>'+
       (state.sample?'<p class="hint">La réponse est écrite par une intelligence artificielle, avec la méthode d’Antonio. Ce n’est pas Antonio qui vous répond ici.</p>':'')+
-      (state.sample===false?'<p class="hint">Dans cette version de test, votre texte ne quitte pas votre appareil. Vous recevez une question et une lumière choisies par l’application, et la phrase-miroir arrivera avec la version complète. <button type="button" class="linkbtn" data-act="voix">Qui me répond ?</button></p>':'');
+      (state.sample===false?'<p class="hint">Dans cette version de test, votre texte ne quitte pas votre appareil. Vous recevez une question et une lumière choisies par l’application parmi des textes écrits à l’avance. <button type="button" class="linkbtn" data-act="voix">Qui me répond ?</button></p>':'');
   }
   if(state.busy)html+='<div class="mirror"><div class="think" role="status"><span class="dotp"></span>Je vous lis…</div></div>';
   if(td&&!state.busy)html+=depotHtml(td,true)+pistesDepotHtml(td);
@@ -2063,7 +2087,7 @@ function entrer(via){
 
 /* ---------- les adresses : chaque fiche a la sienne, que l'on peut envoyer telle quelle ---------- */
 /* Les adresses sont écrites une fois pour toutes : un titre peut changer plus tard sans casser un lien déjà envoyé. */
-const FICHE_SLUG={crise:'la-crise',automut:'il-ou-elle-se-fait-mal',refus:'le-refus',transitions:'les-transitions',sommeil:'le-coucher-et-la-nuit',repas:'les-repas',parole:'communiquer-sans-les-mots',dehors:'les-sorties',regard:'le-regard-des-autres',ecole:'l-ecole',fratrie:'les-freres-et-soeurs',ecrans:'les-ecrans',ado:'l-adolescence-et-le-corps',annonce:'on-vient-d-apprendre',culpa:'la-culpabilite',epuise:'je-n-en-peux-plus',couple:'le-couple',aide:'demander-de-l-aide',grandir:'le-passage-a-l-age-adulte',loin:'quand-il-ou-elle-vit-ailleurs',pros:'parler-aux-professionnels',deuil:'l-enfant-qu-on-avait-imagine'};
+const FICHE_SLUG={crise:'la-crise',automut:'il-ou-elle-se-fait-mal',refus:'le-refus',transitions:'les-transitions',sommeil:'le-coucher-et-la-nuit',repas:'les-repas',parole:'communiquer-sans-les-mots',dehors:'les-sorties',regard:'le-regard-des-autres',ecole:'l-ecole',fratrie:'les-freres-et-soeurs',ecrans:'les-ecrans',ado:'l-adolescence-et-le-corps',annonce:'on-vient-d-apprendre',culpa:'la-culpabilite',epuise:'je-n-en-peux-plus',couple:'le-couple',aide:'demander-de-l-aide',grandir:'le-passage-a-l-age-adulte',loin:'quand-il-ou-elle-vit-ailleurs',pros:'parler-aux-professionnels',deuil:'l-enfant-qu-on-avait-imagine',relais:'confier-son-enfant-a-un-proche'};
 const SLUG_FICHE={};Object.keys(FICHE_SLUG).forEach(k=>{SLUG_FICHE[FICHE_SLUG[k]]=k;});
 function ficheUrl(id,complet){return (complet?PUBLIC:RACINE)+'fiches/'+FICHE_SLUG[id]+'/';}
 /* La phrase d'aperçu d'une fiche, celle qui s'affiche quand on envoie le lien : le début de « Ce qui se passe ». */
@@ -2075,7 +2099,7 @@ function ficheDesc(s){
 const LISTE_DESC='Le coucher, les crises, l’école, les écrans, le passage à l’âge adulte ou la vie en institution. '+SITS.length+' situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.';
 if(PRE){try{globalThis.__PEPE_PRERENDER__({fiches:SITS.map(s=>({id:s.id,slug:FICHE_SLUG[s.id],t:s.t,s:s.s,ages:liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])),desc:ficheDesc(s)})),listeDesc:LISTE_DESC});}catch(e){}}
 /* Lire l'adresse : quelle fiche, ou quel écran public, demande-t-elle ? */
-const VUES_HASH={'#formules':'plans','#apercu':'apercu','#avec-antonio':'avec'};
+const VUES_HASH={'#formules':'plans','#offres':'plans','#apercu':'apercu','#avec-antonio':'plans','#relais':'relais'};
 function routeDe(){
   if(!SITE)return null;
   let p='';try{p=decodeURIComponent(location.pathname||'');}catch(e){p=location.pathname||'';}
@@ -2084,6 +2108,11 @@ function routeDe(){
   const m=p.match(/^fiches\/([a-z0-9-]+)\/?$/);
   if(m&&SLUG_FICHE[m[1]])return {v:'sit',sit:SLUG_FICHE[m[1]]};
   if(/^fiches\/?$/.test(p))return {v:'kit',kit:'sits'};
+  /* L'outil « Passer le relais » a son adresse. Avec #f=…, elle porte une fiche que quelqu'un a envoyée. */
+  if(/^relais\/?$/.test(p))return {v:'relais',re:/^#f=/.test(location.hash)?'lu':'accueil'};
+  if(/^transmettre\/?$/.test(p))return {v:'transmettre'};
+  {const cad=/^#cadeau-(parcours|relais)$/.exec(location.hash||'');if(cad)return {v:'commande',cf:cad[1],ck:'activer'};}
+  if(location.hash==='#offrir')return {v:'commande',cf:'parcours',ck:'cadeau'};
   if(location.hash===STORY_HASH)return {v:'about'};
   if(location.hash==='#accueil')return {v:'intro'};
   if(VUES_HASH[location.hash])return {v:VUES_HASH[location.hash]};
@@ -2097,29 +2126,36 @@ function urlDe(){
   if(state.view==='about')return RACINE+STORY_HASH;
   if(state.view==='plans')return RACINE+'#formules';
   if(state.view==='apercu')return RACINE+'#apercu';
-  if(state.view==='avec')return RACINE+'#avec-antonio';
+  if(state.view==='relais')return RACINE+'relais/'+(state.rl.e==='lu'&&state.rl.h?'#f='+state.rl.h:'');
+  if(state.view==='transmettre')return RACINE+'transmettre/';
   /* La vitrine d'un parent déjà entré a son adresse. Sans elle, l'adresse du site ouvre son espace, et c'est ce qu'il attend. */
   if(state.view==='intro'&&D().onboarded)return RACINE+'#accueil';
   return RACINE;
 }
 function titreDe(){
   if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent Écouté, Parent Éclairé';
-  if(state.view==='plans')return 'Les formules de Parent Écouté, Parent Éclairé';
+  if(state.view==='plans')return 'Les 3 offres de Parent Écouté, Parent Éclairé';
   if(state.view==='apercu')return 'Essayer une étape du parcours, en 3 minutes';
-  if(state.view==='avec')return 'À quoi ressemble un échange avec Antonio';
+  if(state.view==='relais')return state.rl.e==='lu'?'Une fiche de relais, écrite par une famille':'Passer le relais, une page pour la personne qui garde votre enfant';
+  if(state.view==='transmettre')return 'Une page à transmettre à une famille, Parent Écouté, Parent Éclairé';
   if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent Écouté, Parent Éclairé';}
   if(state.view==='kit'&&state.kit==='sits'&&!D().onboarded)return SITS.length+' situations de la vraie vie, avec des pistes pour les parents';
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
   state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
   state.sheet=null;state.confirmReset=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.prev=null;state.lien='';
-  state.ap.k=Math.max(0,Math.min(3,Number(s.ap)||0));state.cmd={f:s.cf||'',k:s.ck||'recap',de:''};
-  if(state.view==='commande'&&(!TIERS[state.cmd.f]||(state.cmd.f==='free'&&state.cmd.k!=='arret')))state.view='plans';
+  state.ap.k=Math.max(0,Math.min(3,Number(s.ap)||0));state.cmd={f:s.cf||'',m:s.cm==='six'?'six':'une',k:s.ck||'recap',de:''};
+  if(state.view==='commande'&&!PRODUITS[state.cmd.f]&&state.cmd.k!=='retrouver')state.view='plans';
+  /* « Passer le relais » : l'écran, le pas, la fiche et la réunion en cours. Une fiche reçue se relit dans l'adresse. */
+  {const r=state.rl;r.e=s.re||'accueil';r.p=Number(s.rp)||0;r.id=s.ri||null;r.r=s.rr||null;if(s.rx&&RL_EX[s.rx])r.ex=s.rx;r.sec='';r.mots=false;r.attente=null;r.foc='';
+    if(r.e==='lu'){if(!rlDuHash()){r.h=s.rh||'';r.lu=r.h?rlDecode(r.h):null;r.e='lu';}}
+    if(['prep','apercu','envoi','retour'].includes(r.e)&&!rlFiche(r.id))r.e='accueil';
+    if(['reunion','feuille'].includes(r.e)&&!rlReu(r.r))r.e='accueil';}
   if(state.view==='apercu'&&state.ap.k>=2&&!noteDe('reguler'))state.ap.k=1;
   /* Un écran qui n'a plus de sens (une étape pas encore ouverte, une fiche inconnue) ramène à « Aujourd'hui ». */
   if(state.view==='step'&&(state.step===null||!D().onboarded||stepLocked(state.step)))state.view='parcours';
@@ -2165,7 +2201,7 @@ function histRetour(e){
   if(!HIST.ok||location.hash==='#atelier')return;
   const st=e&&e.state;souffleStop();stopTimer();
   if(st&&st.pepe&&st.s){HIST.i=st.i||0;navApply(st.s);}
-  else{const r=routeDe()||{};HIST.i=0;navApply({v:r.v||'today',sit:r.sit,kit:r.kit});try{history.replaceState(histEtat(),'',urlDe());}catch(x){}}
+  else{const r=routeDe()||{};HIST.i=0;navApply({v:r.v||'today',sit:r.sit,kit:r.kit,re:r.re,cf:r.cf,ck:r.ck});try{history.replaceState(histEtat(),'',urlDe());}catch(x){}}
   const y=(st&&st.y)||0;
   /* « apres » : un message à dire une fois revenu sur l'écran d'avant (par exemple après avoir enregistré le point de départ). */
   const dire=state.apres||'';state.apres='';
@@ -2732,7 +2768,7 @@ function sheetVoix(sheetIn){
   return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="voix-t" tabindex="-1"><div class="sheet-in voix"><div class="grab"></div><h2 id="voix-t">Qui vous parle ici ?</h2>'+
     '<div class="qui"><h3>Ce que l’application choisit</h3><p>'+(ia?'La dose du jour et les pistes proposées sont des textes écrits à l’avance, et l’application choisit lequel vous montrer. Quand vous déposez, la réponse est écrite par une intelligence artificielle, et l’espace vous le dit à chaque fois.':'La dose du jour, la question et la lumière que vous recevez après un dépôt et les pistes proposées sont des textes écrits à l’avance. L’application choisit lequel vous montrer, selon le jour et selon quelques mots de votre texte. Personne ne lit ce que vous écrivez, et rien ne quitte votre appareil.')+'</p></div>'+
     '<div class="qui"><h3>Ce qui vient d’Antonio</h3><p>Les passages « Ce que j’ai vécu » et la page « Mon histoire » racontent ce qu’Antonio Company a vraiment vécu, comme enfant accueilli, comme travailleur social et comme père. Les autres textes de l’espace sont publiés sous sa responsabilité.</p></div>'+
-    '<div class="qui"><h3>Ce que la formule Avec Antonio montre aujourd’hui</h3><p>Dans cette formule, Antonio vous écrira un mot chaque mois et répondra à 2 questions par mois. Dans cette version de test, vous pouvez l’essayer sans payer, mais le mot affiché est un exemple et rien ne lui est transmis.</p></div>'+
+    '<div class="qui"><h3>Ce qui vient de vous dans « Passer le relais »</h3><p>Les phrases modèles sont écrites à l’avance, et la fiche est faite des mots que vous choisissez. Aucune intelligence artificielle n’y intervient, et le site ne lit pas vos fiches.</p></div>'+
     '<button type="button" class="btn primary wide" data-act="sheet-close">J’ai compris</button></div></div>';
 }
 
@@ -2756,6 +2792,471 @@ function essaiCarte(){
     (n?'<button type="button" class="btn" data-act="essai-copie" style="align-self:flex-start">Ouvrir ici une copie de mes notes</button><p class="hint">Vos dépôts, votre carnet et votre progression de parent-ecoute.ch sont recopiés ici. Les originaux ne sont pas modifiés.</p>':'')+
     (state.confirmEssai?'<div class="confirm" role="alert"><span>Effacer ce que contient la version d’essai sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="essai-zero-oui">Oui, effacer</button><button type="button" class="btn" data-act="essai-zero-non">Annuler</button></div></div>':'<button type="button" class="btn" data-act="essai-zero" style="align-self:flex-start">Revoir la version d’essai depuis le début</button>')+reperesHtml()+'</div>';
 }
+
+/* ---------- « Passer le relais » ---------- */
+/* Un outil pour la famille, acheté une fois, indépendant du parcours. Il fabrique une page que l'on confie à la personne qui prend le relais :
+   un week-end chez un proche, une garde, une première nuit ailleurs. Tout est fait de modèles écrits d'avance et des mots de la famille.
+   Aucune intelligence artificielle n'intervient. Les écrits restent sur l'appareil. Quand la famille envoie la fiche, celle-ci voyage
+   dans le lien lui-même, après le signe # : aucun serveur ne la reçoit, et le proche l'ouvre sans compte et sans achat.
+   Voir l'exemple, préparer sa fiche et la relire est gratuit. L'envoyer, l'imprimer, noter le retour, repartir de la dernière fiche
+   et préparer une réunion demandent l'outil (49 CHF, une seule fois). */
+const RL_LIM={l:200,nom:40,chez:60,quand:80,tel:40,lignes:5,moi:4,retour:600,dem:400,pri:140,obs:6};
+/* Les rubriques de la fiche : la clé, le titre sans prénom, le titre avec prénom, puis les phrases modèles.
+   Une phrase en 2 versions s'adresse au proche : la première le tutoie, la seconde le vouvoie. {P} est le nom choisi par la famille. */
+const RL_SEC=[
+  ['aide','Ce qui aide','Ce qui aide {P}',['Un signal 5 minutes avant de changer d’activité aide beaucoup {P}.','Une seule consigne à la fois, avec des mots simples.','Le programme de la journée, dit le matin en 3 étapes au plus.','Un endroit calme où se retirer quand il y a du bruit ou du monde.',['Du temps pour répondre. Compte jusqu’à 10 dans ta tête avant de répéter.','Du temps pour répondre. Comptez jusqu’à 10 dans votre tête avant de répéter.'],'Son objet du moment reste à portée de main. Il s’agit de']],
+  ['repas','Les repas','Les repas',['{Pm} mange volontiers','Proposer un aliment suffit. Insister pour goûter complique le repas.','Les aliments se servent séparés dans l’assiette.','{Pm} a besoin d’aide pour couper et se sert pour le reste.','À table, 20 minutes suffisent. Ensuite, {P} peut se lever.']],
+  ['nuit','Le soir et la nuit','Le soir et la nuit',['Le coucher se fait vers 21 heures, toujours dans le même ordre.','Une veilleuse reste allumée et la porte reste entrouverte.','En cas de réveil, une phrase courte suffit, par exemple « C’est la nuit, je suis là ».','Les écrans s’arrêtent 1 heure avant le coucher.','Le matin, {P} a besoin d’un moment de calme avant de parler.']],
+  ['monte','Si la tension monte','Si la tension monte',['Les premiers signes sont','Parler peu, baisser la voix et laisser de la place aide {P} à redescendre.','Mieux vaut prévenir {P} avant de s’approcher ou de toucher.','Ce qui apaise le plus, c’est','Quand c’est passé, un verre d’eau suffit. Il n’y a pas besoin d’en reparler.',['Tu peux m’appeler à tout moment, cela ne me dérange jamais.','Vous pouvez m’appeler à tout moment, cela ne me dérange jamais.']]],
+  ['comm','Pour se comprendre','Pour se comprendre',['{Pm} comprend mieux les phrases courtes, une idée à la fois.','Pour dire oui, {P} hoche la tête. Pour dire non, {P} détourne le regard.','{Pm} montre ce qui compte avec des images, des gestes ou en tirant par la main.','Une question répétée sert souvent à se rassurer. La même réponse, dite calmement, suffit.','Mieux vaut une question à la fois, avec 2 choix au plus.']],
+  ['aime','Ce qui fait plaisir','Ce que {P} aime',['{Pm} aime','Une activité qui marche presque toujours, c’est','{Pm} aime choisir entre 2 propositions.','{Pm} n’aime pas']],
+  ['secu','Santé et sécurité','Santé et sécurité',['Les médicaments sont préparés dans le pilulier. Ils se donnent à 8 heures et à 20 heures.','{Pm} ne doit pas manger','Dehors, {P} a besoin d’un adulte à côté, surtout près d’une route.','{Pm} ne sait pas nager.',['En cas de doute, appelle-moi d’abord.','En cas de doute, appelez-moi d’abord.']]]
+];
+const RL_MOI=['J’aime','Je n’aime pas','Pour m’aider, on peut','Je décide moi-même de','Quand je dis non,'];
+const RL_PAS=['Pour qui','Le quotidien','Les 3 repères','Sa parole','Me joindre'];
+const RL_AVEC=[['ecole','L’école'],['foyer','Le foyer ou l’institution'],['soin','Un médecin ou un thérapeute'],['autre','Quelqu’un d’autre']];
+const RL_RPAS=['Avec qui','Mes observations','Ma demande','Mes 3 priorités'];
+/* « Je perds mes mots » : des débuts de phrase pour écrire sa demande, puis des phrases à dire pendant la réunion. */
+const RL_MOTS_ECRIRE=['Ce que j’observe à la maison, c’est que','Ce qui aide {P}, c’est','Je vous demande de','Pouvons-nous essayer pendant un mois de','J’ai besoin de savoir','Ce qui m’inquiète le plus, c’est'];
+const RL_MOTS_DIRE=['Je reprends mes notes un instant.','Je voudrais revenir à ma première priorité.','Pouvez-vous me le redire avec des mots simples ?','Qui fait quoi, et pour quand ?','Je préfère y réfléchir et vous répondre par écrit.','J’aimerais que ce soit noté dans le compte rendu.'];
+/* Trois fiches d'exemple, inventées : à 5 ans, à 16 ans, à 35 ans. Les prénoms et les numéros ne sont ceux de personne. */
+const RL_EX={
+  e:{id:'ex-e',qui:'Noé',chez:'sa grand-mère',quand:'du samedi 21 au dimanche 22 novembre',tu:true,m:'',
+    trois:['Noé ne parle pas encore avec des phrases. Il montre, il tire par la main, et il comprend bien plus qu’il ne dit.','Avant chaque changement, montre-lui l’image ou l’objet de ce qui vient après.','S’il se met à crier, ce n’est pas un caprice. Baisse la voix, éloigne-le du bruit et attends avec lui.'],
+    moi:['J’aime l’eau, les bulles et la chanson du crocodile.','Mon lapin en peluche reste avec moi, même à table.','Je dis non en tournant la tête.'],
+    s:{repas:['Noé mange volontiers des pâtes, de la banane et du pain.','Proposer un aliment suffit. Insister pour goûter complique le repas.'],nuit:['Le coucher se fait vers 19 heures 30, après le bain et 2 histoires.','Une veilleuse reste allumée et la porte reste entrouverte.'],monte:['Les premiers signes sont les mains sur les oreilles et les pleurs sans larmes.','Ce qui apaise le plus, c’est le noir, sa couverture et quelqu’un assis à côté sans parler.'],secu:['Dehors, Noé a besoin d’une main, surtout près d’une route.','En cas de doute, appelle-moi d’abord.']},
+    tel:[{n:'Maman',t:'079 000 00 00'},{n:'Papa',t:'079 000 00 01'}]},
+  a:{id:'ex-a',qui:'Lina',chez:'sa tante Élise',quand:'du vendredi 20 au dimanche 22 novembre',tu:true,m:'',
+    trois:['Lina a besoin de temps seule après une journée avec du monde. Sa chambre est son refuge, frappe avant d’entrer.','Dis-lui la veille ce qui est prévu. Un changement de dernière minute la met en difficulté.','Son téléphone est son lien avec ses amies. Nous avons convenu ensemble qu’il s’arrête à 22 heures.'],
+    moi:['J’aime dessiner, et je préfère qu’on ne commente pas mes dessins.','Je n’aime pas qu’on me touche les cheveux.','Quand je mets mon casque, j’ai besoin de calme. Je ne boude pas.'],
+    s:{aide:['Une seule consigne à la fois, avec des mots simples.','Du temps pour répondre. Compte jusqu’à 10 dans ta tête avant de répéter.'],repas:['Lina mange de tout, sauf le poisson et les plats très épicés.','Elle aime aider à cuisiner si on lui confie une tâche précise.'],nuit:['Elle se couche vers 22 heures 30 et lit un moment.','Le matin, Lina a besoin d’un moment de calme avant de parler.'],monte:['Les premiers signes sont les réponses très courtes et les mains qui se tordent.','Parler peu, baisser la voix et laisser de la place aide Lina à redescendre.']},
+    tel:[{n:'Maman',t:'079 000 00 00'}]},
+  g:{id:'ex-g',qui:'Bastien',chez:'son oncle Rémi',quand:'du samedi 21 au dimanche 22 novembre',tu:true,m:'',
+    trois:['Bastien a besoin de savoir ce qui vient après. Dis-lui le programme le matin, en 3 étapes au plus.','Quand il se balance et parle plus fort, il sature. Propose-lui sa chambre et son casque, puis laisse-lui 10 minutes.','C’est un adulte. Demande-lui son avis avant de décider pour lui, même pour un détail.'],
+    moi:['J’aime prendre mon café seul, le matin.','Je n’aime pas qu’on parle de moi comme si je n’étais pas là.','Je choisis mes habits moi-même.'],
+    s:{aide:['Une seule consigne à la fois, avec des mots simples.','Du temps pour répondre. Compte jusqu’à 10 dans ta tête avant de répéter.'],repas:['Bastien mange de tout, sauf les plats en sauce où tout est mélangé.','Bastien a besoin d’aide pour couper et se sert pour le reste.'],nuit:['Il se couche vers 22 heures, après sa série.','La porte reste entrouverte et la lumière du couloir reste allumée.'],monte:['Parler peu, baisser la voix et laisser de la place aide Bastien à redescendre.','Quand c’est passé, un verre d’eau suffit. Il n’y a pas besoin d’en reparler.'],secu:['Les médicaments sont préparés dans le pilulier. Ils se donnent à 8 heures et à 20 heures.']},
+    tel:[{n:'Maman',t:'079 000 00 00'},{n:'Le foyer',t:'026 000 00 00'}]}
+};
+/* Le dictionnaire de la compression. Il est figé : le changer rendrait illisibles les liens déjà envoyés. Une nouvelle version aurait un autre préfixe. */
+const RL_DICO='Les médicaments sont préparés dans le pilulier. Ils se donnent à 8 heures et à 20 heures. ne doit pas manger Dehors, a besoin d’un adulte à côté, surtout près d’une route. ne sait pas nager. En cas de doute, appelle-moi d’abord. appelez-moi d’abord. aime choisir entre 2 propositions. Une activité qui marche presque toujours, c’est n’aime pas comprend mieux les phrases courtes, une idée à la fois. Pour dire oui, hoche la tête. Pour dire non, détourne le regard. montre ce qui compte avec des images, des gestes ou en tirant par la main. Une question répétée sert souvent à se rassurer. La même réponse, dite calmement, suffit. Mieux vaut une question à la fois, avec 2 choix au plus. Les premiers signes sont Parler peu, baisser la voix et laisser de la place aide à redescendre. Mieux vaut prévenir avant de s’approcher ou de toucher. Ce qui apaise le plus, c’est Quand c’est passé, un verre d’eau suffit. Il n’y a pas besoin d’en reparler. Tu peux m’appeler à tout moment, cela ne me dérange jamais. Vous pouvez Le coucher se fait vers 21 heures, toujours dans le même ordre. Une veilleuse reste allumée et la porte reste entrouverte. En cas de réveil, une phrase courte suffit, par exemple « C’est la nuit, je suis là ». Les écrans s’arrêtent 1 heure avant le coucher. Le matin, a besoin d’un moment de calme avant de parler. mange volontiers Proposer un aliment suffit. Insister pour goûter complique le repas. Les aliments se servent séparés dans l’assiette. a besoin d’aide pour couper et se sert pour le reste. À table, 20 minutes suffisent. Ensuite, peut se lever. Un signal 5 minutes avant de changer d’activité aide beaucoup Une seule consigne à la fois, avec des mots simples. Le programme de la journée, dit le matin en 3 étapes au plus. Un endroit calme où se retirer quand il y a du bruit ou du monde. Du temps pour répondre. Compte jusqu’à 10 dans ta tête avant de répéter. Comptez jusqu’à 10 dans votre tête Son objet du moment reste à portée de main. Il s’agit de J’aime Je n’aime pas Pour m’aider, on peut Je décide moi-même de Quand je dis non, du samedi au dimanche vendredi novembre décembre janvier février mars avril mai juin juillet août septembre octobre son oncle sa tante sa grand-mère son grand-père ses grands-parents mon frère ma sœur notre fils notre fille mon fils ma fille Maman Papa 079 078 077 076 026 021 022 "],"comm":["","aime":["","secu":[""],"nuit":["","monte":[""],"repas":["","aide":[""]},"j":[["","0"],[""]],"d":"2026-11-{"q":"","c":"","w":"","u":1,"t":["","","","m":[""],"s":{"aide":["';
+
+function rel(){const d=D();if(!d.rel||typeof d.rel!=='object')d.rel={};const r=d.rel;if(!Array.isArray(r.fiches))r.fiches=[];if(!Array.isArray(r.reunions))r.reunions=[];return r;}
+function rlId(){return 'r'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);}
+function rlFiche(id){return rel().fiches.find(f=>f.id===id)||null;}
+function rlReu(id){return rel().reunions.find(x=>x.id===id)||null;}
+function rlVide(){return {id:rlId(),c:todayIso(),m:todayIso(),qui:'',chez:'',quand:'',tu:true,trois:['','',''],moi:[],s:{},tel:[{n:'',t:''}],env:'',retour:'',garde:''};}
+function rlOuvert(){return can('relais')||!!D().tout;}
+function rlDe(p){return (/^[aeiouyhàâéèêëîïôöùûœ]/i.test(p)?'d’':'de ')+p;}
+function rlTitre(f){return f.qui?'Le relais '+rlDe(f.qui):'La fiche de relais';}
+function rlSousTitre(f){const a=[];if(f.chez)a.push('Pour '+f.chez);if(f.quand)a.push(f.quand);return a.join(', ');}
+function rlMaj(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+/* Une phrase modèle, écrite pour cette fiche : avec le nom choisi, et en tutoyant ou en vouvoyant le proche. */
+function rlModele(m,f){const t=Array.isArray(m)?m[f.tu===false?1:0]:m;const p=f.qui||'votre enfant';return t.replace(/\{Pm\}/g,rlMaj(p)).replace(/\{P\}/g,p);}
+function rlLignes(f,k){if(!f.s||typeof f.s!=='object')f.s={};if(!Array.isArray(f.s[k]))f.s[k]=[];return f.s[k];}
+function rlToutes(f){const out=[];RL_SEC.forEach(S=>((f.s||{})[S[0]]||[]).forEach(x=>{const t=clean(x,RL_LIM.l);if(t&&out.indexOf(t)<0)out.push(t);}));return out;}
+function rlTelHtml(t){const s=String(t||'');return /^[+0-9 ().-]{6,20}$/.test(s)?'<a href="tel:'+esc(s.replace(/[^+0-9]/g,''))+'">'+esc(s)+'</a>':esc(s);}
+function rlPropre(f){
+  const L=(a,n)=>(Array.isArray(a)?a:[]).map(x=>clean(x,RL_LIM.l)).filter(Boolean).slice(0,n);
+  const o={qui:clean(f.qui,RL_LIM.nom),chez:clean(f.chez,RL_LIM.chez),quand:clean(f.quand,RL_LIM.quand),tu:f.tu!==false,trois:L(f.trois,3),moi:L(f.moi,RL_LIM.moi),s:{},tel:(Array.isArray(f.tel)?f.tel:[]).map(x=>({n:clean(x&&x.n,RL_LIM.tel),t:clean(x&&x.t,RL_LIM.tel)})).filter(x=>x.n||x.t).slice(0,3),m:f.m||''};
+  RL_SEC.forEach(S=>{const l=L((f.s||{})[S[0]],RL_LIM.lignes);if(l.length)o.s[S[0]]=l;});
+  return o;
+}
+/* La fiche, telle qu'elle est lue, envoyée et imprimée. Un seul dessin pour l'exemple, l'aperçu, la fiche reçue et l'impression. */
+/* Une fiche tient sur une page A4. On la pose hors de l'écran telle qu'elle sera imprimée, on mesure sa hauteur,
+   et l'on resserre le texte en 2 crans si elle est chargée. La hauteur utile d'une feuille est de 269 mm. On garde 5 % de marge. */
+const RL_PAGE_MM=269*.95;
+function rlMesure(f0){
+  let b=null;
+  try{
+    if(typeof document==='undefined'||!document.body)return {d:0,ok:true};
+    b=document.createElement('div');b.className='rl-banc';b.setAttribute('aria-hidden','true');
+    b.innerHTML='<div class="rl-etalon" style="height:100mm"></div>'+rlFicheHtml(f0,{cls:'rl-papier',brut:true});
+    document.body.appendChild(b);
+    const mm=b.firstElementChild.getBoundingClientRect().height/100;const el=b.lastElementChild;
+    if(!(mm>0))return {d:0,ok:true};
+    let d=0,h=0;
+    for(d=0;d<3;d++){el.classList.remove('rl-d0','rl-d1','rl-d2');el.classList.add('rl-d'+d);h=el.getBoundingClientRect().height/mm;if(h<=RL_PAGE_MM)break;}
+    return {d:Math.min(d,2),ok:h<=RL_PAGE_MM,mm:Math.round(h)};
+  }catch(e){return {d:0,ok:true};}
+  finally{try{if(b&&b.parentNode)b.parentNode.removeChild(b);}catch(e){}}
+}
+function rlFicheHtml(f0,o){
+  o=o||{};const f=rlPropre(f0),tu=f.tu,P=f.qui;const H=o.h1?'h1':'h2';
+  const dens=o.brut?null:rlMesure(f0);if(dens&&o.mesure)o.mesure.d=dens.d,o.mesure.ok=dens.ok;
+  const li=a=>a.map(x=>'<li>'+esc(x)+'</li>').join('');
+  const secs=RL_SEC.map(S=>{const L=f.s[S[0]];return L?'<section class="rl-s"><h3>'+esc(P?S[2].replace('{P}',P):S[1])+'</h3><ul>'+li(L)+'</ul></section>':'';}).join('');
+  return '<article class="rl-fiche'+(o.cls?' '+o.cls:'')+(dens?' rl-d'+dens.d:'')+'">'+
+    '<header class="rl-tete"><span class="rl-goutte" aria-hidden="true">'+LOGO+'</span><div><'+H+' class="rl-t">'+esc(rlTitre(f))+'</'+H+'>'+(rlSousTitre(f)?'<p class="rl-st">'+esc(rlSousTitre(f))+'</p>':'')+'</div></header>'+
+    '<section class="rl-trois"><h3>'+(tu?'Si tu ne lis que trois choses':'Si vous ne lisez que trois choses')+'</h3>'+(f.trois.length?'<ol>'+li(f.trois)+'</ol>':'<p class="rl-vide">Vos 3 repères viendront ici.</p>')+'</section>'+
+    (f.moi.length?'<section class="rl-moi"><h3>Ce que je souhaite dire moi-même</h3><ul>'+li(f.moi)+'</ul>'+(P?'<p class="rl-signe">'+esc(rlMaj(P))+'</p>':'')+'</section>':'')+
+    (secs?'<div class="rl-cols">'+secs+'</div>':'')+
+    (f.tel.length?'<section class="rl-tel"><h3>Me joindre</h3><ul>'+f.tel.map(x=>'<li>'+(x.n?'<b>'+esc(x.n)+'</b> ':'')+rlTelHtml(x.t)+'</li>').join('')+'</ul></section>':'')+
+    '<footer class="rl-pied"><span>En cas d’urgence vitale, les secours. En Suisse, le 144.</span><span>Fiche écrite par la famille'+(f.m?', le '+esc(fmtDate(f.m)):'')+'.</span></footer></article>';
+}
+function rlAvantImpression(){
+  try{
+    const r=state.rl;if(r.e==='feuille')return;const f=r.e==='lu'?r.lu:r.e==='exemple'?RL_EX[RL_EX[r.ex]?r.ex:'g']:rlFiche(r.id);const el=document.querySelector('.v-relais .rl-fiche');
+    if(!f||!el)return;const m=rlMesure(f);el.classList.remove('rl-d0','rl-d1','rl-d2');el.classList.add('rl-d'+m.d);
+  }catch(e){}
+}
+function rlTexte(f0){
+  const f=rlPropre(f0),out=[rlTitre(f)];const st=rlSousTitre(f);if(st)out.push(st);
+  out.push('',f.tu?'Si tu ne lis que trois choses':'Si vous ne lisez que trois choses');f.trois.forEach((x,i)=>out.push((i+1)+'. '+x));
+  if(f.moi.length){out.push('','Ce que je souhaite dire moi-même');f.moi.forEach(x=>out.push('- '+x));}
+  RL_SEC.forEach(S=>{const L=f.s[S[0]];if(L){out.push('',f.qui?S[2].replace('{P}',f.qui):S[1]);L.forEach(x=>out.push('- '+x));}});
+  if(f.tel.length){out.push('','Me joindre');f.tel.forEach(x=>out.push('- '+[x.n,x.t].filter(Boolean).join(' ')));}
+  out.push('','En cas d’urgence vitale, les secours. En Suisse, le 144.');
+  return out.join('\n');
+}
+
+/* ---------- la fiche dans le lien ---------- */
+/* La fiche est écrite en JSON, compressée (les mots déjà vus sont remplacés par un renvoi), puis écrite en lettres et en chiffres.
+   Elle voyage après le signe # de l'adresse : cette partie-là n'est jamais envoyée au serveur. */
+function rlU8(s){return new TextEncoder().encode(s);}
+function rlStr(u){return new TextDecoder().decode(u);}
+function rlB64(u){let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function rlB64d(t){t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const b=atob(t);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+function rlZip(src){
+  const dico=rlU8(RL_DICO),n0=dico.length,N=n0+src.length;const buf=new Uint8Array(N);buf.set(dico);buf.set(src,n0);
+  const tete=new Map();const cle=p=>buf[p]<<16|buf[p+1]<<8|buf[p+2];
+  const note=p=>{if(p+2<N){const k=cle(p);let l=tete.get(k);if(!l){l=[];tete.set(k,l);}l.push(p);}};
+  for(let p=0;p<n0;p++)note(p);
+  const out=[];let flags=0,nb=0,grp=[],i=n0;
+  while(i<N){
+    let best=0,bp=0;
+    if(i+2<N){const L=tete.get(cle(i));if(L){for(let q=L.length-1;q>=0&&q>=L.length-32;q--){const p=L[q];if(i-p>4095)break;let l=3;while(l<18&&i+l<N&&buf[p+l]===buf[i+l])l++;if(l>best){best=l;bp=p;if(l===18)break;}}}}
+    if(best>=3){const off=i-bp;flags|=1<<nb;grp.push(off>>4,(off&15)<<4|(best-3));for(let k=0;k<best;k++){note(i);i++;}}
+    else{grp.push(buf[i]);note(i);i++;}
+    if(++nb===8){out.push(flags);for(let k=0;k<grp.length;k++)out.push(grp[k]);flags=0;nb=0;grp=[];}
+  }
+  if(nb){out.push(flags);for(let k=0;k<grp.length;k++)out.push(grp[k]);}
+  return new Uint8Array(out);
+}
+function rlUnzip(z,max){
+  const dico=rlU8(RL_DICO),n0=dico.length;const out=new Uint8Array(n0+max);out.set(dico);let n=n0,i=0;
+  while(i<z.length){const flags=z[i++];
+    for(let b=0;b<8&&i<z.length;b++){
+      if(flags>>b&1){if(i+1>=z.length)throw new Error('lien');const a=z[i++],c=z[i++];const off=a<<4|c>>4,len=(c&15)+3;const p=n-off;if(off<1||p<0||n+len>out.length)throw new Error('lien');for(let k=0;k<len;k++)out[n++]=out[p+k];}
+      else{if(n>=out.length)throw new Error('lien');out[n++]=z[i++];}
+    }}
+  return out.subarray(n0,n);
+}
+/* Une somme de contrôle de 3 octets suit la fiche. Un lien coupé ou abîmé en route est refusé, au lieu d'afficher une fiche fausse d'une lettre ou d'un chiffre. */
+function rlSomme(u){let h=0x811c9dc5;for(let i=0;i<u.length;i++){h^=u[i];h=Math.imul(h,0x01000193)>>>0;}return (h^(h>>>24))&0xffffff;}
+function rlCode(f0){const f=rlPropre(f0);const o={q:f.qui,c:f.chez,w:f.quand,u:f.tu?1:0,t:f.trois,m:f.moi,s:f.s,j:f.tel.map(x=>[x.n,x.t]),d:f.m};
+  const src=rlU8(JSON.stringify(o)),z=rlZip(src),k=rlSomme(src);const u=new Uint8Array(z.length+3);u.set(z);u[z.length]=k>>16&255;u[z.length+1]=k>>8&255;u[z.length+2]=k&255;
+  return '1.'+rlB64(u);}
+function rlDecode(t){
+  try{const m=/^1\.([A-Za-z0-9_-]{8,16000})$/.exec(String(t||''));if(!m)return null;
+    const u=rlB64d(m[1]);if(u.length<5)return null;const n=u.length-3;const src=rlUnzip(u.subarray(0,n),24000);const k=rlSomme(src);
+    if((k>>16&255)!==u[n]||(k>>8&255)!==u[n+1]||(k&255)!==u[n+2])return null;
+    const o=JSON.parse(rlStr(src));if(!o||typeof o!=='object'||Array.isArray(o))return null;
+    const f=rlPropre({qui:o.q,chez:o.c,quand:o.w,tu:o.u!==0,trois:o.t,moi:o.m,s:(o.s&&typeof o.s==='object')?o.s:{},tel:(Array.isArray(o.j)?o.j:[]).map(x=>({n:x&&x[0],t:x&&x[1]})),m:/^\d{4}-\d\d-\d\d$/.test(o.d)?o.d:''});
+    f.id='lu';return f;}catch(e){return null;}
+}
+function rlLien(f){return PUBLIC+'relais/#f='+rlCode(f);}
+/* Une adresse …/relais/#f=… porte une fiche. Lue au démarrage et quand l'adresse change. */
+function rlDuHash(){const m=/^#f=(.+)$/.exec(location.hash||'');if(!m)return false;state.rl.h=m[1];state.rl.lu=rlDecode(m[1]);state.rl.e='lu';return true;}
+
+/* ---------- les écrans ---------- */
+function rlFil(noms,p,quoi){return '<ol class="ap-fil rl-fil" aria-label="'+quoi+'">'+noms.map((t,i)=>'<li'+(i===p?' aria-current="step"':'')+' class="'+(i<p?'ap-fait':i===p?'ap-ici':'')+'"><span>'+(i+1)+'</span><b>'+t+'</b></li>').join('')+'</ol>';}
+/* La carte de l'offre. Elle dit ce qui est gratuit et ce que l'outil ajoute, puis ouvre la commande. */
+function rlOffre(de){
+  return '<section class="offre rl-offre" aria-labelledby="rl-offre-t"><div class="f-haut"><h2 id="rl-offre-t">Passer le relais</h2><p class="f-prix"><b>49 CHF</b> <small>une seule fois</small></p></div>'+
+    '<p class="f-benef">Envoyer la fiche, l’imprimer et la retrouver prête la prochaine fois.</p>'+
+    '<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="'+(de||'relais')+'">Choisir Passer le relais</button>'+
+    '<p class="f-note">Voir l’exemple, préparer votre fiche et la relire est gratuit. L’outil sert ensuite à toute la famille, sans abonnement et sans limite de fiches.</p>'+
+    '<p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>';
+}
+function rlVueAccueil(){
+  const R=rel(),F=R.fiches,a=rlOuvert();const attente=F.slice().reverse().find(f=>f.env&&!f.retour);
+  let h='<div class="f-tete"><span class="label">Un outil pour toute la famille</span><h1 class="t1">Passer le relais</h1><p class="sub">Une page pour la personne qui garde votre enfant, écrite avec vos mots. Elle sait l’essentiel en 1 minute, et vous partez l’esprit plus léger.</p></div>';
+  if(!F.length){
+    h+='<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button><button type="button" class="btn wide" data-act="rl" data-k="nouveau">'+I.pen+'Préparer mon premier relais</button></div>'+
+      '<ol class="rl-comment"><li><b>Vous choisissez vos phrases.</b><span>Des modèles vous aident à commencer, et vous les adaptez avec vos mots.</span></li><li><b>Vous décidez des 3 repères.</b><span>Ils sont en tête de la fiche, sous « Si tu ne lis que trois choses ».</span></li><li><b>Votre proche ouvre la fiche.</b><span>Il la lit sur son téléphone, sans compte et sans rien acheter.</span></li><li><b>Au retour, une seule question.</b><span>Le prochain relais est alors prêt en quelques gestes.</span></li></ol>'+
+      /* L'outil sert aussi sans fiche : une réunion se prépare avec le journal « avant, pendant, après » ou avec ce que le parent écrit sur le moment. */
+      (a?'<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="reunion">'+I.user+'Préparer une réunion avec l’école ou le foyer</button></div>':'');
+  }else{
+    if(attente&&a)h+='<section class="rl-carte rl-auretour"><h2>Le relais est passé ?</h2><p>'+esc(rlTitre(attente))+(attente.chez?', pour '+esc(attente.chez):'')+'. Une seule question vous attend.</p><button type="button" class="btn primary" data-act="rl" data-k="retour" data-id="'+attente.id+'">Répondre</button></section>';
+    h+='<section class="rl-mes" aria-labelledby="rl-mes-t"><h2 id="rl-mes-t">Mes relais</h2><div class="liste">'+F.slice().reverse().map(f=>'<button type="button" class="sit" data-act="rl" data-k="ouvrir" data-id="'+f.id+'"><span class="e">'+I.note+'</span><span class="tx"><b>'+esc(rlTitre(f))+'</b><span>'+esc([f.chez?'Pour '+f.chez:'',f.env?'envoyée le '+fmtDate(f.env):'pas encore envoyée',f.retour?'retour noté':''].filter(Boolean).join(', '))+'</span></span><span class="chev">'+I.chev+'</span></button>').join('')+'</div></section>'+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="suivant">'+I.plus+'Préparer un nouveau relais</button><p class="hint">Vous repartez de votre dernière fiche, et vous ne changez que ce qui change.</p>'+
+      '<button type="button" class="btn wide" data-act="rl" data-k="reunion">'+I.user+'Préparer une réunion avec l’école ou le foyer</button><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Revoir un exemple de fiche</button></div>';
+  }
+  {
+    if(R.reunions.length)h+='<section class="rl-mes" aria-labelledby="rl-reu-t"><h2 id="rl-reu-t">Mes réunions</h2><div class="liste">'+R.reunions.slice().reverse().map(x=>'<button type="button" class="sit" data-act="rl" data-k="feuille" data-id="'+x.id+'"><span class="e">'+I.user+'</span><span class="tx"><b>'+esc(rlReuTitre(x))+'</b><span>'+esc(x.quand||'Ma feuille pour la réunion')+'</span></span><span class="chev">'+I.chev+'</span></button>').join('')+'</div></section>';
+  }
+  h+=a?'<p class="rl-acquis">'+I.check+'<span>Vous avez Passer le relais. Il sert à toute la famille, sans limite de fiches.</span></p>':rlOffre('relais');
+  h+='<p class="rl-prive">'+I.lock+'<span>Vos fiches restent sur votre appareil. Vous décidez de ce que vous envoyez, et à qui.</span></p>'+
+    '<button type="button" class="lien-f" data-act="rl" data-k="sauver">'+I.download+'Sauvegarder ou restaurer mes écrits</button>';
+  return h;
+}
+function rlVueExemple(){
+  const k=RL_EX[state.rl.ex]?state.rl.ex:'g';
+  return '<div class="f-tete"><span class="label">Un exemple, inventé pour vous montrer</span><h1 class="t1">Une fiche terminée</h1><p class="sub">Voici ce que reçoit la personne qui prend le relais. Elle l’ouvre sur son téléphone, sans compte et sans rien acheter.</p></div>'+
+    '<div class="chips rl-ages" role="group" aria-label="Choisir un âge">'+[['e','À 5 ans'],['a','À 16 ans'],['g','À 35 ans']].map(x=>'<button type="button" class="chip" data-act="rl" data-k="ex" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>').join('')+'</div>'+
+    rlFicheHtml(RL_EX[k],{cls:'rl-ex'})+
+    '<p class="hint">Les prénoms et les numéros de cet exemple sont inventés.</p>'+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="nouveau">'+I.pen+(rel().fiches.length?'Préparer un relais':'Préparer mon premier relais')+'</button><p class="hint">Vous choisissez chaque phrase, et rien ne part sans vous.</p>'+(SITE?'<button type="button" class="lien-f" data-act="rl" data-k="imprimer">Imprimer cet exemple</button>':'')+'</div>';
+}
+function rlChamp(id,ch,lab,val,ph,lim,aide){return '<div class="field"><label for="'+id+'">'+lab+'</label><input type="text" id="'+id+'" data-rl="'+ch+'" maxlength="'+lim+'" value="'+esc(val||'')+'" placeholder="'+esc(ph)+'" autocomplete="off">'+(aide?'<p class="hint">'+aide+'</p>':'')+'</div>';}
+function rlVuePrep(){
+  const f=rlFiche(state.rl.id);if(!f)return rlVueAccueil();
+  const p=Math.max(0,Math.min(4,state.rl.p||0));const P=f.qui||'votre enfant';
+  let c='<div class="f-tete"><span class="label">'+(rel().fiches.length>1?'Un nouveau relais':'Mon premier relais')+'</span>';
+  /* Dès que la fiche dépasse une page imprimée, la famille le sait, là où elle écrit. */
+  const trop=()=>{const m=rlMesure(f);return m.ok?'':'<p class="rl-page rl-trop">'+I.info+'<span>Imprimée, votre fiche dépasse maintenant une page. Votre proche la lira plus facilement si vous retirez une phrase ou deux.</span></p>';};
+  const suite=(txt)=>(p>0?trop():'')+'<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="pas" data-v="1">'+txt+' '+I.chev+'</button>'+(p>0?'<button type="button" class="btn ghost wide" data-act="rl" data-k="pas" data-v="-1">Revenir</button>':'')+'</div>';
+  if(p===0){
+    c+='<h1 class="t1">Pour qui, et chez qui ?</h1><p class="sub">Ces mots servent seulement à écrire la fiche. Ils restent sur votre appareil.</p></div>'+rlFil(RL_PAS,p,'Les 5 moments de la préparation')+
+      (f.garde?'<section class="rl-carte rl-garde"><h2>La dernière fois, vous vouliez garder ceci</h2><p class="rl-cite">'+nl2(f.garde)+'</p><button type="button" class="btn" data-act="rl" data-k="garde">'+I.plus+'L’ajouter à « Ce qui aide »</button></section>':'')+
+      rlChamp('rl-qui','qui','Comment l’appelez-vous dans cette fiche ?',f.qui,'Son prénom, ou « notre fils », « ma fille »',RL_LIM.nom,'')+
+      rlChamp('rl-chez','chez','Qui prend le relais ?',f.chez,'Par exemple, son oncle Rémi',RL_LIM.chez,'')+
+      rlChamp('rl-quand','quand','Quand ?',f.quand,'Par exemple, du samedi 21 au dimanche 22 novembre',RL_LIM.quand,'Vous pouvez laisser cette ligne vide.')+
+      '<div class="rl-tu"><span class="label" id="rl-tu-l">Dans la fiche, vous dites</span><div class="seg" role="group" aria-labelledby="rl-tu-l"><button type="button" data-act="rl" data-k="tu" data-v="1" aria-pressed="'+(f.tu!==false)+'">Tu</button><button type="button" data-act="rl" data-k="tu" data-v="0" aria-pressed="'+(f.tu===false)+'">Vous</button></div></div>'+
+      suite('Continuer');
+  }else if(p===1){
+    c+='<h1 class="t1">Ce qui aide '+esc(P)+' au quotidien</h1><p class="sub">Choisissez une phrase, puis adaptez-la. 2 ou 3 phrases par rubrique suffisent, et une rubrique peut rester vide.</p></div>'+rlFil(RL_PAS,p,'Les 5 moments de la préparation')+
+      RL_SEC.map(S=>{const k=S[0],L=rlLignes(f,k),ouv=state.rl.sec===k;
+        return '<section class="rl-rub" aria-labelledby="rl-r-'+k+'"><h2 id="rl-r-'+k+'">'+esc(f.qui?S[2].replace('{P}',f.qui):S[1])+'</h2>'+
+          L.map((x,i)=>'<div class="rl-ligne"><textarea rows="2" maxlength="'+RL_LIM.l+'" data-rl="s.'+k+'.'+i+'" aria-label="Phrase '+(i+1)+', '+esc(S[1])+'">'+esc(x)+'</textarea><button type="button" class="rl-ote" data-act="rl" data-k="ote" data-s="'+k+'" data-i="'+i+'" aria-label="Retirer cette phrase">'+I.trash+'</button></div>').join('')+
+          (L.length>=RL_LIM.lignes?'<p class="hint">'+RL_LIM.lignes+' phrases, c’est déjà beaucoup pour une page.</p>':
+            ouv?'<div class="rl-modeles" role="group" aria-label="Phrases à adapter">'+S[3].map((m,i)=>'<button type="button" class="rl-m" data-act="rl" data-k="modele" data-s="'+k+'" data-i="'+i+'">'+esc(rlModele(m,f))+'</button>').join('')+'<button type="button" class="rl-m rl-libre" data-act="rl" data-k="vierge" data-s="'+k+'">'+I.pen+'Écrire ma propre phrase</button></div>':
+            '<button type="button" class="lien-f" data-act="rl" data-k="idees" data-s="'+k+'">'+I.plus+'Ajouter une phrase</button>')+'</section>';}).join('')+
+      suite('Choisir les 3 repères');
+  }else if(p===2){
+    const T=[0,1,2].map(i=>(f.trois||[])[i]||'');const dispo=rlToutes(f).filter(x=>T.indexOf(x)<0);
+    c+='<h1 class="t1">'+(f.tu===false?'Si vous ne lisez que trois choses':'Si tu ne lis que trois choses')+'</h1><p class="sub">Ces 3 repères ouvrent la fiche. Si la personne ne lisait que cela, que devrait-elle savoir ?</p></div>'+rlFil(RL_PAS,p,'Les 5 moments de la préparation')+
+      '<ol class="rl-3">'+T.map((x,i)=>'<li><textarea rows="3" maxlength="'+RL_LIM.l+'" data-rl="trois.'+i+'" aria-label="Repère '+(i+1)+'" placeholder="'+['Le plus important pour que tout se passe bien','Ce qui évite une difficulté','Ce qui compte pour '+esc(P)][i]+'">'+esc(x)+'</textarea></li>').join('')+'</ol>'+
+      (dispo.length?'<div class="rl-modeles" role="group" aria-label="Reprendre une phrase déjà écrite"><span class="label">Reprendre une de vos phrases</span>'+dispo.slice(0,12).map(x=>'<button type="button" class="rl-m" data-act="rl" data-k="pique" data-t="'+esc(x)+'">'+esc(x)+'</button>').join('')+'</div>':'')+
+      suite('Continuer');
+  }else if(p===3){
+    const M=f.moi||[];
+    c+='<h1 class="t1">Ce que je souhaite dire moi-même</h1><p class="sub">Cette partie appartient à '+esc(P)+'. Vous pouvez l’écrire ensemble, avec ses mots, ses gestes ou ses images, à tout âge. Elle a sa place à part dans la fiche.</p></div>'+rlFil(RL_PAS,p,'Les 5 moments de la préparation')+
+      M.map((x,i)=>'<div class="rl-ligne"><textarea rows="2" maxlength="'+RL_LIM.l+'" data-rl="moi.'+i+'" aria-label="Phrase '+(i+1)+' de '+esc(P)+'">'+esc(x)+'</textarea><button type="button" class="rl-ote" data-act="rl" data-k="ote-moi" data-i="'+i+'" aria-label="Retirer cette phrase">'+I.trash+'</button></div>').join('')+
+      (M.length<RL_LIM.moi?'<div class="rl-modeles" role="group" aria-label="Débuts de phrase"><span class="label">Commencer par</span>'+RL_MOI.map((m,i)=>'<button type="button" class="rl-m" data-act="rl" data-k="moi" data-i="'+i+'">'+esc(m.replace(/,$/,''))+'…</button>').join('')+'</div>':'')+
+      '<p class="hint">Si '+esc(P)+' préfère ne rien dire cette fois, la fiche s’en passe très bien.</p>'+
+      suite(M.filter(Boolean).length?'Continuer':'Passer cette partie');
+  }else{
+    const T=(f.tel&&f.tel.length?f.tel:[{n:'',t:''}]).slice(0,3);
+    c+='<h1 class="t1">Me joindre</h1><p class="sub">Ces numéros apparaissent au bas de la fiche. Vous pouvez laisser cette partie vide.</p></div>'+rlFil(RL_PAS,p,'Les 5 moments de la préparation')+
+      T.map((x,i)=>'<div class="rl-contact">'+rlChamp('rl-tn'+i,'tel.'+i+'.n',i?'Une autre personne':'Votre nom dans la fiche',x.n,i?'Par exemple, Papa':'Par exemple, Maman',RL_LIM.tel,'')+rlChamp('rl-tt'+i,'tel.'+i+'.t','Son numéro',x.t,'079 000 00 00',RL_LIM.tel,'')+'</div>').join('')+
+      (T.length<3?'<button type="button" class="lien-f" data-act="rl" data-k="tel-plus">'+I.plus+'Ajouter une personne</button>':'')+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="apercu">'+I.eye+'Voir ma fiche</button><button type="button" class="btn ghost wide" data-act="rl" data-k="pas" data-v="-1">Revenir</button></div>';
+  }
+  return c;
+}
+function rlVueApercu(){
+  const f=rlFiche(state.rl.id);if(!f)return rlVueAccueil();const a=rlOuvert();const n3=(f.trois||[]).filter(x=>clean(x,9)).length;
+  const M={d:0,ok:true};const fiche=rlFicheHtml(f,{mesure:M});
+  return '<div class="f-tete"><span class="label">Avant d’envoyer</span><h1 class="t1">Voici exactement ce que vous transmettez</h1><p class="sub">Rien d’autre ne part. Vos autres écrits restent sur votre appareil.</p></div>'+
+    (n3<3?'<p class="rl-alerte">'+I.info+'<span>'+(n3?'Il vous reste '+(3-n3)+' repère'+(3-n3>1?'s':'')+' à choisir.':'Vos 3 repères ne sont pas encore choisis.')+'</span><button type="button" class="lien-f" data-act="rl" data-k="aller" data-v="2">Les choisir</button></p>':'')+
+    fiche+
+    (M.ok?'<p class="rl-page">'+I.check+'<span>Votre fiche tient sur une page, sur un téléphone comme sur une feuille.</span></p>':'<p class="rl-page rl-trop">'+I.info+'<span>Imprimée, votre fiche dépasse une page. Votre proche la lira plus facilement si vous retirez une phrase ou deux.</span></p>')+
+    '<div class="ap-suite">'+(a?'<button type="button" class="btn primary wide" data-act="rl" data-k="envoi">'+I.send+'Envoyer la fiche</button><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button>':'')+
+    '<button type="button" class="btn'+(a?'':' primary')+' wide" data-act="rl" data-k="aller" data-v="0">'+I.pen+'Modifier la fiche</button>'+(f.env&&a?'<button type="button" class="btn wide" data-act="rl" data-k="retour" data-id="'+f.id+'">Noter le retour</button>':'')+'</div>'+
+    (a?'':rlOffre('apercu'));
+}
+function rlMessage(f){return 'Voici la fiche pour le relais. Elle se lit en 1 minute.';}
+function rlVueEnvoi(){
+  const f=rlFiche(state.rl.id);if(!f||!rlOuvert())return rlVueApercu();const url=rlLien(f);
+  return '<div class="f-tete"><span class="label">Envoyer</span><h1 class="t1">'+esc(f.chez?'Envoyer la fiche à '+f.chez:'Envoyer la fiche')+'</h1></div>'+
+    '<ul class="list rl-sait"><li>La fiche est écrite dans le lien lui-même. Aucun serveur ne la reçoit, et le site ne la lit pas.</li><li>La personne l’ouvre sur son téléphone, sans compte et sans rien acheter.</li><li>Toute personne à qui ce lien est transmis peut lire la fiche. Envoyez-le comme vous enverriez une photo de famille.</li></ul>'+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="partage">'+I.share+'Envoyer le lien</button><button type="button" class="btn wide" data-act="rl" data-k="texte">'+I.mail+'Envoyer le texte, sans lien</button><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button></div>'+
+    '<div class="field"><label for="rl-lien">Le lien de la fiche, à copier</label><input type="text" id="rl-lien" readonly value="'+esc(url)+'"><p class="hint">Dans WhatsApp ou dans un message, l’aperçu du lien ne montre rien de votre fiche.</p></div>'+
+    '<p class="lecture-l">Quand le relais est passé, revenez ici. Une seule question vous attend, et le prochain relais sera prêt plus vite.</p>'+
+    '<div class="rl-recap"><span class="label">Ce qui est envoyé</span>'+rlFicheHtml(f)+'</div>';
+}
+function rlVueRetour(){
+  const f=rlFiche(state.rl.id);if(!f)return rlVueAccueil();
+  return '<div class="f-tete"><span class="label">Au retour</span><h1 class="t1">Qu’est-ce qui a bien marché et que vous aimeriez garder pour la prochaine fois ?</h1><p class="sub">C’est la seule question. Quelques mots suffisent, les vôtres ou ceux de la personne qui a pris le relais.</p></div>'+
+    '<div class="field"><label for="rl-retour" class="sr">Votre réponse</label><textarea id="rl-retour" data-rl="retour" rows="5" maxlength="'+RL_LIM.retour+'" placeholder="Par exemple, le programme dit le matin a bien aidé.">'+esc(f.retour||'')+'</textarea></div>'+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="retour-ok">'+I.check+'Garder pour la prochaine fois</button><button type="button" class="btn ghost wide" data-act="rl" data-k="accueil">Plus tard</button></div>'+
+    '<p class="hint">Votre réponse reste sur votre appareil. Au prochain relais, elle vous sera proposée en un geste.</p>';
+}
+/* ---------- préparer une réunion ---------- */
+function rlReuTitre(x){const a=(RL_AVEC.find(y=>y[0]===x.avec)||RL_AVEC[3])[1];return 'Réunion avec '+a.charAt(0).toLowerCase()+a.slice(1);}
+/* Ce que le parent a déjà écrit et qui peut servir : les phrases de ses fiches, ses retours, et son journal « avant, pendant, après ». */
+function rlObsDispo(){
+  const out=[],vu={};const add=(t,d)=>{t=clean(t,RL_LIM.l);if(t&&!vu[t]){vu[t]=1;out.push({t:t,d:d});}};
+  rel().fiches.slice().reverse().forEach(f=>{if(f.retour)add(f.retour,'Votre retour du '+fmtDate(f.retourLe||f.m||todayIso()));(f.trois||[]).forEach(x=>add(x,'Vos 3 repères'));rlToutes(f).forEach(x=>add(x,'Votre fiche de relais'));});
+  (D().abc||[]).slice(-5).reverse().forEach(x=>add([x.a?'Avant, '+x.a:'',x.b?'Pendant, '+x.b:'',x.c?'Après, '+x.c:''].filter(Boolean).join('. '),'Votre journal du '+fmtDate(x.date)));
+  return out.slice(0,18);
+}
+function rlVueReunion(){
+  const x=rlReu(state.rl.r);if(!x)return rlVueAccueil();const p=Math.max(0,Math.min(3,state.rl.p||0));
+  const der=rel().fiches[rel().fiches.length-1];const P=(der&&der.qui)||'votre enfant';
+  let c='<div class="f-tete"><span class="label">Préparer une réunion</span>';
+  const suite=(txt,k)=>'<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="'+(k||'rpas')+'" data-v="1">'+txt+' '+I.chev+'</button>'+(p>0?'<button type="button" class="btn ghost wide" data-act="rl" data-k="rpas" data-v="-1">Revenir</button>':'')+'</div>';
+  if(p===0){
+    c+='<h1 class="t1">Avec qui avez-vous rendez-vous ?</h1><p class="sub">En 4 temps, vous arrivez avec vos observations, votre demande et vos 3 priorités sous les yeux.</p></div>'+rlFil(RL_RPAS,p,'Les 4 temps de la préparation')+
+      '<div class="chips" role="group" aria-label="Avec qui">'+RL_AVEC.map(a=>'<button type="button" class="chip" data-act="rl" data-k="avec" data-v="'+a[0]+'" aria-pressed="'+(x.avec===a[0])+'">'+a[1]+'</button>').join('')+'</div>'+
+      rlChamp('rl-rq','reu.quand','Quand ?',x.quand,'Par exemple, jeudi 3 décembre à 16 heures',RL_LIM.quand,'Vous pouvez laisser cette ligne vide.')+suite('Continuer');
+  }else if(p===1){
+    const D0=rlObsDispo();const S=x.obs||[];
+    c+='<h1 class="t1">Ce que vous avez observé</h1><p class="sub">Ce que vous avez déjà écrit peut servir. Touchez les phrases à emporter, '+RL_LIM.obs+' au plus.</p></div>'+rlFil(RL_RPAS,p,'Les 4 temps de la préparation')+
+      (D0.length?'<div class="rl-obs" role="group" aria-label="Vos phrases déjà écrites">'+D0.map(o=>'<button type="button" class="rl-m" data-act="rl" data-k="obs" data-t="'+esc(o.t)+'" aria-pressed="'+(S.indexOf(o.t)>=0)+'"><span>'+esc(o.t)+'</span><small>'+esc(o.d)+'</small></button>').join('')+'</div>':'<p class="lecture-l">Vous n’avez encore rien écrit dans vos fiches ni dans votre journal. Vous pouvez noter une observation ci-dessous.</p>')+
+      '<div class="field"><label for="rl-ro">Une autre observation</label><textarea id="rl-ro" data-rl="reu.plus" rows="3" maxlength="'+RL_LIM.l+'" placeholder="Un fait précis, avec le jour si vous l’avez.">'+esc(x.plus||'')+'</textarea></div>'+suite('Continuer');
+  }else if(p===2){
+    c+='<h1 class="t1">Ce que vous demandez</h1><p class="sub">Une demande claire aide tout le monde. Une ou deux phrases suffisent.</p></div>'+rlFil(RL_RPAS,p,'Les 4 temps de la préparation')+
+      '<div class="field"><label for="rl-rd">Ma demande</label><textarea id="rl-rd" data-rl="reu.dem" rows="4" maxlength="'+RL_LIM.dem+'">'+esc(x.dem||'')+'</textarea></div>'+
+      (state.rl.mots?'<div class="rl-modeles" role="group" aria-label="Débuts de phrase"><span class="label">Commencer par</span>'+RL_MOTS_ECRIRE.map((m,i)=>'<button type="button" class="rl-m" data-act="rl" data-k="mot" data-i="'+i+'">'+esc(m.replace('{P}',P))+'…</button>').join('')+'</div>':'<button type="button" class="btn rl-perds" data-act="rl" data-k="mots">'+I.bulb+'Je perds mes mots</button>')+suite('Continuer');
+  }else{
+    const Pr=[0,1,2].map(i=>(x.pri||[])[i]||'');
+    c+='<h1 class="t1">Vos 3 priorités</h1><p class="sub">Si la réunion part dans tous les sens, ce sont elles que vous gardez sous les yeux.</p></div>'+rlFil(RL_RPAS,p,'Les 4 temps de la préparation')+
+      '<ol class="rl-3">'+Pr.map((v,i)=>'<li><textarea rows="2" maxlength="'+RL_LIM.pri+'" data-rl="reu.pri.'+i+'" aria-label="Priorité '+(i+1)+'" placeholder="'+['Ce qui doit absolument être dit','Ce que vous voulez obtenir','Ce qui peut attendre la prochaine fois'][i]+'">'+esc(v)+'</textarea></li>').join('')+'</ol>'+suite('Voir ma feuille','feuille-ok');
+  }
+  return c;
+}
+function rlVueFeuille(){
+  const x=rlReu(state.rl.r);if(!x)return rlVueAccueil();const Pr=(x.pri||[]).map(v=>clean(v,RL_LIM.pri)).filter(Boolean);const O=(x.obs||[]).concat(x.plus?[x.plus]:[]).map(v=>clean(v,RL_LIM.l)).filter(Boolean);
+  return '<div class="f-tete"><span class="label">'+esc(rlReuTitre(x))+(x.quand?', '+esc(x.quand):'')+'</span><h1 class="t1">Ma feuille pour la réunion</h1></div>'+
+    '<article class="rl-fiche rl-reu"><section class="rl-trois"><h2 class="rl-h">Mes 3 priorités</h2>'+(Pr.length?'<ol>'+Pr.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ol>':'<p class="rl-vide">Vos priorités viendront ici.</p>')+'</section>'+
+    (x.dem?'<section class="rl-moi"><h2 class="rl-h">Ma demande</h2><p>'+nl2(clean(x.dem,RL_LIM.dem))+'</p></section>':'')+
+    (O.length?'<section class="rl-s"><h2 class="rl-h">Ce que j’ai observé</h2><ul>'+O.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></section>':'')+'</article>'+
+    (state.rl.mots?'<section class="rl-carte rl-dire" aria-labelledby="rl-dire-t"><h2 id="rl-dire-t">Des phrases à dire, telles quelles</h2><ul class="list">'+RL_MOTS_DIRE.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul><button type="button" class="lien-f" data-act="rl" data-k="mots">Refermer</button></section>':'<button type="button" class="btn primary wide rl-perds" data-act="rl" data-k="mots">'+I.bulb+'Je perds mes mots</button>')+
+    '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer ma feuille</button><button type="button" class="btn wide" data-act="rl" data-k="reu-modif">'+I.pen+'Modifier</button><button type="button" class="btn ghost wide" data-act="rl" data-k="accueil">Revenir à mes relais</button></div>'+
+    '<p class="hint">Cette feuille reste sur votre appareil. Vous pouvez la garder ouverte pendant la réunion.</p>';
+}
+/* ---------- sauvegarder et restaurer ---------- */
+function rlVueSauver(){
+  const r=state.rl;
+  return '<div class="f-tete"><span class="label">Vos écrits vous appartiennent</span><h1 class="t1">Sauvegarder ou restaurer mes écrits</h1><p class="sub">Vos fiches, votre carnet et vos dépôts vivent sur cet appareil. Une sauvegarde vous permet de les garder, ou de les emporter sur un autre appareil.</p></div>'+
+    '<section class="rl-carte"><h2>Sauvegarder</h2><p>Vous recevez un fichier à garder où vous voulez. Il contient tout ce que vous avez écrit ici, et lui seul.</p><button type="button" class="btn primary" data-act="rl" data-k="sauve">'+I.download+'Sauvegarder dans un fichier</button></section>'+
+    '<section class="rl-carte"><h2>Restaurer</h2><p>Vous choisissez un fichier de sauvegarde. Son contenu remplace alors ce qui se trouve sur cet appareil.</p>'+
+      (r.attente?'<div class="confirm" role="alert"><span>Remplacer ce que contient cet appareil par la sauvegarde du '+esc(fmtDate(r.attente.le))+' ?</span><div class="row"><button type="button" class="btn danger" data-act="rl" data-k="restaure-oui">Oui, remplacer</button><button type="button" class="btn" data-act="rl" data-k="restaure-non">Annuler</button></div></div>':
+      '<label class="btn rl-fichier" for="rl-f">'+I.note+'Choisir un fichier de sauvegarde</label><input type="file" id="rl-f" class="sr" data-rlf="1" accept="application/json,.json">')+'</section>'+
+    '<p class="hint">Rien n’est envoyé pendant ces 2 opérations. Le fichier passe de votre appareil à votre appareil.</p>';
+}
+function rlVueLu(){
+  const f=state.rl.lu;
+  if(!f)return '<div class="f-tete"><span class="label">Une fiche de relais</span><h1 class="t1">Cette fiche ne s’ouvre pas</h1><p class="sub">Le lien semble incomplet. Demandez à la personne qui vous l’a envoyé de vous le renvoyer en entier.</p></div><div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche</button></div>';
+  return '<p class="label rl-recu-l">Une fiche de relais, écrite par une famille</p>'+rlFicheHtml(f,{cls:'rl-recu',h1:true})+
+    '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button></div>'+
+    '<p class="hint">Cette fiche est contenue dans le lien que vous avez reçu. Le site ne l’a ni lue ni enregistrée. Gardez ce lien pour la retrouver.</p>'+
+    '<section class="rl-carte"><h2>D’où vient cette fiche ?</h2><p>Elle a été préparée avec « Passer le relais », un outil de Parent Écouté, Parent Éclairé, un espace pour les parents d’une personne en situation de handicap.</p><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir comment une famille prépare sa fiche</button></section>';
+}
+function viewRelais(){
+  const e=state.rl.e||'accueil';
+  const c=e==='lu'?rlVueLu():e==='exemple'?rlVueExemple():e==='prep'?rlVuePrep():e==='apercu'?rlVueApercu():e==='envoi'?rlVueEnvoi():e==='retour'?rlVueRetour():e==='reunion'?rlVueReunion():e==='feuille'?rlVueFeuille():e==='sauver'?rlVueSauver():rlVueAccueil();
+  return '<main id="main" tabindex="-1" class="view v-feuille v-relais rl-e-'+e+'"><div class="feuille">'+c+'</div></main>';
+}
+/* La porte de l'outil, posée dans la boîte à outils et sur « Aujourd'hui » quand un retour est attendu. */
+function rlPorteHtml(){
+  const F=rel().fiches;const attente=rlOuvert()?F.slice().reverse().find(f=>f.env&&!f.retour):null;
+  return '<button type="button" class="sit rl-porte" data-act="rl" data-k="ouvre"><span class="e">'+I.hand+'</span><span class="tx"><b>Passer le relais</b><span>'+(attente?'Le relais est passé ? Une seule question vous attend.':F.length?'Vos fiches, et le prochain relais en quelques gestes':'Une page pour la personne qui garde votre enfant')+'</span></span><span class="chev">'+I.chev+'</span></button>';
+}
+/* Sur la vitrine : les 3 repères d'une fiche d'exemple, pour montrer le résultat avant tout. */
+function rlVitrineHtml(){
+  const f=RL_EX.g;
+  return '<div class="rl-mini" aria-label="Le début d’une fiche d’exemple"><span class="label">'+esc(rlTitre(f))+', '+esc(f.quand)+'</span><b>Si tu ne lis que trois choses</b><ol>'+f.trois.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></div>'+
+    '<div class="acc-relais-b"><button type="button" class="btn" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button><span class="prix">49 CHF, une seule fois</span></div>';
+}
+
+/* ---------- les gestes ---------- */
+let rlT=null;
+function rlPose(f,ch,v){
+  const p=ch.split('.');
+  if(p[0]==='s'){const L=rlLignes(f,p[1]);L[Number(p[2])]=v;}
+  else if(p[0]==='trois'){if(!Array.isArray(f.trois))f.trois=['','',''];f.trois[Number(p[1])]=v;}
+  else if(p[0]==='moi'){if(!Array.isArray(f.moi))f.moi=[];f.moi[Number(p[1])]=v;}
+  else if(p[0]==='tel'){if(!Array.isArray(f.tel))f.tel=[];const i=Number(p[1]);if(!f.tel[i])f.tel[i]={n:'',t:''};f.tel[i][p[2]==='t'?'t':'n']=v;}
+  else if(p[0]==='qui'||p[0]==='chez'||p[0]==='quand'||p[0]==='retour')f[p[0]]=v;
+}
+/* Chaque champ de l'outil se garde tout seul pendant qu'on écrit. */
+function rlSaisie(el){
+  const ch=el.dataset.rl;if(!ch)return;const v=String(el.value);
+  if(ch.indexOf('reu.')===0){const x=rlReu(state.rl.r);if(!x)return;const p=ch.split('.');
+    if(p[1]==='pri'){if(!Array.isArray(x.pri))x.pri=['','',''];x.pri[Number(p[2])]=v.slice(0,RL_LIM.pri);}
+    else if(p[1]==='dem')x.dem=v.slice(0,RL_LIM.dem);else if(p[1]==='plus')x.plus=v.slice(0,RL_LIM.l);else if(p[1]==='quand')x.quand=v.slice(0,RL_LIM.quand);}
+  else{const f=rlFiche(state.rl.id);if(!f)return;
+    const lim=ch==='qui'?RL_LIM.nom:ch==='chez'?RL_LIM.chez:ch==='quand'?RL_LIM.quand:ch==='retour'?RL_LIM.retour:ch.indexOf('tel')===0?RL_LIM.tel:RL_LIM.l;
+    rlPose(f,ch,v.slice(0,lim));if(ch!=='retour')f.m=todayIso();}
+  clearTimeout(rlT);rlT=setTimeout(save,400);
+}
+function rlCapture(){try{document.querySelectorAll('#app [data-rl]').forEach(el=>{if(el.tagName==='TEXTAREA'||el.tagName==='INPUT')rlSaisie(el);});}catch(e){}clearTimeout(rlT);}
+function rlRange(f){RL_SEC.forEach(S=>{if(f.s&&Array.isArray(f.s[S[0]]))f.s[S[0]]=f.s[S[0]].filter(x=>clean(x,RL_LIM.l));});if(Array.isArray(f.moi))f.moi=f.moi.filter(x=>clean(x,RL_LIM.l));if(Array.isArray(f.tel)){f.tel=f.tel.filter(x=>x&&(clean(x.n,9)||clean(x.t,9)));if(!f.tel.length)f.tel=[{n:'',t:''}];}}
+async function rlPartage(f,texte){
+  const url=rlLien(f);const corps=texte?rlTexte(f):rlMessage(f);
+  const fait=()=>{f.env=todayIso();save();};
+  if(navigator.share){try{await navigator.share(texte?{title:rlTitre(f),text:corps}:{title:rlTitre(f),text:corps,url:url});fait();render();return;}catch(e){if(e&&e.name==='AbortError')return;}}
+  try{await navigator.clipboard.writeText(texte?corps:url);fait();render();toast(texte?'Le texte de la fiche est copié. Vous pouvez le coller dans un message.':'Le lien de la fiche est copié. Vous pouvez le coller dans un message.');return;}catch(e){}
+  fait();render();const c=document.getElementById('rl-lien');if(c){try{c.focus();c.select();}catch(e){}}
+  toast('Le lien est prêt à être copié, juste en dessous.');
+}
+function rlSauve(){
+  const o={app:'parent-ecoute',v:1,le:todayIso(),donnees:JSON.parse(JSON.stringify(D()))};const nom='parent-ecoute-mes-ecrits-'+todayIso()+'.json';const txt=JSON.stringify(o);
+  try{const b=new Blob([txt],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=nom;a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{try{URL.revokeObjectURL(u);a.remove();}catch(e){}},4000);
+    const c=com();c.sv=todayIso();save();toast('Votre sauvegarde est prête. Elle s’appelle '+nom+'.');}catch(e){toast('La sauvegarde n’a pas pu être créée sur cet appareil.');}
+}
+/* Le fichier choisi est lu sur l'appareil. Rien n'est remplacé avant que le parent ait dit oui. */
+function rlFichier(el){
+  const file=el.files&&el.files[0];if(!file)return;
+  if(file.size>4000000){toast('Ce fichier est trop gros pour être une sauvegarde de cet espace.');el.value='';return;}
+  const rd=new FileReader();
+  rd.onload=()=>{let o=null;try{o=JSON.parse(String(rd.result));}catch(e){}
+    if(!o||o.app!=='parent-ecoute'||!o.donnees||typeof o.donnees!=='object'||Array.isArray(o.donnees)){toast('Ce fichier n’est pas une sauvegarde de cet espace.');el.value='';return;}
+    state.rl.attente={le:/^\d{4}-\d\d-\d\d$/.test(o.le)?o.le:todayIso(),donnees:o.donnees};render();};
+  rd.onerror=()=>{toast('Ce fichier n’a pas pu être lu.');};
+  rd.readAsText(file);
+}
+function rlAct(d){
+  const r=state.rl,R=rel();rlCapture();let f=rlFiche(r.id);
+  const versOutil=()=>{if(state.view!=='relais')nav('relais');};
+  if(rlOuvert())usage('relais');
+  switch(d.k){
+    case 'ouvre':r.e='accueil';r.sec='';r.mots=false;versOutil();break;
+    case 'accueil':r.e='accueil';r.sec='';r.mots=false;r.attente=null;break;
+    case 'exemple':r.e='exemple';if(d.v&&RL_EX[d.v])r.ex=d.v;versOutil();break;
+    case 'ex':if(RL_EX[d.v])r.ex=d.v;break;
+    case 'nouveau':{if(R.fiches.length){if(rlOuvert())return rlAct({k:'suivant'});r.id=R.fiches[0].id;}else{entrer('relais');const n=rlVide();R.fiches.push(n);r.id=n.id;save();}r.e='prep';r.p=0;r.sec='';versOutil();break;}
+    case 'suivant':{if(!rlOuvert()){r.e='accueil';toast('Repartir de votre dernière fiche fait partie de l’outil.');break;}
+      const der=R.fiches[R.fiches.length-1];const n=rlVide();if(der){const c=JSON.parse(JSON.stringify(rlPropre(der)));n.qui=c.qui;n.chez=c.chez;n.tu=c.tu;n.trois=[0,1,2].map(i=>c.trois[i]||'');n.moi=c.moi;n.s=c.s;n.tel=c.tel.length?c.tel:[{n:'',t:''}];n.garde=clean(der.retour,RL_LIM.retour);}
+      R.fiches.push(n);r.id=n.id;r.e='prep';r.p=0;r.sec='';save();versOutil();break;}
+    case 'ouvrir':{const x=rlFiche(d.id);if(!x)break;r.id=x.id;r.e='apercu';versOutil();break;}
+    case 'tu':if(f){f.tu=d.v!=='0';save();}break;
+    case 'pas':{if(!f)break;const s=Number(d.v)||0;
+      if(r.p===0&&s>0&&!clean(f.qui,RL_LIM.nom)){fieldErr('rl-qui','Écrivez son prénom, ou simplement « notre fils » ou « ma fille ».');return false;}
+      rlRange(f);r.p=Math.max(0,Math.min(4,(r.p||0)+s));r.sec='';save();break;}
+    case 'aller':if(f){rlRange(f);r.e='prep';r.p=Math.max(0,Math.min(4,Number(d.v)||0));r.sec='';save();}break;
+    case 'idees':r.sec=d.s;break;
+    case 'modele':{if(!f)break;const S=RL_SEC.find(x=>x[0]===d.s);if(!S)break;const L=rlLignes(f,S[0]);if(L.length<RL_LIM.lignes)L.push(rlModele(S[3][Number(d.i)]||'',f));r.sec='';f.m=todayIso();save();break;}
+    case 'vierge':{if(!f)break;const L=rlLignes(f,d.s);if(L.length<RL_LIM.lignes)L.push('');r.sec='';r.foc='s.'+d.s+'.'+(L.length-1);break;}
+    case 'ote':if(f){rlLignes(f,d.s).splice(Number(d.i),1);f.m=todayIso();save();}break;
+    case 'pique':{if(!f)break;if(!Array.isArray(f.trois))f.trois=['','',''];const i=[0,1,2].find(k=>!clean(f.trois[k],9));if(i===undefined){toast('Vos 3 repères sont déjà choisis. Videz-en un pour le remplacer.');return false;}f.trois[i]=clean(d.t,RL_LIM.l);f.m=todayIso();save();break;}
+    case 'moi':{if(!f)break;if(!Array.isArray(f.moi))f.moi=[];if(f.moi.length<RL_LIM.moi){f.moi.push(RL_MOI[Number(d.i)]+' ');r.foc='moi.'+(f.moi.length-1);}break;}
+    case 'ote-moi':if(f&&Array.isArray(f.moi)){f.moi.splice(Number(d.i),1);save();}break;
+    case 'tel-plus':if(f){if(!Array.isArray(f.tel))f.tel=[];if(f.tel.length<3)f.tel.push({n:'',t:''});}break;
+    case 'garde':{if(!f||!f.garde)break;const L=rlLignes(f,'aide');const t=clean(f.garde,RL_LIM.l);if(L.length<RL_LIM.lignes&&L.indexOf(t)<0)L.push(t);f.garde='';save();toast('C’est ajouté à « Ce qui aide ».');break;}
+    case 'apercu':if(f){rlRange(f);r.e='apercu';save();}break;
+    case 'reprise':r.e=f?'apercu':'accueil';versOutil();break;
+    case 'envoi':if(!f)break;if(!rlOuvert()){r.e='apercu';break;}if((f.trois||[]).filter(x=>clean(x,9)).length<1){toast('Choisissez au moins un de vos 3 repères avant d’envoyer.');return false;}r.e='envoi';break;
+    case 'partage':if(f&&rlOuvert())rlPartage(f,false);return false;
+    case 'texte':if(f&&rlOuvert())rlPartage(f,true);return false;
+    case 'imprimer':if(r.e!=='exemple'&&r.e!=='lu'&&!rlOuvert()){toast('Imprimer fait partie de l’outil.');return false;}rlAvantImpression();try{window.print();}catch(e){}return false;
+    case 'retour':{const x=rlFiche(d.id)||f;if(!x||!rlOuvert())break;r.id=x.id;r.e='retour';versOutil();break;}
+    case 'retour-ok':if(f){f.retour=clean(f.retour,RL_LIM.retour);if(!f.retour){fieldErr('rl-retour','Écrivez quelques mots, ou touchez « Plus tard ».');return false;}f.retourLe=todayIso();save();r.e='accueil';toast('C’est gardé. Au prochain relais, vous le retrouverez.');}break;
+    case 'reunion':{if(!rlOuvert()){r.e='accueil';toast('Préparer une réunion fait partie de l’outil.');break;}const x={id:rlId(),c:todayIso(),avec:'ecole',quand:'',obs:[],plus:'',dem:'',pri:['','','']};R.reunions.push(x);r.r=x.id;r.e='reunion';r.p=0;r.mots=false;save();versOutil();break;}
+    case 'avec':{const x=rlReu(r.r);if(x&&RL_AVEC.some(a=>a[0]===d.v)){x.avec=d.v;save();}break;}
+    case 'rpas':r.p=Math.max(0,Math.min(3,(r.p||0)+(Number(d.v)||0)));r.mots=false;save();break;
+    case 'obs':{const x=rlReu(r.r);if(!x)break;if(!Array.isArray(x.obs))x.obs=[];const t=clean(d.t,RL_LIM.l);const i=x.obs.indexOf(t);if(i>=0)x.obs.splice(i,1);else if(x.obs.length<RL_LIM.obs)x.obs.push(t);else{toast(RL_LIM.obs+' observations, c’est déjà beaucoup pour une réunion.');return false;}save();break;}
+    case 'mots':r.mots=!r.mots;break;
+    case 'mot':{const x=rlReu(r.r);if(!x)break;const der=R.fiches[R.fiches.length-1];const m=RL_MOTS_ECRIRE[Number(d.i)]||'';x.dem=clean((x.dem?x.dem+'\n':'')+m.replace('{P}',(der&&der.qui)||'mon enfant')+' ',RL_LIM.dem)+' ';r.mots=false;r.foc='reu.dem';save();break;}
+    case 'feuille-ok':r.e='feuille';r.mots=false;save();break;
+    case 'feuille':{const x=rlReu(d.id);if(!x)break;r.r=x.id;r.e='feuille';r.mots=false;versOutil();break;}
+    case 'reu-modif':r.e='reunion';r.p=0;r.mots=false;break;
+    case 'sauver':r.e='sauver';r.attente=null;versOutil();break;
+    case 'sauve':rlSauve();return false;
+    case 'restaure-non':r.attente=null;break;
+    case 'restaure-oui':{if(!r.attente)break;const dn=r.attente.donnees;state.data=migre(Object.assign(JSON.parse(JSON.stringify(DEF)),dn));state.data.onboarded=true;if(!state.data.start)state.data.start=todayIso();save();r.attente=null;r.e='accueil';r.id=null;r.r=null;toast('Vos écrits sont restaurés sur cet appareil.');break;}
+    default:return false;
+  }
+  return true;
+}
+/* Après un nouveau rendu, le curseur va dans la ligne que l'on vient d'ajouter. */
+function rlApres(){const ch=state.rl.foc;if(!ch)return;state.rl.foc='';try{const el=document.querySelector('#app [data-rl="'+ch+'"]');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n);}}catch(e){}}
+/* Sur « Aujourd'hui », seulement quand un relais envoyé attend son retour. */
+function rlRappelHtml(){if(!rlOuvert())return '';const f=rel().fiches.slice().reverse().find(x=>x.env&&!x.retour&&x.env!==todayIso());if(!f)return '';
+  return '<div class="card rl-rappel reveal d2"><span class="label">Passer le relais</span><p class="rg-t">'+esc(rlTitre(f))+(f.chez?', pour '+esc(f.chez):'')+'. Le relais est passé ?</p><button type="button" class="btn primary" data-act="rl" data-k="retour" data-id="'+f.id+'">Répondre à une seule question</button></div>';}
 
 /* ---------- boîte à outils ---------- */
 function viewKit(){
@@ -2829,8 +3330,8 @@ function viewSit(){
   const pr=SITS.filter(x=>x.th===s.th&&x.id!==s.id).slice(0,3);
   const pub=!D().onboarded;
   /* Le lien envoyé est l'adresse publique de la fiche, et rien d'autre. */
-  const versAp=s.id==='crise'?'<div class="vers-apercu"><h2>Et vous, quand la vague monte ?</h2><p>Une étape du parcours vous aide à traverser ce moment sans rien casser. Vous pouvez l’essayer maintenant, en 3 minutes.</p><button type="button" class="btn" data-act="apercu">'+I.path+'Essayer cette étape</button></div>':'';
-  const part=SITE?'<div class="partage"><button type="button" class="btn" data-act="partager" data-id="'+s.id+'">'+I.share+'Envoyer cette fiche</button><p class="hint">Le lien mène tout droit à cette fiche, et il ne contient rien de vous.</p>'+(state.lien?'<div class="field"><label for="lien">Le lien de cette fiche, à copier</label><input type="text" id="lien" readonly value="'+esc(state.lien)+'"></div>':'')+'</div>':'';
+  const versAp=suiteFiche(s);
+  const part=SITE?'<div class="partage"><button type="button" class="btn" data-act="partager" data-id="'+s.id+'">'+I.share+'Envoyer cette fiche</button><a class="btn wa" href="'+esc(waUrl(s))+'" target="_blank" rel="noopener">Envoyer par WhatsApp</a><p class="hint">Le lien mène tout droit à cette fiche, et il ne contient rien de vous.</p>'+(state.lien?'<div class="field"><label for="lien">Le lien de cette fiche, à copier</label><input type="text" id="lien" readonly value="'+esc(state.lien)+'"></div>':'')+'</div>':'';
   /* La fiche elle-même se lit sur la feuille claire. Ce que l'on fait ensuite (essayer une étape, envoyer la fiche, déposer) reste au bord de l'eau. */
   return '<main id="main" tabindex="-1" class="view fiche"><div class="feuille f-fiche"><div class="couv"><span class="med'+(deuxImages(s.e)?' duo':'')+'" aria-hidden="true">'+s.e+'</span><span class="label">'+esc(liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])))+'</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">'+esc(s.s)+'</p></div>'+
     '<div class="card sec comp"><h2><span class="dot"></span>Ce qui se passe</h2><p>'+esc(s.comp)+'</p></div>'+
@@ -2847,7 +3348,7 @@ function kitTools(){
   const seg='<div class="chips scroll" role="group" aria-label="Outils">'+tabs.map(t=>'<button type="button" class="chip" data-act="tool" data-v="'+t[0]+'" aria-pressed="'+(state.tool===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
   let body='';
   if(state.tool==='timer')body=toolTimer();else if(state.tool==='ft')body=toolFT();else if(state.tool==='routine')body=toolRoutine();else if(state.tool==='abc')body=toolABC();else body=toolPhr();
-  return seg+body;
+  return rlPorteHtml()+seg+body;
 }
 function toolTimer(){const t=state.timer;const mins=[1,2,3,5,10,15];return '<div class="card green" style="align-items:center"><span class="label">Minuteur visuel</span><p class="hint" style="text-align:center">Votre enfant voit le temps qui reste. Vous pouvez lui dire « Quand le vert a disparu, on range ».</p><div class="timerwrap"><div class="ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" style="fill:none;stroke:var(--surface);stroke-width:12"/><circle id="arc" cx="60" cy="60" r="52" style="fill:none;stroke:var(--green);stroke-width:12;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:0"/></svg><div class="num" id="tnum">'+Math.floor(t.left/60)+':'+pad(t.left%60)+'</div></div><div class="bigrow">'+mins.map(m=>'<button type="button" class="btn small'+(t.total===m*60?' primary':'')+'" data-act="tset" data-m="'+m+'">'+m+' min</button>').join('')+'</div><div class="bigrow"><button type="button" class="btn primary" data-act="ttoggle">'+(t.running?I.stop+'Pause':I.timer+'Lancer')+'</button><button type="button" class="btn" data-act="treset">Remettre</button></div></div></div>';}
 function drawTimer(){const t=state.timer;const arc=document.getElementById('arc');const num=document.getElementById('tnum');if(!arc||!num)return;const frac=t.total?t.left/t.total:0;arc.style.strokeDashoffset=String(326.7*(1-frac));num.textContent=Math.floor(t.left/60)+':'+pad(t.left%60);arc.style.stroke=frac<.2?'var(--coral)':'var(--green)';}
@@ -2946,11 +3447,8 @@ function viewMe(){
   const nf=doneCount(),np=nbNotes(),nd=d.depots.length;const dep=d.start?dateLongue(d.start):'';
   /* Trois chiffres en haut : les étapes faites, les pages écrites, les dépôts. Chacun mène à son écran. */
   const trio='<div class="trio"><button type="button" data-act="go" data-view="parcours"><b>'+nf+'</b><span>étape'+(nf>1?'s':'')+' faite'+(nf>1?'s':'')+'</span></button><button type="button" data-act="go" data-view="carnet"><b>'+np+'</b><span>page'+(np>1?'s':'')+' écrite'+(np>1?'s':'')+'</span></button><button type="button" data-act="go" data-view="depots"><b>'+nd+'</b><span>dépôt'+(nd>1?'s':'')+'</span></button></div>';
-  return '<main id="main" tabindex="-1" class="view moi" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1" data-act="atelier">Moi</h1></div><p class="sub">'+(dep?'Vous avez commencé le '+esc(dep)+'. ':'')+'Vous retrouvez ici votre formule, vos dépôts, votre carnet, votre humeur et vos réglages.</p>'+
-    '<div class="duo"><div class="duo-a">'+trio+'<div class="card"><span class="label">Ma formule</span><div class="row" style="align-items:center;justify-content:space-between">'+badge()+'<span class="price" style="font-family:var(--font-display);font-size:22px">'+esc(T.p)+' CHF <small style="font-size:13px;color:var(--muted);font-family:var(--font-ui);font-weight:700">'+esc(T.per)+'</small></span></div>'+
-    (tier()==='free'?'<p class="hint">Vous avez la dose, la boîte à outils, le SOS, trois dépôts écoutés et la première étape. Il vous reste '+depotsLeft()+' dépôt'+(depotsLeft()>1?'s':'')+'.</p>':tier()==='parcours'?'<p class="hint">Vous avez les dépôts sans limite, la dose personnalisée, les 24 étapes, Mon évolution et le photolangage.</p>':'<p class="hint">Vous avez tout Le parcours, le mot d’Antonio chaque mois et deux questions par mois.</p>')+
-    '<button type="button" class="btn'+(tier()==='free'?' primary':'')+'" data-act="go" data-view="plans" style="align-self:flex-start">'+I.tag+(tier()==='free'?'Voir les formules':'Changer de formule')+'</button></div>'+
-    (can('antonio')?'<button type="button" class="sit" data-act="go" data-view="antonio"><span class="e">'+I.mail+'</span><span class="tx"><b>Mes échanges avec Antonio</b><span>'+(DEMO?'Démonstration avec un exemple de mot et de réponse':'Prochain mot le '+esc(nextLetterDate())+', il vous reste '+ql+' question'+(ql>1?'s':''))+'</span></span><span class="chev">'+I.chev+'</span></button>':'<button type="button" class="sit" data-act="upgrade" data-f="antonio"><span class="e">'+I.lock+'</span><span class="tx"><b>Avec Antonio</b><span>Un mot par mois et deux questions</span></span><span class="chev">'+I.chev+'</span></button>')+
+  return '<main id="main" tabindex="-1" class="view moi" style="padding-top:0"><div class="band thin bleed" style="background-image:url('+HERO+');background-position:right 70%"><h1 class="t1" data-act="atelier">Moi</h1></div><p class="sub">'+(dep?'Vous avez commencé le '+esc(dep)+'. ':'')+'Vous retrouvez ici vos achats, vos dépôts, votre carnet, votre humeur et vos réglages.</p>'+
+    '<div class="duo"><div class="duo-a">'+trio+achatsHtml()+rlPorteHtml()+
     '<button type="button" class="sit" data-act="go" data-view="final"><span class="e">'+I.path+'</span><span class="tx"><b>Mon chemin</b><span>Tout votre parcours sur une page, à garder ou à imprimer</span></span><span class="chev">'+I.chev+'</span></button>'+
     '</div><div class="duo-b">'+essaiCarte()+'<div class="card"><span class="label">Mon humeur, quatorze jours</span>'+moodDots()+'<p class="hint">Chaque carré représente un jour, du plus ancien au plus récent. Vos humeurs restent sur votre appareil.</p></div>'+
     '<div class="menu-list"><button type="button" data-act="fx" aria-pressed="'+(!d.fxOff)+'">'+I.sun2+'<span>Effets visuels</span><span class="state">'+(FX_RM&&FX_RM.matches?'Coupés par votre appareil':d.fxOff?'Désactivés':(fxOn()&&eauInit()===false?'Activés, sans l’eau':'Activés'))+'</span></button>'+(d.atelier?'<button type="button" data-act="tout" aria-pressed="'+(!!d.tout)+'">'+I.path+'<span>Tout voir, l’aperçu d’Antonio</span><span class="state">'+(d.tout?'Activé':'Désactivé')+'</span></button>':'')+'<button type="button" data-act="onboard">'+I.user+'<span>Personnaliser mon espace (prénom, âge, situation)</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="voix">'+I.question+'<span>Qui vous parle ici ?</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="data">'+I.download+'<span>Vos données et tout recommencer</span><span class="chev">'+I.chev+'</span></button><button type="button" data-act="go" data-view="about">'+I.info+'<span>L’histoire d’Antonio</span><span class="chev">'+I.chev+'</span></button>'+
@@ -2961,81 +3459,88 @@ function viewDepots(){
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Mes dépôts</h1><p class="sub">Vous retrouvez ici tout ce que vous avez déposé et ce que vous avez reçu en retour. Tout reste sur votre appareil.'+(can('antonio')?(DEMO?' Dans la version complète, Antonio ne lira que les dépôts cochés « Partager ». Dans cette version de test, rien ne lui est transmis.':' Seuls les dépôts cochés « Partager » sont lus par Antonio.'):'')+'</p></div>'+
     (list.length?'<div class="depots">'+list.map(x=>depotHtml(x,false)).join('')+'</div>':'<div class="card vide"><p>Vous n’avez encore rien déposé. Quand quelque chose pèse, vous pouvez l’écrire, et vous recevez en retour une question et une lumière.</p><button type="button" class="btn primary" data-act="porte" data-v="deposer" style="align-self:flex-start">'+I.drop+'Déposer ce qui pèse</button></div>')+'</main>';
 }
-/* ---------- formules ---------- */
-function cell(v){if(v===true)return '<td>'+I.check+'<span class="sr">inclus</span></td>';if(v===false)return '<td class="no"><span class="sr">non inclus</span></td>';return '<td class="tx">'+esc(v)+'</td>';}
-/* ---------- les formules, les aperçus et la commande ---------- */
-/* Tout ce qui touche à la vente tient ici, à l'écart du SOS, de la respiration et de l'écran « Déposer » :
-   la page des formules, l'aperçu du parcours (3 minutes, à partir de l'étape 7), l'aperçu d'un échange avec Antonio,
-   la commande en démonstration, « Me prévenir à l'ouverture », et les 3 repères commerciaux gardés sur l'appareil.
-   Rien n'est payé et rien n'est envoyé : il n'existe encore ni prestataire de paiement, ni compte, ni serveur. */
+/* ---------- les 3 offres, l'essai du parcours et la commande ---------- */
+/* Tout ce qui touche à la vente tient ici, à l'écart du SOS, de la respiration et de l'écran « Déposer ».
+   Découverte est gratuite. Le parcours s'achète une fois, 84 CHF en tout, payés en une fois ou en six fois. « Passer le relais » s'achète une fois, 49 CHF,
+   avec ou sans le parcours. Il n'y a pas d'abonnement, donc rien à arrêter.
+   Rien n'est payé et rien n'est envoyé : il n'existe encore ni prestataire de paiement, ni compte, ni serveur. La commande est une démonstration. */
 function com(){const d=D();if(!d.com||typeof d.com!=='object')d.com={};return d.com;}
-/* Les 3 repères commerciaux : un aperçu terminé, une formule choisie, un achat confirmé. Ils ne contiennent ni texte, ni humeur, ni situation.
-   Dans cette version, ils restent sur l'appareil. Le jour où un compteur sera branché, il ne recevra que le nom du repère et celui de la formule,
-   et seulement si le visiteur a dit oui à la mesure. */
-function repere(quoi,f){const c=com();const j=todayIso();
+/* Les 3 mesures prévues pour le lancement : un aperçu terminé, un achat par offre, et un retour sur l'outil acheté un autre jour.
+   Elles ne contiennent ni texte, ni humeur, ni situation. Dans cette version, elles restent sur l'appareil. Le jour où un compteur sera branché,
+   il ne recevra que le nom de la mesure et celui de l'offre, et seulement si le visiteur a dit oui à la mesure. */
+function repere(quoi,f,m){const c=com();const j=todayIso();
   if(quoi==='apercu'){if(!c.ap)c.ap=j;}
   else if(quoi==='choix')c.ch={f:f,d:j};
-  else if(quoi==='achat')c.ac={f:f,d:j,demo:true};
+  else if(quoi==='achat'){if(!c.ach||typeof c.ach!=='object')c.ach={};c.ach[f]={d:j,m:m||''};}
   save();}
+function usage(k){const c=com();if(!c.us||typeof c.us!=='object')c.us={};if(!Array.isArray(c.us[k]))c.us[k]=[];const a=c.us[k],j=todayIso();if(a.indexOf(j)<0&&a.length<2){a.push(j);save();}}
 function contact(){return String(CONTACT_R||'').split('').reverse().join('');}
 const F_TXT={
-  free:{b:'Recevoir une aide tout de suite.',
-    c:['Vous lisez la dose de lumière, chaque jour.','Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous ouvrez les '+SITS.length+' situations et tous les outils.','Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.','Vous faites la première étape du parcours et votre point de départ.'],
-    d:'Découverte est gratuite, sans limite de durée.'},
-  parcours:{b:'Avancer d’une semaine à l’autre.',
-    c:['Chaque semaine, une nouvelle étape s’ouvre. Il y en a 24.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.','Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'],
-    d:'Le parcours compte 24 étapes, une par semaine. Il faut donc environ 6 mois pour le suivre en entier.'},
-  antonio:{b:'Être accompagné par écrit, personnellement, par Antonio.',
-    c:['Vous avez tout Le parcours.','Chaque mois, Antonio vous écrit un mot personnel.','2 fois par mois, vous lui posez une question, et il vous répond par écrit dans les 48 heures.','Antonio lit seulement ce que vous choisissez de lui envoyer.'],
-    d:'Antonio ne pose pas de diagnostic et ne demande jamais le prénom de votre enfant.'}
+  free:{b:'Recevoir une aide tout de suite.',s:'Ce que vous pouvez faire gratuitement',
+    c:['Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous lisez la dose de lumière, chaque jour.','Vous ouvrez les '+SITS.length+' fiches pratiques et tous les outils.','Vous essayez une vraie étape du parcours, en 3 minutes.','Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.'],
+    d:'Découverte est gratuite, sans limite de durée et sans compte.'},
+  parcours:{b:'24 étapes guidées pour avancer d’une semaine à l’autre, pendant 6 mois.',s:'Ce que contient Le parcours',
+    c:['24 étapes guidées s’ouvrent une par une, chaque semaine.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.','Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'],
+    d:'Une fois acheté, le parcours reste ouvert sans limite de durée. Si vous vous absentez, rien ne s’accumule.'},
+  relais:{b:'Confier votre enfant à un proche, l’esprit plus léger.',s:'Ce que fait l’outil',
+    c:['Vous préparez une page pour la personne qui prend le relais, avec vos mots.','En tête, « Si tu ne lis que trois choses », que vous choisissez vous-même.','Votre proche ouvre la fiche sur son téléphone, sans compte et sans rien acheter.','Au retour, une seule question, et le prochain relais est prêt plus vite.','Vous préparez aussi une réunion avec l’école ou le foyer, avec « Je perds mes mots ».'],
+    d:'L’outil sert à toute la famille, sans abonnement et sans limite de fiches.'}
 };
-const PRIX=k=>TIERS[k].p+' CHF'+(k==='free'?'':' par mois');
+const PRIX=k=>k==='relais'?'49 CHF, une seule fois':k==='parcours'?'84 CHF en tout':'0 CHF';
 const DEMO_PAIE='Dans cette version d’essai, aucun montant réel n’est débité.';
-/* Un seul bouton par formule, qui dit ce qu'il fait. Choisir une formule payante ouvre la commande (en démonstration). */
-function formuleBouton(k,ou){
-  const t=tier(),name=TIERS[k].t,peek=!D().onboarded;
-  if(!peek&&t===k)return '<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'Votre formule</button>';
-  if(k==='free')return peek?'<button type="button" class="btn wide" data-act="entrer" data-v="today">Commencer gratuitement</button>':'<button type="button" class="btn wide" data-act="arret">Revenir à Découverte</button>';
-  return '<button type="button" class="btn primary wide" data-act="commande" data-v="'+k+'" data-de="'+(ou||'plans')+'">Choisir '+esc(name)+'</button>';
+const TOTAL_84='Total 84 CHF dans les deux cas. Sans supplément ni renouvellement automatique.';
+/* Les 6 dates d'un paiement en six fois : le jour de l'achat, puis le même jour des 5 mois suivants (ou le dernier jour du mois s'il est plus court). */
+function echeances(depuis){const p=String(depuis||todayIso()).split('-').map(Number);const out=[];for(let i=0;i<NB_ECH;i++){const y=p[0]+Math.floor((p[1]-1+i)/12),m=(p[1]-1+i)%12;const fin=new Date(y,m+1,0).getDate();out.push(y+'-'+pad(m+1)+'-'+pad(Math.min(p[2],fin)));}return out;}
+function echeancesHtml(depuis,payees){
+  const E=echeances(depuis);const n=payees||0;
+  return '<ol class="ech">'+E.map((d,i)=>'<li'+(i<n?' class="ech-ok"':'')+'><span>'+(i===0&&!n?'Aujourd’hui, le ':'Le ')+esc(dateLongue(d))+(i<n?', payée':'')+'</span><b>'+MENSU+' CHF</b></li>').join('')+'<li class="ech-total"><span>Total</span><b>84 CHF</b></li></ol>'+
+    '<p class="f-note">La dernière mensualité est celle du '+esc(dateLongue(E[NB_ECH-1]))+'. Après elle, plus rien n’est prélevé.</p>';
 }
-function formuleCarte(k){
-  const T=TIERS[k],X=F_TXT[k];
-  const plus=k==='parcours'?'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>':k==='antonio'?'<button type="button" class="lien-f" data-act="avec">'+I.mail+'Voir à quoi ressemble un échange</button>':'';
-  return '<section class="formule f-'+k+(k==='parcours'?' best':'')+'" aria-labelledby="f-'+k+'">'+
-    '<div class="f-haut"><div class="f-nom">'+(k==='parcours'?'<span class="pill sun">Recommandé</span>':'')+'<h2 id="f-'+k+'">'+esc(T.t)+'</h2></div><p class="f-prix"><b>'+T.p+' CHF</b> <small>'+(k==='free'?'sans limite de durée':'par mois')+'</small></p></div>'+
-    '<p class="f-benef">'+X.b+'</p>'+
-    formuleBouton(k,'plans')+
-    '<div class="f-concret"><h3>Concrètement</h3><ul>'+X.c.map(x=>'<li>'+x+'</li>').join('')+'</ul><p class="f-note">'+X.d+'</p></div>'+plus+'</section>';
+/* Les 2 façons de payer Le parcours, avec la même importance à l'écran. */
+function payerParcours(de){
+  if(can('parcours'))return '<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'Vous avez Le parcours</button>';
+  return '<div class="f-payer" role="group" aria-label="2 façons de payer Le parcours"><button type="button" class="btn primary f-mode" data-act="commande" data-v="parcours" data-m="une" data-de="'+de+'"><b>En une fois</b><span>84 CHF aujourd’hui</span></button><button type="button" class="btn primary f-mode" data-act="commande" data-v="parcours" data-m="six" data-de="'+de+'"><b>En six fois</b><span>14 CHF aujourd’hui, puis 5 mensualités de 14 CHF</span></button></div><p class="f-total">'+TOTAL_84+'</p>';
 }
 function viewPlans(){
-  const t=tier();
+  const peek=!D().onboarded;
+  let large=false;try{large=!!(window.matchMedia&&window.matchMedia('(min-width:900px)').matches);}catch(e){}
+  const carte=(k,nom,prix,petit,bouton,plus,best)=>{const X=F_TXT[k];
+    /* Sur un téléphone, on voit d'abord le bénéfice, le prix et le geste. Le détail se déplie. Sur un grand écran, il est ouvert. */
+    return '<section class="formule f-'+k+(best?' best':'')+'" aria-labelledby="f-'+k+'"><div class="f-haut"><div class="f-nom"><h2 id="f-'+k+'">'+nom+'</h2></div><p class="f-prix"><b>'+prix+'</b> <small>'+petit+'</small></p></div><p class="f-benef">'+X.b+'</p>'+bouton+plus+
+      '<details class="f-concret"'+(large?' open':'')+'><summary>'+X.s+'</summary><ul>'+X.c.map(x=>'<li>'+x+'</li>').join('')+'</ul><p class="f-note">'+X.d+'</p></details></section>';};
+  const bFree=peek?'<button type="button" class="btn wide" data-act="entrer" data-v="today">Commencer gratuitement</button>':'<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'C’est déjà à vous</button>';
+  const bRel=can('relais')?'<button type="button" class="btn wide" data-act="rl" data-k="ouvre">'+I.hand+'Ouvrir Passer le relais</button>':'<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="plans">Choisir Passer le relais</button>';
   return '<main id="main" tabindex="-1" class="view v-feuille"><div class="feuille">'+
-    '<div class="f-tete"><h1 class="t1">Les formules</h1><p class="sub">Voici ce que chaque formule vous permet de faire et de recevoir, concrètement.</p><p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></div>'+
-    '<div class="formules">'+formuleCarte('free')+formuleCarte('parcours')+formuleCarte('antonio')+'</div>'+
-    '<section class="f-regles"><h2>Durée, paiement et arrêt</h2><ul class="list">'+
+    '<div class="f-tete"><h1 class="t1">Les 3 offres</h1><p class="sub">Vous commencez gratuitement. Ensuite, vous payez une fois ce qui vous sert, sans abonnement.</p><p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></div>'+
+    '<div class="formules">'+
+      carte('free','Découverte','0 CHF','sans limite de durée',bFree,'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>',false)+
+      carte('parcours','Le parcours','84 CHF','en tout',payerParcours('plans'),'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape avant de choisir</button>',false)+
+      carte('relais','Passer le relais','49 CHF','une seule fois',bRel,'<button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button>',false)+
+    '</div>'+
+    '<section class="f-regles"><h2>Paiement, durée et ce que vous gardez</h2><ul class="list">'+
       '<li>Découverte est gratuite, sans limite de durée.</li>'+
-      '<li>Le parcours coûte 14 CHF par mois et Avec Antonio 49 CHF par mois. Ces prix sont ceux prévus pour la Suisse.</li>'+
-      '<li>Les formules sont sans engagement, et vous pouvez arrêter à tout moment.</li>'+
-      '<li>Si vous suivez Le parcours sans pause, ses 24 étapes demandent environ 6 mois, soit environ 84 CHF en tout.</li>'+
-      '<li>Si vous arrêtez, vous revenez à Découverte. Votre carnet et tout ce que vous avez écrit restent sur votre appareil.</li>'+
-    '</ul><p class="f-avant">Le moyen de paiement, le jour du prélèvement et les conditions de remboursement seront écrits ici et dans les conditions générales avant l’ouverture de la vente.</p></section>'+
-    '<details class="f-detail"><summary><span>Comparer les 3 formules, ligne par ligne</span>'+I.chev+'</summary><table class="cmp"><caption class="sr">Ce que comprend chaque formule</caption><thead><tr><th scope="col"><span class="sr">Ce qui est compris</span></th><th scope="col">Découverte<br>0</th><th scope="col" class="best">Parcours<br>14/mois</th><th scope="col">Antonio<br>49/mois</th></tr></thead><tbody>'+FEATURES.map(f=>'<tr><th scope="row">'+esc(f[0])+'</th>'+cell(f[1])+cell(f[2])+cell(f[3])+'</tr>').join('')+'</tbody></table></details>'+
-    '<section class="f-prevenir"><h2>Être prévenu de l’ouverture</h2><p>Les formules payantes ne sont pas encore ouvertes. Si vous le souhaitez, vous pouvez demander à être prévenu par e-mail du jour où une formule ouvrira, à son prix annoncé.</p>'+prevenirHtml('parcours')+prevenirHtml('antonio')+'<p class="hint">Le message part de votre propre messagerie. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p></section>'+
-    (t!=='free'&&D().onboarded?'<p class="f-arret"><button type="button" class="lien-f" data-act="arret">Arrêter ma formule et revenir à Découverte</button></p>':'')+
-    '<p class="hint">Dans cette version d’essai, choisir une formule ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis à Antonio.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>'+
+      '<li>Le parcours coûte 84 CHF en tout. Vous le payez en une fois, ou en 6 fois 14 CHF, une fois par mois. Dans les deux cas, vous achetez le parcours complet.</li>'+
+      '<li>Passer le relais coûte 49 CHF, une seule fois. Il s’achète avec ou sans le parcours.</li>'+
+      '<li>Il n’y a ni abonnement ni renouvellement automatique. Après le dernier paiement prévu, plus rien n’est prélevé.</li>'+
+      '<li>Ce que vous achetez reste ouvert sans limite de durée.</li>'+
+      '<li>Votre carnet, vos fiches et vos dépôts restent sur votre appareil. Vous pouvez les sauvegarder dans un fichier, les restaurer, et imprimer « Mon chemin » comme vos fiches de relais.</li>'+
+    '</ul><p class="f-avant">Le moyen de paiement, le remboursement et ce qui se passe si une mensualité ne peut pas être prélevée seront écrits ici et dans les conditions générales avant l’ouverture de la vente.</p></section>'+
+    '<section class="f-prevenir"><h2>Être prévenu de l’ouverture</h2><p>La vente n’est pas encore ouverte. Si vous le souhaitez, vous pouvez demander à être prévenu par e-mail du jour où une offre ouvrira, à son prix annoncé.</p>'+prevenirHtml('parcours')+prevenirHtml('relais')+'<p class="hint">Le message part de votre propre messagerie. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p></section>'+
+    '<div class="f-discret"><button type="button" class="lien-f" data-act="cadeau">'+I.star+'Offrir à un parent</button><button type="button" class="lien-f" data-act="retrouver">'+I.search+'Retrouver un achat</button></div>'+
+    '<p class="hint">Dans cette version d’essai, choisir une offre ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>'+
     '</div></main>';
 }
 /* « Me prévenir » est un vrai lien vers la messagerie du parent, avec un message écrit d'avance. C'est lui qui l'envoie : rien ne part sans lui. */
 function prevenirUrl(k){
-  const T=TIERS[k];
-  return 'mailto:'+contact()+'?subject='+encodeURIComponent('Me prévenir à l’ouverture de la formule '+T.t)+'&body='+encodeURIComponent('Bonjour,\n\nMerci de me prévenir par e-mail quand la formule « '+T.t+' » ouvrira, à '+PRIX(k)+'.\n\n');
+  const T=PRODUITS[k];
+  return 'mailto:'+contact()+'?subject='+encodeURIComponent('Me prévenir à l’ouverture de '+T.t)+'&body='+encodeURIComponent('Bonjour,\n\nMerci de me prévenir par e-mail quand « '+T.t+' » ouvrira, à '+PRIX(k)+'.\n\n');
 }
-function prevenirHtml(k){return CONTACT_R?'<a class="btn wide prevenir" href="'+esc(prevenirUrl(k))+'">'+I.mail+'<span>Me prévenir pour '+esc(TIERS[k].t)+', '+PRIX(k)+'</span></a>':'';}
+function prevenirHtml(k){return CONTACT_R?'<a class="btn wide prevenir" href="'+esc(prevenirUrl(k))+'">'+I.mail+'<span>Me prévenir pour '+esc(PRODUITS[k].t)+', '+PRIX(k)+'</span></a>':'';}
 
-/* ---------- l'aperçu du parcours : l'étape 7, en 3 minutes ---------- */
+/* ---------- l'essai du parcours : l'étape 7, en 3 minutes ---------- */
 /* Un chemin complet, fait de ce qui existe déjà : la vague de l'émotion (l'idée et le schéma de l'étape 7), un geste à choisir (son exercice),
    le carnet de route (la page de l'étape), puis ce que la semaine suivante apporte. Le parent repart avec quelque chose d'utile même s'il s'arrête là.
-   L'offre du Parcours n'arrive qu'au dernier écran. */
+   L'offre du Parcours n'arrive qu'au dernier écran. À sa visite suivante, « Aujourd'hui » lui montre son geste et « Reprendre ici ». */
 const AP_GESTES=[['souffle','Expirer lentement'],['sortir','Sortir un instant'],['marcher','Marcher 5 minutes'],['mains','Poser les mains à plat'],['phrase','Dire une phrase apprise par cœur']];
 const AP_TITRES=['La vague','Mon geste','Mon carnet','La semaine prochaine'];
 function apEtape(){return allSteps().find(x=>x.id==='reguler');}
@@ -3051,109 +3556,173 @@ function apGarde(){
   else d.notes[s.id]={t:texte,d:todayIso()};
   entrer('apercu');save();return true;
 }
+/* Le geste gardé pendant l'essai, pour « Aujourd'hui » : il attend le parent, avec un seul bouton pour reprendre. */
+function repriseHtml(){
+  const s=apEtape();if(!s||can('parcours'))return '';const nt=noteDe(s.id);if(!nt||!com().ap&&!nt.t)return '';
+  return '<div class="card reprise-geste reveal d2"><span class="label">Votre geste, quand la vague monte</span><p class="rg-t">'+nl2(String(nt.t).split('\n').slice(-2).join('\n'))+'</p><button type="button" class="btn primary" data-act="apercu-reprise">'+I.path+'Reprendre ici</button><p class="hint">Vous l’avez gardé le '+esc(fmtDate(nt.d))+', dans votre carnet.</p></div>';
+}
+/* Après une absence de 10 jours ou plus, un mot simple. Rien n'est en retard. */
+function revoila(){
+  if(state.abs===undefined){const d=D();const av=d.vu||'';const j=todayIso();state.abs=!!av&&av!==j&&(Date.parse(j)-Date.parse(av))/86400000>=10;if(d.onboarded&&av!==j){d.vu=j;save();}}
+  return state.abs?'<p class="revoila">Vous revoilà. Ici, rien n’est en retard, et ce que vous avez écrit vous attend.</p>':'';
+}
 function viewApercu(){
   const s=apEtape(),a=state.ap,k=Math.max(0,Math.min(3,a.k||0));const steps=allSteps();const sv=steps[s.idx+1];
-  const fil='<ol class="ap-fil" aria-label="Les 4 moments de cet aperçu">'+AP_TITRES.map((t,i)=>'<li'+(i===k?' aria-current="step"':'')+' class="'+(i<k?'ap-fait':i===k?'ap-ici':'')+'"><span>'+(i+1)+'</span><b>'+t+'</b></li>').join('')+'</ol>';
+  const fil='<ol class="ap-fil" aria-label="Les 4 moments de cet essai">'+AP_TITRES.map((t,i)=>'<li'+(i===k?' aria-current="step"':'')+' class="'+(i<k?'ap-fait':i===k?'ap-ici':'')+'"><span>'+(i+1)+'</span><b>'+t+'</b></li>').join('')+'</ol>';
   const idee=Array.isArray(s.idee)?s.idee:[s.idee];
   let corps='';
-  if(k===0)corps='<div class="f-tete"><span class="label">Un aperçu du parcours, en 3 minutes</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">Voici l’étape '+(s.idx+1)+' du parcours, en plus court. Vous repartez avec un geste à vous, même si vous vous arrêtez là.</p></div>'+fil+
+  if(k===0)corps='<div class="f-tete"><span class="label">Une vraie étape du parcours, en 3 minutes</span><h1 class="t1">'+esc(s.t)+'</h1><p class="sub">Voici l’étape '+(s.idx+1)+' du parcours, en plus court. Vous repartez avec un geste à vous, même si vous vous arrêtez là.</p></div>'+fil+
     '<p class="lecture-l">'+esc(idee[0])+'</p>'+
     schHtml('vague')+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="ap" data-k="1">Choisir mon geste '+I.chev+'</button></div>';
-  else if(k===1)corps='<div class="f-tete"><span class="label">Aperçu du parcours, étape '+(s.idx+1)+'</span><h1 class="t1">Votre geste, quand la vague monte</h1></div>'+fil+
+  else if(k===1)corps='<div class="f-tete"><span class="label">Essai du parcours, étape '+(s.idx+1)+'</span><h1 class="t1">Votre geste, quand la vague monte</h1></div>'+fil+
     '<div class="mots-a"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio</small></div></div><p>'+esc(Array.isArray(s.vecu)?s.vecu[0]:s.vecu)+'</p></div>'+
     '<p class="ap-consigne">'+esc(s.exo)+'</p>'+
     '<div class="ap-gestes" role="group" aria-label="Choisir un geste">'+AP_GESTES.map(g=>'<button type="button" class="ap-g" data-act="ap-g" data-v="'+g[0]+'" aria-pressed="'+(a.g===g[0])+'"><span class="resp-p" aria-hidden="true"></span><b>'+g[1]+'</b></button>').join('')+'</div>'+
     '<div class="field"><label for="ap-mot">'+esc(s.ecr)+'</label><textarea id="ap-mot" maxlength="'+LIM.note+'" placeholder="Vous pouvez aussi l’écrire avec vos mots.">'+esc(a.mot||'')+'</textarea></div>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="ap-garde">'+I.note+'Garder ce geste dans mon carnet</button><p class="hint">Votre geste reste sur votre appareil. Personne d’autre ne le lit.</p></div>';
-  else if(k===2){const nt=noteDe(s.id);
-    corps='<div class="f-tete"><span class="label">Aperçu du parcours, étape '+(s.idx+1)+'</span><h1 class="t1">C’est gardé dans votre carnet</h1></div>'+fil+
+  else if(k===2){const nt=noteDe(s.id);const avant=nt&&nt.d!==todayIso();
+    corps='<div class="f-tete"><span class="label">Essai du parcours, étape '+(s.idx+1)+'</span><h1 class="t1">'+(avant?'Votre geste vous attendait':'C’est gardé dans votre carnet')+'</h1></div>'+fil+
     '<article class="carnet-p"><span class="label">Mon carnet de route, étape '+(s.idx+1)+'</span><p class="q">'+esc(s.ecr)+'</p><p class="ecrit">'+(nt?nl2(nt.t):'')+'</p><span class="hint">'+(nt?'Écrit le '+esc(fmtDate(nt.d)):'')+'</span></article>'+
-    '<p class="lecture-l">Vous retrouvez cette page quand vous voulez, dans « Parcours », puis « Mon carnet ». Un jour de tempête, c’est là que votre geste vous attend.</p>'+
+    '<p class="lecture-l">'+(avant?'Vous pouvez le relire, le compléter dans votre carnet, ou voir ce que la suite du parcours vous apporterait.':'Vous retrouvez cette page quand vous voulez, dans « Parcours », puis « Mon carnet ». Un jour de tempête, c’est là que votre geste vous attend.')+'</p>'+
     (a.g==='souffle'?'<button type="button" class="btn wide" data-act="exo" data-id="breath">'+I.wind+'L’essayer maintenant avec « Souffler 2 minutes »</button>':'')+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="ap" data-k="3">Voir la semaine prochaine '+I.chev+'</button><button type="button" class="btn wide" data-act="go" data-view="carnet">'+I.note+'Ouvrir mon carnet</button></div>';}
   else{
     const deja=can('parcours');
-    corps='<div class="f-tete"><span class="label">Aperçu du parcours</span><h1 class="t1">Ce que vous retrouvez la semaine prochaine</h1></div>'+fil+
+    corps='<div class="f-tete"><span class="label">Essai du parcours</span><h1 class="t1">Ce que vous retrouvez la semaine prochaine</h1></div>'+fil+
     '<ol class="ap-semaine"><li><b>Votre geste, dans votre carnet.</b><span>Vous le relisez, et vous pouvez le compléter après l’avoir essayé.</span></li>'+
       (sv?'<li><b>Une nouvelle étape, « '+esc(sv.t)+' ».</b><span>'+esc(sv.acc||'')+'</span></li>':'')+
       '<li><b>La même forme, chaque semaine.</b><span>Vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots. Si vous vous absentez, rien ne s’accumule.</span></li></ol>'+
     (deja?'<div class="offre"><p class="f-benef">Vous avez déjà Le parcours.</p><button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button></div>':
-      '<section class="offre" aria-labelledby="offre-t"><div class="f-haut"><h2 id="offre-t">Le parcours</h2><p class="f-prix"><b>14 CHF</b> <small>par mois</small></p></div><p class="f-benef">'+F_TXT.parcours.b+'</p>'+
-      '<button type="button" class="btn primary wide" data-act="commande" data-v="parcours" data-de="apercu">Choisir Le parcours</button>'+
-      '<p class="f-note">24 étapes, une par semaine, pendant environ 6 mois. Sans engagement, vous pouvez arrêter à tout moment.</p>'+
+      '<section class="offre" aria-labelledby="offre-t"><div class="f-haut"><h2 id="offre-t">Le parcours</h2><p class="f-prix"><b>84 CHF</b> <small>en tout</small></p></div><p class="f-benef">'+F_TXT.parcours.b+'</p>'+
+      payerParcours('apercu')+
+      '<p class="f-note">24 étapes guidées, une par semaine, pendant 6 mois. Une fois acheté, le parcours reste ouvert sans limite de durée.</p>'+
       '<p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>'+
-      '<div class="ap-suite"><button type="button" class="btn wide" data-act="entrer" data-v="parcours">Continuer gratuitement avec l’étape 1</button><button type="button" class="lien-f" data-act="go" data-view="plans">Comparer les 3 formules</button></div>');
+      '<div class="ap-suite"><button type="button" class="btn wide" data-act="entrer" data-v="parcours">Continuer gratuitement avec l’étape 1</button><button type="button" class="lien-f" data-act="go" data-view="plans">Voir les 3 offres</button></div>');
   }
   return '<main id="main" tabindex="-1" class="view v-feuille v-apercu ap-'+k+'"><div class="feuille">'+corps+'</div></main>';
 }
 
-/* ---------- l'aperçu d'un échange avec Antonio ---------- */
-/* La question est un exemple, écrit pour montrer la forme d'une question, et l'écran le dit. La réponse, elle, est celle d'Antonio ou n'est pas là :
-   tant qu'il ne l'a pas écrite et relue, l'emplacement reste vide. Même règle pour sa voix. */
-const AVEC_Q='Mon fils a 24 ans. Depuis le printemps, il vit dans un foyer, et je crois qu’il y est bien. Mais moi, je ne sais plus très bien ce que je suis pour lui. Avant, je faisais tout. Maintenant, je viens le dimanche, je demande si ça va, et je repars. Quand l’équipe prend une décision, je l’apprends après. Comment est-ce que je retrouve une place de père, sans marcher sur le travail des éducateurs ?';
-function viewAvec(){
-  const rep=String(AVEC_REPONSE||'').trim();
-  const reponse=rep?'<div class="mots-a mots-grand"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>La réponse d’Antonio</b><small>écrite et relue par lui</small></div></div>'+rep.split(/\n+/).map(p=>'<p>'+esc(p)+'</p>').join('')+'<p class="signe">Antonio Company, travailleur social</p></div>':
-    '<div class="place-a"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>La réponse d’Antonio</b><small>bientôt ici</small></div></div><p>Antonio écrira ici sa vraie réponse à cette question, avec ses mots, et il la relira avant de la publier.</p><p>Tant que ce n’est pas fait, cet emplacement reste vide. Une réponse inventée ne vous dirait rien de vrai sur lui.</p></div>';
-  const voix=AVEC_VOIX?'<div class="avec-voix">'+sonBoutonHtml('avec')+'<p class="hint">Vous choisissez de l’écouter, et vous pouvez l’arrêter à tout moment.</p></div>':
-    '<div class="place-voix">'+I.son+'<p>Vous pourrez aussi écouter ici la voix d’Antonio, pendant 30 secondes, dès qu’il l’aura enregistrée.</p></div>';
-  return '<main id="main" tabindex="-1" class="view v-feuille avec-a"><div class="feuille">'+
-    '<div class="f-tete"><span class="label">Avec Antonio, un aperçu</span><h1 class="t1">À quoi ressemble un échange avec Antonio</h1><p class="sub">Vous lui écrivez, il vous lit et il vous répond par écrit. Voici la forme que cela prend.</p></div>'+
-    '<div class="lettre-q"><span class="pill">Exemple</span><h2>La question d’un parent</h2><p>'+AVEC_Q+'</p><p class="hint">Cette question a été écrite pour l’exemple. Ce n’est pas le message d’un vrai parent.</p></div>'+
-    reponse+voix+
-    '<section class="partage-a" aria-labelledby="pa-t"><h2 id="pa-t">Ce que vous partagez, et ce qui reste chez vous</h2><div class="deux"><div class="pa-col lu"><h3>'+I.eye+'Ce qu’Antonio lit</h3><ul><li>Votre question, quand vous choisissez de l’envoyer.</li><li>Les dépôts que vous cochez « Partager avec Antonio », un par un.</li></ul></div>'+
-      '<div class="pa-col chez"><h3>'+I.lock+'Ce qui reste sur votre appareil</h3><ul><li>Votre carnet de route.</li><li>Vos humeurs.</li><li>Vos dépôts non cochés.</li><li>Votre point de départ et « Mon évolution ».</li></ul></div></div>'+
-      '<p class="f-note">Vous n’avez jamais à donner le prénom de votre enfant. Dans cette version d’essai, rien n’est transmis à Antonio.</p></section>'+
-    '<section class="recoit-a"><h2>Ce que vous recevez</h2><ul class="list">'+F_TXT.antonio.c.slice(1,3).map(x=>'<li>'+x+'</li>').join('')+'<li>Vous gardez tout Le parcours, ses 24 étapes et votre carnet.</li></ul><p class="f-note">Antonio ne pose pas de diagnostic, et il ne remplace ni un médecin ni un thérapeute. En cas d’urgence, le bouton SOS donne les numéros à appeler.</p></section>'+
-    (can('antonio')?'<div class="offre"><p class="f-benef">Vous avez déjà la formule Avec Antonio.</p><button type="button" class="btn primary wide" data-act="go" data-view="antonio">'+I.mail+'Ouvrir mes échanges avec Antonio</button></div>':
-    '<section class="offre" aria-labelledby="offre-a"><div class="f-haut"><h2 id="offre-a">Avec Antonio</h2><p class="f-prix"><b>49 CHF</b> <small>par mois</small></p></div><p class="f-benef">'+F_TXT.antonio.b+'</p>'+
-      '<button type="button" class="btn primary wide" data-act="commande" data-v="antonio" data-de="avec">Choisir Avec Antonio</button>'+
-      '<p class="f-note">Sans engagement, vous pouvez arrêter à tout moment.</p><p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>'+
-    '<div class="ap-suite">'+prevenirHtml('antonio')+'<button type="button" class="lien-f" data-act="go" data-view="plans">Comparer les 3 formules</button></div>')+
-    '</div></main>';
-}
-
 /* ---------- la commande, en démonstration ---------- */
-/* Le chemin complet d'un achat, sans paiement : le récapitulatif, puis 3 issues à essayer (accepté, refusé, abandonné), et l'arrêt d'une formule.
-   Chaque écran dit que rien n'est débité. Le jour où un prestataire de paiement sera branché, seule l'étape du milieu changera. */
+/* Les écrans d'une vraie commande, sans paiement : le récapitulatif avec les dates et les montants, puis l'issue que l'on choisit de voir.
+   Seul « paiement accepté » ouvre ce qui a été acheté. S'y ajoutent 2 écrans à part : retrouver un achat, et offrir à un parent (une maquette). */
+function achete(f,m){
+  const d=D(),A=achats();
+  if(f==='parcours'){d.tier='parcours';A.parcours={m:m==='six'?'six':'une',le:todayIso(),n:1};}
+  else if(f==='relais')A.relais={le:todayIso()};
+  entrer('achat');save();
+}
 function viewCommande(){
-  const c=state.cmd||{},k=TIERS[c.f]&&c.f!=='free'?c.f:'parcours',T=TIERS[k],X=F_TXT[k],e=c.k||'recap';
+  const c=state.cmd||{},e=c.k||'recap';const f=PRODUITS[c.f]?c.f:'parcours',P=PRODUITS[f],X=F_TXT[f],six=f==='parcours'&&c.m==='six';
   const demo='<p class="demo-paie demo-fort">'+I.info+'<span>Ceci est une démonstration. Aucun montant réel n’est débité, et aucune carte n’est demandée.</span></p>';
-  const recap='<div class="cmd-recap"><div class="f-haut"><h2>'+esc(T.t)+'</h2><p class="f-prix"><b>'+T.p+' CHF</b> <small>par mois</small></p></div><p class="f-benef">'+X.b+'</p><ul>'+X.c.slice(0,3).map(x=>'<li>'+x+'</li>').join('')+'</ul><p class="f-note">Sans engagement, vous pouvez arrêter à tout moment.</p></div>';
+  const tete=(l,t,s)=>'<div class="f-tete"><span class="label">'+l+'</span><h1 class="t1">'+t+'</h1>'+(s?'<p class="sub">'+s+'</p>':'')+'</div>';
   let corps='';
-  if(e==='arret'){const a=TIERS[tier()];
-    corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">Arrêter ma formule</h1></div>'+demo+
-      '<div class="cmd-recap"><p class="f-benef">Vous quittez '+esc(a.t)+' et vous revenez à Découverte.</p><ul><li>Votre carnet, vos dépôts et tout ce que vous avez écrit restent sur votre appareil.</li><li>La dose du jour, les outils, la respiration et le SOS restent ouverts.</li><li>Les étapes 2 à 24 se referment. Elles se rouvrent si vous reprenez Le parcours.</li></ul></div>'+
-      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="arret-ok">Confirmer l’arrêt</button><button type="button" class="btn wide" data-act="back">Garder ma formule</button></div>';
-  }else if(e==='ok')corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">C’est confirmé.</h1><p class="sub">Votre formule est maintenant '+esc(T.t)+'.</p></div>'+demo+
-      '<div class="cmd-recap"><p class="f-benef">'+(k==='antonio'?'Vos échanges avec Antonio sont ouverts, en démonstration.':'Votre parcours est ouvert.')+'</p><ul>'+(k==='antonio'?'<li>Dans cette version d’essai, rien n’est transmis à Antonio, et le mot comme la réponse affichés sont des exemples.</li><li>Vous avez aussi tout Le parcours.</li>':'<li>Une étape s’ouvre chaque semaine, 7 jours après la précédente.</li><li>Votre carnet garde ce que vous écrivez.</li>')+'<li>Vous pouvez arrêter à tout moment, dans « Moi », puis « Ma formule ».</li></ul></div>'+
-      '<div class="ap-suite">'+(k==='antonio'?'<button type="button" class="btn primary wide" data-act="go" data-view="antonio">'+I.mail+'Ouvrir mes échanges avec Antonio</button><button type="button" class="btn wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>':'<button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>')+'</div>';
-  else if(e==='refus')corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">Le paiement n’a pas abouti.</h1><p class="sub">Rien n’a été débité, et votre formule n’a pas changé.</p></div>'+demo+
+  if(e==='retrouver')corps=tete('Démonstration','Retrouver un achat','Vous avez changé d’appareil, ou effacé les données de votre navigateur ? Votre achat, lui, n’est pas perdu.')+demo+
+      '<div class="cmd-recap"><p class="f-benef">Dans la vraie version, vous écrirez ici l’adresse e-mail utilisée pour l’achat.</p><ul><li>Vous recevrez un lien par e-mail, et ce lien rouvrira votre achat sur cet appareil.</li><li>Vos écrits, eux, ne voyagent pas avec l’achat. Pour les emporter, utilisez « Sauvegarder mes écrits ».</li></ul></div>'+
+      '<section class="cmd-paie"><h2>Pour l’essai</h2><p>Choisissez l’achat que ce lien rouvrirait.</p><div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="retrouve" data-f="parcours">Simuler le lien pour Le parcours</button><button type="button" class="btn primary wide" data-act="cmd" data-v="retrouve" data-f="relais">Simuler le lien pour Passer le relais</button><button type="button" class="btn ghost wide" data-act="go" data-view="plans">Revenir aux offres</button></div></section>';
+  else if(e==='retrouve')corps=tete('Démonstration','Votre achat est rouvert.',esc(P.t)+' est de nouveau ouvert sur cet appareil.')+demo+
+      '<div class="ap-suite">'+(f==='relais'?'<button type="button" class="btn primary wide" data-act="rl" data-k="ouvre">'+I.hand+'Ouvrir Passer le relais</button>':'<button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>')+'<button type="button" class="btn wide" data-act="rl" data-k="sauver">'+I.download+'Restaurer mes écrits depuis un fichier</button></div>';
+  else if(e==='cadeau')corps=tete('Maquette','Offrir à un parent','Vous payez une fois. Le parent reçoit un lien et active son cadeau quand il le souhaite.')+demo+
+      '<div class="f-payer" role="group" aria-label="Choisir ce que vous offrez"><button type="button" class="btn f-mode" data-act="cadeau" data-v="parcours" aria-pressed="'+(f==='parcours')+'"><b>Le parcours</b><span>84 CHF, en une fois</span></button><button type="button" class="btn f-mode" data-act="cadeau" data-v="relais" aria-pressed="'+(f==='relais')+'"><b>Passer le relais</b><span>49 CHF, une seule fois</span></button></div>'+
+      '<div class="cmd-recap"><p class="f-benef">'+X.b+'</p><ul><li>Le cadeau donne accès à '+esc(P.t)+', en entier.</li><li>Vous ne saurez ni quand le parent l’ouvre, ni ce qu’il y écrit. Ses écrits restent sur son appareil.</li><li>Le parent n’a rien à payer et aucun compte à créer.</li></ul></div>'+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="cadeau-ok">Simuler l’achat du cadeau</button><button type="button" class="btn ghost wide" data-act="go" data-view="plans">Revenir aux offres</button></div>';
+  else if(e==='cadeau-ok'){const lien=PUBLIC+'#cadeau-'+f;
+    corps=tete('Maquette','Votre cadeau est prêt.','Transmettez ce lien au parent, avec un mot de vous.')+demo+
+      '<div class="field"><label for="cad-lien">Le lien du cadeau, à copier</label><input type="text" id="cad-lien" readonly value="'+esc(lien)+'"><p class="hint">Dans la vraie version, ce lien portera un code qui ne sert qu’une fois.</p></div>'+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cadeau-envoi">'+I.share+'Envoyer le lien</button><button type="button" class="btn wide" data-act="cadeau-voir" data-v="'+f+'">Voir ce que le parent verra</button><button type="button" class="btn ghost wide" data-act="go" data-view="plans">Revenir aux offres</button></div>';}
+  else if(e==='activer')corps=tete('Un cadeau pour vous','Quelqu’un vous offre '+esc(P.t)+'.',X.b)+demo+
+      '<div class="cmd-recap"><ul><li>Vous l’activez quand vous voulez. Rien ne presse.</li><li>La personne qui vous l’offre ne voit rien de ce que vous faites ici.</li><li>Vous n’avez rien à payer et aucun compte à créer.</li></ul></div>'+
+      '<div class="ap-suite">'+(can(f)?'<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'Vous l’avez déjà</button>':'<button type="button" class="btn primary wide" data-act="cmd" data-v="active">'+I.star+'Activer mon cadeau</button>')+'<button type="button" class="btn ghost wide" data-act="entrer" data-v="today">Plus tard</button></div>';
+  else if(e==='ok'||e==='active'){const A=achats();
+    corps=tete(e==='active'?'Votre cadeau':'Démonstration',e==='active'?'Votre cadeau est activé.':'C’est confirmé.',esc(P.t)+' est à vous.')+demo+
+      '<div class="cmd-recap"><p class="f-benef">'+(f==='relais'?'L’outil est ouvert, pour toute la famille.':'Votre parcours est ouvert.')+'</p><ul>'+(f==='relais'?'<li>Vous pouvez envoyer votre fiche, l’imprimer et la retrouver la prochaine fois.</li><li>Vous n’aurez rien d’autre à payer.</li>':'<li>Une étape s’ouvre chaque semaine, 7 jours après la précédente.</li><li>Votre carnet garde ce que vous écrivez, sur votre appareil.</li>'+(six&&e==='ok'?'':'<li>Vous n’aurez rien d’autre à payer.</li>'))+'<li>Ce que vous avez acheté reste ouvert sans limite de durée.</li></ul></div>'+
+      (six&&e==='ok'&&A.parcours?'<section class="cmd-ech"><h2>Vos 6 mensualités</h2>'+echeancesHtml(A.parcours.le,A.parcours.n)+'</section>':'')+
+      '<p class="hint">Pour retrouver cet achat sur un autre appareil, vous recevrez un lien par e-mail dans la vraie version. Ici, « Retrouver un achat » en montre le principe.</p>'+
+      '<div class="ap-suite">'+(f==='relais'?'<button type="button" class="btn primary wide" data-act="rl" data-k="reprise">'+I.hand+(rlFiche(state.rl.id)?'Revenir à ma fiche':'Ouvrir Passer le relais')+'</button>':'<button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>')+'</div>';}
+  else if(e==='refus')corps=tete('Démonstration','Le paiement n’a pas abouti.','Rien n’a été débité, et rien n’a changé dans votre espace.')+demo+
       '<div class="cmd-recap"><p class="f-benef">Dans la vraie version, vous pourrez réessayer ou choisir un autre moyen de paiement.</p><p class="f-note">Tout ce qui est gratuit reste ouvert, et ce que vous avez écrit est toujours là.</p></div>'+
-      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="recap">Réessayer</button><button type="button" class="btn wide" data-act="go" data-view="plans">Revenir aux formules</button></div>';
-  else if(e==='abandon')corps='<div class="f-tete"><span class="label">Démonstration</span><h1 class="t1">Vous avez arrêté avant de payer.</h1><p class="sub">Rien n’a été débité, et votre formule n’a pas changé.</p></div>'+demo+
-      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="go" data-view="plans">Revenir aux formules</button><button type="button" class="btn wide" data-act="cmd" data-v="recap">Reprendre la commande</button></div>';
-  else corps='<div class="f-tete"><span class="label">Démonstration de commande</span><h1 class="t1">Votre commande</h1></div>'+demo+recap+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="recap">Réessayer</button><button type="button" class="btn wide" data-act="go" data-view="plans">Revenir aux offres</button></div>';
+  else if(e==='abandon')corps=tete('Démonstration','Vous avez arrêté avant de payer.','Rien n’a été débité, et rien n’a changé dans votre espace.')+demo+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="go" data-view="plans">Revenir aux offres</button><button type="button" class="btn wide" data-act="cmd" data-v="recap">Reprendre la commande</button></div>';
+  else{
+    const auj=dateLongue(todayIso());
+    corps=tete('Démonstration de commande','Votre commande','')+demo+
+      '<div class="cmd-recap"><div class="f-haut"><h2>'+esc(P.t)+'</h2><p class="f-prix"><b>'+P.p+' CHF</b> <small>'+(f==='relais'?'une seule fois':'en tout')+'</small></p></div><p class="f-benef">'+X.b+'</p><ul>'+X.c.slice(0,3).map(x=>'<li>'+x+'</li>').join('')+'</ul></div>'+
+      (f==='parcours'?'<section class="cmd-mode" aria-labelledby="cmd-mode-t"><h2 id="cmd-mode-t">Votre façon de payer</h2><div class="f-payer" role="group" aria-labelledby="cmd-mode-t"><button type="button" class="btn f-mode" data-act="cmd-mode" data-v="une" aria-pressed="'+(!six)+'"><b>En une fois</b><span>84 CHF aujourd’hui</span></button><button type="button" class="btn f-mode" data-act="cmd-mode" data-v="six" aria-pressed="'+six+'"><b>En six fois</b><span>14 CHF aujourd’hui, puis 5 mensualités de 14 CHF</span></button></div>'+
+        (six?echeancesHtml(todayIso(),0)+'<p class="f-note">En choisissant ce paiement, vous achetez le parcours complet. Les 6 mensualités sont dues.</p>':'<ol class="ech"><li><span>Aujourd’hui, le '+esc(auj)+'</span><b>84 CHF</b></li><li class="ech-total"><span>Total</span><b>84 CHF</b></li></ol><p class="f-note">Ensuite, plus rien n’est prélevé.</p>')+
+        '<p class="f-total">'+TOTAL_84+'</p></section>':
+        '<section class="cmd-mode"><h2>Ce que vous payez</h2><ol class="ech"><li><span>Aujourd’hui, le '+esc(auj)+'</span><b>49 CHF</b></li><li class="ech-total"><span>Total</span><b>49 CHF</b></li></ol><p class="f-note">Ensuite, plus rien n’est prélevé. Il n’y a ni abonnement ni renouvellement.</p></section>')+
+      '<section class="cmd-garde"><h2>Ce que vous gardez</h2><ul class="list"><li>'+esc(P.t)+' reste ouvert sans limite de durée.</li><li>'+(f==='relais'?'Vos fiches restent sur votre appareil. Vous pouvez les envoyer, les imprimer et les sauvegarder dans un fichier.':'Votre carnet reste sur votre appareil. Vous pouvez le sauvegarder dans un fichier et imprimer « Mon chemin ».')+'</li></ul></section>'+
       '<section class="cmd-paie"><h2>Le paiement</h2><p>Dans la vraie version, vous paierez ici, auprès d’un prestataire de paiement. Il n’est pas encore choisi. Pour l’essai, choisissez l’issue que vous voulez voir.</p>'+
       '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="ok">Simuler un paiement accepté</button><button type="button" class="btn wide" data-act="cmd" data-v="refus">Simuler un paiement refusé</button><button type="button" class="btn ghost wide" data-act="cmd" data-v="abandon">Abandonner la commande</button></div></section>';
+  }
   return '<main id="main" tabindex="-1" class="view v-feuille commande cde-'+e+'"><div class="feuille">'+corps+'</div></main>';
+}
+/* Ce que le parent a acheté, pour l'écran « Moi ». Dans la version d'essai, on peut y faire avancer les mensualités pour voir qu'elles s'arrêtent à la sixième. */
+function achatsHtml(){
+  const A=achats(),p=A.parcours,r=A.relais;const E=p&&p.m==='six'?echeances(p.le):null;const n=p?Math.min(NB_ECH,p.n||1):0;
+  return '<div class="card mes-achats"><span class="label">Mes achats</span>'+
+    '<div class="kv"><span>Découverte</span><span>ouverte, gratuite</span></div>'+
+    '<div class="kv"><span>Le parcours</span><span>'+(p?(p.m==='six'?(n>=NB_ECH?'payé, 6 mensualités sur 6':n+' mensualité'+(n>1?'s':'')+' sur 6'):'payé en une fois'):'pas acheté')+'</span></div>'+
+    (p&&E&&n<NB_ECH?'<p class="hint">La prochaine mensualité de 14 CHF est celle du '+esc(dateLongue(E[n]))+'. La dernière est celle du '+esc(dateLongue(E[NB_ECH-1]))+'.</p>':'')+
+    (p&&E&&n>=NB_ECH?'<p class="hint">Les 6 mensualités sont payées. Plus rien ne sera prélevé.</p>':'')+
+    '<div class="kv"><span>Passer le relais</span><span>'+(r?'acheté, 49 CHF':'pas acheté')+'</span></div>'+
+    (ESSAI&&p&&E&&n<NB_ECH?'<button type="button" class="btn small" data-act="ech-suite" style="align-self:flex-start">Simuler la mensualité suivante</button>':'')+
+    '<div class="row"><button type="button" class="btn'+(p&&r?'':' primary')+'" data-act="go" data-view="plans">'+I.tag+'Voir les 3 offres</button></div>'+
+    (ESSAI&&(p||r)?'<button type="button" class="lien-f" data-act="achats-zero">Annuler mes achats de démonstration</button>':'')+'</div>';
 }
 /* Ce que cet appareil a compté, pour la carte « Version d'essai » de l'écran « Moi ». */
 function reperesHtml(){
-  const c=com();
-  const l=[['Aperçu du parcours terminé',c.ap?'le '+fmtDate(c.ap):'pas encore'],['Formule choisie',c.ch&&TIERS[c.ch.f]?TIERS[c.ch.f].t+', le '+fmtDate(c.ch.d):'aucune'],['Achat confirmé',c.ac&&TIERS[c.ac.f]?TIERS[c.ac.f].t+', en démonstration, le '+fmtDate(c.ac.d):'aucun']];
-  return '<div class="reperes"><span class="label">Les 3 repères de la vente, sur cet appareil</span>'+l.map(x=>'<div class="kv"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>').join('')+'<p class="hint">Ces repères ne contiennent ni vos écrits, ni vos humeurs, ni votre situation. Dans cette version d’essai, ils restent sur votre appareil et rien n’est envoyé.</p></div>';
+  const c=com(),a=c.ach||{},u=c.us||{};const dit=k=>a[k]?(k==='parcours'?(a[k].m==='six'?'en six fois':'en une fois')+', ':'')+'le '+fmtDate(a[k].d):'aucun';
+  const rev=k=>Array.isArray(u[k])&&u[k].length>1?'oui, le '+fmtDate(u[k][1]):Array.isArray(u[k])&&u[k].length?'pas encore':'';
+  const l=[['Essai du parcours terminé',c.ap?'le '+fmtDate(c.ap):'pas encore'],['Achat du parcours',dit('parcours')],['Achat de Passer le relais',dit('relais')]];
+  if(a.parcours)l.push(['Retour sur le parcours, un autre jour',rev('parcours')||'pas encore']);
+  if(a.relais)l.push(['Retour sur Passer le relais, un autre jour',rev('relais')||'pas encore']);
+  return '<div class="reperes"><span class="label">Les 3 mesures du lancement, sur cet appareil</span>'+l.map(x=>'<div class="kv"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>').join('')+'<p class="hint">Ces mesures ne contiennent ni vos écrits, ni vos humeurs, ni votre situation. Dans cette version d’essai, elles restent sur votre appareil et rien n’est envoyé. Les achats sont des démonstrations.</p></div>';
 }
 
 function sheetUpgrade(sheetIn){
-  const u=UP[state.upFeat]||UP.parcours;const anto=state.upFeat==='antonio';
-  /* La feuille ne vend pas : elle propose d'essayer d'abord, puis de voir les formules. */
-  return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="up-title" tabindex="-1"><div class="sheet-in"><div class="grab"></div><span class="label">'+I.lock+' Fait partie '+(anto?'de la formule Avec Antonio':'du Parcours')+'</span><h2 id="up-title" class="t2" style="font-family:var(--font-display);font-weight:500">'+esc(u.t)+'</h2><p>'+esc(u.s)+'</p>'+
-    (anto?'<button type="button" class="btn primary wide" data-act="avec">'+I.mail+'Voir à quoi ressemble un échange</button>':'<button type="button" class="btn primary wide" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>')+
-    '<button type="button" class="btn wide" data-act="go" data-view="plans">Voir les formules et les prix</button>'+
+  const u=UP[state.upFeat]||UP.parcours;
+  /* La feuille ne vend pas : elle propose d'essayer d'abord, puis de voir les offres. */
+  return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="up-title" tabindex="-1"><div class="sheet-in"><div class="grab"></div><span class="label">'+I.lock+' Fait partie du Parcours</span><h2 id="up-title" class="t2" style="font-family:var(--font-display);font-weight:500">'+esc(u.t)+'</h2><p>'+esc(u.s)+'</p>'+
+    '<button type="button" class="btn primary wide" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>'+
+    '<button type="button" class="btn wide" data-act="go" data-view="plans">Voir les 3 offres et les prix</button>'+
     '<button type="button" class="btn ghost wide" data-act="sheet-close">Plus tard</button><p class="hint" style="text-align:center">'+DEMO_PAIE+'</p></div></div>';
 }
+
+/* ---------- une page à transmettre ---------- */
+/* Une association ou un professionnel peut envoyer cette page à une famille. Elle parle au parent, lui propose une seule chose à faire tout de suite,
+   et donne à la personne qui transmet une phrase toute prête. */
+const TRANSMETTRE_MOT='Je vous transmets cette page parce qu’on vous demande souvent comment va votre enfant, et plus rarement comment vous allez, vous. Ici, on commence par vous. C’est gratuit pour commencer, sans compte, et vous pouvez y souffler 2 minutes dès maintenant.';
+function viewTransmettre(){
+  const url=PUBLIC+'transmettre/';
+  return '<main id="main" tabindex="-1" class="view v-feuille v-transmettre"><div class="feuille">'+
+    '<div class="f-tete"><span class="label">Quelqu’un qui vous accompagne vous a transmis cette page</span><h1 class="t1">On vous demande souvent comment va votre enfant. Ici, on commence par vous.</h1></div>'+
+    '<p class="lecture-l">Parent Écouté, Parent Éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, que votre enfant ait 5, 16 ou 35 ans. Il a été créé par Antonio Company, travailleur social et père de 3 enfants.</p>'+
+    '<p class="lecture-l">Vous pouvez commencer par 2 minutes pour vous, tout de suite. C’est gratuit, sans compte, et rien de ce que vous écrivez ne quitte votre appareil.</p>'+
+    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="porte" data-v="souffle">'+I.wind+'Souffler 2 minutes, maintenant</button></div>'+
+    '<section class="tr-suite" aria-labelledby="tr-suite-t"><h2 id="tr-suite-t">Ensuite, si vous le souhaitez</h2><ul class="tr-liens"><li><a class="lien-f" href="'+RACINE+'fiches/" data-act="fiches">'+I.kit+'Ouvrir une fiche pratique</a><span>Sur le coucher, les crises, l’école ou la vie en foyer.</span></li><li><button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une vraie étape du parcours</button><span>En 3 minutes, sans rien créer.</span></li><li><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche de relais</button><span>Pour confier votre enfant à un proche.</span></li></ul></section>'+
+    '<section class="tr-pro" aria-labelledby="tr-pro-t"><h2 id="tr-pro-t">Vous accompagnez des familles ?</h2><p>Vous pouvez transmettre cette page telle quelle, par message ou sur papier. Voici une phrase pour l’accompagner, à adapter avec vos mots.</p>'+
+      '<blockquote class="tr-mot"><p>'+esc(TRANSMETTRE_MOT)+'</p></blockquote>'+
+      '<div class="ap-suite"><button type="button" class="btn wide" data-act="tr-copie">'+I.share+'Copier la phrase et le lien</button></div>'+
+      '<div class="field"><label for="tr-lien">Le lien de cette page</label><input type="text" id="tr-lien" readonly value="'+esc(url)+'"></div>'+
+      '<ul class="list"><li>Cet espace ne remplace ni un suivi, ni un médecin, ni un thérapeute.</li><li>Il ne demande aucun diagnostic et ne crée aucun compte.</li><li>Ce que le parent écrit reste sur son appareil. Rien n’est enregistré sur un serveur.</li><li>Commencer est gratuit. Il existe 2 outils payants, sans abonnement, et le parent les découvre seulement s’il le souhaite.</li></ul>'+
+      (CONTACT_R?'<p class="hint">Une question avant de transmettre ? Écrivez à '+esc(contact())+'.</p>':'')+'</section>'+
+    '</div></main>';
+}
+
+/* ---------- une seule suite logique au bas d'une fiche ---------- */
+/* Après la fiche sur les crises, l'essai d'une étape du parcours. Après une fiche qui parle de relais, l'outil « Passer le relais ».
+   Après une fiche sur les réunions, la préparation d'une réunion. Ces cartes ne parlent pas de prix. Les autres fiches n'en ont pas. */
+function suiteFiche(s){
+  if(s.id==='crise')return '<div class="vers-apercu"><h2>Et vous, quand la vague monte ?</h2><p>Une étape du parcours vous aide à traverser ce moment sans rien casser. Vous pouvez l’essayer maintenant, en 3 minutes.</p><button type="button" class="btn" data-act="apercu">'+I.path+'Essayer cette étape</button></div>';
+  if(['relais','aide','loin'].includes(s.id))return '<div class="vers-apercu vers-relais"><h2>Une page pour la personne qui prend le relais</h2><p>Vous choisissez 3 repères, avec vos mots, et votre proche les lit en 1 minute. Vous pouvez voir une fiche terminée avant de rien écrire.</p><button type="button" class="btn" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button></div>';
+  if(['pros','ecole'].includes(s.id))return '<div class="vers-apercu vers-relais"><h2>Arriver à la réunion avec vos mots</h2><p>L’outil « Passer le relais » vous aide aussi à préparer un rendez-vous, avec vos 3 priorités sous les yeux et un bouton « Je perds mes mots ».</p><button type="button" class="btn" data-act="rl" data-k="ouvre">'+I.hand+'Découvrir l’outil</button></div>';
+  return '';
+}
+/* Le lien WhatsApp d'une fiche publique : le titre de la fiche et son adresse, rien d'autre. */
+function waUrl(s){return 'https://wa.me/?text='+encodeURIComponent('« '+s.t+' », une fiche courte à lire. '+ficheUrl(s.id,true));}
+
 /* ---------- avec Antonio ---------- */
 function viewAntonio(){
   const d=D();const L=d.letters.slice().reverse();const Q=d.questions.slice().reverse();const ql=questionsLeft();
@@ -3184,7 +3753,8 @@ function consentCard(){
 function viewData(){
   const where=state.sample?'Quand vous déposez, votre texte est envoyé sans votre nom à une intelligence artificielle, qui écrit la réponse. L’application, elle, ne le garde que sur cet appareil.':'Dans cette version, rien de ce que vous écrivez n’est envoyé, ni à un serveur ni à Antonio.';
   return '<main id="main" tabindex="-1" class="view"><div><h1 class="t1">Vos données</h1><p class="sub">Vos dépôts, vos points et vos notes restent sur cet appareil. '+where+'</p></div>'+
-    '<div class="card green"><span class="label">Bon à savoir</span><p class="hint">Vos dépôts ne sont pas protégés par un mot de passe. Si vous prêtez cet appareil, verrouillez-le ou effacez d’abord vos notes. Sachez aussi que si vous effacez les données de votre navigateur, vos notes sont perdues, parce qu’il n’en existe aucune copie ailleurs.</p></div>'+
+    '<div class="card green"><span class="label">Bon à savoir</span><p class="hint">Vos dépôts ne sont pas protégés par un mot de passe. Si vous prêtez cet appareil, verrouillez-le ou effacez d’abord vos notes. Sachez aussi que si vous effacez les données de votre navigateur, vos notes sont perdues, sauf si vous en avez gardé une copie.</p></div>'+
+    '<div class="card"><span class="label">Garder une copie</span><p class="hint">Vous pouvez sauvegarder tous vos écrits dans un fichier, sur votre appareil, puis les restaurer plus tard ou sur un autre appareil. Rien n’est envoyé.</p><button type="button" class="btn" data-act="rl" data-k="sauver" style="align-self:flex-start">'+I.download+'Sauvegarder ou restaurer mes écrits</button></div>'+
     '<div class="card"><span class="label">Recommencer depuis le début</span><p class="hint">Ce bouton efface tout ce qui est sur cet appareil, c’est-à-dire votre prénom, vos dépôts, vos étapes, votre carnet et vos points, puis il rouvre l’écran d’accueil et le questionnaire de départ. C’est utile pour faire tester l’application à une autre personne sur votre appareil.</p>'+(state.confirmReset?'<div class="confirm" role="alert"><span>Effacer tout le contenu sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="reset-yes">Oui, effacer</button><button type="button" class="btn" data-act="reset-no">Annuler</button></div></div>':'<button type="button" class="btn danger" data-act="reset" style="align-self:flex-start">'+I.trash+'Tout effacer et recommencer</button>')+'</div>'+
     consentCard()+
     '<div class="card"><span class="label">Pour les tests</span><p class="hint">Vous pouvez aussi ajouter <b>?nouveau</b> à la fin de l’adresse. L’application repart alors de zéro sur cet appareil.</p></div></main>';
@@ -3225,7 +3795,7 @@ function viewAbout(){
 }
 /* ---------- onglets, feuilles ---------- */
 function tabs(){
-  const grp={today:['today','deposer'],parcours:['parcours','step','carnet','evo','photo'],kit:['kit','sit','exo'],me:['me','plans','depots','antonio','letter','data','about']};
+  const grp={today:['today','deposer'],parcours:['parcours','step','carnet','evo','photo'],kit:['kit','sit','exo','relais'],me:['me','plans','depots','antonio','letter','data','about']};
   const cur=v=>grp[v].includes(state.view)?' aria-current="page"':'';
   return '<nav class="tabs" aria-label="Navigation"><a class="rail-brand" href="'+RACINE+'#accueil" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><div class="tabs-in">'+(large()?'<a class="tab tab-accueil" href="'+RACINE+'#accueil" data-act="accueil">'+I.home+'Accueil</a>':'')+'<button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
 }
@@ -3247,7 +3817,7 @@ function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;fo
 
 /* ---------- actions ---------- */
 function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
-function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:''].join('|');}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;const view0=state.view;
   switch(act){
@@ -3302,7 +3872,7 @@ function handle(act,d,el){
     /* Le bouton Retour de l'écran fait la même chose que celui du téléphone : il revient à la page d'avant.
        Quand il n'y a pas de page d'avant (on est arrivé ici par un lien), il remonte d'un niveau. */
     case 'back':{if(HIST.ok&&HIST.i>0){try{history.back();return;}catch(e){}}
-      if(!data.onboarded){state.view=['apercu','avec','commande'].includes(state.view)?'plans':'intro';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['apercu','avec','commande'].includes(v))t='plans';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
+      if(!data.onboarded){state.view=['apercu','commande'].includes(state.view)?'plans':'intro';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['apercu','commande'].includes(v))t='plans';else if(v==='relais')t='kit';else if(v==='transmettre')t='intro';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
     case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
     case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();break;
     case 'sit':state.sit=d.id;nav('sit');noteRecent('sit',d.id);break;
@@ -3320,13 +3890,29 @@ function handle(act,d,el){
     case 'ap':{const k=Math.max(0,Math.min(3,Number(d.k)||0));state.ap.k=k;if(k===3)repere('apercu');break;}
     case 'ap-g':{const m=document.getElementById('ap-mot');if(m)state.ap.mot=m.value;state.ap.g=state.ap.g===d.v?'':d.v;break;}
     case 'ap-garde':if(!apGarde()){toast('Choisissez un geste, ou écrivez le vôtre.');return;}state.ap.k=2;break;
-    case 'avec':state.sheet=null;nav('avec');break;
-    case 'commande':if(!TIERS[d.v]||d.v==='free')return;state.cmd={f:d.v,k:'recap',de:d.de||''};state.sheet=null;repere('choix',d.v);nav('commande');break;
-    case 'cmd':{const c=state.cmd;if(!c||!TIERS[c.f]||['recap','ok','refus','abandon'].indexOf(d.v)<0)return;if(d.v==='ok'){data.tier=c.f;entrer('formule');repere('achat',c.f);save();}c.k=d.v;break;}
-    case 'arret':if(tier()==='free')return;state.cmd={f:tier(),k:'arret',de:''};nav('commande');break;
-    case 'arret-ok':data.tier='free';save();state.cmd={f:'',k:'recap',de:''};nav('plans');toast('Vous êtes revenu à Découverte. Rien de ce que vous avez écrit n’a été effacé.');break;
+    case 'apercu-reprise':state.ap={k:2,g:'',mot:''};state.sheet=null;if(!com().rp){com().rp=todayIso();save();}nav('apercu');break;
+    case 'commande':{if(!PRODUITS[d.v])return;if(can(d.v)){toast('Vous avez déjà '+PRODUITS[d.v].t+'.');return;}state.cmd={f:d.v,m:d.m==='six'?'six':'une',k:'recap',de:d.de||''};state.sheet=null;repere('choix',d.v);nav('commande');break;}
+    case 'cmd-mode':state.cmd.m=d.v==='six'?'six':'une';break;
+    case 'cmd':{const c=state.cmd;if(!c)return;const v=d.v;
+      if(v==='retrouve'){if(!PRODUITS[d.f])return;c.f=d.f;if(!can(d.f))achete(d.f,'une');c.k='retrouve';break;}
+      if(v==='cadeau-ok'){if(!PRODUITS[c.f])return;c.k='cadeau-ok';break;}
+      if(v==='active'){if(!PRODUITS[c.f])return;if(!can(c.f))achete(c.f,'une');c.k='active';break;}
+      if(['recap','ok','refus','abandon'].indexOf(v)<0||!PRODUITS[c.f])return;
+      if(v==='ok'){achete(c.f,c.m);repere('achat',c.f,c.f==='parcours'?c.m:'');}
+      c.k=v;break;}
+    /* « Offrir à un parent » est une maquette. « Retrouver un achat » montre le principe du lien reçu par e-mail. */
+    case 'cadeau':state.cmd={f:PRODUITS[d.v]?d.v:(state.view==='commande'&&state.cmd.k==='cadeau'&&PRODUITS[state.cmd.f]?state.cmd.f:'parcours'),m:'une',k:'cadeau',de:''};state.sheet=null;if(state.view!=='commande')nav('commande');break;
+    case 'cadeau-voir':if(!PRODUITS[d.v])return;state.cmd={f:d.v,m:'une',k:'activer',de:''};break;
+    case 'cadeau-envoi':{const u=PUBLIC+'#cadeau-'+state.cmd.f;(async()=>{if(navigator.share){try{await navigator.share({title:'Un cadeau pour vous',text:'Je vous offre '+PRODUITS[state.cmd.f].t+', sur Parent Écouté, Parent Éclairé. Vous l’activez quand vous voulez.',url:u});return;}catch(e){if(e&&e.name==='AbortError')return;}}try{await navigator.clipboard.writeText(u);toast('Le lien du cadeau est copié.');}catch(e){const c=document.getElementById('cad-lien');if(c){try{c.focus();c.select();}catch(x){}}}})();return;}
+    case 'retrouver':state.cmd={f:'parcours',m:'une',k:'retrouver',de:''};state.sheet=null;nav('commande');break;
+    case 'ech-suite':{const p=achats().parcours;if(!p||p.m!=='six'||(p.n||1)>=NB_ECH)return;p.n=(p.n||1)+1;save();toast(p.n>=NB_ECH?'La 6e mensualité est payée. Plus rien ne sera prélevé.':'Mensualité '+p.n+' sur 6, en démonstration.');break;}
+    case 'achats-zero':data.tier='free';data.achats={};save();toast('Vos achats de démonstration sont annulés. Rien de ce que vous avez écrit n’a été effacé.');break;
+    /* « Passer le relais » a ses propres gestes, dans v2-r.js. */
+    case 'rl':if(rlAct(d)===false)return;break;
+    case 'transmettre':nav('transmettre');break;
+    case 'tr-copie':{const t=TRANSMETTRE_MOT+'\n'+PUBLIC+'transmettre/';(async()=>{try{await navigator.clipboard.writeText(t);toast('La phrase et le lien sont copiés.');}catch(e){const c=document.getElementById('tr-lien');if(c){try{c.focus();c.select();}catch(x){}}toast('Le lien est prêt à être copié, juste en dessous.');}})();return;}
     case 'rien':return;
-    case 'step':{const i=Number(d.i);const e=stepEtat(i);
+    case 'step':{const i=Number(d.i);const e=stepEtat(i);if(can('parcours'))usage('parcours');
       if(e.k==='formule'){openUpgrade('parcours');break;}
       if(e.k==='bientot'){toast('Cette étape s’ouvrira '+dansJours(e.n)+'. Chaque étape demande une semaine de pratique.');return;}
       if(e.k!=='open'){toast('Cette étape s’ouvrira plus tard, quand vous aurez ouvert celles qui la précèdent.');return;}
@@ -3382,25 +3968,28 @@ function handle(act,d,el){
     case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
-  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','ap','ap-garde','avec','commande','cmd','arret','arret-ok'].includes(act);
+  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre'].includes(act)||(act==='rl'&&fxSig()!==sig0);
   /* Chaque nouvel écran est une page de l'historique. Ce qui se passe à l'intérieur d'un même écran (une rubrique de la boîte à outils, le choix d'une photo) remplace la page au lieu d'en ajouter une. */
-  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||act==='arret-ok');fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
+  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
+  if(act==='rl')rlApres();
   if(navAct)window.scrollTo(0,0);
 }
 const app=document.getElementById('app');
 app.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.tagName==='INPUT'||el.tagName==='LABEL')return;
   if(el.tagName==='A'){if(e.defaultPrevented||e.button>0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();}
   handle(el.dataset.act,el.dataset,el);});
-app.addEventListener('change',e=>{const el=e.target;if(el.tagName==='INPUT'&&el.dataset.act==='share')handle('share',el.dataset,el);if(el.dataset&&el.dataset.note&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
+app.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.rlf){rlFichier(el);return;}if(el.tagName==='INPUT'&&el.dataset.act==='share')handle('share',el.dataset,el);if(el.dataset&&el.dataset.note&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
 /* Si l'on quitte la page pendant qu'on écrit dans le carnet, les derniers mots sont gardés tout de suite. Rien n'est écrit s'il n'y a rien en attente,
    pour ne pas écraser ce qu'un autre onglet aurait enregistré entre-temps. */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
 let typing=null,noteT=null,noteAttend=false;
 app.addEventListener('input',e=>{
   const t=e.target;clearErr(t);
+  /* Les champs de « Passer le relais » se gardent tout seuls. */
+  if(t.dataset&&t.dataset.rl)rlSaisie(t);
   /* Le carnet de route se garde tout seul, pendant qu'on écrit. */
   if(t.dataset&&t.dataset.note){const id=t.dataset.note;const v=String(t.value).slice(0,LIM.note);if(v.trim())D().notes[id]={t:v,d:todayIso()};else delete D().notes[id];clearTimeout(noteT);noteAttend=true;noteT=setTimeout(()=>{noteAttend=false;save();},400);const st=document.getElementById('note-etat');if(st){const m=v.trim()?NOTE_OUI:NOTE_NON;if(st.textContent!==m)st.textContent=m;}carnetHaut(t);lectureSync();}
   if(t.id==='draft'){state.draft=t.value;updCount(t);brouillonGarde();}
@@ -3433,7 +4022,10 @@ if(FX_OK){document.addEventListener('pointerdown',fxTap,{passive:true,capture:tr
 /* Sur le site, l'adresse dit quel écran ouvrir : une fiche (…/fiches/le-coucher-et-la-nuit/), la liste des situations (…/fiches/) ou « Mon histoire » (…/#histoire).
    On peut envoyer ces adresses telles quelles, et le bouton Retour du téléphone fonctionne partout. */
 const r0=routeDe();
-if(r0){state.view=r0.v;if(r0.sit)state.sit=r0.sit;if(r0.kit)state.kit=r0.kit;}
+if(r0){state.view=r0.v;if(r0.sit)state.sit=r0.sit;if(r0.kit)state.kit=r0.kit;
+  /* Une fiche de relais reçue par lien se lit dès l'arrivée. Un cadeau ou « Offrir » ouvrent leur écran de la même façon. */
+  if(r0.re==='lu')rlDuHash();
+  if(r0.cf)state.cmd={f:r0.cf,m:'une',k:r0.ck||'recap',de:''};}
 /* Un visiteur arrive sur la vitrine. Elle compte comme une page de l'historique : après « Souffler 2 minutes », « Retour » y ramène. */
 else if(!D().onboarded)state.view='intro';
 /* Le téléphone recharge parfois la page tout seul (on a changé d'application un instant, ou l'on revient d'une page de texte) :
@@ -3448,7 +4040,10 @@ brouillonLit();
 if(SITE)window.addEventListener('hashchange',()=>{
   /* L'adresse …/#atelier, tapée alors que l'espace est déjà ouvert, allume l'aperçu d'Antonio sans recharger la page. */
   if(location.hash==='#atelier'){const d=D();d.atelier=true;d.tout=true;save();histPush(true);if(d.onboarded)render();toast('Aperçu d’Antonio activé sur cet appareil. Tout le parcours est ouvert.');}
-  /* Les adresses des formules et des 2 aperçus, tapées alors que l'espace est ouvert. */
+  /* Une fiche de relais reçue par lien, ou un cadeau, ouverts alors que la page est déjà là. */
+  else if(/^#f=/.test(location.hash)){rlDuHash();if(state.view!=='relais')nav('relais');histPush(true);render();window.scrollTo(0,0);}
+  else if(/^#cadeau-(parcours|relais)$/.test(location.hash)){state.cmd={f:location.hash.slice(8),m:'une',k:'activer',de:''};nav('commande');histPush(true);render();window.scrollTo(0,0);}
+  /* Les adresses des offres, de l'essai du parcours et du relais, tapées alors que l'espace est ouvert. */
   else if(VUES_HASH[location.hash]&&state.view!==VUES_HASH[location.hash]){const v=VUES_HASH[location.hash];if(v==='apercu'){state.ap={k:0,g:'',mot:''};state.sch=1;}nav(v);histPush(true);render();window.scrollTo(0,0);}
   /* L'adresse …/#accueil, tapée alors que l'espace est ouvert, montre la vitrine. */
   else if(location.hash==='#accueil'&&state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}
