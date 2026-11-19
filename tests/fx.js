@@ -3,7 +3,8 @@
 //    rien ne reste à moitié visible ou décalé, l'onde de lumière du changement d'écran se voit (images prises en cours de route),
 //    puis le dépôt, les messages brefs, une feuille, le réglage dans « Moi ».
 // 2) Avec une carte graphique émulée : l'eau de la photo (accueil, sous le doigt, « Aujourd'hui », « Mon histoire »), puis le calme.
-// usage : node fx.js [largeur] [ancien] [lumiere]
+// usage : node fx.js [largeur] [ancien] [lumiere] [--eau]
+//   --eau   = rejouer seulement la partie 2 (l'eau dessinée), sans reparcourir tous les écrans
 //   ancien  = navigateur sans fondu d'écran, sans défilement animé et sans carte graphique
 //   lumiere = garder la lumière qui se lève pendant la mesure de l'eau (par défaut on la retire pour ne mesurer que l'eau)
 const { chromium } = require('playwright');
@@ -11,6 +12,7 @@ const fs = require('fs');
 const { walk, APP, A } = require('./walk');
 const W = parseInt(process.argv[2] || '390', 10);
 const OLD = process.argv[3] === 'ancien';
+const EAU_SEULE = process.argv.includes('--eau');
 const OUT = '/home/claude/build/fx/frames'; fs.mkdirSync(OUT, { recursive: true });
 let fails = 0; const ok = (c, m) => { if (!c) { fails++; console.log('FAIL ' + m); } };
 const errs = [];
@@ -19,12 +21,14 @@ const OPTS = { viewport: { width: W, height: 844 }, deviceScaleFactor: 1, locale
 const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.up(); };
 
 (async () => {
+  let n = 0;
   // ------------------------------------------------------------------ 1) navigateur ordinaire
+  if (!EAU_SEULE) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext(OPTS);
   if (OLD) await ctx.addInitScript(() => { try { delete Document.prototype.startViewTransition; } catch (e) { } const sup = CSS.supports.bind(CSS); CSS.supports = (a, b) => (/animation-(timeline|range)/.test(String(a)) ? false : sup(a, b)); const gc = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (t, o) { return /webgl/.test(String(t)) ? null : gc.call(this, t, o); }; });
   const page = await ctx.newPage(); listen(page);
-  let n = 0; const bad = [];
+  const bad = [];
   const visit = async name => {
     await page.waitForTimeout(1900); n++; // l'arrivée des blocs dure un peu moins d'une seconde et demie
     const r = await page.evaluate(() => {
@@ -167,17 +171,21 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   await page.click(A('souffle-stop')); await page.waitForTimeout(300); await page.click(A('back')); await page.waitForTimeout(1900);
   // --- les écrans calmes : sur le SOS, là où l'on écrit et là où l'on paie, rien ne bouge une fois l'écran arrivé
   {
-    const bouge = () => page.evaluate(() => ({ anims: document.getAnimations().filter(a => a.playState === 'running').map(a => (a.animationName || a.transitionProperty || '?') + ' sur ' + ((a.effect && a.effect.target && (a.effect.target.className || a.effect.target.tagName)) || '?')).slice(0, 4), reflet: document.querySelectorAll('.dose-reflet,.depose-g,.s-rep,.onde-doigt').length, calque: !!document.querySelector('canvas.eau'), h1: (document.querySelector('main h1') || {}).textContent || '' }));
+    const bouge = () => page.evaluate(() => ({ anims: document.getAnimations().filter(a => a.playState === 'running').map(a => (a.animationName || a.transitionProperty || '?') + ' sur ' + ((a.effect && a.effect.target && (a.effect.target.className || a.effect.target.tagName)) || '?')).slice(0, 8), reflet: document.querySelectorAll('.dose-reflet,.depose-g,.s-rep,.onde-doigt').length, calque: !!document.querySelector('canvas.eau'), h1: (document.querySelector('main h1') || {}).textContent || '' }));
     await page.click(A('go', '[data-view="sos"]')); await page.waitForTimeout(1900); const c1 = await bouge();
-    ok(!!(await page.$('main.sosview')) && c1.anims.length === 0 && c1.reflet === 0 && !c1.calque, 'écran calme : le SOS est immobile dès son arrivée ' + JSON.stringify(c1));
+    // Le SOS garde un seul mouvement, qui existait avant cette passe : le cercle de l'étape 3, avec lequel le texte invite à respirer. Rien d'autre ne bouge.
+    ok(!!(await page.$('main.sosview')) && c1.anims.length <= 1 && c1.anims.every(a => a === 'breathe sur orb') && c1.reflet === 0 && !c1.calque, 'écran calme : sur le SOS, rien ne bouge une fois l’écran arrivé, sauf le cercle de l’étape 3 avec lequel on respire ' + JSON.stringify(c1));
     await page.click(A('back')); await page.waitForTimeout(1900);
     await page.click('.portes ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(2300); await page.focus('#draft'); await page.keyboard.type('Quelques mots.'); await page.waitForTimeout(700); const c2 = await bouge();
     ok(c2.anims.length === 0 && !c2.calque, 'écran calme : pendant que le parent écrit, rien ne bouge ' + JSON.stringify(c2));
     await page.fill('#draft', ''); await page.click(A('back')); await page.waitForTimeout(1900);
-    await page.evaluate(() => { location.hash = '#cadeau-parcours'; }); await page.waitForTimeout(2600); const c3 = await bouge();
-    ok(/commande|cadeau/i.test(c3.h1) && c3.anims.length === 0 && c3.reflet === 0 && !c3.calque, 'écran calme : l’écran de la commande est immobile ' + JSON.stringify(c3));
-    await page.click(A('back')).catch(() => { }); await page.waitForTimeout(1900);
-    if (!(await page.$('.tabs'))) { await page.goBack().catch(() => { }); await page.waitForTimeout(1500); }
+    await page.evaluate(() => { location.hash = '#formules'; }); await page.waitForTimeout(1900);
+    await page.click(A('commande', '[data-v="parcours"][data-m="une"]')); await page.waitForTimeout(2600); const c3 = await bouge();
+    ok(c3.h1 === 'Votre commande' && c3.anims.length === 0 && c3.reflet === 0 && !c3.calque, 'écran calme : l’écran de la commande est immobile ' + JSON.stringify(c3));
+    await page.evaluate(() => { location.hash = '#cadeau-parcours'; }); await page.waitForTimeout(2600); const c4 = await bouge();
+    ok(/vous offre/.test(c4.h1) && c4.anims.length === 0 && c4.reflet === 0 && !c4.calque, 'écran calme : l’écran qui ouvre un cadeau est immobile ' + JSON.stringify(c4));
+    // retour à « Aujourd'hui » par l'adresse de l'espace, quel que soit le chemin parcouru
+    await page.goto(APP); await page.waitForSelector('.tabs'); await page.waitForTimeout(2600);
   }
   // --- une feuille qui se referme : elle s'efface, et rien ne reste bloqué
   await page.click('.tab' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(1900);
@@ -193,6 +201,7 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   await page.click('.tab' + A('go', '[data-view="today"]')); ok(/Camille/.test(await page.$eval('h1', e => e.textContent)) && (await page.$$('.fxe,.fxr')).length === 0, 'effets coupés : le changement d’écran est immédiat, aucun bloc animé');
   await page.reload(); await page.waitForTimeout(500); ok(!(await page.evaluate(() => document.documentElement.classList.contains('fx'))), 'effets coupés : toujours coupés après rechargement');
   await browser.close();
+  }
 
   // ------------------------------------------------------------------ 2) l'eau, avec une carte graphique émulée (lente ici, d'où la garde levée)
   if (!OLD) {
@@ -201,7 +210,7 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     const p = await c2.newPage(); listen(p);
     const eau = sel => p.evaluate(sel => { const c = document.querySelector(sel + '>canvas.eau'); return c ? c.width * c.height : 0; }, sel);
     await p.goto(APP); await p.waitForTimeout(600);
-    const sharp = require('sharp'); const rd = async f => (await sharp(OUT + '/' + f).removeAlpha().raw().toBuffer()); const diff = (x, y) => { let k = 0; for (let i = 0; i < x.length; i += 3) if (Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]) > 24) k++; return k / (x.length / 3); };
+    const sharp = require('sharp'); const rd = async f => (await sharp(OUT + '/' + f).removeAlpha().raw().toBuffer()); const diff = (x, y, seuil = 24) => { let k = 0; for (let i = 0; i < x.length; i += 3) if (Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]) > seuil) k++; return k / (x.length / 3); };
     // La vitrine est un carnet posé sur une table, sans photo : aucun calque d'eau n'y est posé, et une fois l'écran arrivé plus rien ne bouge.
     { const clip = { x: 0, y: 0, width: W, height: 700 }; const vus = []; const t0 = Date.now();
       for (const ms of [600, 1300, 2200, 3200]) { const d = ms - (Date.now() - t0); if (d > 0) await p.waitForTimeout(d); vus.push((await p.$$('canvas.eau')).length); }
@@ -218,9 +227,17 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     const bandClip = await p.$eval('.band', e => { const r = e.getBoundingClientRect(); return { x: 0, y: Math.max(0, Math.round(r.top)), width: innerWidth, height: Math.round(Math.min(r.height, 150)) }; });
     await p.screenshot({ path: OUT + '/bandeau-calme.png', clip: bandClip });
     // toucher l'eau : une onde naît sous le doigt ; toucher la forêt : rien
-    { const e1 = await pt(150, 300); await tap(p, e1.x, e1.y); await p.waitForTimeout(900);
-      ok((await eau('.band')) > 0, 'toucher l’eau : une onde naît sous le doigt ' + JSON.stringify(e1)); await p.screenshot({ path: OUT + '/toucher-0900.png', clip: bandClip });
-      ok(diff(await rd('toucher-0900.png'), await rd('bandeau-calme.png')) > 0.002, 'toucher l’eau : l’eau bouge vraiment');
+    { const e1 = await pt(150, 300);
+      // L'onde est fine. On la photographie autour du doigt (le haut du bandeau n'en montre que le bord), à 3 moments, et on garde le plus net :
+      // avec une carte graphique émulée, une photo prise à un seul instant tombe parfois entre 2 rides.
+      const zone = await p.$eval('.band', (e, [x, y]) => { const r = e.getBoundingClientRect(); const x0 = Math.max(0, Math.round(x - 100)), y0 = Math.max(Math.round(r.top), Math.round(y - 70)); return { x: x0, y: y0, width: Math.min(200, innerWidth - x0), height: Math.max(20, Math.min(120, Math.round(r.bottom) - y0)) }; }, [e1.x, e1.y]);
+      await p.screenshot({ path: OUT + '/doigt-calme.png', clip: zone });
+      await tap(p, e1.x, e1.y); let net = 0, fin = 0, calque = 0; const mesures = [];
+      for (const k of [1, 2, 3]) { await p.waitForTimeout(k === 1 ? 450 : 400); calque = Math.max(calque, await eau('.band')); await p.screenshot({ path: OUT + '/doigt-' + k + '.png', clip: zone });
+        const a = await rd('doigt-' + k + '.png'), z = await rd('doigt-calme.png'); const d24 = diff(a, z), d10 = diff(a, z, 10); net = Math.max(net, d24); fin = Math.max(fin, d10); mesures.push((d24 * 100).toFixed(2) + ' et ' + (d10 * 100).toFixed(2)); }
+      ok(calque > 0, 'toucher l’eau : une onde naît sous le doigt ' + JSON.stringify(e1));
+      ok(net > 0.002 || fin > 0.01, 'toucher l’eau : l’eau bouge vraiment autour du doigt (points changés nettement et légèrement, en %, à 3 moments : ' + mesures.join(' ; ') + ')');
+      if (EAU_SEULE) console.log('  mesure : toucher l’eau, points changés nettement et légèrement, en % : ' + mesures.join(' ; ') + ' ' + JSON.stringify(zone));
       await p.waitForTimeout(4600); ok(!(await eau('.band')), 'toucher l’eau : le calque s’enlève quand l’onde s’est éteinte');
       const e2 = await pt(250, 60); await tap(p, e2.x, e2.y); await p.waitForTimeout(500);
       ok(!(await eau('.band')), 'toucher la forêt : l’eau ne bouge pas ' + JSON.stringify(e2)); }
@@ -231,11 +248,13 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
       await p.screenshot({ path: OUT + '/bandeau-calme3.png', clip: bandClip }); ok(diff(await rd('bandeau-calme3.png'), await rd('bandeau-calme.png')) === 0, 'après le rebond, la photo est exactement comme avant'); }
     // souffler : la goutte de la photo suit le souffle. Le calque d'eau est posé sur l'étang, les cercles de secours sont cachés,
     // la goutte s'élève à l'inspiration, redescend à l'expiration, et la photo redevient exactement la même à l'arrêt.
-    await p.click('.portes ' + A('porte', '[data-v="souffle"]')); await p.waitForSelector('main.souffle.s-cours'); await p.waitForTimeout(1400 + 500);
+    const motEst = m => p.waitForFunction(m => { const e = document.getElementById('souffle-mot'); return !!e && e.textContent === m; }, m, { timeout: 30000, polling: 50 });
+    await p.click('.portes ' + A('porte', '[data-v="souffle"]')); await p.waitForSelector('main.souffle.s-cours'); await motEst('Inspirez'); await p.waitForTimeout(300);
     { const clip = await p.$eval('.souffle .etang', e => { const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width * .3), y: Math.max(0, Math.round(r.top + r.height * .12)), width: Math.round(r.width * .4), height: Math.round(r.height * .62) }; });
-      await p.screenshot({ path: OUT + '/souffle-in-debut.png', clip }); await p.waitForTimeout(3000); await p.screenshot({ path: OUT + '/souffle-in-fin.png', clip });
-      await p.waitForTimeout(500 + 3500);
+      // 3 photos : au début de l'inspiration (la goutte est en bas), au moment où « Expirez » s'affiche (elle est en haut), puis 3 secondes plus tard (elle est redescendue)
+      await p.screenshot({ path: OUT + '/souffle-in-debut.png', clip }); await motEst('Expirez');
       const so = await p.evaluate(() => { const e = document.querySelector('.souffle .etang'), im = e.querySelector('.etang-photo'); return { mot: document.getElementById('souffle-mot').textContent, photo: !!im && im.complete && im.naturalWidth > 0, eau: e.querySelectorAll('canvas.eau').length, vive: e.classList.contains('eau-vive'), ronds: getComputedStyle(e.querySelector('.ronds')).visibility, aide: document.getElementById('souffle-aide').textContent }; });
+      await p.screenshot({ path: OUT + '/souffle-in-fin.png', clip }); await p.waitForTimeout(3000);
       await p.screenshot({ path: OUT + '/souffle-out.png', clip });
       const monte = diff(await rd('souffle-in-fin.png'), await rd('souffle-in-debut.png')), descend = diff(await rd('souffle-out.png'), await rd('souffle-in-fin.png'));
       ok(so.mot === 'Expirez' && so.photo && so.eau === 1 && so.vive && so.ronds === 'hidden' && /redescend/.test(so.aide), 'souffler : la photo de la goutte est là, l’eau y est dessinée, les cercles de secours sont cachés, et la ligne d’aide parle de la goutte ' + JSON.stringify(so));
@@ -257,6 +276,6 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     await p.waitForTimeout(2600); ok((await eau('.band.story')) > 0, '« Mon histoire » : l’onde part de la goutte'); await p.waitForTimeout(5200); ok(!(await eau('.band.story')), '« Mon histoire » : le calque s’enlève ensuite');
     await b2.close();
   }
-  console.log((fails ? fails + ' échec(s)' : 'effets' + (OLD ? ' (navigateur ancien simulé)' : '') + ' : tout passe (' + n + ' écrans, largeur ' + W + ')') + ' | erreurs console : ' + (errs.length ? errs.slice(0, 5).join(' | ') : 'aucune'));
+  console.log((fails ? fails + ' échec(s)' : 'effets' + (OLD ? ' (navigateur ancien simulé)' : '') + (EAU_SEULE ? ', partie 2 seule (l’eau dessinée) : tout passe (largeur ' + W + ')' : ' : tout passe (' + n + ' écrans, largeur ' + W + ')')) + ' | erreurs console : ' + (errs.length ? errs.slice(0, 5).join(' | ') : 'aucune'));
   process.exit(fails || errs.length ? 1 : 0);
 })().catch(e => { console.error('CRASH', e); process.exit(2); });

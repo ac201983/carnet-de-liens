@@ -2187,6 +2187,8 @@ html.fx .onde-doigt{animation:onde-doigt 2.6s cubic-bezier(.2,.6,.3,1) both}
 .rl-fiche .rl-trois h3,.rl-fiche .rl-trois .rl-h{font-size:1.34em;line-height:1.16;text-wrap:balance}
 .rl-fiche .rl-trois h3::after,.rl-fiche .rl-trois .rl-h::after{content:"";display:block;width:2.7em;margin-top:.4em;border-top:3px solid currentColor;border-radius:2px;transform-origin:0 50%}
 .v-relais{overflow-x:clip}
+/* « Mes relais » et « Mes réunions » : la ligne sous le titre (pour qui, envoyée quand, retour noté) se lit en entier, sur 2 lignes s'il le faut, au lieu d'être coupée */
+.rl-mes .liste .sit .tx span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
 @media (prefers-reduced-motion:no-preference){
   html.fx .v-relais .rl-fiche.se-pose{transform-origin:50% 0;animation:rl-pose 1.05s cubic-bezier(.22,.7,.25,1) calc(.16s + var(--pose-d,0s)) backwards}
   html.fx .v-relais .rl-fiche.se-pose .rl-trois h3::after,html.fx .v-relais .rl-fiche.se-pose .rl-trois .rl-h::after{animation:rl-trait .7s cubic-bezier(.3,.6,.3,1) calc(1s + var(--pose-d,0s)) backwards}

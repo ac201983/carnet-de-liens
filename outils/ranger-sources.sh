@@ -49,7 +49,7 @@ cp build/parole/parole.css build/parole/poser-css.py build/parole/voir.js build/
 # de la dose, le minuteur visuel) et le script qui le pose, l'horloge tenue à la main et ce qui filme un mouvement image par image,
 # les mesures (places du repère sur les courbes, les 3 repères de la fiche à l'ouverture) et la suite d'essais de la passe.
 mkdir -p "$BRANCHE/outils/goutte"
-cp build/goutte/goutte.css build/goutte/poser-css.py build/goutte/horloge.js build/goutte/film.js build/goutte/clip.js build/goutte/vague-vue.js build/goutte/souffle-vue.js build/goutte/souffle-etats.js build/goutte/instant-vue.js build/goutte/fractions.js build/goutte/relais-mesure.js build/goutte/minuteur-vue.js build/goutte/vue.js build/goutte/t.sh build/goutte/lot-g.sh "$BRANCHE/outils/goutte/" 2>/dev/null || true
+cp build/goutte/goutte.css build/goutte/poser-css.py build/goutte/horloge.js build/goutte/film.js build/goutte/clip.js build/goutte/vague-vue.js build/goutte/souffle-vue.js build/goutte/souffle-etats.js build/goutte/instant-vue.js build/goutte/fractions.js build/goutte/relais-mesure.js build/goutte/minuteur-vue.js build/goutte/vue.js build/goutte/t.sh build/goutte/lot-g.sh build/goutte/lot-g3.sh build/goutte/souffle-film.js build/goutte/livrables.js build/goutte/mes-relais-mesure.js build/goutte/lot-g4.sh build/goutte/lot-g5.sh "$BRANCHE/outils/goutte/" 2>/dev/null || true
 
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

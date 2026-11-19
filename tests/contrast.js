@@ -36,7 +36,11 @@ const COLLECT = () => {
     // Le contenu d'un bloc « details » refermé n'est pas affiché, mais le navigateur lui garde une place : on ne le mesure pas.
     const dt = el.closest('details:not([open])'); if (dt && !el.closest('summary')) continue;
     const rg = document.createRange(); rg.selectNodeContents(n);
-    const rects = [...rg.getClientRects()].filter(r => r.width > 2 && r.height > 2 && visible(el, r)).map(r => [r.left, r.top, r.width, r.height]);
+    // Un texte coupé par « … » (ou par un nombre de lignes) garde, pour le navigateur, un rectangle qui va jusqu'au bout du texte entier, au-delà de ce qui est dessiné.
+    // On ne mesure que la partie dessinée : chaque rectangle est ramené à la boîte de son élément quand celui-ci coupe ce qui dépasse.
+    const bo = (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') && cs.display !== 'inline' ? el.getBoundingClientRect() : null;
+    const dessine = r => { if (!bo) return r; const l = Math.max(r.left, bo.left), d = Math.min(r.right, bo.right), h = Math.max(r.top, bo.top), b = Math.min(r.bottom, bo.bottom); return { left: l, top: h, right: d, bottom: b, width: d - l, height: b - h }; };
+    const rects = [...rg.getClientRects()].map(dessine).filter(r => r.width > 2 && r.height > 2 && visible(el, r)).map(r => [r.left, r.top, r.width, r.height]);
     if (!rects.length) continue;
     const fill = cs.webkitTextFillColor && cs.webkitTextFillColor !== cs.color ? cs.webkitTextFillColor : cs.color;
     items.push({ kind: 'texte', text: t.slice(0, 46), sel: path(el), color: rgba(fill), size: parseFloat(cs.fontSize), weight: parseInt(cs.fontWeight, 10) || 400, opacity: opac(el), rects });

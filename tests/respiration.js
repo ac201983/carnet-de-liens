@@ -88,12 +88,15 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
 (async () => {
   const LOCAL = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
   const exe = NAV === 'chromium' ? (process.env.PEPE_CHROME || (require('fs').existsSync(LOCAL) ? LOCAL : undefined)) : undefined;
-  const lance = { chromium: { args: ['--ignore-certificate-errors', '--autoplay-policy=user-gesture-required'] }, firefox: {}, webkit: {} }[NAV];
+  // PEPE_EAU=1 (dans l'atelier seulement, avec Chrome) : la carte graphique est émulée et la garde de l'eau est levée, pour rejouer l'essai avec la goutte dessinée, comme sur un appareil qui sait dessiner l'eau.
+  const EAU_EMULEE = NAV === 'chromium' && !!process.env.PEPE_EAU;
+  const lance = { chromium: { args: ['--ignore-certificate-errors', '--autoplay-policy=user-gesture-required'].concat(EAU_EMULEE ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] : []) }, firefox: {}, webkit: {} }[NAV];
   const browser = await pw[NAV].launch(Object.assign({}, lance, exe ? { executablePath: exe } : {}));
   const ouvre = async (fmt, opt = {}) => {
     const f = Object.assign({}, fmt); if (NAV === 'chromium' && f.hasTouch) f.isMobile = true;
     const ctx = await browser.newContext(Object.assign({ locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: opt.calme ? 'reduce' : 'no-preference' }, f));
     await ctx.addInitScript(horloge, [21 + 40 / 60]);
+    if (EAU_EMULEE) await ctx.addInitScript(() => { window.__eauSansGarde = true; });
     if (opt.vite) await ctx.addInitScript(accelere, [opt.vite]);
     if (opt.seme) await ctx.addInitScript(semer, [KEY, JSON.stringify(opt.seme)]);
     if (opt.sansWebAudio) await ctx.addInitScript(sansWebAudio);
