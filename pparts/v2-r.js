@@ -201,7 +201,7 @@ function rlVueExemple(){
   return '<div class="f-tete"><span class="label">Un exemple, inventé pour vous montrer</span><h1 class="t1">Une fiche terminée</h1><p class="sub">Voici ce que reçoit la personne qui prend le relais. Elle l’ouvre sur son téléphone, sans compte et sans rien acheter.</p></div>'+
     '<div class="chips rl-ages" role="group" aria-label="Choisir un âge">'+[['e','À 5 ans'],['a','À 16 ans'],['g','À 35 ans']].map(x=>'<button type="button" class="chip" data-act="rl" data-k="ex" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>').join('')+'</div>'+
     rlFicheHtml(RL_EX[k],{cls:'rl-ex'})+
-    '<p class="hint">Les prénoms et les numéros de cet exemple sont inventés.</p>'+
+    '<p class="hint">Ces 3 âges sont des exemples, et l’outil sert quel que soit l’âge de votre enfant. Les prénoms et les numéros de cet exemple sont inventés.</p>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="nouveau">'+I.pen+(rel().fiches.length?'Préparer un relais':'Préparer mon premier relais')+'</button><p class="hint">Vous choisissez chaque phrase, et rien ne part sans vous.</p>'+(SITE?'<button type="button" class="lien-f" data-act="rl" data-k="imprimer">Imprimer cet exemple</button>':'')+'</div>';
 }
 function rlChamp(id,ch,lab,val,ph,lim,aide){return '<div class="field"><label for="'+id+'">'+lab+'</label><input type="text" id="'+id+'" data-rl="'+ch+'" maxlength="'+lim+'" value="'+esc(val||'')+'" placeholder="'+esc(ph)+'" autocomplete="off">'+(aide?'<p class="hint">'+aide+'</p>':'')+'</div>';}
@@ -282,8 +282,23 @@ function rlVueRetour(){
 /* ---------- préparer une réunion ---------- */
 function rlReuTitre(x){const a=(RL_AVEC.find(y=>y[0]===x.avec)||RL_AVEC[3])[1];return 'Réunion avec '+a.charAt(0).toLowerCase()+a.slice(1);}
 /* Ce que le parent a déjà écrit et qui peut servir : les phrases de ses fiches, ses retours, et son journal « avant, pendant, après ». */
+/* Un texte du parent, phrase par phrase, sans rien changer aux mots. Une phrase finit sur un point, un point d'interrogation ou d'exclamation
+   suivi d'une majuscule, d'un chiffre ou d'un guillemet ouvrant, ou bien à la ligne : « non ! » au milieu d'une phrase ne la coupe pas. */
+function rlPhrases(t){
+  const s=String(t==null?'':t),out=[];let cur='';
+  for(let i=0;i<s.length;i++){const c=s[i];
+    if(c==='\n'){out.push(cur);cur='';continue;}
+    cur+=c;
+    if(/[.!?…]/.test(c)){let j=i+1;while(j<s.length&&/[.!?…]/.test(s[j])){cur+=s[j];j++;}i=j-1;
+      const reste=s.slice(j);if(!reste||/^\s+[A-ZÀ-ÖØ-Þ0-9«“"]/.test(reste)||/^[ \t]*\n/.test(reste)){out.push(cur);cur='';}}
+  }
+  out.push(cur);return out.map(x=>x.trim()).filter(Boolean);
+}
 function rlObsDispo(){
   const out=[],vu={};const add=(t,d)=>{t=clean(t,RL_LIM.l);if(t&&!vu[t]){vu[t]=1;out.push({t:t,d:d});}};
+  /* Les mots que le parent a déposés servent aussi, s'il le veut : ses 2 derniers dépôts, phrase par phrase, en tête de liste.
+     Aucune phrase n'est coupée ni réécrite : une phrase plus longue qu'une observation n'est pas proposée. */
+  (D().depots||[]).filter(x=>!x.risk&&typeof x.text==='string').slice(-2).reverse().forEach(x=>{rlPhrases(x.text).filter(s=>s.length>=12&&s.length<=RL_LIM.l).slice(0,4).forEach(s=>add(s,'Vos mots du '+fmtDate(x.date)));});
   rel().fiches.slice().reverse().forEach(f=>{if(f.retour)add(f.retour,'Votre retour du '+fmtDate(f.retourLe||f.m||todayIso()));(f.trois||[]).forEach(x=>add(x,'Vos 3 repères'));rlToutes(f).forEach(x=>add(x,'Votre fiche de relais'));});
   (D().abc||[]).slice(-5).reverse().forEach(x=>add([x.a?'Avant, '+x.a:'',x.b?'Pendant, '+x.b:'',x.c?'Après, '+x.c:''].filter(Boolean).join('. '),'Votre journal du '+fmtDate(x.date)));
   return out.slice(0,18);
@@ -339,7 +354,7 @@ function rlVueLu(){
   return '<p class="label rl-recu-l">Une fiche de relais, écrite par une famille</p>'+rlFicheHtml(f,{cls:'rl-recu',h1:true})+
     '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button></div>'+
     '<p class="hint">Cette fiche est contenue dans le lien que vous avez reçu. Le site ne l’a ni lue ni enregistrée. Gardez ce lien pour la retrouver.</p>'+
-    '<section class="rl-carte"><h2>D’où vient cette fiche ?</h2><p>Elle a été préparée avec « Passer le relais », un outil de Parent Écouté, Parent Éclairé, un espace pour les parents d’une personne en situation de handicap.</p><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir comment une famille prépare sa fiche</button></section>';
+    '<section class="rl-carte"><h2>D’où vient cette fiche ?</h2><p>Elle a été préparée avec « Passer le relais », un outil de Parent écouté, parent éclairé, un espace pour les parents d’une personne en situation de handicap.</p><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir comment une famille prépare sa fiche</button></section>';
 }
 function viewRelais(){
   const e=state.rl.e||'accueil';

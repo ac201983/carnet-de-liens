@@ -27,7 +27,7 @@ assert HOST in ('github', 'infomaniak'), HOST
 MOVED = (cfg.get('moved_to') or '').strip()   # l'espace a déménagé : cette adresse ne fait plus que renvoyer vers la nouvelle (ex. https://parent-ecoute.ch/)
 if MOVED and not MOVED.endswith('/'):
     MOVED += '/'
-NAME = 'Parent Écouté, Parent Éclairé'
+NAME = 'Parent écouté, parent éclairé'
 # Une version d'essai vit dans son propre dossier, avec ses propres notes (une autre clé de rangement dans le navigateur),
 # pour qu'on puisse l'essayer sur le même appareil sans toucher à l'espace habituel. Elle n'est jamais référencée par les moteurs.
 ESSAI = bool(cfg.get('essai'))
@@ -219,7 +219,7 @@ def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=
                 '<meta property="og:url" content="%s">' % e(canonical),
                 '<meta property="og:image" content="%s">' % e(og[0] if og else APP_URL + 'img/apercu.jpg'), '<meta property="og:image:type" content="image/jpeg">',
                 '<meta property="og:image:width" content="1200">', '<meta property="og:image:height" content="630">',
-                '<meta property="og:image:alt" content="%s">' % e(og[1] if og else 'Une goutte tombe sur un étang, dans la lumière d’une forêt. Parent Écouté, Parent Éclairé, par Antonio Company.'),
+                '<meta property="og:image:alt" content="%s">' % e(og[1] if og else 'Une goutte tombe sur un étang, dans la lumière d’une forêt. Parent écouté, parent éclairé, par Antonio Company.'),
                 '<meta name="twitter:card" content="summary_large_image">']
     if hero:  # l'image du haut de page est l'élément le plus grand : on la demande tout de suite
         out.append('<link rel="preload" href="%simg/hero.webp" as="image" type="image/webp" fetchpriority="high">' % a)
@@ -251,7 +251,7 @@ def mentions_body():
     hn, ha = cfg.get('host_name', '').strip(), cfg.get('host_address', '').strip()
     out = '<p class="meta">Dernière mise à jour le {{DATE_FR}}</p>\n'
     out += ('<section id="editeur">\n  <h2>1. Qui édite cet espace</h2>\n'
-            '  <p>« Parent Écouté, Parent Éclairé » est édité par %s, travailleur social. Son adresse postale est %s, Suisse.</p>\n' % (name, addr))
+            '  <p>« Parent écouté, parent éclairé » est édité par %s, travailleur social. Son adresse postale est %s, Suisse.</p>\n' % (name, addr))
     out += '  <p>Pour lui écrire, utilisez l’adresse %s.' % mail_link()
     if tel:
         out += ' Vous pouvez aussi l’appeler au <a class="tel" href="tel:%s">%s</a>.' % (re.sub(r'[^+\d]', '', tel), html.escape(tel))
@@ -398,7 +398,7 @@ def build_site():
             img = 'img/fiches/' + f['slug'] + '.jpg'
             og = None
             if os.path.exists(SRC + '/' + img):
-                og = (APP_URL + img, 'La fiche « %s », sur une photo d’étang en forêt. Parent Écouté, Parent Éclairé.' % f['t'], f['t'])
+                og = (APP_URL + img, 'La fiche « %s », sur une photo d’étang en forêt. Parent écouté, parent éclairé.' % f['t'], f['t'])
             else:
                 sans_image.append(f['slug'])
             write(OUT + '/fiches/' + f['slug'] + '/index.html', ecran(f, 'pub-sit', APP_URL + 'fiches/' + f['slug'] + '/', f['desc'], og))

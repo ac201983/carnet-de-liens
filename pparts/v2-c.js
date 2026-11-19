@@ -48,6 +48,9 @@ function portes(grand){
     /* La troisième porte : le parent y trouve une idée qui part de ce qu'il vit, que son enfant soit petit, ado ou adulte. */
     ['piste',I.bulb,PISTE_T[m],'Une idée','Vous choisissez ce que vous vivez, avec un enfant, un ado ou un adulte.',PISTE_T]
   ];
+  /* Sur l'accueil, la question invite à écrire : « Déposer ce qui pèse » vient donc en premier. « Souffler 2 minutes » reste à un geste,
+     pour la personne qui préfère le silence. Dans « Aujourd'hui », l'ordre des 3 portes ne change pas. */
+  if(grand){P[0][4]='En silence, l’étang respire avec vous.';P[1][4]='Vous l’écrivez avec vos mots, pour vous ou pour le dire à quelqu’un.';P.unshift(P.splice(1,1)[0]);}
   return '<div class="portes'+(grand?'':' mini')+'" role="group" aria-label="Ce dont vous avez besoin">'+P.map((p,i)=>
     '<button type="button" class="porte'+(i===0?' un':'')+'" data-act="porte" data-v="'+p[0]+'"'+(grand?'':' aria-label="'+esc(p[2])+'"')+'><span class="ic" aria-hidden="true">'+p[1]+'</span>'+
     (grand?'<span class="tx"><b'+(p[5]?heureAttr(p[5]):'')+'>'+esc(p[2])+'</b><span>'+esc(p[4])+'</span></span><span class="chev" aria-hidden="true">'+I.chev+'</span>':'<b>'+esc(p[3])+'</b>')+'</button>').join('')+'</div>';
@@ -108,18 +111,18 @@ function urlDe(){
   return RACINE;
 }
 function titreDe(){
-  if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent Écouté, Parent Éclairé';
-  if(state.view==='plans')return 'Les 3 offres de Parent Écouté, Parent Éclairé';
+  if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent écouté, parent éclairé';
+  if(state.view==='plans')return 'Les 3 offres de Parent écouté, parent éclairé';
   if(state.view==='apercu')return 'Essayer une étape du parcours, en 3 minutes';
   if(state.view==='relais')return state.rl.e==='lu'?'Une fiche de relais, écrite par une famille':'Passer le relais, une page pour la personne qui garde votre enfant';
-  if(state.view==='transmettre')return 'Une page à transmettre à une famille, Parent Écouté, Parent Éclairé';
-  if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent Écouté, Parent Éclairé';}
+  if(state.view==='transmettre')return 'Une page à transmettre à une famille, Parent écouté, parent éclairé';
+  if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent écouté, parent éclairé';}
   if(state.view==='kit'&&state.kit==='sits'&&!D().onboarded)return SITS.length+' situations de la vraie vie, avec des pistes pour les parents';
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:''};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:'',dd:state.view==='deposer'&&state.dire?state.dire.id:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
   state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
@@ -137,6 +140,8 @@ function navApply(s){
   if(state.view==='sit'&&!SITS.some(x=>x.id===state.sit))state.view='kit';
   if(state.view==='exo'&&!EXOS.some(x=>x.id===state.exo))state.view='kit';
   if(state.view==='souffle')state.souffle.k=state.souffle.k==='fini'?'fini':'pret';
+  /* « J'aimerais le dire à quelqu'un » se retrouve avec le dépôt auquel il se rapporte. Sans lui, on revient à l'écran pour écrire. */
+  state.dire=(state.view==='deposer'&&s.dd)?direOuvre(s.dd):null;
 }
 function histEtat(){return {pepe:1,i:HIST.i,s:navSnap(),y:0,t:Date.now()};}
 /* L'endroit où l'on était, gardé le temps de la visite dans cet onglet : l'écran, et jusqu'où l'on avait fait défiler. */
@@ -187,7 +192,7 @@ function histRetour(e){
 /* La question et la lumière s'affichent sous la zone d'écriture. Sur un téléphone, le bas de l'écran les cacherait.
    La page descend donc d'elle-même jusqu'à elles, doucement, ou d'un coup si le téléphone demande moins d'animations. */
 function montreReponse(){
-  const el=document.querySelector('.mirror.surface');if(!el||!el.getBoundingClientRect)return;
+  const el=document.querySelector('.emporte')||document.querySelector('.mirror.surface');if(!el||!el.getBoundingClientRect)return;
   const barre=document.querySelector('header.bar');const haut=barre?Math.max(0,barre.getBoundingClientRect().bottom):0;
   const r=el.getBoundingClientRect();
   if(r.top>=haut&&r.bottom<=window.innerHeight-96)return;   /* déjà entièrement à l'écran : la page ne bouge pas */
@@ -273,12 +278,56 @@ function pistesDepotHtml(x){
 
 /* ---------- déposer : un écran pour écrire, et rien d'autre ---------- */
 function viewDeposer(){
-  const d=D();const left=depotsLeft();
+  const d=D();const left=depotsLeft();const site=state.sample===false;
+  if(site&&state.dire)return viewDire();
+  if(site)return '<main id="main" tabindex="-1" class="view deposer"><div class="dep-tete"><h1 class="dep-nom">Déposer ce qui pèse</h1><label class="dep-q" for="draft">'+DEP_Q+'</label><p class="sub">'+DEP_SEUL+'</p></div>'+
+    depotBox()+
+    (d.depots.length?'<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+' gardé'+(d.depots.length>1?'s':'')+' sur cet appareil</span></span><span class="chev">'+I.chev+'</span></button>':'')+
+    '</main>';
   return '<main id="main" tabindex="-1" class="view deposer"><div><h1 class="t1">Déposer ce qui pèse</h1><p class="sub">'+(left===0?'Vous pouvez toujours écrire ce qui pèse, puis l’effacer. Rien n’est gardé.':'Écrivez comme ça vient, sans donner de prénom. Vous recevez en retour une question et une lumière.')+'</p></div>'+
     depotBox()+
     (left===0?'<button type="button" class="sit" data-act="exo" data-id="deposer"><span class="e">'+I.wind+'</span><span class="tx"><b>Écrire, puis effacer</b><span>Sans réponse, et sans rien garder</span></span><span class="chev">'+I.chev+'</span></button>':'')+
     (d.depots.length?'<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+' gardé'+(d.depots.length>1?'s':'')+' sur cet appareil</span></span><span class="chev">'+I.chev+'</span></button>':'')+
     '</main>';
+}
+
+/* ---------- « J'aimerais le dire à quelqu'un » ----------
+   Le parent a écrit. S'il veut être entendu par un proche ou lors d'une réunion, l'espace lui propose une première phrase.
+   Il peut la changer, en choisir une autre, la copier avec ses mots à la suite, ou tout laisser et garder ses mots pour lui.
+   Ses mots ne sont jamais réécrits : ils sont montrés tels quels, et ajoutés tels quels s'il le veut.
+   Les débuts de phrase d'une réunion sont ceux de l'outil « Passer le relais » (« Je perds mes mots »). Rien n'est envoyé : copier est son geste. */
+const DIRE_A=[['proche','À un proche'],['reunion','Lors d’une réunion']];
+const DIRE_PROCHE=['J’aimerais te dire comment s’est passée ma journée. Je ne te demande pas de solution, j’ai besoin que tu m’écoutes.','J’ai besoin de te parler de quelque chose qui me pèse.','As-tu 5 minutes ? J’aimerais te raconter ma journée.','Je n’attends pas de conseil. J’ai besoin que quelqu’un sache ce que je vis.'];
+const DIRE_REUNION='Avant que nous commencions, j’aimerais vous dire quelque chose d’important pour moi.';
+const DIRE_LIM=600;
+function direAmorces(a){return a==='reunion'?[DIRE_REUNION].concat(RL_MOTS_ECRIRE.map(m=>m.replace('{P}','mon enfant')+' ')):DIRE_PROCHE;}
+function direDepot(id){return D().depots.find(x=>x.id===id)||null;}
+/* Ouvrir l'étape pour un dépôt : on reprend ce que le parent avait préparé, s'il y était déjà venu. */
+function direOuvre(id){
+  const x=direDepot(id);if(!x)return null;const g=x.dire||{};const a=g.a==='reunion'?'reunion':'proche';
+  return {id:id,a:a,t:typeof g.t==='string'?g.t:direAmorces(a)[(x.risk&&a==='proche')?1:0],j:g.j!==false,mots:false,copie:false};
+}
+function direGarde(){const s=state.dire;if(!s)return;const x=direDepot(s.id);if(!x)return;x.dire={a:s.a,t:clean(s.t,DIRE_LIM),j:!!s.j};save();}
+function direTexte(){const s=state.dire;if(!s)return '';const x=direDepot(s.id);const a=clean(s.t,DIRE_LIM);return (s.j&&x?[a,x.text]:[a]).filter(Boolean).join('\n\n');}
+/* Après le choix d'une autre première phrase : le curseur se pose à la fin, pour que le parent la continue avec ses mots. */
+function direApres(){if(!state.direFoc)return;state.direFoc=false;try{const el=document.getElementById('amorce');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n);}}catch(e){}}
+function viewDire(){
+  const s=state.dire,x=direDepot(s.id);if(!x){state.dire=null;return viewDeposer();}
+  const L=direAmorces(s.a);
+  const mots=s.mots?'<div class="dire-modeles" role="group" aria-label="D’autres façons de commencer"><span class="label">Commencer par</span>'+L.map((m,i)=>'<button type="button" class="dire-m" data-act="dire" data-k="mot" data-i="'+i+'">'+esc(m.trim())+(/[.?!]$/.test(m.trim())?'':'…')+'</button>').join('')+'</div>':'<button type="button" class="btn rl-perds" data-act="dire" data-k="mots">'+I.bulb+'Je perds mes mots</button>';
+  const pret=s.copie?'<section class="emporte dire-pret" aria-labelledby="dire-pret-t"><h2 id="dire-pret-t">Ce que vous emportez</h2><p class="dire-ok" role="status">'+(s.copie==='main'?'Votre texte est prêt, juste en dessous. Vous pouvez le sélectionner pour le copier, ou le relire avant de le dire à voix haute.':'C’est copié. Vous pouvez le coller dans un message, ou le relire avant de le dire à voix haute.')+'</p><p class="em-texte" id="dire-texte">'+esc(direTexte())+'</p>'+
+    '<div class="em-suite"><button type="button" class="btn primary" data-act="dfin">'+I.check+'J’ai fini pour aujourd’hui</button></div></section>':'';
+  /* La seule suite proposée mène à un outil que le parent garde et réutilise. Elle ne parle pas de prix : l'outil se présente lui-même. */
+  const outil=(s.a==='reunion'&&s.copie)?'<div class="vers-apercu vers-relais"><h2>Arriver à la réunion avec vos mots</h2><p>L’outil « Passer le relais » vous aide aussi à préparer un rendez-vous, avec vos 3 priorités sous les yeux et un bouton « Je perds mes mots ». Vos derniers mots déposés y sont proposés, phrase par phrase.</p><button type="button" class="btn" data-act="rl" data-k="ouvre">'+I.hand+'Découvrir l’outil</button></div>':'';
+  return '<main id="main" tabindex="-1" class="view deposer dire"><div><h1 class="t1">J’aimerais le dire à quelqu’un</h1><p class="sub">Voici une première phrase pour commencer. Vous pouvez la changer, la copier ou la laisser de côté.</p></div>'+
+    (x.risk?'<div class="mirror dire-aide">'+riskHtml('q')+'</div>':'')+
+    '<div class="card dire-c">'+
+    '<span class="label" id="dire-a-l">À qui aimeriez-vous le dire ?</span><div class="chips" role="group" aria-labelledby="dire-a-l">'+DIRE_A.map(a=>'<button type="button" class="chip" data-act="dire" data-k="a" data-v="'+a[0]+'" aria-pressed="'+(s.a===a[0])+'">'+a[1]+'</button>').join('')+'</div>'+
+    '<div class="field"><label for="amorce">Pour commencer</label><textarea id="amorce" rows="4" maxlength="'+DIRE_LIM+'">'+esc(s.t)+'</textarea></div>'+mots+
+    '<div class="em-mots"><span class="label" id="dire-mots-l">Vos mots, tels que vous les avez écrits</span>'+motsHtml(x.text,'dire-mots-l')+
+    '<button type="button" class="chip dire-joint" data-act="dire" data-k="joint" aria-pressed="'+(!!s.j)+'">'+I.check+'Ajouter mes mots à la suite</button></div>'+
+    '<div class="dire-b"><button type="button" class="btn primary" data-act="dire" data-k="copie">Copier</button><button type="button" class="btn ghost" data-act="dire" data-k="laisse">Finalement, je garde mes mots pour moi</button></div>'+
+    '</div>'+pret+outil+'</main>';
 }
 
 /* ---------- souffler 2 minutes : l'étang respire avec le parent ---------- */
@@ -755,6 +804,7 @@ function sheetVoix(sheetIn){
   const ia=!!state.sample;
   return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="voix-t" tabindex="-1"><div class="sheet-in voix"><div class="grab"></div><h2 id="voix-t">Qui vous parle ici ?</h2>'+
     '<div class="qui"><h3>Ce que l’application choisit</h3><p>'+(ia?'La dose du jour et les pistes proposées sont des textes écrits à l’avance, et l’application choisit lequel vous montrer. Quand vous déposez, la réponse est écrite par une intelligence artificielle, et l’espace vous le dit à chaque fois.':'La dose du jour, la question et la lumière que vous recevez après un dépôt et les pistes proposées sont des textes écrits à l’avance. L’application choisit lequel vous montrer, selon le jour et selon quelques mots de votre texte. Personne ne lit ce que vous écrivez, et rien ne quitte votre appareil.')+'</p></div>'+
+    (ia?'':'<div class="qui"><h3>Ce que deviennent vos mots</h3><p>Vos mots sont enregistrés dans ce navigateur, sur cet appareil, et vous les retrouvez dans « Mes dépôts ». L’application ne les réécrit pas. Si vous choisissez « J’aimerais le dire à quelqu’un », elle vous propose une première phrase écrite à l’avance, que vous pouvez changer. Rien n’est envoyé. C’est vous qui copiez le texte et qui décidez à qui le montrer.</p></div>')+
     '<div class="qui"><h3>Ce qui vient d’Antonio</h3><p>Les passages « Ce que j’ai vécu » et la page « Mon histoire » racontent ce qu’Antonio Company a vraiment vécu, comme enfant accueilli, comme travailleur social et comme père. Les autres textes de l’espace sont publiés sous sa responsabilité.</p></div>'+
     '<div class="qui"><h3>Ce qui vient de vous dans « Passer le relais »</h3><p>Les phrases modèles sont écrites à l’avance, et la fiche est faite des mots que vous choisissez. Aucune intelligence artificielle n’y intervient, et le site ne lit pas vos fiches.</p></div>'+
     '<button type="button" class="btn primary wide" data-act="sheet-close">J’ai compris</button></div></div>';
@@ -765,7 +815,7 @@ function barPub(){
   return '<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
 }
 function piedPub(){
-  return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent Écouté, Parent Éclairé » a été créé par Antonio Company, travailleur social et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
+  return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent écouté, parent éclairé » a été créé par Antonio Company, travailleur social et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
     portes(true)+
     '<a class="btn wide" href="'+RACINE+'" data-act="accueil">Découvrir l’espace</a></section>'+
     '<footer class="foot"><a href="'+RACINE+'fiches/" data-act="fiches">Toutes les situations</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a><a href="'+RACINE+'conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">Mentions légales</a>':'')+'</footer>';

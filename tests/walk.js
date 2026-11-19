@@ -93,7 +93,15 @@ async function walk(page, visit) {
   await page.click(A('dsend')); await visit('deposer-erreur');
   await page.fill('#draft', 'Ce soir j’ai crié et je m’en veux. Je suis épuisé, et il ne veut pas dormir.'); await page.click(A('dsend')); await w(250); await visit('deposer-reponse');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('deposer-reponse-bas'); await page.evaluate(() => scrollTo(0, 0));
+  // ----- « J'aimerais le dire à quelqu'un » : la première phrase, les débuts de phrase, puis le texte prêt et l'outil à découvrir
+  await page.click('.emporte ' + A('dire', '[data-k="ouvre"]')); await w(300); await visit('dire');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(200); await visit('dire-bas'); await page.evaluate(() => scrollTo(0, 0));
+  await page.click(A('dire', '[data-k="a"][data-v="reunion"]')); await w(150); await page.click('main.dire .rl-perds'); await w(150); await visit('dire-mots');
+  await page.click(A('dire', '[data-k="mot"][data-i="0"]')); await w(150); await page.click(A('dire', '[data-k="copie"]')); await w(400); await visit('dire-copie');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3600); await visit('dire-copie-bas'); await page.evaluate(() => scrollTo(0, 0));
+  await page.click(A('dire', '[data-k="laisse"]')); await w(400);
   await page.fill('#draft', 'Je n’ai plus envie de vivre comme ça.'); await page.click(A('dsend')); await w(250); await visit('deposer-detresse');
+  await page.click('.emporte ' + A('dire', '[data-k="ouvre"]')); await w(300); await visit('dire-detresse'); await page.click(A('dire', '[data-k="laisse"]')); await w(400);
   await page.click(A('back')); await w(250); await visit('aujourdhui-depot');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('aujourdhui-depot-bas'); await page.evaluate(() => scrollTo(0, 0));
   // la porte « Une piste », depuis « Aujourd'hui » : les situations du moment d'abord, la boîte à outils entière en dessous

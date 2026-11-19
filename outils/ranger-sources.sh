@@ -38,5 +38,11 @@ cp build/lancement/codec.js build/lancement/lien-exemple.js build/lancement/page
 mkdir -p "$BRANCHE/outils/carnet"
 cp build/carnet/carnet.css build/carnet/poser-css.py build/carnet/voir.js build/carnet/etats.js build/carnet/passage.js build/carnet/divers.js build/carnet/lot-b.sh "$BRANCHE/outils/carnet/" 2>/dev/null || true
 
+# Les outils de la passe « la parole du parent » du 19 novembre 2026, en fin d'après-midi (dans l'atelier, ces fichiers sont dans build/parole/) :
+# le style des écrans (le sens du nom sur l'accueil, « Déposer ce qui pèse », « J'aimerais le dire à quelqu'un ») et le script qui le pose,
+# les captures des 2 exemples sur téléphone, les mesures sur un petit écran, et la suite d'essais de la passe.
+mkdir -p "$BRANCHE/outils/parole"
+cp build/parole/parole.css build/parole/poser-css.py build/parole/voir.js build/parole/exemples.js build/parole/mesure.js build/parole/lot-p.sh "$BRANCHE/outils/parole/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

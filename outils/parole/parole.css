@@ -1,0 +1,86 @@
+/* ==================================================================
+   LA PAROLE DU PARENT (demande d'Antonio du 19 novembre 2026)
+   Sur l'accueil : ce que le nom « Parent écouté, parent éclairé » veut dire, puis le mot signé d'Antonio.
+   Dans « Déposer ce qui pèse » : la question, ce que devient le texte, les 2 choix, puis ce que le parent emporte.
+   Dans « J'aimerais le dire à quelqu'un » : une première phrase à changer, à copier ou à laisser.
+   Mêmes règles que le reste : des filets plutôt que des cadres sur l'accueil, aucun texte sous 14 points, des zones de toucher de 44 points au moins.
+   ================================================================== */
+
+/* -- l'accueil : le sens du nom, en 2 phrases, et le mot d'Antonio -- */
+.nom-sens{display:flex;flex-direction:column;gap:10px;min-width:0}
+.nom-sens h2{font-family:var(--font-titre);font-weight:620;font-size:22px;line-height:1.15;letter-spacing:-.008em;color:var(--ct-titre);text-wrap:balance}
+.nom-sens .ns-l{font-size:16.5px;line-height:1.5;color:var(--fg);max-width:33em}
+.nom-sens .ns-l b{font-family:var(--font-titre);font-weight:620;color:var(--ct-titre)}
+.mot-a{display:flex;flex-direction:column;gap:8px;margin:8px 0 0;padding:2px 0 2px 16px;border-left:3px solid var(--ct-trait);max-width:33em}
+.mot-a blockquote{margin:0}
+.mot-a blockquote p{font-family:var(--font-display);font-style:italic;font-size:19px;line-height:1.45;color:var(--fg)}
+.mot-a figcaption{font-size:14.5px;line-height:1.4;font-weight:800;color:var(--muted)}
+/* Sur un petit téléphone, les 3 gestes tiennent encore dans le premier écran, sous la question qui prend 2 lignes. */
+@media (max-width:1023px) and (max-height:700px){
+  .seuil .besoin-l{margin-top:16px}
+  .seuil .portes{margin-top:8px}
+  .seuil .porte,.seuil .porte.un{min-height:64px;padding:8px 2px}
+}
+@media (min-width:1024px){
+  /* Sur un grand écran, le sens du nom forme une bande sous les 2 colonnes : à gauche les 2 phrases, à droite le mot d'Antonio. */
+  .seuil{grid-template-areas:"texte table" "suite table" "nom nom";grid-template-rows:auto 1fr auto}
+  .nom-sens{grid-area:nom;display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);column-gap:clamp(40px,6vw,92px);row-gap:10px;align-items:start;margin-top:26px;padding-top:30px;border-top:1px solid var(--ct-filet)}
+  .nom-sens h2,.nom-sens .ns-l{grid-column:1}
+  .nom-sens h2{font-size:28px}
+  .nom-sens .ns-l{font-size:17.5px}
+  .mot-a{grid-column:2;grid-row:1 / span 3;margin-top:4px}
+  .mot-a blockquote p{font-size:21px}
+}
+
+/* -- déposer : le nom de l'entrée en petit, la question en grand, le fonctionnement réel, puis qui peut lire et où le texte reste -- */
+.dep-tete{display:flex;flex-direction:column;gap:6px}
+.dep-tete .dep-nom{font-family:var(--font-ui);font-size:14.5px;font-weight:800;line-height:1.35;letter-spacing:.01em;color:var(--muted)}
+.dep-tete .dep-q{font-family:var(--font-display);font-weight:500;font-size:28px;line-height:1.16;color:var(--cream);text-wrap:balance}
+.dep-tete .sub{margin-top:2px}
+/* la zone d'écriture grandit avec la hauteur de l'écran : sur un petit téléphone, elle laisse son bouton visible */
+.depot-c #draft{min-height:120px}
+@media (min-height:700px){.depot-c #draft{min-height:150px}}
+@media (min-height:800px){.depot-c #draft{min-height:180px}}
+.depot-c .qui-lit{margin:0;padding:11px 13px;border-radius:12px;background:var(--surface-2);font-size:15px;line-height:1.5;color:var(--fg)}
+.depot-c .qui-lit>.i{display:inline-block;width:17px;height:17px;margin-right:7px;vertical-align:-3px;color:var(--green)}
+.depot-c .dep-comment{margin:-6px 0 0}
+/* les 2 choix, l'un sous l'autre : garder ses mots, ou préparer comment les dire */
+.dep-choix{display:flex;flex-direction:column;gap:8px}
+.dep-choix .btn,.em-suite .btn,.dire-b .btn{width:100%;min-height:52px}
+.depot-c>.count{margin-left:0;align-self:flex-end;font-size:14px}
+.depot-c>.count:empty{display:none}
+.dep-silence{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;min-height:44px;margin-top:-2px;padding:8px 2px;background:none;border:0;color:var(--green);font-weight:800;font-size:15.5px;line-height:1.35;text-align:left}
+.dep-silence>.i{width:18px;height:18px}
+.dep-silence span{text-decoration:underline;text-underline-offset:4px}
+
+/* -- ce que le parent emporte : la question reçue, ses mots tels quels, et la suite qu'il choisit -- */
+.emporte{display:flex;flex-direction:column;gap:12px;min-width:0;scroll-margin-top:84px}
+.emporte>h2{font-family:var(--font-display);font-weight:500;font-size:24px;line-height:1.2;color:var(--cream)}
+.em-mots{display:flex;flex-direction:column;gap:6px;min-width:0}
+.em-texte{margin:0;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.18);font-size:16.5px;line-height:1.55;color:var(--fg);white-space:pre-wrap;overflow-wrap:anywhere}
+/* un long texte reste entier : il défile dans son cadre, pour que la suite reste à portée */
+.em-texte.long{max-height:13.4em;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.em-suite{display:flex;flex-direction:column;gap:8px}
+.emporte>.hint{margin:0}
+
+/* -- « J'aimerais le dire à quelqu'un » : à qui, la première phrase, les mots du parent, puis copier ou laisser -- */
+.dire-c{gap:14px}
+.dire-c .chips{gap:8px;margin-top:-6px}
+.dire-c textarea{min-height:112px}
+.dire-modeles{display:flex;flex-direction:column;gap:8px}
+.dire-m{display:block;width:100%;min-height:44px;padding:10px 13px;text-align:left;border:1.5px dashed rgba(180,222,156,.55);border-radius:14px;background:rgba(255,255,255,.04);color:var(--fg);font-family:inherit;font-size:15.5px;line-height:1.4;font-weight:600}
+.dire-joint{align-self:flex-start}
+.dire-joint>.i{width:16px;height:16px}
+.dire-joint[aria-pressed="false"]>.i{display:none}
+.dire-b{display:flex;flex-direction:column;gap:8px}
+.dire-ok{margin:0;font-size:16px;line-height:1.5;color:var(--fg)}
+@media (hover:hover){
+  .dire-m:hover{background:rgba(255,255,255,.09)}
+  .dep-silence:hover span{text-decoration-thickness:2px}
+}
+@media (min-width:1024px){
+  .dep-choix,.em-suite,.dire-b{flex-direction:row;flex-wrap:wrap}
+  .dep-choix .btn,.em-suite .btn,.dire-b .btn{width:auto;flex:1 1 260px}
+  .dep-tete .dep-q{font-size:36px}
+  .emporte>h2{font-size:28px}
+}

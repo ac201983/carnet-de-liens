@@ -62,7 +62,7 @@ const HELP=[
    « perso » : il a rempli (ou enregistré) « Personnaliser mon espace ». « recents » : les dernières fiches et les derniers outils ouverts. */
 const PRE=typeof globalThis!=='undefined'&&typeof globalThis.__PEPE_PRERENDER__==='function';
 const DEF={fxOff:false,tier:'free',achats:{},vu:'',me:'',age:'',situation:'',perso:false,persoTard:false,recents:[],via:'',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
-const state={ap:{k:0,g:'',mot:''},cmd:{f:'',m:'une',k:'recap',de:''},rl:{e:'accueil',ex:'g',id:null,p:0,sec:'',r:null,lu:null,h:'',mots:false,attente:null,foc:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
+const state={ap:{k:0,g:'',mot:''},cmd:{f:'',m:'une',k:'recap',de:''},rl:{e:'accueil',ex:'g',id:null,p:0,sec:'',r:null,lu:null,h:'',mots:false,attente:null,foc:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false,dire:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
@@ -161,7 +161,8 @@ function recentDepot(){const ld=lastDepot();return ld&&(Date.now()-new Date(ld.d
 function achats(){const d=D();if(!d.achats||typeof d.achats!=='object'||Array.isArray(d.achats))d.achats={};if(d.tier==='antonio')d.tier='parcours';if(d.tier==='parcours'&&!d.achats.parcours)d.achats.parcours={m:'une',le:d.start||todayIso(),n:1};if(d.tier!=='parcours'&&d.achats.parcours)delete d.achats.parcours;return d.achats;}
 const tier=()=>{achats();return D().tier==='parcours'?'parcours':'free';};
 function can(f){if(f==='parcours')return tier()!=='free';if(f==='relais')return !!achats().relais;if(f==='antonio')return false;return true;}
-function depotsLeft(){return can('parcours')?Infinity:Math.max(0,FREE_DEPOTS-D().depots.length);}
+/* Sur le site, aucune intelligence artificielle ne répond : les questions sont écrites à l'avance. Écrire ici reste donc gratuit, sans compteur ni limite. */
+function depotsLeft(){return (can('parcours')||state.sample===false)?Infinity:Math.max(0,FREE_DEPOTS-D().depots.length);}
 function questionsLeft(){const mk=monthKey(todayIso());return Math.max(0,Q_PER_MONTH-D().questions.filter(q=>monthKey(q.date)===mk).length);}
 function sharedThisMonth(){const mk=monthKey(todayIso());return D().depots.filter(x=>D().shared[x.id]&&monthKey(x.date)===mk).length;}
 function openUpgrade(f){state.upFeat=f;state.sheet='upgrade';}
@@ -697,6 +698,17 @@ function tableHtml(){
     (SITE&&s?'<a class="haut-sit" href="'+ficheUrl('relais')+'" data-act="sit" data-id="relais"><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span>'+I.chev+'</a>':'')+'</div>';
 }
 function introDoseLabel(){if(new Date().getDay()===0)return 'Dose spéciale du dimanche';let j='';try{j=new Date().toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});}catch(e){}return 'La dose du '+(j||fmtDate(todayIso()));}
+/* Ce que le nom de l'espace veut dire, en 2 phrases, puis le mot d'Antonio, signé, tel qu'il l'a écrit le 19 novembre 2026.
+   « Écouté » : le parent a la parole, et l'espace l'aide à être entendu par quelqu'un s'il le souhaite. « Éclairé » : il repart avec quelque chose.
+   Personne ne lit ses mots ici : la phrase ne promet donc pas une écoute par quelqu'un, elle dit ce que le parent peut faire. */
+const NOM_SENS=[['Écouté','Ici, vous avez la parole. Vous écrivez ce que vous vivez avec vos mots, puis vous préparez, si vous le souhaitez, ce que vous aimeriez dire à un proche ou lors d’une réunion.'],
+  ['Éclairé','Vous repartez avec une question qui aide à y voir clair, ou avec une idée à essayer chez vous.']];
+const MOT_ANTONIO='Mon expérience d’éducateur social m’a guidé dans le choix des questions et des outils que vous trouverez ici. Aujourd’hui, vous avez peut-être besoin de souffler, d’écrire ce que vous gardez pour vous ou de trouver les mots pour en parler à quelqu’un. C’est vous qui choisissez.';
+function nomSensHtml(){
+  return '<section class="nom-sens" aria-labelledby="nom-sens-t"><h2 id="nom-sens-t">Parent écouté, parent éclairé</h2>'+
+    NOM_SENS.map(x=>'<p class="ns-l"><b>'+x[0]+'.</b> '+x[1]+'</p>').join('')+
+    '<figure class="mot-a"><blockquote><p>'+MOT_ANTONIO+'</p></blockquote><figcaption>Antonio Company, éducateur social</figcaption></figure></section>';
+}
 function viewIntro(){
   const m=moment();
   /* Un parent déjà entré retrouve la même vitrine. Les boutons disent alors ce qui l'attend : son espace, et son parcours s'il l'a commencé. */
@@ -733,7 +745,7 @@ function viewIntro(){
   /* Les questions qu'un parent se pose avant de commencer. */
   const Q=[
     ['Faut-il créer un compte ?','Non. Il n’y a ni compte ni mot de passe. Votre espace se crée sur votre appareil dès votre premier geste, et vous pouvez ensuite le personnaliser si vous le souhaitez.'],
-    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace est pensé d’abord pour la mère ou le père d’une personne en situation de handicap, avec ou sans diagnostic, que votre enfant ait 5, 16 ou 35 ans. Si vous êtes parent et que vous traversez une période difficile, vous y êtes aussi le bienvenu.'],
+    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace est pensé d’abord pour la mère ou le père d’une personne en situation de handicap, avec ou sans diagnostic, quel que soit l’âge de votre enfant, à 5 ans comme à 16 ou à 35 ans. Si vous êtes parent et que vous traversez une période difficile, vous y êtes aussi le bienvenu.'],
     ['Faut-il prendre un abonnement ?','Non. Tout ce qui est gratuit le reste, sans limite de durée. Le parcours et Passer le relais se paient une fois, et rien n’est prélevé ensuite. Le parcours peut aussi se payer en 6 fois, pour le même total.'],
     ['Qui lit ce que j’écris ?',SITE?'Personne. Dans cette version, tout ce que vous écrivez reste sur votre appareil, et rien n’est envoyé.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom, et une intelligence artificielle écrit la réponse.'],
     ['Qui me répond ?',SITE?'Les textes de l’espace sont écrits à l’avance, sous la responsabilité d’Antonio Company. Chaque dépôt reçoit une question et une lumière, que l’application choisit parmi ces textes. Aucune intelligence artificielle n’écrit de réponse, et personne ne lit ce que vous écrivez.':'Quand vous déposez, une intelligence artificielle écrit la réponse, avec la méthode d’Antonio, et l’espace vous le dit. Les autres textes sont écrits à l’avance, sous la responsabilité d’Antonio Company.'],
@@ -751,8 +763,9 @@ function viewIntro(){
     '<div class="seuil" id="accueil"><div class="haut-texte">'+
     '<p class="pour">Pour la mère ou le père d’une personne en situation de handicap</p>'+
     '<h1>On vous demande souvent comment va votre enfant. <span class="ici">Ici, on commence par vous.</span></h1>'+
-    '<p class="besoin-l"><span class="besoin">De quoi avez-vous besoin <span class="nb">maintenant ?</span></span></p>'+
+    '<p class="besoin-l"><span class="besoin">'+DEP_Q.replace(/ (\S+) \?$/,' <span class="nb">$1 ?</span>')+'</span></p>'+
     portes(true)+'</div>'+
+    nomSensHtml()+
     tableHtml()+
     '<div class="haut-suite">'+
     (repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'">'+I.path+'<span>Reprendre mon parcours</span></button>':'<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>')+
@@ -760,7 +773,7 @@ function viewIntro(){
     '<p class="rassure">'+(SITE?'Version de test, gratuite et sans compte. Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div></div>'+
     sec('dose','Chaque matin, une dose de lumière','Voici celle d’aujourd’hui. Demain, une autre vous attendra.',dose)+
     sec('outils','Des pistes pour les jours difficiles','Vous y trouvez '+SITS.length+' situations de la vraie vie, avec des pistes à essayer dès ce soir. Chaque fiche se lit en 2 minutes'+(SITE?' et s’envoie à quelqu’un qui compte pour vous.':'.'),scenes+pictos)+
-    sec('depot','Un endroit pour déposer ce qui pèse','Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
+    sec('depot','Un endroit pour déposer ce qui pèse',SITE?'Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. Vous gardez vos mots pour vous, ou vous préparez comment les dire à quelqu’un. En retour, vous recevez une question qui ouvre et une lumière.':'Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
     sec('perm','Ici, vous avez le droit','',perms)+
     sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+'<button type="button" class="btn acc-essai" data-act="apercu">'+I.path+'Essayer cette étape, en 3 minutes</button>'+mois+vecu+allerParcours)+
     sec('relais','Passer le relais, l’esprit plus léger','Un week-end chez un proche, une soirée, une première nuit ailleurs. Vous préparez une page pour la personne qui garde votre enfant, avec vos mots. Elle sait l’essentiel en 1 minute.',rlVitrineHtml())+
@@ -860,7 +873,41 @@ function letterCard(){
   const txt=l?l.text:LETTER_EXAMPLE;
   return '<button type="button" class="letter reveal d1" data-act="letter" data-i="'+(l?L.length-1:-1)+'"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>'+(l?'Le mot d’Antonio '+esc(deMois(l.date)):'Le mot d’Antonio, un exemple')+'</b><span>'+(l?esc(fmtDate(l.date)):'Démonstration de ce qu’il sera')+'</span></div></div><p>'+esc(txt.split('\n')[0])+'</p><span class="hint">'+(l?'Lire ':'Lire l’exemple ')+I.chev+'</span></button>';
 }
+/* ---------- déposer, sur le site : écouté d'abord, éclairé ensuite ----------
+   L'espace fonctionne seul. Avant d'écrire, le parent lit en une phrase qui peut lire son texte et où il reste.
+   Il écrit librement, puis il choisit : garder ses mots pour lui, ou préparer comment les dire à quelqu'un.
+   Ses mots ne sont jamais reformulés. Rien n'est vendu ici, et il termine quand il le décide. */
+const DEP_Q='Qu’aimeriez-vous qu’on comprenne de votre journée ?';
+/* Avant d'écrire : qui peut lire le texte et où il reste, en une phrase. Puis comment l'espace fonctionne vraiment : il n'y a personne derrière l'écran. */
+const DEP_QUI='Votre texte reste sur cet appareil, il n’est envoyé ni à Antonio ni à une intelligence artificielle, et seule une personne qui utilise cet appareil peut le lire.';
+const DEP_SEUL='Cet espace fonctionne seul. Vous écrivez, puis vous recevez une question écrite à l’avance.';
+function depotBoxSite(){
+  const today=todayIso();const td=D().depots.filter(x=>x.date===today).slice(-1)[0];
+  return '<div class="card depot-c reveal d2">'+
+    '<p class="hint qui-lit" id="qui-lit">'+I.lock+DEP_QUI+'</p>'+
+    '<textarea id="draft" maxlength="'+LIM.draft+'" aria-describedby="qui-lit" placeholder="Écrivez comme ça vient, sans donner de prénom.">'+esc(state.draft)+'</textarea>'+
+    '<div class="dep-choix"><button type="button" class="btn primary" data-act="dsend">'+I.drop+'Garder ces mots pour moi</button>'+
+    '<button type="button" class="btn" data-act="ddire">'+I.user+'J’aimerais le dire à quelqu’un</button></div>'+
+    '<span class="count" id="draft-count" aria-hidden="true"></span>'+
+    '<button type="button" class="linkbtn dep-silence" data-act="porte" data-v="souffle">'+I.wind+'<span>Je préfère le silence, souffler 2 minutes</span></button>'+
+    '<p class="hint dep-comment"><button type="button" class="linkbtn" data-act="voix">Comment fonctionne cet espace ?</button></p>'+
+    '</div>'+(td?emporteHtml(td):'');
+}
+/* Ce que le parent emporte après avoir écrit : ses mots, tels qu'il les a écrits, une question et une lumière écrites à l'avance,
+   une fiche si ses mots en appellent une, et la suite qu'il choisit. « J'ai fini pour aujourd'hui » referme simplement. */
+/* Les mots du parent, entiers et inchangés. Un long texte défile dans son cadre, que l'on atteint aussi au clavier. */
+function motsHtml(t,lab){const long=t.length>420||(t.match(/\n/g)||[]).length>7;return '<p class="em-texte'+(long?' long" tabindex="0" role="group" aria-labelledby="'+lab:'')+'">'+esc(t)+'</p>';}
+function emporteHtml(x){
+  return '<section class="emporte" aria-labelledby="emporte-t"><h2 id="emporte-t">Ce que vous emportez</h2>'+
+    (x.risk?depotHtml(x,true):depotHtml(x,true).replace(/<span class="lbl">.*?<\/span>/,'<span class="lbl">Une question pour y voir clair</span>'))+
+    '<div class="em-mots"><span class="label" id="em-mots-l">Vos mots, tels que vous les avez écrits</span>'+motsHtml(x.text,'em-mots-l')+'</div>'+
+    pistesDepotHtml(x)+
+    '<div class="em-suite"><button type="button" class="btn" data-act="dire" data-k="ouvre" data-id="'+x.id+'">'+I.user+(x.dire?'Reprendre ce que j’aimerais dire':'J’aimerais le dire à quelqu’un')+'</button>'+
+    '<button type="button" class="btn primary" data-act="dfin">'+I.check+'J’ai fini pour aujourd’hui</button></div>'+
+    '<p class="hint">Vos mots sont gardés sur cet appareil, dans « Mes dépôts ». C’est vous qui décidez de les montrer à quelqu’un.</p></section>';
+}
 function depotBox(){
+  if(state.sample===false)return depotBoxSite();
   const left=depotsLeft();const today=todayIso();const td=D().depots.filter(x=>x.date===today).slice(-1)[0];
   const head=lab=>'<div class="row" style="justify-content:space-between;align-items:center">'+lab+(left!==Infinity&&left>0?'<span class="pill">'+left+' dépôt'+(left>1?'s':'')+' offert'+(left>1?'s':'')+'</span>':'')+'</div>';
   let html='<div class="card depot-c reveal d2">';
@@ -897,6 +944,7 @@ function depotHtml(x,compact){
   const row=[];
   if(!x.conseil&&state.sample)row.push('<button type="button" class="btn small" data-act="dconcret" data-id="'+x.id+'">'+I.bulb+'Et concrètement ?</button>');
   if(can('antonio'))row.push('<label class="share"><input type="checkbox" data-act="share" data-id="'+x.id+'"'+(D().shared[x.id]?' checked':'')+'> Partager ce dépôt avec Antonio'+(DEMO?' (démonstration)':'')+'</label>');
+  if(!compact&&state.sample===false)row.push('<button type="button" class="btn small" data-act="dire" data-k="ouvre" data-id="'+x.id+'">'+I.user+(x.dire?'Reprendre ce que j’aimerais dire':'J’aimerais le dire à quelqu’un')+'</button>');
   if(row.length)out+='<div class="row" style="align-items:center">'+row.join('')+'</div>';
   return out+'</div>';
 }
@@ -912,7 +960,7 @@ function advicePrompt(){
   'Structure en quatre parties courtes avec ces titres exacts précédés de « ## » : « Ce que j’entends » (deux phrases, sans juger, qui reconnaissent l’effort), « Ce que vous pouvez essayer » (trois pistes concrètes en liste à puces, réalistes ce soir ou cette semaine : prévisibilité, moins de mots, choix entre deux options, d’abord/ensuite, routines visuelles, sécurité d’abord, observer ce qui précède), « Pour vous » (une ou deux phrases pour le parent lui-même), « Si ça continue » (une phrase : quand et à qui demander de l’aide, sans dramatiser ; pédiatre ou médecin, l’équipe de l’institution ou de l’école, Pro Infirmis, associations de parents ; La Main Tendue 143 si le parent va très mal). Écris comme Antonio parle, avec des phrases simples et complètes, reliées par « et », « mais » ou « parce que ». N’utilise ni deux-points, ni point-virgule, ni tiret long, ni point médian, ni phrase sans verbe, ni formule du type « pas ceci, pas cela ». Maximum 200 mots. Pas de gras. Termine par une phrase simple et vraie.';
 }
 const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais le frapper|je vais la frapper)/i;
-async function sendDepot(){
+async function sendDepot(suite){
   if(state.busy||state.sinking)return;
   const text=clean(state.draft,LIM.draft);if(text.length<5){fieldErr('draft','Écrivez quelques mots, comme ça vient (cinq caractères au moins).');return;}
   const sansReponse=depotsLeft()===0;
@@ -927,7 +975,11 @@ async function sendDepot(){
   }
   if(!state.sample){
     dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
-    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();
+    /* « J'aimerais le dire à quelqu'un » : les mots sont gardés d'abord, tels quels, puis l'étape suivante s'ouvre.
+       Si le texte laisse penser à une détresse, l'aide s'affiche d'abord, et le parent choisit la suite lui-même. */
+    if(suite==='dire'&&!dep.risk){setTimeout(()=>{state.fresh=null;},1900);handle('dire',{k:'ouvre',id:dep.id},null);return;}
+    render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
   }
   state.ctl=new AbortController();
   try{
@@ -1067,7 +1119,7 @@ function viewFinal(){
   const faites=doneCount(),pages=nbNotes(),photos=photosChoisies(),pts=EVO_TIMES.filter(x=>e[x[0]]);
   const peutImprimer=typeof window.print==='function';
   const du=dateLongue(d.start),au=dateLongue(todayIso());
-  let h='<main id="main" tabindex="-1" class="view final"><div class="fin-couv"><span class="label">Parent Écouté, Parent Éclairé</span><h1 class="t1">'+(d.me?'Le chemin de '+esc(d.me):'Mon chemin')+'</h1>'+
+  let h='<main id="main" tabindex="-1" class="view final"><div class="fin-couv"><span class="label">Parent écouté, parent éclairé</span><h1 class="t1">'+(d.me?'Le chemin de '+esc(d.me):'Mon chemin')+'</h1>'+
     '<p class="sub">'+(du&&du!==au?'Du '+esc(du)+' au '+esc(au)+'. ':'')+faites+' étape'+(faites>1?'s':'')+' faite'+(faites>1?'s':'')+' sur 24, et '+pages+' page'+(pages>1?'s':'')+' écrite'+(pages>1?'s':'')+'.</p></div>'+
     '<div class="card fin-mode sansimp"><p>Voici votre parcours rassemblé sur une seule page, avec vos mots. Vous pouvez la garder, ou l’imprimer.</p>'+(peutImprimer?'<button type="button" class="btn primary" data-act="imprimer" style="align-self:flex-start">'+I.note+'Imprimer ou enregistrer en PDF</button>':'')+'</div>';
   if(!pages&&!pts.length&&!photos.length)return h+'<div class="card"><p>Votre chemin est encore vide. Il se remplira avec ce que vous écrirez à chaque étape, vos points dans « Mon évolution » et les photos que vous choisirez.</p><button type="button" class="btn" data-act="step" data-i="'+currentStepIdx()+'" style="align-self:flex-start">'+I.path+'Ouvrir mon étape</button></div></main>';

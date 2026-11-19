@@ -1,0 +1,43 @@
+// Captures de l'accueil et du dépôt, sur un écran de téléphone.
+// node voir.js <port> <base> <heure> <nom>
+const { chromium } = require('playwright');
+(async () => {
+  const [port, base, heure, nom] = process.argv.slice(2);
+  const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 390, height: 664 }, deviceScaleFactor: 2, ignoreHTTPSErrors: true, isMobile: true, hasTouch: true });
+  await ctx.addInitScript(hh => { Date.prototype.getHours = function () { return hh; }; }, +heure);
+  await ctx.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const p = await ctx.newPage(); const errs = [];
+  p.on('pageerror', e => errs.push('pageerror ' + String(e).slice(0, 300))); p.on('console', m => { if (m.type() === 'error') errs.push('console ' + m.text().slice(0, 300)); });
+  const D = '/home/claude/build/parole/shots/' + nom + '-';
+  const A = (a, x) => '[data-act="' + a + '"]' + (x || '');
+  await p.goto('https://localhost:' + port + base); await p.waitForSelector(A('porte', '[data-v="deposer"]')); await p.waitForTimeout(900);
+  await p.screenshot({ path: D + '1-accueil.png' });
+  await p.screenshot({ path: D + '1-accueil-entier.png', fullPage: true });
+  await p.$eval('.nom-sens', e => e.scrollIntoView({ block: 'start' })); await p.evaluate(() => window.scrollBy(0, -76)); await p.waitForTimeout(300);
+  await p.screenshot({ path: D + '2-nom.png' });
+  await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(200);
+  await p.click(A('porte', '[data-v="deposer"]')); await p.waitForSelector('main.deposer #draft'); await p.waitForTimeout(2600);
+  await p.screenshot({ path: D + '3-deposer.png' });
+  await p.screenshot({ path: D + '3-deposer-entier.png', fullPage: true });
+  await p.fill('#draft', 'Ce matin, il a hurlé pour mettre ses chaussures et nous sommes arrivés en retard à l’école. Tout le monde nous regardait. J’ai tenu, mais ce soir je suis vidée.');
+  await p.waitForTimeout(300); await p.screenshot({ path: D + '4-ecrit-entier.png', fullPage: true });
+  await p.click(A('dsend')); await p.waitForTimeout(3200);
+  await p.screenshot({ path: D + '5-emporte.png' });
+  await p.screenshot({ path: D + '5-emporte-entier.png', fullPage: true });
+  await p.click(A('dire', '[data-k="ouvre"]')); await p.waitForSelector('main.dire #amorce'); await p.waitForTimeout(2600);
+  await p.screenshot({ path: D + '6-dire-entier.png', fullPage: true });
+  await p.click(A('dire', '[data-k="a"][data-v="reunion"]')); await p.waitForTimeout(500);
+  await p.click(A('dire', '[data-k="mots"]')); await p.waitForTimeout(500);
+  await p.screenshot({ path: D + '7-dire-mots-entier.png', fullPage: true });
+  await p.click(A('dire', '[data-k="mot"][data-i="0"]')); await p.waitForTimeout(400);
+  await p.click(A('dire', '[data-k="copie"]')); await p.waitForTimeout(2600);
+  await p.screenshot({ path: D + '8-copie.png' });
+  await p.screenshot({ path: D + '8-copie-entier.png', fullPage: true });
+  const clip = await p.evaluate(() => navigator.clipboard.readText().catch(e => 'ERR ' + e));
+  console.log('presse-papiers :', JSON.stringify(clip));
+  await p.click(A('dfin')); await p.waitForTimeout(1500);
+  await p.screenshot({ path: D + '9-fin.png' });
+  console.log('après « J’ai fini » :', await p.evaluate(() => [location.pathname + location.hash, document.querySelector('main').className, (document.querySelector('.toast') || {}).textContent || '']));
+  if (errs.length) console.log('ERREURS', errs);
+  await b.close();
+})();

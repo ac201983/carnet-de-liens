@@ -218,10 +218,10 @@ function usage(k){const c=com();if(!c.us||typeof c.us!=='object')c.us={};if(!Arr
 function contact(){return String(CONTACT_R||'').split('').reverse().join('');}
 const F_TXT={
   free:{b:'Recevoir une aide tout de suite.',s:'Ce que vous pouvez faire gratuitement',
-    c:['Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous lisez la dose de lumière, chaque jour.','Vous ouvrez les '+SITS.length+' fiches pratiques et tous les outils.','Vous essayez une vraie étape du parcours, en 3 minutes.','Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.'],
+    c:['Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous lisez la dose de lumière, chaque jour.','Vous ouvrez les '+SITS.length+' fiches pratiques et tous les outils.','Vous essayez une vraie étape du parcours, en 3 minutes.',SITE?'Vous déposez ce qui pèse autant que vous en avez besoin, pour vous ou pour préparer ce que vous aimeriez dire à quelqu’un.':'Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.'],
     d:'Découverte est gratuite, sans limite de durée et sans compte.'},
   parcours:{b:'24 étapes guidées pour avancer d’une semaine à l’autre, pendant 6 mois.',s:'Ce que contient Le parcours',
-    c:['24 étapes guidées s’ouvrent une par une, chaque semaine.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.','Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'],
+    c:['24 étapes guidées s’ouvrent une par une, chaque semaine.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.',SITE?'':'Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'].filter(Boolean),
     d:'Une fois acheté, le parcours reste ouvert sans limite de durée. Si vous vous absentez, rien ne s’accumule.'},
   relais:{b:'Confier votre enfant à un proche, l’esprit plus léger.',s:'Ce que fait l’outil',
     c:['Vous préparez une page pour la personne qui prend le relais, avec vos mots.','En tête, « Si tu ne lis que trois choses », que vous choisissez vous-même.','Votre proche ouvre la fiche sur son téléphone, sans compte et sans rien acheter.','Au retour, une seule question, et le prochain relais est prêt plus vite.','Vous préparez aussi une réunion avec l’école ou le foyer, avec « Je perds mes mots ».'],
@@ -439,7 +439,7 @@ function viewTransmettre(){
   const url=PUBLIC+'transmettre/';
   return '<main id="main" tabindex="-1" class="view v-feuille v-transmettre"><div class="feuille">'+
     '<div class="f-tete"><span class="label">Quelqu’un qui vous accompagne vous a transmis cette page</span><h1 class="t1">On vous demande souvent comment va votre enfant. Ici, on commence par vous.</h1></div>'+
-    '<p class="lecture-l">Parent Écouté, Parent Éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, que votre enfant ait 5, 16 ou 35 ans. Il a été créé par Antonio Company, travailleur social et père de 3 enfants.</p>'+
+    '<p class="lecture-l">Parent écouté, parent éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, quel que soit l’âge de votre enfant, à 5 ans comme à 16 ou à 35 ans. Il a été créé par Antonio Company, travailleur social et père de 3 enfants.</p>'+
     '<p class="lecture-l">Vous pouvez commencer par 2 minutes pour vous, tout de suite. C’est gratuit, sans compte, et rien de ce que vous écrivez ne quitte votre appareil.</p>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="porte" data-v="souffle">'+I.wind+'Souffler 2 minutes, maintenant</button></div>'+
     '<section class="tr-suite" aria-labelledby="tr-suite-t"><h2 id="tr-suite-t">Ensuite, si vous le souhaitez</h2><ul class="tr-liens"><li><a class="lien-f" href="'+RACINE+'fiches/" data-act="fiches">'+I.kit+'Ouvrir une fiche pratique</a><span>Sur le coucher, les crises, l’école ou la vie en foyer.</span></li><li><button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une vraie étape du parcours</button><span>En 3 minutes, sans rien créer.</span></li><li><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche de relais</button><span>Pour confier votre enfant à un proche.</span></li></ul></section>'+
@@ -522,14 +522,14 @@ function viewAbout(){
     '<p>Je crois que chaque parent a en lui des trésors insoupçonnés, et j’aimerais vous aider à retrouver les vôtres et votre pouvoir d’agir.</p>'+
     '<p>Je cours régulièrement et j’aime comparer la vie de parent à un marathon. On ne peut pas le courir au sprint et on a besoin de ravitaillements pour tenir. La dose de lumière que vous recevez chaque jour, je la vois comme un verre d’eau sur le parcours.</p>'+
     '<h2 class="chap">Pourquoi cet espace</h2>'+
-    '<p>En février 2025, j’ai imaginé «\u00a0Parent Écouté, Parent Éclairé\u00a0». Au départ, c’était un accompagnement de six mois pour les parents de personnes en situation de handicap. En avril, j’ai voulu l’ouvrir à tous les parents. Cette application, c’est la version que vous pouvez garder dans votre poche.</p>'+
+    '<p>En février 2025, j’ai imaginé «\u00a0Parent écouté, parent éclairé\u00a0». Au départ, c’était un accompagnement de six mois pour les parents de personnes en situation de handicap. En avril, j’ai voulu l’ouvrir à tous les parents. Cette application, c’est la version que vous pouvez garder dans votre poche.</p>'+
     '<p>Écouté, cela veut dire que vous pouvez déposer librement ce qui vous pèse et être accueilli avec attention et douceur. Éclairé, cela veut dire que vous repartez avec quelque chose qui vous aide à retrouver un peu de paix, de clarté, de recul ou de confiance.</p>'+
     '<p>À l’époque, j’avais écrit ceci.</p>'+
     '<p class="quote">«\u00a0Parce qu’un parent écouté devient un parent éclairé. Et un parent éclairé devient un parent confiant, aligné et pleinement acteur du bien-être de son enfant.\u00a0»</p>'+
     '<p>Si je vous raconte tout cela, c’est pour que vous sachiez d’où vient cet espace. Il vient d’un enfant qui a eu la chance d’être écouté.</p>'+
     '<p>Ici, vous n’avez rien à prouver à personne. Vous pouvez simplement déposer ce qui vous pèse.</p>'+
     '<p>Merci d’avoir pris le temps de me lire.</p>'+
-    '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent Écouté, Parent Éclairé, une goutte qui tombe sur un étang dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
+    '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent écouté, parent éclairé, une goutte qui tombe sur un étang dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
     '</div>'+
     (peek?'<button type="button" class="btn primary wide" data-act="entrer" data-v="today">'+I.sun2+'Commencer gratuitement</button>':'')+
     '<div class="card green"><h2 class="label">Ce que cet espace n’est pas</h2><ul class="list"><li>Ce n’est pas un diagnostic ni une thérapie. Pour cela, il y a votre pédiatre, votre médecin et les thérapeutes.</li><li>Ce n’est pas un service d’urgence. En cas de danger, appelez le '+tel('144')+'. Si vous êtes à bout, appelez le '+tel('143')+'.</li><li>Cela ne remplace pas les personnes qui vous entourent. C’est plutôt un pont vers elles.</li></ul></div><p class="hint">Version de test.</p></div></main>';
@@ -557,8 +557,8 @@ function sheetOnboard(sheetIn){
 function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;for(const raw of lines){const l=raw.replace(/\*\*(.+?)\*\*/g,'$1');if(/^\s*[-•]\s+/.test(l)){if(!inl){out+='<ul class="list">';inl=true;}out+='<li>'+esc(l.replace(/^\s*[-•]\s+/,''))+'</li>';continue;}if(inl){out+='</ul>';inl=false;}if(/^#{1,3}\s/.test(l))out+='<p style="font-weight:800;margin-top:6px;color:var(--green)">'+esc(l.replace(/^#{1,3}\s*/,''))+'</p>';else if(l.trim())out+='<p>'+esc(l)+'</p>';}if(inl)out+='</ul>';return out;}
 
 /* ---------- actions ---------- */
-function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
-function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):''].join('|');}
+function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();if(state.dire){direGarde();state.dire=null;}state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):'',state.view==='deposer'&&state.dire?'dire-'+state.dire.id:''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;const view0=state.view;
   switch(act){
@@ -621,6 +621,31 @@ function handle(act,d,el){
     case 'theme':state.theme=d.v;break;
     case 'dmode':state.depotMode=d.v;break;
     case 'dsend':sendDepot();return;
+    /* « J'aimerais le dire à quelqu'un », depuis la zone d'écriture : les mots sont gardés d'abord, puis l'étape s'ouvre. */
+    /* Champ vide, mais des mots déjà déposés aujourd'hui : le bouton prépare alors comment dire ceux-là, au lieu d'afficher une erreur. */
+    case 'ddire':{if(clean(state.draft,LIM.draft).length<5){const td=D().depots.filter(x=>x.date===todayIso()).slice(-1)[0];if(td){handle('dire',{k:'ouvre',id:td.id},el);return;}}sendDepot('dire');return;}
+    /* « J'ai fini pour aujourd'hui » : l'espace d'expression se referme simplement, et le parent retrouve l'accueil. */
+    case 'dfin':nav('intro');setTimeout(()=>{if(state.view==='intro')toast('Vos mots sont gardés sur cet appareil. À bientôt.');},500);break;
+    case 'dire':{
+      const k=d.k;
+      if(k==='ouvre'){const g=direOuvre(d.id);if(!g)break;if(state.view!=='deposer')nav('deposer');state.dire=g;break;}
+      const g=state.dire;if(!g)break;
+      /* Changer de destinataire remplace la première phrase seulement si le parent n'a pas commencé à écrire la sienne. */
+      if(k==='a'){const v=d.v==='reunion'?'reunion':'proche';if(v!==g.a){const avant=direAmorces(g.a);const intacte=!clean(g.t,DIRE_LIM)||avant.some(m=>m.trim()===clean(g.t,DIRE_LIM));g.a=v;if(intacte)g.t=direAmorces(v)[0];g.mots=false;g.copie=false;direGarde();}break;}
+      if(k==='mots'){g.mots=!g.mots;break;}
+      if(k==='mot'){const m=direAmorces(g.a)[Number(d.i)];if(m){g.t=m;g.mots=false;g.copie=false;direGarde();state.direFoc=true;}break;}
+      if(k==='joint'){g.j=!g.j;g.copie=false;direGarde();break;}
+      if(k==='laisse'){direGarde();if(HIST.ok&&HIST.i>0){try{history.back();return;}catch(e){}}state.dire=null;break;}
+      if(k==='copie'){
+        direGarde();const t=direTexte();if(!t){fieldErr('amorce','Écrivez une première phrase, ou ajoutez vos mots à la suite.');return;}
+        (async()=>{let ok=false;try{await navigator.clipboard.writeText(t);ok=true;}catch(e){}
+          /* « ok » : le texte est dans le presse-papiers. « main » : le téléphone a refusé, le texte est alors sélectionné pour être copié à la main. L'écran ne dit « copié » que si c'est vrai. */
+          g.copie=ok?'ok':'main';render();const el=document.getElementById('dire-texte');
+          if(el){try{el.scrollIntoView({block:'center',behavior:fxOn()?'smooth':'auto'});}catch(e){}
+            if(!ok){try{const r=document.createRange();r.selectNodeContents(el);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}catch(e){}}}
+          toast(ok?(g.j?'C’est copié, avec vos mots tels que vous les avez écrits.':'C’est copié.'):'Le texte est sélectionné juste en dessous. Vous pouvez le copier.');})();
+        return;}
+      break;}
     case 'dstop':if(state.ctl)state.ctl.abort();return;
     case 'dconcret':concret(d.id);return;
     case 'dose-perso':dosePerso();return;
@@ -644,7 +669,7 @@ function handle(act,d,el){
     /* « Offrir à un parent » est une maquette. « Retrouver un achat » montre le principe du lien reçu par e-mail. */
     case 'cadeau':state.cmd={f:PRODUITS[d.v]?d.v:(state.view==='commande'&&state.cmd.k==='cadeau'&&PRODUITS[state.cmd.f]?state.cmd.f:'parcours'),m:'une',k:'cadeau',de:''};state.sheet=null;if(state.view!=='commande')nav('commande');break;
     case 'cadeau-voir':if(!PRODUITS[d.v])return;state.cmd={f:d.v,m:'une',k:'activer',de:''};break;
-    case 'cadeau-envoi':{const u=PUBLIC+'#cadeau-'+state.cmd.f;(async()=>{if(navigator.share){try{await navigator.share({title:'Un cadeau pour vous',text:'Je vous offre '+PRODUITS[state.cmd.f].t+', sur Parent Écouté, Parent Éclairé. Vous l’activez quand vous voulez.',url:u});return;}catch(e){if(e&&e.name==='AbortError')return;}}try{await navigator.clipboard.writeText(u);toast('Le lien du cadeau est copié.');}catch(e){const c=document.getElementById('cad-lien');if(c){try{c.focus();c.select();}catch(x){}}}})();return;}
+    case 'cadeau-envoi':{const u=PUBLIC+'#cadeau-'+state.cmd.f;(async()=>{if(navigator.share){try{await navigator.share({title:'Un cadeau pour vous',text:'Je vous offre '+PRODUITS[state.cmd.f].t+', sur Parent écouté, parent éclairé. Vous l’activez quand vous voulez.',url:u});return;}catch(e){if(e&&e.name==='AbortError')return;}}try{await navigator.clipboard.writeText(u);toast('Le lien du cadeau est copié.');}catch(e){const c=document.getElementById('cad-lien');if(c){try{c.focus();c.select();}catch(x){}}}})();return;}
     case 'retrouver':state.cmd={f:'parcours',m:'une',k:'retrouver',de:''};state.sheet=null;nav('commande');break;
     case 'ech-suite':{const p=achats().parcours;if(!p||p.m!=='six'||(p.n||1)>=NB_ECH)return;p.n=(p.n||1)+1;save();toast(p.n>=NB_ECH?'La 6e mensualité est payée. Plus rien ne sera prélevé.':'Mensualité '+p.n+' sur 6, en démonstration.');break;}
     case 'achats-zero':data.tier='free';data.achats={};save();toast('Vos achats de démonstration sont annulés. Rien de ce que vous avez écrit n’a été effacé.');break;
@@ -709,13 +734,14 @@ function handle(act,d,el){
     case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
-  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre'].includes(act)||(act==='rl'&&fxSig()!==sig0);
+  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre','dfin'].includes(act)||((act==='rl'||act==='dire')&&fxSig()!==sig0);
   /* Chaque nouvel écran est une page de l'historique. Ce qui se passe à l'intérieur d'un même écran (une rubrique de la boîte à outils, le choix d'une photo) remplace la page au lieu d'en ajouter une. */
   if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
   if(act==='rl')rlApres();
+  if(act==='dire')direApres();
   if(navAct)window.scrollTo(0,0);
 }
 const app=document.getElementById('app');
@@ -726,7 +752,7 @@ app.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.rl
 /* Si l'on quitte la page pendant qu'on écrit dans le carnet, les derniers mots sont gardés tout de suite. Rien n'est écrit s'il n'y a rien en attente,
    pour ne pas écraser ce qu'un autre onglet aurait enregistré entre-temps. */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
-let typing=null,noteT=null,noteAttend=false;
+let typing=null,noteT=null,noteAttend=false,direT=null;
 app.addEventListener('input',e=>{
   const t=e.target;clearErr(t);
   /* Les champs de « Passer le relais » se gardent tout seuls. */
@@ -734,6 +760,8 @@ app.addEventListener('input',e=>{
   /* Le carnet de route se garde tout seul, pendant qu'on écrit. */
   if(t.dataset&&t.dataset.note){const id=t.dataset.note;const v=String(t.value).slice(0,LIM.note);if(v.trim())D().notes[id]={t:v,d:todayIso()};else delete D().notes[id];clearTimeout(noteT);noteAttend=true;noteT=setTimeout(()=>{noteAttend=false;save();},400);const st=document.getElementById('note-etat');if(st){const m=v.trim()?NOTE_OUI:NOTE_NON;if(st.textContent!==m)st.textContent=m;}carnetHaut(t);lectureSync();}
   if(t.id==='draft'){state.draft=t.value;updCount(t);brouillonGarde();}
+  if(t.id==='amorce'&&state.dire){state.dire.t=String(t.value).slice(0,DIRE_LIM);/* Le parent reprend sa phrase après avoir copié : le texte prêt n'est plus le bon, il s'efface jusqu'à la prochaine copie. */
+    if(state.dire.copie){state.dire.copie=false;try{document.querySelectorAll('main.dire .dire-pret,main.dire .vers-relais').forEach(e=>e.remove());}catch(e){}}clearTimeout(direT);direT=setTimeout(direGarde,400);}
   if(t.id==='qdraft')state.qdraft=t.value;
   if(t.id==='ptext')state.pdraft=t.value;
   if(t.dataset&&t.dataset.evo)evoSync(t);
