@@ -10,6 +10,8 @@
 //   5. Les portes d'entrée : une fiche publique à envoyer par WhatsApp, la page à transmettre, une seule suite logique par fiche,
 //      « Offrir à un parent » en maquette. Le SOS, la respiration et « Déposer » ne proposent rien à acheter.
 //   6. Les 3 mesures du lancement restent sur l'appareil, sans aucun écrit, et rien ne quitte le site.
+//   7. La parole du parent : la question de l'accueil, ce qui est dit avant d'écrire, les mots gardés tels quels, « J'aimerais le dire à quelqu'un »,
+//      ce que le parent emporte, et l'outil réutilisable proposé seulement à la fin. Écrire reste gratuit et sans limite.
 // Tout paiement est simulé : il n'existe pas encore de prestataire de paiement. Le test le vérifie aussi (aucune requête vers un autre site).
 // usage : node lancement.js      Variables : PEPE_ORIGIN, PEPE_BASE, PEPE_PUBLIC, PEPE_KEY, PEPE_NAV, PEPE_CHROME.
 const pw = require('playwright');
@@ -361,7 +363,7 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       await clic(page, R('avec', '[data-v="foyer"]'), 200).catch(async () => { const v = await page.$$eval('[data-act="rl"][data-k="avec"]', L => L.map(b => b.getAttribute('data-v'))); await clic(page, R('avec', '[data-v="' + v[1] + '"]'), 200); });
       await page.fill('#rl-rq', 'jeudi 3 décembre à 16 heures'); await clic(page, R('rpas', '[data-v="1"]'));
       const obs = await page.$$eval('.rl-obs .rl-m', L => L.map(b => ({ t: b.querySelector('span').innerText.replace(/\s+/g, ' ').trim(), d: b.querySelector('small').innerText.replace(/\s+/g, ' ').trim() })));
-      ok(obs.length >= 5 && obs.some(o => o.t === GARDE) && obs.some(o => /Dire « encore 5 minutes »/.test(o.t)) && obs.every(o => /^Vos 3 repères$|^Votre fiche de relais$|^Votre retour du /.test(o.d)), P('3. les phrases déjà écrites sont proposées pour la réunion, avec leur origine (' + obs.length + ' phrases, dont ce que le parent voulait garder)'));
+      ok(obs.length >= 5 && obs.some(o => o.t === GARDE) && obs.some(o => /Dire « encore 5 minutes »/.test(o.t)) && obs.every(o => /^Vos 3 repères$|^Votre fiche de relais$|^Votre retour du |^Vos mots du /.test(o.d)), P('3. les phrases déjà écrites sont proposées pour la réunion, avec leur origine (' + obs.length + ' phrases, dont ce que le parent voulait garder)'));
       await page.click('.rl-obs .rl-m >> nth=0'); await page.waitForTimeout(150); await page.click('.rl-obs .rl-m >> nth=1'); await page.waitForTimeout(150);
       await clic(page, R('rpas', '[data-v="1"]'));
       ok((await h1(page)) === 'Ce que vous demandez' && !!(await page.$('.rl-perds')), P('3. pour la demande, le bouton « Je perds mes mots » est là'));
@@ -585,7 +587,8 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       // l'outil sert aussi sans fiche de relais : une réunion se prépare, et se retrouve
       ok(!!(await page.$('.v-relais ' + R('reunion'))) && !(await page.$('.v-relais .rl-mes')), P('6. avec l’outil et sans aucune fiche, « Préparer une réunion » est proposé dès l’accueil de l’outil'));
       await clic(page, R('reunion'), 300); await clic(page, R('rpas', '[data-v="1"]'), 250);
-      ok(/Vous n’avez encore rien écrit dans vos fiches ni dans votre journal/.test(await texte(page, 'main')), P('6. sans rien d’écrit, la réunion se prépare quand même : le parent note son observation'));
+      const t6 = await texte(page, 'main');
+      ok(/Un texte très personnel que personne ne doit compter\./.test(t6) && /Vos mots du /.test(t6) && !!(await page.$('#rl-ro')), P('6. sans fiche ni journal, la réunion se prépare quand même : les mots déposés sont proposés, et le parent peut noter une autre observation'));
       await page.fill('#rl-ro', 'Mardi, il est rentré du centre sans avoir mangé.'); await clic(page, R('rpas', '[data-v="1"]'), 250); await clic(page, R('rpas', '[data-v="1"]'), 250); await clic(page, R('feuille-ok'), 300);
       await page.goto(APP + 'relais/', { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.v-relais ' + R('exemple')); await page.waitForTimeout(300);
       ok((await page.$$('.v-relais .rl-mes ' + R('feuille'))).length === 1, P('6. la feuille de réunion se retrouve dans « Mes réunions », même sans fiche de relais'));
@@ -607,6 +610,134 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       ok(!ESSAI || (/Les 3 mesures du lancement, sur cet appareil/.test(moi) && /elles restent sur votre appareil et rien n’est envoyé/.test(moi) && /Retour sur Passer le relais, un autre jour oui/.test(moi)), P('6. « Moi » montre ces 3 mesures, et dit qu’elles restent sur l’appareil'));
       ok(errs.length === 0 && j2.errs.length === 0, P('6. aucune erreur ' + errs.concat(j2.errs).slice(0, 3).join(' | ')));
       await j2.ctx.close();
+    }
+
+    // =====================================================================================================================
+    // 7. La parole du parent (demande d'Antonio du 19 novembre 2026) : écrire, garder ses mots pour soi, ou préparer comment les dire à quelqu'un.
+    //    Avant d'écrire, l'écran dit comment l'espace fonctionne, qui peut lire le texte et où il reste. Les mots du parent ne sont jamais réécrits.
+    //    Écrire reste gratuit et sans limite. Rien ne se vend dans cet espace : l'outil à découvrir n'est proposé qu'une fois le texte prêt.
+    // =====================================================================================================================
+    {
+      const Q1 = 'Qu’aimeriez-vous qu’on comprenne de votre journée ?';
+      const MOT_A = 'Mon expérience d’éducateur social m’a guidé dans le choix des questions et des outils que vous trouverez ici. Aujourd’hui, vous avez peut-être besoin de souffler, d’écrire ce que vous gardez pour vous ou de trouver les mots pour en parler à quelqu’un. C’est vous qui choisissez.';
+      // Des mots avec un retour à la ligne, des guillemets, 2 espaces de suite et des chevrons : ils doivent ressortir tels quels, partout.
+      const MOTS = 'Ce matin, il a hurlé pour mettre ses chaussures.\nTout le monde nous regardait : « encore lui ! »  J’ai tenu <b>bon</b>, mais ce soir je suis vidée.';
+      const brut = (page, sel) => page.$eval(sel, e => e.textContent).catch(() => null);
+      const s = await ouvre(fmt);
+      if (NAV === 'chromium') await s.ctx.grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => { });
+      await s.page.goto(APP, { waitUntil: 'domcontentloaded' }); await s.page.waitForSelector('.seuil .porte'); await s.page.waitForTimeout(300);
+      const acc = await s.page.evaluate(() => { const q = sel => [...document.querySelectorAll(sel)].map(e => e.textContent.split(String.fromCharCode(160)).join(' ').replace(/\s+/g, ' ').trim());
+        return { marque: (document.querySelector('main.intro .hbar .wordmark') || {}).innerText || '', besoin: q('.seuil .besoin')[0], portes: q('.seuil .porte b'), nom: q('.nom-sens h2')[0], sens: q('.nom-sens .ns-l'), mot: q('.mot-a blockquote p')[0], signe: q('.mot-a figcaption')[0], titre: document.title }; });
+      ok(/^Parent écouté\s*parent éclairé$/.test(acc.marque.trim()) && acc.nom === 'Parent écouté, parent éclairé' && !/Parent Écouté|Parent Éclairé/.test(await texte(s.page, '#app')) && !/Parent Écouté|Parent Éclairé/.test(acc.titre), P('7. le nom s’écrit « Parent écouté, parent éclairé », en haut de l’écran et dans la page ' + JSON.stringify([acc.marque, acc.titre])));
+      ok(acc.besoin === Q1 && acc.portes.slice(0, 2).join('|') === 'Déposer ce qui pèse|Souffler 2 minutes', P('7. après la phrase d’accueil, la question « ' + Q1 + ' », puis « Déposer ce qui pèse » et « Souffler 2 minutes » ' + JSON.stringify(acc.portes)));
+      ok(acc.sens.length === 2 && /^Écouté\. /.test(acc.sens[0]) && /^Éclairé\. /.test(acc.sens[1]) && acc.mot === MOT_A && acc.signe === 'Antonio Company, éducateur social', P('7. le nom est expliqué en 2 phrases, et le mot d’Antonio est repris mot pour mot, avec sa signature'));
+
+      // ---- avant d'écrire : la question, le fonctionnement réel, qui peut lire et où le texte reste ----
+      await clic(s.page, '.seuil ' + A('porte', '[data-v="deposer"]'), 500); await s.page.waitForSelector('main.deposer #draft'); await s.page.waitForTimeout(400);
+      const av = await s.page.evaluate(() => { const n = e => e ? e.textContent.split(String.fromCharCode(160)).join(' ').replace(/\s+/g, ' ').trim() : ''; const $ = x => document.querySelector(x); const d = $('#draft'), note = $('#qui-lit'), lab = $('label.dep-q'); const vis = x => [...document.querySelectorAll(x)].some(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.top >= 0 && r.bottom <= innerHeight; });
+        return { h1: n($('main.deposer h1')), q: n(lab), pour: lab ? lab.getAttribute('for') : '', sub: n($('.dep-tete .sub')), note: n(note), decrit: d.getAttribute('aria-describedby'), avant: !!(note && (note.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING)) && !!(lab && (lab.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING)),
+          choix: [...document.querySelectorAll('.dep-choix .btn')].map(n), silence: n($('main.deposer [data-act="porte"][data-v="souffle"]')), accueil: vis('.bar [data-act="accueil"], .tabs [data-act="accueil"]'), retour: vis('.bar [data-act="back"]'), sos: vis('.bar .sos, .tabs .sos'), comment: !!$('main.deposer [data-act="voix"]') }; });
+      ok(av.h1 === 'Déposer ce qui pèse' && av.q === Q1 && av.pour === 'draft', P('7. « Déposer ce qui pèse » pose la même question que l’accueil, et c’est l’étiquette de la zone d’écriture ' + JSON.stringify([av.h1, av.q])));
+      ok(av.note === 'Votre texte reste sur cet appareil, il n’est envoyé ni à Antonio ni à une intelligence artificielle, et seule une personne qui utilise cet appareil peut le lire.' && av.decrit === 'qui-lit' && av.avant, P('7. avant la zone d’écriture, une phrase dit où le texte reste et qui peut le lire, et elle est reliée au champ : « ' + av.note + ' »'));
+      ok(/^Cet espace fonctionne seul\./.test(av.sub) && /question écrite à l’avance\.$/.test(av.sub) && av.comment, P('7. le fonctionnement réel est dit avant d’écrire (l’espace fonctionne seul, la question est écrite à l’avance), avec le lien « Comment fonctionne cet espace ? »'));
+      ok(av.choix.join('|') === 'Garder ces mots pour moi|J’aimerais le dire à quelqu’un' && /^Je préfère le silence, souffler 2 minutes$/.test(av.silence) && av.accueil && av.retour && av.sos, P('7. les 2 choix, « Souffler 2 minutes » pour qui préfère le silence, et « Retour », « Accueil » et SOS à portée ' + JSON.stringify(av.choix)));
+      const tAvant = await texte(s.page, 'main');
+      // le silence, puis le retour : l'écran d'écriture est retrouvé
+      await clic(s.page, 'main.deposer ' + A('porte', '[data-v="souffle"]'), 700); const souffle = !!(await s.page.$('main.souffle'));
+      await s.page.goBack(); await s.page.waitForSelector('main.deposer #draft', { timeout: 5000 }).catch(() => { }); await s.page.waitForTimeout(400);
+      ok(souffle && !!(await s.page.$('main.deposer #draft')), P('7. « Je préfère le silence » ouvre la respiration, et « Retour » ramène à l’écran pour écrire'));
+
+      // ---- « J'aimerais le dire à quelqu'un » : les mots sont gardés tels quels, puis une première phrase est proposée ----
+      await s.page.fill('#draft', MOTS); await clic(s.page, A('ddire'), 300); await s.page.waitForSelector('main.dire #amorce', { timeout: 6000 }); await s.page.waitForTimeout(500);
+      let d = await garde(s.page);
+      const dire0 = await s.page.evaluate(() => ({ h1: document.querySelector('main.dire h1').textContent.replace(/\s+/g, ' ').trim(), amorce: document.getElementById('amorce').value, mots: document.querySelector('.dire-c .em-texte').textContent, injecte: document.querySelectorAll('.dire-c .em-texte *').length, a: [...document.querySelectorAll('.dire-c .chip[data-k="a"]')].map(b => b.textContent.trim() + ':' + b.getAttribute('aria-pressed')), joint: document.querySelector('.dire-joint').getAttribute('aria-pressed'), outil: !!document.querySelector('.vers-relais') }));
+      ok(d.depots.length === 1 && d.depots[0].text === MOTS && dire0.mots === MOTS && dire0.injecte === 0, P('7. les mots du parent sont gardés et montrés tels quels, retour à la ligne, guillemets et chevrons compris'));
+      ok(dire0.h1 === 'J’aimerais le dire à quelqu’un' && dire0.amorce === 'J’aimerais te dire comment s’est passée ma journée. Je ne te demande pas de solution, j’ai besoin que tu m’écoutes.' && dire0.a.join('|') === 'À un proche:true|Lors d’une réunion:false' && dire0.joint === 'true', P('7. une première phrase courte est proposée, pour un proche d’abord ' + JSON.stringify([dire0.amorce, dire0.a])));
+      const tDire = await texte(s.page, 'main');
+      ok(!VENTE.test(tAvant) && !VENTE.test(tDire) && !dire0.outil && !(await s.page.$('.sheet')), P('7. rien ne se vend pendant que le parent écrit ou prépare ses mots'));
+      // changer de destinataire sans avoir touché la phrase : la phrase suit. Une fois modifiée, elle reste celle du parent.
+      await clic(s.page, A('dire', '[data-k="a"][data-v="reunion"]'), 300);
+      const reu = await s.page.inputValue('#amorce');
+      await s.page.fill('#amorce', 'Avant de commencer, j’aimerais vous lire ce que j’ai écrit hier soir.'); await s.page.waitForTimeout(700);
+      await clic(s.page, A('dire', '[data-k="a"][data-v="proche"]'), 300); const garde1 = await s.page.inputValue('#amorce'); await clic(s.page, A('dire', '[data-k="a"][data-v="reunion"]'), 300);
+      d = await garde(s.page);
+      ok(reu === 'Avant que nous commencions, j’aimerais vous dire quelque chose d’important pour moi.' && garde1 === 'Avant de commencer, j’aimerais vous lire ce que j’ai écrit hier soir.' && d.depots[0].dire && d.depots[0].dire.a === 'reunion' && d.depots[0].dire.t === garde1 && d.depots[0].text === MOTS, P('7. la phrase proposée suit le destinataire tant qu’elle n’a pas été touchée, puis la phrase modifiée par le parent est gardée telle quelle'));
+      // « Je perds mes mots » : les débuts de phrase de l'outil de réunion, à continuer avec ses mots
+      await clic(s.page, 'main.dire .rl-perds', 300);
+      const debuts = await s.page.$$eval('.dire-modeles .dire-m', L => L.map(b => b.textContent.trim()));
+      await clic(s.page, A('dire', '[data-k="mot"][data-i="3"]'), 350);
+      const foc = await s.page.evaluate(() => { const e = document.getElementById('amorce'); return { v: e.value, actif: document.activeElement === e, fin: e.selectionStart === e.value.length }; });
+      await s.page.keyboard.type('prévenir avant un changement.'); await s.page.waitForTimeout(650);
+      ok(debuts.length === 7 && debuts[3] === 'Je vous demande de…' && foc.v === 'Je vous demande de ' && foc.actif && foc.fin && (await s.page.inputValue('#amorce')) === 'Je vous demande de prévenir avant un changement.', P('7. « Je perds mes mots » propose 7 débuts de phrase, et le parent continue le sien avec ses mots ' + JSON.stringify([debuts.length, foc])));
+      // copier : la première phrase, puis les mots du parent, inchangés. L'outil à découvrir n'apparaît qu'ensuite, sans parler de prix.
+      await clic(s.page, A('dire', '[data-k="joint"]'), 200); const sansMots = await s.page.$eval('.dire-joint', b => b.getAttribute('aria-pressed')); await clic(s.page, A('dire', '[data-k="joint"]'), 200);
+      await clic(s.page, A('dire', '[data-k="copie"]'), 600); await s.page.waitForSelector('.dire-pret', { timeout: 5000 });
+      const ATTENDU = 'Je vous demande de prévenir avant un changement.\n\n' + MOTS;
+      const pret = await s.page.evaluate(() => ({ t: document.getElementById('dire-texte').textContent, etat: (document.querySelector('.dire-pret [role="status"]') || {}).textContent || '', fin: !!document.querySelector('.dire-pret [data-act="dfin"]'), outil: (document.querySelector('.vers-relais h2') || {}).textContent || '', lien: !!document.querySelector('.vers-relais [data-act="rl"][data-k="ouvre"]') }));
+      ok(sansMots === 'false' && pret.t === ATTENDU && (NAV === 'chromium' ? /^C’est copié\./ : /^C’est copié\.|^Votre texte est prêt, juste en dessous\./).test(pret.etat) && pret.fin, P('7. « Copier » prépare la première phrase suivie des mots du parent, inchangés, et « J’ai fini pour aujourd’hui » est là ' + JSON.stringify(pret.etat.slice(0, 40))));
+      if (NAV === 'chromium') { const pp = await s.page.evaluate(() => navigator.clipboard.readText().catch(e => 'ERR ' + e)); ok(pp === ATTENDU, P('7. le presse-papiers contient exactement ce texte ' + JSON.stringify(pp.slice(0, 60)))); }
+      else notesFin.push('le contenu du presse-papiers n’est relu que dans Chrome : ailleurs, le texte prêt à copier est vérifié à l’écran');
+      ok(pret.outil === 'Arriver à la réunion avec vos mots' && pret.lien && !VENTE.test(await texte(s.page, 'main')), P('7. une fois le texte prêt pour une réunion, l’outil réutilisable est proposé à la découverte, sans prix'));
+      // reprendre sa phrase après avoir copié : le texte prêt s'efface. Si le téléphone refuse la copie, l'écran ne dit pas « copié » : le texte est sélectionné.
+      await s.page.$eval('#amorce', e => { e.focus(); e.setSelectionRange(e.value.length, e.value.length); }); await s.page.keyboard.type(' Merci.'); await s.page.waitForTimeout(650);
+      const efface = !(await s.page.$('.dire-pret')) && !(await s.page.$('main.dire .vers-relais'));
+      await s.page.evaluate(() => { try { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('refus')) } }); } catch (e) { } });
+      await clic(s.page, A('dire', '[data-k="copie"]'), 600); await s.page.waitForSelector('.dire-pret', { timeout: 5000 });
+      const main2 = await s.page.evaluate(() => ({ etat: (document.querySelector('.dire-pret [role="status"]') || {}).textContent || '', t: document.getElementById('dire-texte').textContent, sel: String(window.getSelection()) }));
+      ok(efface && /^Votre texte est prêt, juste en dessous\./.test(main2.etat) && !/copié/.test(main2.etat) && main2.t === 'Je vous demande de prévenir avant un changement. Merci.\n\n' + MOTS && main2.sel.replace(/\s+/g, ' ').trim() === main2.t.replace(/\s+/g, ' ').trim(), P('7. si le téléphone refuse la copie, l’écran ne dit pas « copié » : le texte, à jour, est sélectionné pour être copié à la main ' + JSON.stringify(main2.etat.slice(0, 40))));
+      // laisser tomber : retour à l'écran d'écriture, les mots restent gardés
+      await clic(s.page, A('dire', '[data-k="laisse"]'), 700); await s.page.waitForSelector('main.deposer #draft', { timeout: 5000 }).catch(() => { });
+      d = await garde(s.page);
+      ok(!!(await s.page.$('main.deposer #draft')) && !(await s.page.$('main.dire')) && d.depots.length === 1 && d.depots[0].text === MOTS, P('7. « Finalement, je garde mes mots pour moi » ramène à l’écran pour écrire, et rien n’est perdu'));
+
+      // ---- « Garder ces mots pour moi » : ce que le parent emporte, autant de fois qu'il le veut ----
+      const AUTRES = ['Je n’ai pas dormi et la journée a été longue.', 'Le rendez-vous a encore été déplacé.', 'Ce soir, le repas s’est bien passé.', 'Je voudrais une heure pour moi cette semaine.'];
+      for (const t of AUTRES) { await s.page.fill('#draft', t); await clic(s.page, 'main.deposer ' + A('dsend'), 300); await s.page.waitForFunction(k => { try { return JSON.parse(localStorage.getItem(k[0])).depots.some(x => x.text === k[1]); } catch (e) { return false; } }, [KEY, t], { timeout: 6000 }); await s.page.waitForTimeout(500); }
+      d = await garde(s.page);
+      const emp = await s.page.evaluate(() => { const n = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : ''; const $ = x => document.querySelector(x); return { titre: n($('.emporte>h2')), lbl: n($('.emporte .mirror .lbl')), q: n($('.emporte .mirror .q')), l: n($('.emporte .mirror .l')), mots: ($('.emporte .em-texte') || {}).textContent, suite: [...document.querySelectorAll('.emporte .em-suite .btn')].map(n), champ: $('#draft').value }; });
+      ok(d.depots.length === 5 && d.depots.every(x => x.question && x.lumiere) && emp.champ === '' && !/dépôts? offerts?|3 dépôts|utilisés/.test(await texte(s.page, 'main')), P('7. écrire reste gratuit et sans limite : 5 dépôts de suite reçoivent chacun leur question'));
+      ok(emp.titre === 'Ce que vous emportez' && emp.lbl === 'Une question pour y voir clair' && emp.q === d.depots[4].question && emp.l && emp.mots === AUTRES[3] && emp.suite.join('|') === 'J’aimerais le dire à quelqu’un|J’ai fini pour aujourd’hui', P('7. « Ce que vous emportez » : une question écrite à l’avance, une lumière, les mots du parent tels quels, puis les 2 suites ' + JSON.stringify([emp.lbl, emp.suite])));
+      ok(!VENTE.test(await texte(s.page, 'main')) && !(await s.page.$('.sheet')) && !(await s.page.$('main.deposer .vers-relais')), P('7. après 5 dépôts, « Déposer » ne propose toujours rien à acheter'));
+      // champ vide et « J'aimerais le dire à quelqu'un » : le bouton prépare les derniers mots déposés, sans message d'erreur
+      await clic(s.page, 'main.deposer ' + A('ddire'), 600);
+      ok(!!(await s.page.$('main.dire')) && (await brut(s.page, '.dire-c .em-texte')) === AUTRES[3] && !(await s.page.$('#err-draft')), P('7. champ vide, « J’aimerais le dire à quelqu’un » reprend les derniers mots déposés'));
+      await s.page.goBack(); await s.page.waitForSelector('main.deposer #draft', { timeout: 5000 }).catch(() => { }); await s.page.waitForTimeout(300);
+      // « Mes dépôts » : la préparation commencée se retrouve
+      await clic(s.page, 'main.deposer ' + A('go', '[data-view="depots"]'), 500);
+      const liste = await s.page.$$eval('main [data-act="dire"][data-k="ouvre"]', L => L.map(b => b.textContent.trim()));
+      ok(liste.length === 5 && liste.filter(x => x === 'Reprendre ce que j’aimerais dire').length === 1 && liste.filter(x => x === 'J’aimerais le dire à quelqu’un').length === 4, P('7. dans « Mes dépôts », chaque dépôt peut être préparé pour quelqu’un, et une préparation commencée se reprend ' + JSON.stringify(liste)));
+      await s.page.goBack(); await s.page.waitForSelector('main.deposer #draft', { timeout: 5000 }).catch(() => { }); await s.page.waitForTimeout(300);
+      // finir : retour à l'accueil, les mots restent sur l'appareil
+      await clic(s.page, '.emporte ' + A('dfin'), 900);
+      const fin = await s.page.evaluate(() => ({ accueil: !!document.querySelector('main.intro .seuil'), toast: (document.querySelector('.toast') || {}).textContent || '' }));
+      ok(fin.accueil && /Vos mots sont gardés sur cet appareil/.test(fin.toast) && (await garde(s.page)).depots.length === 5, P('7. « J’ai fini pour aujourd’hui » ramène à l’accueil, et dit que les mots restent sur l’appareil ' + JSON.stringify(fin)));
+
+      // ---- un texte de détresse : l'aide d'abord, et elle reste visible si le parent veut le dire à quelqu'un ----
+      await clic(s.page, '.seuil ' + A('porte', '[data-v="deposer"]'), 500); await s.page.waitForSelector('main.deposer #draft');
+      await s.page.fill('#draft', 'Je n’ai plus envie de vivre comme ça.'); await clic(s.page, 'main.deposer ' + A('ddire'), 900);
+      const aide = await s.page.evaluate(() => ({ dire: !!document.querySelector('main.dire'), tels: [...document.querySelectorAll('.emporte .mirror a.tel')].map(a => a.getAttribute('href')), pistes: document.querySelectorAll('.emporte .pistes-depot').length }));
+      ok(!aide.dire && aide.tels.includes('tel:143') && aide.tels.includes('tel:144') && aide.pistes === 0, P('7. un texte de détresse : l’écran reste sur l’aide, avec le 143 et le 144, sans ouvrir la suite de lui-même'));
+      await clic(s.page, '.emporte ' + A('dire', '[data-k="ouvre"]'), 600);
+      const aide2 = await s.page.evaluate(() => ({ tels: [...document.querySelectorAll('main.dire .dire-aide a.tel')].map(a => a.getAttribute('href')), amorce: (document.getElementById('amorce') || {}).value }));
+      ok(aide2.tels.includes('tel:143') && aide2.tels.includes('tel:144') && aide2.amorce === 'J’ai besoin de te parler de quelque chose qui me pèse.', P('7. si ce parent veut le dire à quelqu’un, l’aide reste affichée et la première phrase parle de ce qui pèse'));
+      ok(s.errs.length === 0, P('7. aucune erreur ' + s.errs.slice(0, 3).join(' | ')));
+      await s.ctx.close();
+
+      // ---- l'outil réutilisable : dans « Passer le relais », les mots déposés sont proposés phrase par phrase, jamais coupés ----
+      const LONG = 'Cette phrase est beaucoup trop longue pour tenir dans une observation de réunion, parce que ce parent a écrit d’une seule traite tout ce qu’il avait sur le cœur, sans jamais mettre de point, en ajoutant détail après détail jusqu’à dépasser largement la longueur prévue.';
+      const o = await ouvre(fmt, { notes: Object.assign(PARENT(), { achats: { relais: { le: iso(0) } }, depots: [
+        { id: 'dz', date: iso(-1), time: '20:10', text: 'Je n’ai plus envie de vivre comme ça.', mode: 'listen', risk: true },
+        { id: 'da', date: iso(0), time: '21:05', text: 'Mon fils a 35 ans. Ce week-end, il a dit « non ! » trois fois et il n’a presque pas dormi. ' + LONG, mode: 'listen', question: 'q', lumiere: 'l' }] }) });
+      await o.page.goto(APP + 'relais/', { waitUntil: 'domcontentloaded' }); await o.page.waitForSelector('.v-relais ' + R('reunion')); await clic(o.page, R('reunion'), 400); await clic(o.page, R('rpas', '[data-v="1"]'), 400);
+      const prop = await o.page.$$eval('.rl-obs .rl-m', L => L.map(b => ({ t: b.querySelector('span').innerText.replace(/\s+/g, ' ').trim(), d: b.querySelector('small').innerText.replace(/\s+/g, ' ').trim() })));
+      ok(prop.length === 2 && prop[0].t === 'Mon fils a 35 ans.' && prop[1].t === 'Ce week-end, il a dit « non ! » trois fois et il n’a presque pas dormi.' && prop.every(x => /^Vos mots du /.test(x.d)), P('7. pour préparer une réunion, les mots déposés sont proposés phrase par phrase, sans couper une phrase ni reprendre un texte de détresse ' + JSON.stringify(prop)));
+      ok(o.errs.length === 0, P('7. aucune erreur dans l’outil ' + o.errs.slice(0, 3).join(' | ')));
+      await o.ctx.close();
+      // sans fiche, sans journal et sans dépôt : la réunion se prépare quand même, et l'écran le dit
+      const v = await ouvre(fmt, { notes: Object.assign(PARENT(), { achats: { relais: { le: iso(0) } } }) });
+      await v.page.goto(APP + 'relais/', { waitUntil: 'domcontentloaded' }); await v.page.waitForSelector('.v-relais ' + R('reunion')); await clic(v.page, R('reunion'), 400); await clic(v.page, R('rpas', '[data-v="1"]'), 400);
+      ok(/Vous n’avez encore rien écrit dans vos fiches ni dans votre journal/.test(await texte(v.page, 'main')) && !!(await v.page.$('#rl-ro')), P('7. sans rien d’écrit, la réunion se prépare quand même : le parent note son observation'));
+      await v.ctx.close();
     }
   }
   await browser.close();

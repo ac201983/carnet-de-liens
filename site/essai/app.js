@@ -7,7 +7,7 @@ const KEY_SITE="pepe-v1";
 const RACINE="/essai/";
 const PUBLIC="https://parent-ecoute.ch/essai/";
 const ESSAI=true;
-const TITRE_SITE="Parent Écouté, Parent Éclairé, un espace d’écoute pour les parents";
+const TITRE_SITE="Parent écouté, parent éclairé, un espace d’écoute pour les parents";
 const SON_V="ca276355";
 const CONTACT_R="hc.etuoce-tnerap@ruojnob";
 const AVEC_REPONSE="";
@@ -958,7 +958,7 @@ const HELP=[
    « perso » : il a rempli (ou enregistré) « Personnaliser mon espace ». « recents » : les dernières fiches et les derniers outils ouverts. */
 const PRE=typeof globalThis!=='undefined'&&typeof globalThis.__PEPE_PRERENDER__==='function';
 const DEF={fxOff:false,tier:'free',achats:{},vu:'',me:'',age:'',situation:'',perso:false,persoTard:false,recents:[],via:'',weights:[],start:'',moods:{},depots:[],shared:{},steps:{},notes:{},seen:{},pv:0,atelier:false,tout:false,evo:{},photo:null,photos:[],abc:[],phrases:[],routineDone:{},ft:{first:null,then:null},three:[],letters:[],questions:[],onboarded:false,doseDate:'',doseText:''};
-const state={ap:{k:0,g:'',mot:''},cmd:{f:'',m:'une',k:'recap',de:''},rl:{e:'accueil',ex:'g',id:null,p:0,sec:'',r:null,lu:null,h:'',mots:false,attente:null,foc:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false};
+const state={ap:{k:0,g:'',mot:''},cmd:{f:'',m:'une',k:'recap',de:''},rl:{e:'accueil',ex:'g',id:null,p:0,sec:'',r:null,lu:null,h:'',mots:false,attente:null,foc:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false,dire:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
@@ -1057,7 +1057,8 @@ function recentDepot(){const ld=lastDepot();return ld&&(Date.now()-new Date(ld.d
 function achats(){const d=D();if(!d.achats||typeof d.achats!=='object'||Array.isArray(d.achats))d.achats={};if(d.tier==='antonio')d.tier='parcours';if(d.tier==='parcours'&&!d.achats.parcours)d.achats.parcours={m:'une',le:d.start||todayIso(),n:1};if(d.tier!=='parcours'&&d.achats.parcours)delete d.achats.parcours;return d.achats;}
 const tier=()=>{achats();return D().tier==='parcours'?'parcours':'free';};
 function can(f){if(f==='parcours')return tier()!=='free';if(f==='relais')return !!achats().relais;if(f==='antonio')return false;return true;}
-function depotsLeft(){return can('parcours')?Infinity:Math.max(0,FREE_DEPOTS-D().depots.length);}
+/* Sur le site, aucune intelligence artificielle ne répond : les questions sont écrites à l'avance. Écrire ici reste donc gratuit, sans compteur ni limite. */
+function depotsLeft(){return (can('parcours')||state.sample===false)?Infinity:Math.max(0,FREE_DEPOTS-D().depots.length);}
 function questionsLeft(){const mk=monthKey(todayIso());return Math.max(0,Q_PER_MONTH-D().questions.filter(q=>monthKey(q.date)===mk).length);}
 function sharedThisMonth(){const mk=monthKey(todayIso());return D().depots.filter(x=>D().shared[x.id]&&monthKey(x.date)===mk).length;}
 function openUpgrade(f){state.upFeat=f;state.sheet='upgrade';}
@@ -1593,6 +1594,17 @@ function tableHtml(){
     (SITE&&s?'<a class="haut-sit" href="'+ficheUrl('relais')+'" data-act="sit" data-id="relais"><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span>'+I.chev+'</a>':'')+'</div>';
 }
 function introDoseLabel(){if(new Date().getDay()===0)return 'Dose spéciale du dimanche';let j='';try{j=new Date().toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});}catch(e){}return 'La dose du '+(j||fmtDate(todayIso()));}
+/* Ce que le nom de l'espace veut dire, en 2 phrases, puis le mot d'Antonio, signé, tel qu'il l'a écrit le 19 novembre 2026.
+   « Écouté » : le parent a la parole, et l'espace l'aide à être entendu par quelqu'un s'il le souhaite. « Éclairé » : il repart avec quelque chose.
+   Personne ne lit ses mots ici : la phrase ne promet donc pas une écoute par quelqu'un, elle dit ce que le parent peut faire. */
+const NOM_SENS=[['Écouté','Ici, vous avez la parole. Vous écrivez ce que vous vivez avec vos mots, puis vous préparez, si vous le souhaitez, ce que vous aimeriez dire à un proche ou lors d’une réunion.'],
+  ['Éclairé','Vous repartez avec une question qui aide à y voir clair, ou avec une idée à essayer chez vous.']];
+const MOT_ANTONIO='Mon expérience d’éducateur social m’a guidé dans le choix des questions et des outils que vous trouverez ici. Aujourd’hui, vous avez peut-être besoin de souffler, d’écrire ce que vous gardez pour vous ou de trouver les mots pour en parler à quelqu’un. C’est vous qui choisissez.';
+function nomSensHtml(){
+  return '<section class="nom-sens" aria-labelledby="nom-sens-t"><h2 id="nom-sens-t">Parent écouté, parent éclairé</h2>'+
+    NOM_SENS.map(x=>'<p class="ns-l"><b>'+x[0]+'.</b> '+x[1]+'</p>').join('')+
+    '<figure class="mot-a"><blockquote><p>'+MOT_ANTONIO+'</p></blockquote><figcaption>Antonio Company, éducateur social</figcaption></figure></section>';
+}
 function viewIntro(){
   const m=moment();
   /* Un parent déjà entré retrouve la même vitrine. Les boutons disent alors ce qui l'attend : son espace, et son parcours s'il l'a commencé. */
@@ -1629,7 +1641,7 @@ function viewIntro(){
   /* Les questions qu'un parent se pose avant de commencer. */
   const Q=[
     ['Faut-il créer un compte ?','Non. Il n’y a ni compte ni mot de passe. Votre espace se crée sur votre appareil dès votre premier geste, et vous pouvez ensuite le personnaliser si vous le souhaitez.'],
-    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace est pensé d’abord pour la mère ou le père d’une personne en situation de handicap, avec ou sans diagnostic, que votre enfant ait 5, 16 ou 35 ans. Si vous êtes parent et que vous traversez une période difficile, vous y êtes aussi le bienvenu.'],
+    ['Est-ce pour moi si mon enfant n’a pas de diagnostic ?','Oui. Cet espace est pensé d’abord pour la mère ou le père d’une personne en situation de handicap, avec ou sans diagnostic, quel que soit l’âge de votre enfant, à 5 ans comme à 16 ou à 35 ans. Si vous êtes parent et que vous traversez une période difficile, vous y êtes aussi le bienvenu.'],
     ['Faut-il prendre un abonnement ?','Non. Tout ce qui est gratuit le reste, sans limite de durée. Le parcours et Passer le relais se paient une fois, et rien n’est prélevé ensuite. Le parcours peut aussi se payer en 6 fois, pour le même total.'],
     ['Qui lit ce que j’écris ?',SITE?'Personne. Dans cette version, tout ce que vous écrivez reste sur votre appareil, et rien n’est envoyé.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom, et une intelligence artificielle écrit la réponse.'],
     ['Qui me répond ?',SITE?'Les textes de l’espace sont écrits à l’avance, sous la responsabilité d’Antonio Company. Chaque dépôt reçoit une question et une lumière, que l’application choisit parmi ces textes. Aucune intelligence artificielle n’écrit de réponse, et personne ne lit ce que vous écrivez.':'Quand vous déposez, une intelligence artificielle écrit la réponse, avec la méthode d’Antonio, et l’espace vous le dit. Les autres textes sont écrits à l’avance, sous la responsabilité d’Antonio Company.'],
@@ -1647,8 +1659,9 @@ function viewIntro(){
     '<div class="seuil" id="accueil"><div class="haut-texte">'+
     '<p class="pour">Pour la mère ou le père d’une personne en situation de handicap</p>'+
     '<h1>On vous demande souvent comment va votre enfant. <span class="ici">Ici, on commence par vous.</span></h1>'+
-    '<p class="besoin-l"><span class="besoin">De quoi avez-vous besoin <span class="nb">maintenant ?</span></span></p>'+
+    '<p class="besoin-l"><span class="besoin">'+DEP_Q.replace(/ (\S+) \?$/,' <span class="nb">$1 ?</span>')+'</span></p>'+
     portes(true)+'</div>'+
+    nomSensHtml()+
     tableHtml()+
     '<div class="haut-suite">'+
     (repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'">'+I.path+'<span>Reprendre mon parcours</span></button>':'<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>')+
@@ -1656,7 +1669,7 @@ function viewIntro(){
     '<p class="rassure">'+(SITE?'Version de test, gratuite et sans compte. Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div></div>'+
     sec('dose','Chaque matin, une dose de lumière','Voici celle d’aujourd’hui. Demain, une autre vous attendra.',dose)+
     sec('outils','Des pistes pour les jours difficiles','Vous y trouvez '+SITS.length+' situations de la vraie vie, avec des pistes à essayer dès ce soir. Chaque fiche se lit en 2 minutes'+(SITE?' et s’envoie à quelqu’un qui compte pour vous.':'.'),scenes+pictos)+
-    sec('depot','Un endroit pour déposer ce qui pèse','Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
+    sec('depot','Un endroit pour déposer ce qui pèse',SITE?'Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. Vous gardez vos mots pour vous, ou vous préparez comment les dire à quelqu’un. En retour, vous recevez une question qui ouvre et une lumière.':'Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
     sec('perm','Ici, vous avez le droit','',perms)+
     sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+'<button type="button" class="btn acc-essai" data-act="apercu">'+I.path+'Essayer cette étape, en 3 minutes</button>'+mois+vecu+allerParcours)+
     sec('relais','Passer le relais, l’esprit plus léger','Un week-end chez un proche, une soirée, une première nuit ailleurs. Vous préparez une page pour la personne qui garde votre enfant, avec vos mots. Elle sait l’essentiel en 1 minute.',rlVitrineHtml())+
@@ -1756,7 +1769,41 @@ function letterCard(){
   const txt=l?l.text:LETTER_EXAMPLE;
   return '<button type="button" class="letter reveal d1" data-act="letter" data-i="'+(l?L.length-1:-1)+'"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>'+(l?'Le mot d’Antonio '+esc(deMois(l.date)):'Le mot d’Antonio, un exemple')+'</b><span>'+(l?esc(fmtDate(l.date)):'Démonstration de ce qu’il sera')+'</span></div></div><p>'+esc(txt.split('\n')[0])+'</p><span class="hint">'+(l?'Lire ':'Lire l’exemple ')+I.chev+'</span></button>';
 }
+/* ---------- déposer, sur le site : écouté d'abord, éclairé ensuite ----------
+   L'espace fonctionne seul. Avant d'écrire, le parent lit en une phrase qui peut lire son texte et où il reste.
+   Il écrit librement, puis il choisit : garder ses mots pour lui, ou préparer comment les dire à quelqu'un.
+   Ses mots ne sont jamais reformulés. Rien n'est vendu ici, et il termine quand il le décide. */
+const DEP_Q='Qu’aimeriez-vous qu’on comprenne de votre journée ?';
+/* Avant d'écrire : qui peut lire le texte et où il reste, en une phrase. Puis comment l'espace fonctionne vraiment : il n'y a personne derrière l'écran. */
+const DEP_QUI='Votre texte reste sur cet appareil, il n’est envoyé ni à Antonio ni à une intelligence artificielle, et seule une personne qui utilise cet appareil peut le lire.';
+const DEP_SEUL='Cet espace fonctionne seul. Vous écrivez, puis vous recevez une question écrite à l’avance.';
+function depotBoxSite(){
+  const today=todayIso();const td=D().depots.filter(x=>x.date===today).slice(-1)[0];
+  return '<div class="card depot-c reveal d2">'+
+    '<p class="hint qui-lit" id="qui-lit">'+I.lock+DEP_QUI+'</p>'+
+    '<textarea id="draft" maxlength="'+LIM.draft+'" aria-describedby="qui-lit" placeholder="Écrivez comme ça vient, sans donner de prénom.">'+esc(state.draft)+'</textarea>'+
+    '<div class="dep-choix"><button type="button" class="btn primary" data-act="dsend">'+I.drop+'Garder ces mots pour moi</button>'+
+    '<button type="button" class="btn" data-act="ddire">'+I.user+'J’aimerais le dire à quelqu’un</button></div>'+
+    '<span class="count" id="draft-count" aria-hidden="true"></span>'+
+    '<button type="button" class="linkbtn dep-silence" data-act="porte" data-v="souffle">'+I.wind+'<span>Je préfère le silence, souffler 2 minutes</span></button>'+
+    '<p class="hint dep-comment"><button type="button" class="linkbtn" data-act="voix">Comment fonctionne cet espace ?</button></p>'+
+    '</div>'+(td?emporteHtml(td):'');
+}
+/* Ce que le parent emporte après avoir écrit : ses mots, tels qu'il les a écrits, une question et une lumière écrites à l'avance,
+   une fiche si ses mots en appellent une, et la suite qu'il choisit. « J'ai fini pour aujourd'hui » referme simplement. */
+/* Les mots du parent, entiers et inchangés. Un long texte défile dans son cadre, que l'on atteint aussi au clavier. */
+function motsHtml(t,lab){const long=t.length>420||(t.match(/\n/g)||[]).length>7;return '<p class="em-texte'+(long?' long" tabindex="0" role="group" aria-labelledby="'+lab:'')+'">'+esc(t)+'</p>';}
+function emporteHtml(x){
+  return '<section class="emporte" aria-labelledby="emporte-t"><h2 id="emporte-t">Ce que vous emportez</h2>'+
+    (x.risk?depotHtml(x,true):depotHtml(x,true).replace(/<span class="lbl">.*?<\/span>/,'<span class="lbl">Une question pour y voir clair</span>'))+
+    '<div class="em-mots"><span class="label" id="em-mots-l">Vos mots, tels que vous les avez écrits</span>'+motsHtml(x.text,'em-mots-l')+'</div>'+
+    pistesDepotHtml(x)+
+    '<div class="em-suite"><button type="button" class="btn" data-act="dire" data-k="ouvre" data-id="'+x.id+'">'+I.user+(x.dire?'Reprendre ce que j’aimerais dire':'J’aimerais le dire à quelqu’un')+'</button>'+
+    '<button type="button" class="btn primary" data-act="dfin">'+I.check+'J’ai fini pour aujourd’hui</button></div>'+
+    '<p class="hint">Vos mots sont gardés sur cet appareil, dans « Mes dépôts ». C’est vous qui décidez de les montrer à quelqu’un.</p></section>';
+}
 function depotBox(){
+  if(state.sample===false)return depotBoxSite();
   const left=depotsLeft();const today=todayIso();const td=D().depots.filter(x=>x.date===today).slice(-1)[0];
   const head=lab=>'<div class="row" style="justify-content:space-between;align-items:center">'+lab+(left!==Infinity&&left>0?'<span class="pill">'+left+' dépôt'+(left>1?'s':'')+' offert'+(left>1?'s':'')+'</span>':'')+'</div>';
   let html='<div class="card depot-c reveal d2">';
@@ -1793,6 +1840,7 @@ function depotHtml(x,compact){
   const row=[];
   if(!x.conseil&&state.sample)row.push('<button type="button" class="btn small" data-act="dconcret" data-id="'+x.id+'">'+I.bulb+'Et concrètement ?</button>');
   if(can('antonio'))row.push('<label class="share"><input type="checkbox" data-act="share" data-id="'+x.id+'"'+(D().shared[x.id]?' checked':'')+'> Partager ce dépôt avec Antonio'+(DEMO?' (démonstration)':'')+'</label>');
+  if(!compact&&state.sample===false)row.push('<button type="button" class="btn small" data-act="dire" data-k="ouvre" data-id="'+x.id+'">'+I.user+(x.dire?'Reprendre ce que j’aimerais dire':'J’aimerais le dire à quelqu’un')+'</button>');
   if(row.length)out+='<div class="row" style="align-items:center">'+row.join('')+'</div>';
   return out+'</div>';
 }
@@ -1808,7 +1856,7 @@ function advicePrompt(){
   'Structure en quatre parties courtes avec ces titres exacts précédés de « ## » : « Ce que j’entends » (deux phrases, sans juger, qui reconnaissent l’effort), « Ce que vous pouvez essayer » (trois pistes concrètes en liste à puces, réalistes ce soir ou cette semaine : prévisibilité, moins de mots, choix entre deux options, d’abord/ensuite, routines visuelles, sécurité d’abord, observer ce qui précède), « Pour vous » (une ou deux phrases pour le parent lui-même), « Si ça continue » (une phrase : quand et à qui demander de l’aide, sans dramatiser ; pédiatre ou médecin, l’équipe de l’institution ou de l’école, Pro Infirmis, associations de parents ; La Main Tendue 143 si le parent va très mal). Écris comme Antonio parle, avec des phrases simples et complètes, reliées par « et », « mais » ou « parce que ». N’utilise ni deux-points, ni point-virgule, ni tiret long, ni point médian, ni phrase sans verbe, ni formule du type « pas ceci, pas cela ». Maximum 200 mots. Pas de gras. Termine par une phrase simple et vraie.';
 }
 const RISK=/(suicid|me tuer|en finir|plus envie de vivre|le tuer|la tuer|je vais le frapper|je vais la frapper)/i;
-async function sendDepot(){
+async function sendDepot(suite){
   if(state.busy||state.sinking)return;
   const text=clean(state.draft,LIM.draft);if(text.length<5){fieldErr('draft','Écrivez quelques mots, comme ça vient (cinq caractères au moins).');return;}
   const sansReponse=depotsLeft()===0;
@@ -1823,7 +1871,11 @@ async function sendDepot(){
   }
   if(!state.sample){
     dep.question=LOCAL_Q[dayIdx(LOCAL_Q.length)];dep.lumiere=WORDS[(dayIdx(WORDS.length)+3)%WORDS.length];
-    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
+    d.depots.push(dep);state.busy=false;state.fresh=dep.id;save();
+    /* « J'aimerais le dire à quelqu'un » : les mots sont gardés d'abord, tels quels, puis l'étape suivante s'ouvre.
+       Si le texte laisse penser à une détresse, l'aide s'affiche d'abord, et le parent choisit la suite lui-même. */
+    if(suite==='dire'&&!dep.risk){setTimeout(()=>{state.fresh=null;},1900);handle('dire',{k:'ouvre',id:dep.id},null);return;}
+    render();montreReponse();setTimeout(()=>{state.fresh=null;},1900);if(!dep.risk)toast('C’est déposé et gardé pour vous.');return;
   }
   state.ctl=new AbortController();
   try{
@@ -1963,7 +2015,7 @@ function viewFinal(){
   const faites=doneCount(),pages=nbNotes(),photos=photosChoisies(),pts=EVO_TIMES.filter(x=>e[x[0]]);
   const peutImprimer=typeof window.print==='function';
   const du=dateLongue(d.start),au=dateLongue(todayIso());
-  let h='<main id="main" tabindex="-1" class="view final"><div class="fin-couv"><span class="label">Parent Écouté, Parent Éclairé</span><h1 class="t1">'+(d.me?'Le chemin de '+esc(d.me):'Mon chemin')+'</h1>'+
+  let h='<main id="main" tabindex="-1" class="view final"><div class="fin-couv"><span class="label">Parent écouté, parent éclairé</span><h1 class="t1">'+(d.me?'Le chemin de '+esc(d.me):'Mon chemin')+'</h1>'+
     '<p class="sub">'+(du&&du!==au?'Du '+esc(du)+' au '+esc(au)+'. ':'')+faites+' étape'+(faites>1?'s':'')+' faite'+(faites>1?'s':'')+' sur 24, et '+pages+' page'+(pages>1?'s':'')+' écrite'+(pages>1?'s':'')+'.</p></div>'+
     '<div class="card fin-mode sansimp"><p>Voici votre parcours rassemblé sur une seule page, avec vos mots. Vous pouvez la garder, ou l’imprimer.</p>'+(peutImprimer?'<button type="button" class="btn primary" data-act="imprimer" style="align-self:flex-start">'+I.note+'Imprimer ou enregistrer en PDF</button>':'')+'</div>';
   if(!pages&&!pts.length&&!photos.length)return h+'<div class="card"><p>Votre chemin est encore vide. Il se remplira avec ce que vous écrirez à chaque étape, vos points dans « Mon évolution » et les photos que vous choisirez.</p><button type="button" class="btn" data-act="step" data-i="'+currentStepIdx()+'" style="align-self:flex-start">'+I.path+'Ouvrir mon étape</button></div></main>';
@@ -2112,6 +2164,9 @@ function portes(grand){
     /* La troisième porte : le parent y trouve une idée qui part de ce qu'il vit, que son enfant soit petit, ado ou adulte. */
     ['piste',I.bulb,PISTE_T[m],'Une idée','Vous choisissez ce que vous vivez, avec un enfant, un ado ou un adulte.',PISTE_T]
   ];
+  /* Sur l'accueil, la question invite à écrire : « Déposer ce qui pèse » vient donc en premier. « Souffler 2 minutes » reste à un geste,
+     pour la personne qui préfère le silence. Dans « Aujourd'hui », l'ordre des 3 portes ne change pas. */
+  if(grand){P[0][4]='En silence, l’étang respire avec vous.';P[1][4]='Vous l’écrivez avec vos mots, pour vous ou pour le dire à quelqu’un.';P.unshift(P.splice(1,1)[0]);}
   return '<div class="portes'+(grand?'':' mini')+'" role="group" aria-label="Ce dont vous avez besoin">'+P.map((p,i)=>
     '<button type="button" class="porte'+(i===0?' un':'')+'" data-act="porte" data-v="'+p[0]+'"'+(grand?'':' aria-label="'+esc(p[2])+'"')+'><span class="ic" aria-hidden="true">'+p[1]+'</span>'+
     (grand?'<span class="tx"><b'+(p[5]?heureAttr(p[5]):'')+'>'+esc(p[2])+'</b><span>'+esc(p[4])+'</span></span><span class="chev" aria-hidden="true">'+I.chev+'</span>':'<b>'+esc(p[3])+'</b>')+'</button>').join('')+'</div>';
@@ -2172,18 +2227,18 @@ function urlDe(){
   return RACINE;
 }
 function titreDe(){
-  if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent Écouté, Parent Éclairé';
-  if(state.view==='plans')return 'Les 3 offres de Parent Écouté, Parent Éclairé';
+  if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent écouté, parent éclairé';
+  if(state.view==='plans')return 'Les 3 offres de Parent écouté, parent éclairé';
   if(state.view==='apercu')return 'Essayer une étape du parcours, en 3 minutes';
   if(state.view==='relais')return state.rl.e==='lu'?'Une fiche de relais, écrite par une famille':'Passer le relais, une page pour la personne qui garde votre enfant';
-  if(state.view==='transmettre')return 'Une page à transmettre à une famille, Parent Écouté, Parent Éclairé';
-  if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent Écouté, Parent Éclairé';}
+  if(state.view==='transmettre')return 'Une page à transmettre à une famille, Parent écouté, parent éclairé';
+  if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent écouté, parent éclairé';}
   if(state.view==='kit'&&state.kit==='sits'&&!D().onboarded)return SITS.length+' situations de la vraie vie, avec des pistes pour les parents';
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:''};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:'',dd:state.view==='deposer'&&state.dire?state.dire.id:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
   state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
@@ -2201,6 +2256,8 @@ function navApply(s){
   if(state.view==='sit'&&!SITS.some(x=>x.id===state.sit))state.view='kit';
   if(state.view==='exo'&&!EXOS.some(x=>x.id===state.exo))state.view='kit';
   if(state.view==='souffle')state.souffle.k=state.souffle.k==='fini'?'fini':'pret';
+  /* « J'aimerais le dire à quelqu'un » se retrouve avec le dépôt auquel il se rapporte. Sans lui, on revient à l'écran pour écrire. */
+  state.dire=(state.view==='deposer'&&s.dd)?direOuvre(s.dd):null;
 }
 function histEtat(){return {pepe:1,i:HIST.i,s:navSnap(),y:0,t:Date.now()};}
 /* L'endroit où l'on était, gardé le temps de la visite dans cet onglet : l'écran, et jusqu'où l'on avait fait défiler. */
@@ -2251,7 +2308,7 @@ function histRetour(e){
 /* La question et la lumière s'affichent sous la zone d'écriture. Sur un téléphone, le bas de l'écran les cacherait.
    La page descend donc d'elle-même jusqu'à elles, doucement, ou d'un coup si le téléphone demande moins d'animations. */
 function montreReponse(){
-  const el=document.querySelector('.mirror.surface');if(!el||!el.getBoundingClientRect)return;
+  const el=document.querySelector('.emporte')||document.querySelector('.mirror.surface');if(!el||!el.getBoundingClientRect)return;
   const barre=document.querySelector('header.bar');const haut=barre?Math.max(0,barre.getBoundingClientRect().bottom):0;
   const r=el.getBoundingClientRect();
   if(r.top>=haut&&r.bottom<=window.innerHeight-96)return;   /* déjà entièrement à l'écran : la page ne bouge pas */
@@ -2337,12 +2394,56 @@ function pistesDepotHtml(x){
 
 /* ---------- déposer : un écran pour écrire, et rien d'autre ---------- */
 function viewDeposer(){
-  const d=D();const left=depotsLeft();
+  const d=D();const left=depotsLeft();const site=state.sample===false;
+  if(site&&state.dire)return viewDire();
+  if(site)return '<main id="main" tabindex="-1" class="view deposer"><div class="dep-tete"><h1 class="dep-nom">Déposer ce qui pèse</h1><label class="dep-q" for="draft">'+DEP_Q+'</label><p class="sub">'+DEP_SEUL+'</p></div>'+
+    depotBox()+
+    (d.depots.length?'<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+' gardé'+(d.depots.length>1?'s':'')+' sur cet appareil</span></span><span class="chev">'+I.chev+'</span></button>':'')+
+    '</main>';
   return '<main id="main" tabindex="-1" class="view deposer"><div><h1 class="t1">Déposer ce qui pèse</h1><p class="sub">'+(left===0?'Vous pouvez toujours écrire ce qui pèse, puis l’effacer. Rien n’est gardé.':'Écrivez comme ça vient, sans donner de prénom. Vous recevez en retour une question et une lumière.')+'</p></div>'+
     depotBox()+
     (left===0?'<button type="button" class="sit" data-act="exo" data-id="deposer"><span class="e">'+I.wind+'</span><span class="tx"><b>Écrire, puis effacer</b><span>Sans réponse, et sans rien garder</span></span><span class="chev">'+I.chev+'</span></button>':'')+
     (d.depots.length?'<button type="button" class="sit" data-act="go" data-view="depots"><span class="e">'+I.drop+'</span><span class="tx"><b>Mes dépôts</b><span>'+d.depots.length+' dépôt'+(d.depots.length>1?'s':'')+' gardé'+(d.depots.length>1?'s':'')+' sur cet appareil</span></span><span class="chev">'+I.chev+'</span></button>':'')+
     '</main>';
+}
+
+/* ---------- « J'aimerais le dire à quelqu'un » ----------
+   Le parent a écrit. S'il veut être entendu par un proche ou lors d'une réunion, l'espace lui propose une première phrase.
+   Il peut la changer, en choisir une autre, la copier avec ses mots à la suite, ou tout laisser et garder ses mots pour lui.
+   Ses mots ne sont jamais réécrits : ils sont montrés tels quels, et ajoutés tels quels s'il le veut.
+   Les débuts de phrase d'une réunion sont ceux de l'outil « Passer le relais » (« Je perds mes mots »). Rien n'est envoyé : copier est son geste. */
+const DIRE_A=[['proche','À un proche'],['reunion','Lors d’une réunion']];
+const DIRE_PROCHE=['J’aimerais te dire comment s’est passée ma journée. Je ne te demande pas de solution, j’ai besoin que tu m’écoutes.','J’ai besoin de te parler de quelque chose qui me pèse.','As-tu 5 minutes ? J’aimerais te raconter ma journée.','Je n’attends pas de conseil. J’ai besoin que quelqu’un sache ce que je vis.'];
+const DIRE_REUNION='Avant que nous commencions, j’aimerais vous dire quelque chose d’important pour moi.';
+const DIRE_LIM=600;
+function direAmorces(a){return a==='reunion'?[DIRE_REUNION].concat(RL_MOTS_ECRIRE.map(m=>m.replace('{P}','mon enfant')+' ')):DIRE_PROCHE;}
+function direDepot(id){return D().depots.find(x=>x.id===id)||null;}
+/* Ouvrir l'étape pour un dépôt : on reprend ce que le parent avait préparé, s'il y était déjà venu. */
+function direOuvre(id){
+  const x=direDepot(id);if(!x)return null;const g=x.dire||{};const a=g.a==='reunion'?'reunion':'proche';
+  return {id:id,a:a,t:typeof g.t==='string'?g.t:direAmorces(a)[(x.risk&&a==='proche')?1:0],j:g.j!==false,mots:false,copie:false};
+}
+function direGarde(){const s=state.dire;if(!s)return;const x=direDepot(s.id);if(!x)return;x.dire={a:s.a,t:clean(s.t,DIRE_LIM),j:!!s.j};save();}
+function direTexte(){const s=state.dire;if(!s)return '';const x=direDepot(s.id);const a=clean(s.t,DIRE_LIM);return (s.j&&x?[a,x.text]:[a]).filter(Boolean).join('\n\n');}
+/* Après le choix d'une autre première phrase : le curseur se pose à la fin, pour que le parent la continue avec ses mots. */
+function direApres(){if(!state.direFoc)return;state.direFoc=false;try{const el=document.getElementById('amorce');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n);}}catch(e){}}
+function viewDire(){
+  const s=state.dire,x=direDepot(s.id);if(!x){state.dire=null;return viewDeposer();}
+  const L=direAmorces(s.a);
+  const mots=s.mots?'<div class="dire-modeles" role="group" aria-label="D’autres façons de commencer"><span class="label">Commencer par</span>'+L.map((m,i)=>'<button type="button" class="dire-m" data-act="dire" data-k="mot" data-i="'+i+'">'+esc(m.trim())+(/[.?!]$/.test(m.trim())?'':'…')+'</button>').join('')+'</div>':'<button type="button" class="btn rl-perds" data-act="dire" data-k="mots">'+I.bulb+'Je perds mes mots</button>';
+  const pret=s.copie?'<section class="emporte dire-pret" aria-labelledby="dire-pret-t"><h2 id="dire-pret-t">Ce que vous emportez</h2><p class="dire-ok" role="status">'+(s.copie==='main'?'Votre texte est prêt, juste en dessous. Vous pouvez le sélectionner pour le copier, ou le relire avant de le dire à voix haute.':'C’est copié. Vous pouvez le coller dans un message, ou le relire avant de le dire à voix haute.')+'</p><p class="em-texte" id="dire-texte">'+esc(direTexte())+'</p>'+
+    '<div class="em-suite"><button type="button" class="btn primary" data-act="dfin">'+I.check+'J’ai fini pour aujourd’hui</button></div></section>':'';
+  /* La seule suite proposée mène à un outil que le parent garde et réutilise. Elle ne parle pas de prix : l'outil se présente lui-même. */
+  const outil=(s.a==='reunion'&&s.copie)?'<div class="vers-apercu vers-relais"><h2>Arriver à la réunion avec vos mots</h2><p>L’outil « Passer le relais » vous aide aussi à préparer un rendez-vous, avec vos 3 priorités sous les yeux et un bouton « Je perds mes mots ». Vos derniers mots déposés y sont proposés, phrase par phrase.</p><button type="button" class="btn" data-act="rl" data-k="ouvre">'+I.hand+'Découvrir l’outil</button></div>':'';
+  return '<main id="main" tabindex="-1" class="view deposer dire"><div><h1 class="t1">J’aimerais le dire à quelqu’un</h1><p class="sub">Voici une première phrase pour commencer. Vous pouvez la changer, la copier ou la laisser de côté.</p></div>'+
+    (x.risk?'<div class="mirror dire-aide">'+riskHtml('q')+'</div>':'')+
+    '<div class="card dire-c">'+
+    '<span class="label" id="dire-a-l">À qui aimeriez-vous le dire ?</span><div class="chips" role="group" aria-labelledby="dire-a-l">'+DIRE_A.map(a=>'<button type="button" class="chip" data-act="dire" data-k="a" data-v="'+a[0]+'" aria-pressed="'+(s.a===a[0])+'">'+a[1]+'</button>').join('')+'</div>'+
+    '<div class="field"><label for="amorce">Pour commencer</label><textarea id="amorce" rows="4" maxlength="'+DIRE_LIM+'">'+esc(s.t)+'</textarea></div>'+mots+
+    '<div class="em-mots"><span class="label" id="dire-mots-l">Vos mots, tels que vous les avez écrits</span>'+motsHtml(x.text,'dire-mots-l')+
+    '<button type="button" class="chip dire-joint" data-act="dire" data-k="joint" aria-pressed="'+(!!s.j)+'">'+I.check+'Ajouter mes mots à la suite</button></div>'+
+    '<div class="dire-b"><button type="button" class="btn primary" data-act="dire" data-k="copie">Copier</button><button type="button" class="btn ghost" data-act="dire" data-k="laisse">Finalement, je garde mes mots pour moi</button></div>'+
+    '</div>'+pret+outil+'</main>';
 }
 
 /* ---------- souffler 2 minutes : l'étang respire avec le parent ---------- */
@@ -2819,6 +2920,7 @@ function sheetVoix(sheetIn){
   const ia=!!state.sample;
   return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="voix-t" tabindex="-1"><div class="sheet-in voix"><div class="grab"></div><h2 id="voix-t">Qui vous parle ici ?</h2>'+
     '<div class="qui"><h3>Ce que l’application choisit</h3><p>'+(ia?'La dose du jour et les pistes proposées sont des textes écrits à l’avance, et l’application choisit lequel vous montrer. Quand vous déposez, la réponse est écrite par une intelligence artificielle, et l’espace vous le dit à chaque fois.':'La dose du jour, la question et la lumière que vous recevez après un dépôt et les pistes proposées sont des textes écrits à l’avance. L’application choisit lequel vous montrer, selon le jour et selon quelques mots de votre texte. Personne ne lit ce que vous écrivez, et rien ne quitte votre appareil.')+'</p></div>'+
+    (ia?'':'<div class="qui"><h3>Ce que deviennent vos mots</h3><p>Vos mots sont enregistrés dans ce navigateur, sur cet appareil, et vous les retrouvez dans « Mes dépôts ». L’application ne les réécrit pas. Si vous choisissez « J’aimerais le dire à quelqu’un », elle vous propose une première phrase écrite à l’avance, que vous pouvez changer. Rien n’est envoyé. C’est vous qui copiez le texte et qui décidez à qui le montrer.</p></div>')+
     '<div class="qui"><h3>Ce qui vient d’Antonio</h3><p>Les passages « Ce que j’ai vécu » et la page « Mon histoire » racontent ce qu’Antonio Company a vraiment vécu, comme enfant accueilli, comme travailleur social et comme père. Les autres textes de l’espace sont publiés sous sa responsabilité.</p></div>'+
     '<div class="qui"><h3>Ce qui vient de vous dans « Passer le relais »</h3><p>Les phrases modèles sont écrites à l’avance, et la fiche est faite des mots que vous choisissez. Aucune intelligence artificielle n’y intervient, et le site ne lit pas vos fiches.</p></div>'+
     '<button type="button" class="btn primary wide" data-act="sheet-close">J’ai compris</button></div></div>';
@@ -2829,7 +2931,7 @@ function barPub(){
   return '<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
 }
 function piedPub(){
-  return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent Écouté, Parent Éclairé » a été créé par Antonio Company, travailleur social et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
+  return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent écouté, parent éclairé » a été créé par Antonio Company, travailleur social et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
     portes(true)+
     '<a class="btn wide" href="'+RACINE+'" data-act="accueil">Découvrir l’espace</a></section>'+
     '<footer class="foot"><a href="'+RACINE+'fiches/" data-act="fiches">Toutes les situations</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a><a href="'+RACINE+'conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">Mentions légales</a>':'')+'</footer>';
@@ -3047,7 +3149,7 @@ function rlVueExemple(){
   return '<div class="f-tete"><span class="label">Un exemple, inventé pour vous montrer</span><h1 class="t1">Une fiche terminée</h1><p class="sub">Voici ce que reçoit la personne qui prend le relais. Elle l’ouvre sur son téléphone, sans compte et sans rien acheter.</p></div>'+
     '<div class="chips rl-ages" role="group" aria-label="Choisir un âge">'+[['e','À 5 ans'],['a','À 16 ans'],['g','À 35 ans']].map(x=>'<button type="button" class="chip" data-act="rl" data-k="ex" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>').join('')+'</div>'+
     rlFicheHtml(RL_EX[k],{cls:'rl-ex'})+
-    '<p class="hint">Les prénoms et les numéros de cet exemple sont inventés.</p>'+
+    '<p class="hint">Ces 3 âges sont des exemples, et l’outil sert quel que soit l’âge de votre enfant. Les prénoms et les numéros de cet exemple sont inventés.</p>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="nouveau">'+I.pen+(rel().fiches.length?'Préparer un relais':'Préparer mon premier relais')+'</button><p class="hint">Vous choisissez chaque phrase, et rien ne part sans vous.</p>'+(SITE?'<button type="button" class="lien-f" data-act="rl" data-k="imprimer">Imprimer cet exemple</button>':'')+'</div>';
 }
 function rlChamp(id,ch,lab,val,ph,lim,aide){return '<div class="field"><label for="'+id+'">'+lab+'</label><input type="text" id="'+id+'" data-rl="'+ch+'" maxlength="'+lim+'" value="'+esc(val||'')+'" placeholder="'+esc(ph)+'" autocomplete="off">'+(aide?'<p class="hint">'+aide+'</p>':'')+'</div>';}
@@ -3128,8 +3230,23 @@ function rlVueRetour(){
 /* ---------- préparer une réunion ---------- */
 function rlReuTitre(x){const a=(RL_AVEC.find(y=>y[0]===x.avec)||RL_AVEC[3])[1];return 'Réunion avec '+a.charAt(0).toLowerCase()+a.slice(1);}
 /* Ce que le parent a déjà écrit et qui peut servir : les phrases de ses fiches, ses retours, et son journal « avant, pendant, après ». */
+/* Un texte du parent, phrase par phrase, sans rien changer aux mots. Une phrase finit sur un point, un point d'interrogation ou d'exclamation
+   suivi d'une majuscule, d'un chiffre ou d'un guillemet ouvrant, ou bien à la ligne : « non ! » au milieu d'une phrase ne la coupe pas. */
+function rlPhrases(t){
+  const s=String(t==null?'':t),out=[];let cur='';
+  for(let i=0;i<s.length;i++){const c=s[i];
+    if(c==='\n'){out.push(cur);cur='';continue;}
+    cur+=c;
+    if(/[.!?…]/.test(c)){let j=i+1;while(j<s.length&&/[.!?…]/.test(s[j])){cur+=s[j];j++;}i=j-1;
+      const reste=s.slice(j);if(!reste||/^\s+[A-ZÀ-ÖØ-Þ0-9«“"]/.test(reste)||/^[ \t]*\n/.test(reste)){out.push(cur);cur='';}}
+  }
+  out.push(cur);return out.map(x=>x.trim()).filter(Boolean);
+}
 function rlObsDispo(){
   const out=[],vu={};const add=(t,d)=>{t=clean(t,RL_LIM.l);if(t&&!vu[t]){vu[t]=1;out.push({t:t,d:d});}};
+  /* Les mots que le parent a déposés servent aussi, s'il le veut : ses 2 derniers dépôts, phrase par phrase, en tête de liste.
+     Aucune phrase n'est coupée ni réécrite : une phrase plus longue qu'une observation n'est pas proposée. */
+  (D().depots||[]).filter(x=>!x.risk&&typeof x.text==='string').slice(-2).reverse().forEach(x=>{rlPhrases(x.text).filter(s=>s.length>=12&&s.length<=RL_LIM.l).slice(0,4).forEach(s=>add(s,'Vos mots du '+fmtDate(x.date)));});
   rel().fiches.slice().reverse().forEach(f=>{if(f.retour)add(f.retour,'Votre retour du '+fmtDate(f.retourLe||f.m||todayIso()));(f.trois||[]).forEach(x=>add(x,'Vos 3 repères'));rlToutes(f).forEach(x=>add(x,'Votre fiche de relais'));});
   (D().abc||[]).slice(-5).reverse().forEach(x=>add([x.a?'Avant, '+x.a:'',x.b?'Pendant, '+x.b:'',x.c?'Après, '+x.c:''].filter(Boolean).join('. '),'Votre journal du '+fmtDate(x.date)));
   return out.slice(0,18);
@@ -3185,7 +3302,7 @@ function rlVueLu(){
   return '<p class="label rl-recu-l">Une fiche de relais, écrite par une famille</p>'+rlFicheHtml(f,{cls:'rl-recu',h1:true})+
     '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button></div>'+
     '<p class="hint">Cette fiche est contenue dans le lien que vous avez reçu. Le site ne l’a ni lue ni enregistrée. Gardez ce lien pour la retrouver.</p>'+
-    '<section class="rl-carte"><h2>D’où vient cette fiche ?</h2><p>Elle a été préparée avec « Passer le relais », un outil de Parent Écouté, Parent Éclairé, un espace pour les parents d’une personne en situation de handicap.</p><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir comment une famille prépare sa fiche</button></section>';
+    '<section class="rl-carte"><h2>D’où vient cette fiche ?</h2><p>Elle a été préparée avec « Passer le relais », un outil de Parent écouté, parent éclairé, un espace pour les parents d’une personne en situation de handicap.</p><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir comment une famille prépare sa fiche</button></section>';
 }
 function viewRelais(){
   const e=state.rl.e||'accueil';
@@ -3530,10 +3647,10 @@ function usage(k){const c=com();if(!c.us||typeof c.us!=='object')c.us={};if(!Arr
 function contact(){return String(CONTACT_R||'').split('').reverse().join('');}
 const F_TXT={
   free:{b:'Recevoir une aide tout de suite.',s:'Ce que vous pouvez faire gratuitement',
-    c:['Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous lisez la dose de lumière, chaque jour.','Vous ouvrez les '+SITS.length+' fiches pratiques et tous les outils.','Vous essayez une vraie étape du parcours, en 3 minutes.','Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.'],
+    c:['Vous soufflez 2 minutes, en silence ou avec la musique de l’étang.','Vous lisez la dose de lumière, chaque jour.','Vous ouvrez les '+SITS.length+' fiches pratiques et tous les outils.','Vous essayez une vraie étape du parcours, en 3 minutes.',SITE?'Vous déposez ce qui pèse autant que vous en avez besoin, pour vous ou pour préparer ce que vous aimeriez dire à quelqu’un.':'Vous déposez ce qui pèse, et 3 dépôts reçoivent une réponse.'],
     d:'Découverte est gratuite, sans limite de durée et sans compte.'},
   parcours:{b:'24 étapes guidées pour avancer d’une semaine à l’autre, pendant 6 mois.',s:'Ce que contient Le parcours',
-    c:['24 étapes guidées s’ouvrent une par une, chaque semaine.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.','Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'],
+    c:['24 étapes guidées s’ouvrent une par une, chaque semaine.','À chaque étape, vous comprenez une idée, vous l’essayez chez vous et vous écrivez quelques mots dans votre carnet de route.','Vous voyez votre chemin dans « Mon évolution », au départ, à 3 mois et à 6 mois.',SITE?'':'Vous déposez ce qui pèse autant que vous en avez besoin.','Vous choisissez une image pour dire où vous en êtes, avec le photolangage.'].filter(Boolean),
     d:'Une fois acheté, le parcours reste ouvert sans limite de durée. Si vous vous absentez, rien ne s’accumule.'},
   relais:{b:'Confier votre enfant à un proche, l’esprit plus léger.',s:'Ce que fait l’outil',
     c:['Vous préparez une page pour la personne qui prend le relais, avec vos mots.','En tête, « Si tu ne lis que trois choses », que vous choisissez vous-même.','Votre proche ouvre la fiche sur son téléphone, sans compte et sans rien acheter.','Au retour, une seule question, et le prochain relais est prêt plus vite.','Vous préparez aussi une réunion avec l’école ou le foyer, avec « Je perds mes mots ».'],
@@ -3751,7 +3868,7 @@ function viewTransmettre(){
   const url=PUBLIC+'transmettre/';
   return '<main id="main" tabindex="-1" class="view v-feuille v-transmettre"><div class="feuille">'+
     '<div class="f-tete"><span class="label">Quelqu’un qui vous accompagne vous a transmis cette page</span><h1 class="t1">On vous demande souvent comment va votre enfant. Ici, on commence par vous.</h1></div>'+
-    '<p class="lecture-l">Parent Écouté, Parent Éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, que votre enfant ait 5, 16 ou 35 ans. Il a été créé par Antonio Company, travailleur social et père de 3 enfants.</p>'+
+    '<p class="lecture-l">Parent écouté, parent éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, quel que soit l’âge de votre enfant, à 5 ans comme à 16 ou à 35 ans. Il a été créé par Antonio Company, travailleur social et père de 3 enfants.</p>'+
     '<p class="lecture-l">Vous pouvez commencer par 2 minutes pour vous, tout de suite. C’est gratuit, sans compte, et rien de ce que vous écrivez ne quitte votre appareil.</p>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="porte" data-v="souffle">'+I.wind+'Souffler 2 minutes, maintenant</button></div>'+
     '<section class="tr-suite" aria-labelledby="tr-suite-t"><h2 id="tr-suite-t">Ensuite, si vous le souhaitez</h2><ul class="tr-liens"><li><a class="lien-f" href="'+RACINE+'fiches/" data-act="fiches">'+I.kit+'Ouvrir une fiche pratique</a><span>Sur le coucher, les crises, l’école ou la vie en foyer.</span></li><li><button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une vraie étape du parcours</button><span>En 3 minutes, sans rien créer.</span></li><li><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche de relais</button><span>Pour confier votre enfant à un proche.</span></li></ul></section>'+
@@ -3834,14 +3951,14 @@ function viewAbout(){
     '<p>Je crois que chaque parent a en lui des trésors insoupçonnés, et j’aimerais vous aider à retrouver les vôtres et votre pouvoir d’agir.</p>'+
     '<p>Je cours régulièrement et j’aime comparer la vie de parent à un marathon. On ne peut pas le courir au sprint et on a besoin de ravitaillements pour tenir. La dose de lumière que vous recevez chaque jour, je la vois comme un verre d’eau sur le parcours.</p>'+
     '<h2 class="chap">Pourquoi cet espace</h2>'+
-    '<p>En février 2025, j’ai imaginé «\u00a0Parent Écouté, Parent Éclairé\u00a0». Au départ, c’était un accompagnement de six mois pour les parents de personnes en situation de handicap. En avril, j’ai voulu l’ouvrir à tous les parents. Cette application, c’est la version que vous pouvez garder dans votre poche.</p>'+
+    '<p>En février 2025, j’ai imaginé «\u00a0Parent écouté, parent éclairé\u00a0». Au départ, c’était un accompagnement de six mois pour les parents de personnes en situation de handicap. En avril, j’ai voulu l’ouvrir à tous les parents. Cette application, c’est la version que vous pouvez garder dans votre poche.</p>'+
     '<p>Écouté, cela veut dire que vous pouvez déposer librement ce qui vous pèse et être accueilli avec attention et douceur. Éclairé, cela veut dire que vous repartez avec quelque chose qui vous aide à retrouver un peu de paix, de clarté, de recul ou de confiance.</p>'+
     '<p>À l’époque, j’avais écrit ceci.</p>'+
     '<p class="quote">«\u00a0Parce qu’un parent écouté devient un parent éclairé. Et un parent éclairé devient un parent confiant, aligné et pleinement acteur du bien-être de son enfant.\u00a0»</p>'+
     '<p>Si je vous raconte tout cela, c’est pour que vous sachiez d’où vient cet espace. Il vient d’un enfant qui a eu la chance d’être écouté.</p>'+
     '<p>Ici, vous n’avez rien à prouver à personne. Vous pouvez simplement déposer ce qui vous pèse.</p>'+
     '<p>Merci d’avoir pris le temps de me lire.</p>'+
-    '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent Écouté, Parent Éclairé, une goutte qui tombe sur un étang dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
+    '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent écouté, parent éclairé, une goutte qui tombe sur un étang dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
     '</div>'+
     (peek?'<button type="button" class="btn primary wide" data-act="entrer" data-v="today">'+I.sun2+'Commencer gratuitement</button>':'')+
     '<div class="card green"><h2 class="label">Ce que cet espace n’est pas</h2><ul class="list"><li>Ce n’est pas un diagnostic ni une thérapie. Pour cela, il y a votre pédiatre, votre médecin et les thérapeutes.</li><li>Ce n’est pas un service d’urgence. En cas de danger, appelez le '+tel('144')+'. Si vous êtes à bout, appelez le '+tel('143')+'.</li><li>Cela ne remplace pas les personnes qui vous entourent. C’est plutôt un pont vers elles.</li></ul></div><p class="hint">Version de test.</p></div></main>';
@@ -3869,8 +3986,8 @@ function sheetOnboard(sheetIn){
 function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;for(const raw of lines){const l=raw.replace(/\*\*(.+?)\*\*/g,'$1');if(/^\s*[-•]\s+/.test(l)){if(!inl){out+='<ul class="list">';inl=true;}out+='<li>'+esc(l.replace(/^\s*[-•]\s+/,''))+'</li>';continue;}if(inl){out+='</ul>';inl=false;}if(/^#{1,3}\s/.test(l))out+='<p style="font-weight:800;margin-top:6px;color:var(--green)">'+esc(l.replace(/^#{1,3}\s*/,''))+'</p>';else if(l.trim())out+='<p>'+esc(l)+'</p>';}if(inl)out+='</ul>';return out;}
 
 /* ---------- actions ---------- */
-function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
-function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):''].join('|');}
+function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();if(state.dire){direGarde();state.dire=null;}state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):'',state.view==='deposer'&&state.dire?'dire-'+state.dire.id:''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;const view0=state.view;
   switch(act){
@@ -3933,6 +4050,31 @@ function handle(act,d,el){
     case 'theme':state.theme=d.v;break;
     case 'dmode':state.depotMode=d.v;break;
     case 'dsend':sendDepot();return;
+    /* « J'aimerais le dire à quelqu'un », depuis la zone d'écriture : les mots sont gardés d'abord, puis l'étape s'ouvre. */
+    /* Champ vide, mais des mots déjà déposés aujourd'hui : le bouton prépare alors comment dire ceux-là, au lieu d'afficher une erreur. */
+    case 'ddire':{if(clean(state.draft,LIM.draft).length<5){const td=D().depots.filter(x=>x.date===todayIso()).slice(-1)[0];if(td){handle('dire',{k:'ouvre',id:td.id},el);return;}}sendDepot('dire');return;}
+    /* « J'ai fini pour aujourd'hui » : l'espace d'expression se referme simplement, et le parent retrouve l'accueil. */
+    case 'dfin':nav('intro');setTimeout(()=>{if(state.view==='intro')toast('Vos mots sont gardés sur cet appareil. À bientôt.');},500);break;
+    case 'dire':{
+      const k=d.k;
+      if(k==='ouvre'){const g=direOuvre(d.id);if(!g)break;if(state.view!=='deposer')nav('deposer');state.dire=g;break;}
+      const g=state.dire;if(!g)break;
+      /* Changer de destinataire remplace la première phrase seulement si le parent n'a pas commencé à écrire la sienne. */
+      if(k==='a'){const v=d.v==='reunion'?'reunion':'proche';if(v!==g.a){const avant=direAmorces(g.a);const intacte=!clean(g.t,DIRE_LIM)||avant.some(m=>m.trim()===clean(g.t,DIRE_LIM));g.a=v;if(intacte)g.t=direAmorces(v)[0];g.mots=false;g.copie=false;direGarde();}break;}
+      if(k==='mots'){g.mots=!g.mots;break;}
+      if(k==='mot'){const m=direAmorces(g.a)[Number(d.i)];if(m){g.t=m;g.mots=false;g.copie=false;direGarde();state.direFoc=true;}break;}
+      if(k==='joint'){g.j=!g.j;g.copie=false;direGarde();break;}
+      if(k==='laisse'){direGarde();if(HIST.ok&&HIST.i>0){try{history.back();return;}catch(e){}}state.dire=null;break;}
+      if(k==='copie'){
+        direGarde();const t=direTexte();if(!t){fieldErr('amorce','Écrivez une première phrase, ou ajoutez vos mots à la suite.');return;}
+        (async()=>{let ok=false;try{await navigator.clipboard.writeText(t);ok=true;}catch(e){}
+          /* « ok » : le texte est dans le presse-papiers. « main » : le téléphone a refusé, le texte est alors sélectionné pour être copié à la main. L'écran ne dit « copié » que si c'est vrai. */
+          g.copie=ok?'ok':'main';render();const el=document.getElementById('dire-texte');
+          if(el){try{el.scrollIntoView({block:'center',behavior:fxOn()?'smooth':'auto'});}catch(e){}
+            if(!ok){try{const r=document.createRange();r.selectNodeContents(el);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}catch(e){}}}
+          toast(ok?(g.j?'C’est copié, avec vos mots tels que vous les avez écrits.':'C’est copié.'):'Le texte est sélectionné juste en dessous. Vous pouvez le copier.');})();
+        return;}
+      break;}
     case 'dstop':if(state.ctl)state.ctl.abort();return;
     case 'dconcret':concret(d.id);return;
     case 'dose-perso':dosePerso();return;
@@ -3956,7 +4098,7 @@ function handle(act,d,el){
     /* « Offrir à un parent » est une maquette. « Retrouver un achat » montre le principe du lien reçu par e-mail. */
     case 'cadeau':state.cmd={f:PRODUITS[d.v]?d.v:(state.view==='commande'&&state.cmd.k==='cadeau'&&PRODUITS[state.cmd.f]?state.cmd.f:'parcours'),m:'une',k:'cadeau',de:''};state.sheet=null;if(state.view!=='commande')nav('commande');break;
     case 'cadeau-voir':if(!PRODUITS[d.v])return;state.cmd={f:d.v,m:'une',k:'activer',de:''};break;
-    case 'cadeau-envoi':{const u=PUBLIC+'#cadeau-'+state.cmd.f;(async()=>{if(navigator.share){try{await navigator.share({title:'Un cadeau pour vous',text:'Je vous offre '+PRODUITS[state.cmd.f].t+', sur Parent Écouté, Parent Éclairé. Vous l’activez quand vous voulez.',url:u});return;}catch(e){if(e&&e.name==='AbortError')return;}}try{await navigator.clipboard.writeText(u);toast('Le lien du cadeau est copié.');}catch(e){const c=document.getElementById('cad-lien');if(c){try{c.focus();c.select();}catch(x){}}}})();return;}
+    case 'cadeau-envoi':{const u=PUBLIC+'#cadeau-'+state.cmd.f;(async()=>{if(navigator.share){try{await navigator.share({title:'Un cadeau pour vous',text:'Je vous offre '+PRODUITS[state.cmd.f].t+', sur Parent écouté, parent éclairé. Vous l’activez quand vous voulez.',url:u});return;}catch(e){if(e&&e.name==='AbortError')return;}}try{await navigator.clipboard.writeText(u);toast('Le lien du cadeau est copié.');}catch(e){const c=document.getElementById('cad-lien');if(c){try{c.focus();c.select();}catch(x){}}}})();return;}
     case 'retrouver':state.cmd={f:'parcours',m:'une',k:'retrouver',de:''};state.sheet=null;nav('commande');break;
     case 'ech-suite':{const p=achats().parcours;if(!p||p.m!=='six'||(p.n||1)>=NB_ECH)return;p.n=(p.n||1)+1;save();toast(p.n>=NB_ECH?'La 6e mensualité est payée. Plus rien ne sera prélevé.':'Mensualité '+p.n+' sur 6, en démonstration.');break;}
     case 'achats-zero':data.tier='free';data.achats={};save();toast('Vos achats de démonstration sont annulés. Rien de ce que vous avez écrit n’a été effacé.');break;
@@ -4021,13 +4163,14 @@ function handle(act,d,el){
     case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
-  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre'].includes(act)||(act==='rl'&&fxSig()!==sig0);
+  const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre','dfin'].includes(act)||((act==='rl'||act==='dire')&&fxSig()!==sig0);
   /* Chaque nouvel écran est une page de l'historique. Ce qui se passe à l'intérieur d'un même écran (une rubrique de la boîte à outils, le choix d'une photo) remplace la page au lieu d'en ajouter une. */
   if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
   if(act==='rl')rlApres();
+  if(act==='dire')direApres();
   if(navAct)window.scrollTo(0,0);
 }
 const app=document.getElementById('app');
@@ -4038,7 +4181,7 @@ app.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.rl
 /* Si l'on quitte la page pendant qu'on écrit dans le carnet, les derniers mots sont gardés tout de suite. Rien n'est écrit s'il n'y a rien en attente,
    pour ne pas écraser ce qu'un autre onglet aurait enregistré entre-temps. */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&noteAttend){clearTimeout(noteT);noteAttend=false;save();}});
-let typing=null,noteT=null,noteAttend=false;
+let typing=null,noteT=null,noteAttend=false,direT=null;
 app.addEventListener('input',e=>{
   const t=e.target;clearErr(t);
   /* Les champs de « Passer le relais » se gardent tout seuls. */
@@ -4046,6 +4189,8 @@ app.addEventListener('input',e=>{
   /* Le carnet de route se garde tout seul, pendant qu'on écrit. */
   if(t.dataset&&t.dataset.note){const id=t.dataset.note;const v=String(t.value).slice(0,LIM.note);if(v.trim())D().notes[id]={t:v,d:todayIso()};else delete D().notes[id];clearTimeout(noteT);noteAttend=true;noteT=setTimeout(()=>{noteAttend=false;save();},400);const st=document.getElementById('note-etat');if(st){const m=v.trim()?NOTE_OUI:NOTE_NON;if(st.textContent!==m)st.textContent=m;}carnetHaut(t);lectureSync();}
   if(t.id==='draft'){state.draft=t.value;updCount(t);brouillonGarde();}
+  if(t.id==='amorce'&&state.dire){state.dire.t=String(t.value).slice(0,DIRE_LIM);/* Le parent reprend sa phrase après avoir copié : le texte prêt n'est plus le bon, il s'efface jusqu'à la prochaine copie. */
+    if(state.dire.copie){state.dire.copie=false;try{document.querySelectorAll('main.dire .dire-pret,main.dire .vers-relais').forEach(e=>e.remove());}catch(e){}}clearTimeout(direT);direT=setTimeout(direGarde,400);}
   if(t.id==='qdraft')state.qdraft=t.value;
   if(t.id==='ptext')state.pdraft=t.value;
   if(t.dataset&&t.dataset.evo)evoSync(t);
