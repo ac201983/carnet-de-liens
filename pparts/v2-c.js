@@ -62,7 +62,7 @@ function entrer(via){
 
 /* ---------- les adresses : chaque fiche a la sienne, que l'on peut envoyer telle quelle ---------- */
 /* Les adresses sont écrites une fois pour toutes : un titre peut changer plus tard sans casser un lien déjà envoyé. */
-const FICHE_SLUG={crise:'la-crise',automut:'il-ou-elle-se-fait-mal',refus:'le-refus',transitions:'les-transitions',sommeil:'le-coucher-et-la-nuit',repas:'les-repas',parole:'communiquer-sans-les-mots',dehors:'les-sorties',regard:'le-regard-des-autres',ecole:'l-ecole',fratrie:'les-freres-et-soeurs',ecrans:'les-ecrans',ado:'l-adolescence-et-le-corps',annonce:'on-vient-d-apprendre',culpa:'la-culpabilite',epuise:'je-n-en-peux-plus',couple:'le-couple',aide:'demander-de-l-aide',grandir:'le-passage-a-l-age-adulte',loin:'quand-il-ou-elle-vit-ailleurs',pros:'parler-aux-professionnels',deuil:'l-enfant-qu-on-avait-imagine'};
+const FICHE_SLUG={crise:'la-crise',automut:'il-ou-elle-se-fait-mal',refus:'le-refus',transitions:'les-transitions',sommeil:'le-coucher-et-la-nuit',repas:'les-repas',parole:'communiquer-sans-les-mots',dehors:'les-sorties',regard:'le-regard-des-autres',ecole:'l-ecole',fratrie:'les-freres-et-soeurs',ecrans:'les-ecrans',ado:'l-adolescence-et-le-corps',annonce:'on-vient-d-apprendre',culpa:'la-culpabilite',epuise:'je-n-en-peux-plus',couple:'le-couple',aide:'demander-de-l-aide',grandir:'le-passage-a-l-age-adulte',loin:'quand-il-ou-elle-vit-ailleurs',pros:'parler-aux-professionnels',deuil:'l-enfant-qu-on-avait-imagine',relais:'confier-son-enfant-a-un-proche'};
 const SLUG_FICHE={};Object.keys(FICHE_SLUG).forEach(k=>{SLUG_FICHE[FICHE_SLUG[k]]=k;});
 function ficheUrl(id,complet){return (complet?PUBLIC:RACINE)+'fiches/'+FICHE_SLUG[id]+'/';}
 /* La phrase d'aperçu d'une fiche, celle qui s'affiche quand on envoie le lien : le début de « Ce qui se passe ». */
@@ -74,7 +74,7 @@ function ficheDesc(s){
 const LISTE_DESC='Le coucher, les crises, l’école, les écrans, le passage à l’âge adulte ou la vie en institution. '+SITS.length+' situations de la vraie vie, avec des pistes venues du terrain et toujours un mot pour vous.';
 if(PRE){try{globalThis.__PEPE_PRERENDER__({fiches:SITS.map(s=>({id:s.id,slug:FICHE_SLUG[s.id],t:s.t,s:s.s,ages:liste(s.ages.map((a,i)=>i?AGES[a].toLowerCase():AGES[a])),desc:ficheDesc(s)})),listeDesc:LISTE_DESC});}catch(e){}}
 /* Lire l'adresse : quelle fiche, ou quel écran public, demande-t-elle ? */
-const VUES_HASH={'#formules':'plans','#apercu':'apercu','#avec-antonio':'avec'};
+const VUES_HASH={'#formules':'plans','#offres':'plans','#apercu':'apercu','#avec-antonio':'plans','#relais':'relais'};
 function routeDe(){
   if(!SITE)return null;
   let p='';try{p=decodeURIComponent(location.pathname||'');}catch(e){p=location.pathname||'';}
@@ -83,6 +83,11 @@ function routeDe(){
   const m=p.match(/^fiches\/([a-z0-9-]+)\/?$/);
   if(m&&SLUG_FICHE[m[1]])return {v:'sit',sit:SLUG_FICHE[m[1]]};
   if(/^fiches\/?$/.test(p))return {v:'kit',kit:'sits'};
+  /* L'outil « Passer le relais » a son adresse. Avec #f=…, elle porte une fiche que quelqu'un a envoyée. */
+  if(/^relais\/?$/.test(p))return {v:'relais',re:/^#f=/.test(location.hash)?'lu':'accueil'};
+  if(/^transmettre\/?$/.test(p))return {v:'transmettre'};
+  {const cad=/^#cadeau-(parcours|relais)$/.exec(location.hash||'');if(cad)return {v:'commande',cf:cad[1],ck:'activer'};}
+  if(location.hash==='#offrir')return {v:'commande',cf:'parcours',ck:'cadeau'};
   if(location.hash===STORY_HASH)return {v:'about'};
   if(location.hash==='#accueil')return {v:'intro'};
   if(VUES_HASH[location.hash])return {v:VUES_HASH[location.hash]};
@@ -96,29 +101,36 @@ function urlDe(){
   if(state.view==='about')return RACINE+STORY_HASH;
   if(state.view==='plans')return RACINE+'#formules';
   if(state.view==='apercu')return RACINE+'#apercu';
-  if(state.view==='avec')return RACINE+'#avec-antonio';
+  if(state.view==='relais')return RACINE+'relais/'+(state.rl.e==='lu'&&state.rl.h?'#f='+state.rl.h:'');
+  if(state.view==='transmettre')return RACINE+'transmettre/';
   /* La vitrine d'un parent déjà entré a son adresse. Sans elle, l'adresse du site ouvre son espace, et c'est ce qu'il attend. */
   if(state.view==='intro'&&D().onboarded)return RACINE+'#accueil';
   return RACINE;
 }
 function titreDe(){
   if(state.view==='about')return 'Mon histoire, par Antonio Company, créateur de Parent Écouté, Parent Éclairé';
-  if(state.view==='plans')return 'Les formules de Parent Écouté, Parent Éclairé';
+  if(state.view==='plans')return 'Les 3 offres de Parent Écouté, Parent Éclairé';
   if(state.view==='apercu')return 'Essayer une étape du parcours, en 3 minutes';
-  if(state.view==='avec')return 'À quoi ressemble un échange avec Antonio';
+  if(state.view==='relais')return state.rl.e==='lu'?'Une fiche de relais, écrite par une famille':'Passer le relais, une page pour la personne qui garde votre enfant';
+  if(state.view==='transmettre')return 'Une page à transmettre à une famille, Parent Écouté, Parent Éclairé';
   if(state.view==='sit'){const s=SITS.find(x=>x.id===state.sit);if(s)return s.t+', une fiche de Parent Écouté, Parent Éclairé';}
   if(state.view==='kit'&&state.kit==='sits'&&!D().onboarded)return SITS.length+' situations de la vraie vie, avec des pistes pour les parents';
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
   state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
   state.sheet=null;state.confirmReset=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.prev=null;state.lien='';
-  state.ap.k=Math.max(0,Math.min(3,Number(s.ap)||0));state.cmd={f:s.cf||'',k:s.ck||'recap',de:''};
-  if(state.view==='commande'&&(!TIERS[state.cmd.f]||(state.cmd.f==='free'&&state.cmd.k!=='arret')))state.view='plans';
+  state.ap.k=Math.max(0,Math.min(3,Number(s.ap)||0));state.cmd={f:s.cf||'',m:s.cm==='six'?'six':'une',k:s.ck||'recap',de:''};
+  if(state.view==='commande'&&!PRODUITS[state.cmd.f]&&state.cmd.k!=='retrouver')state.view='plans';
+  /* « Passer le relais » : l'écran, le pas, la fiche et la réunion en cours. Une fiche reçue se relit dans l'adresse. */
+  {const r=state.rl;r.e=s.re||'accueil';r.p=Number(s.rp)||0;r.id=s.ri||null;r.r=s.rr||null;if(s.rx&&RL_EX[s.rx])r.ex=s.rx;r.sec='';r.mots=false;r.attente=null;r.foc='';
+    if(r.e==='lu'){if(!rlDuHash()){r.h=s.rh||'';r.lu=r.h?rlDecode(r.h):null;r.e='lu';}}
+    if(['prep','apercu','envoi','retour'].includes(r.e)&&!rlFiche(r.id))r.e='accueil';
+    if(['reunion','feuille'].includes(r.e)&&!rlReu(r.r))r.e='accueil';}
   if(state.view==='apercu'&&state.ap.k>=2&&!noteDe('reguler'))state.ap.k=1;
   /* Un écran qui n'a plus de sens (une étape pas encore ouverte, une fiche inconnue) ramène à « Aujourd'hui ». */
   if(state.view==='step'&&(state.step===null||!D().onboarded||stepLocked(state.step)))state.view='parcours';
@@ -164,7 +176,7 @@ function histRetour(e){
   if(!HIST.ok||location.hash==='#atelier')return;
   const st=e&&e.state;souffleStop();stopTimer();
   if(st&&st.pepe&&st.s){HIST.i=st.i||0;navApply(st.s);}
-  else{const r=routeDe()||{};HIST.i=0;navApply({v:r.v||'today',sit:r.sit,kit:r.kit});try{history.replaceState(histEtat(),'',urlDe());}catch(x){}}
+  else{const r=routeDe()||{};HIST.i=0;navApply({v:r.v||'today',sit:r.sit,kit:r.kit,re:r.re,cf:r.cf,ck:r.ck});try{history.replaceState(histEtat(),'',urlDe());}catch(x){}}
   const y=(st&&st.y)||0;
   /* « apres » : un message à dire une fois revenu sur l'écran d'avant (par exemple après avoir enregistré le point de départ). */
   const dire=state.apres||'';state.apres='';
@@ -731,7 +743,7 @@ function sheetVoix(sheetIn){
   return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="voix-t" tabindex="-1"><div class="sheet-in voix"><div class="grab"></div><h2 id="voix-t">Qui vous parle ici ?</h2>'+
     '<div class="qui"><h3>Ce que l’application choisit</h3><p>'+(ia?'La dose du jour et les pistes proposées sont des textes écrits à l’avance, et l’application choisit lequel vous montrer. Quand vous déposez, la réponse est écrite par une intelligence artificielle, et l’espace vous le dit à chaque fois.':'La dose du jour, la question et la lumière que vous recevez après un dépôt et les pistes proposées sont des textes écrits à l’avance. L’application choisit lequel vous montrer, selon le jour et selon quelques mots de votre texte. Personne ne lit ce que vous écrivez, et rien ne quitte votre appareil.')+'</p></div>'+
     '<div class="qui"><h3>Ce qui vient d’Antonio</h3><p>Les passages « Ce que j’ai vécu » et la page « Mon histoire » racontent ce qu’Antonio Company a vraiment vécu, comme enfant accueilli, comme travailleur social et comme père. Les autres textes de l’espace sont publiés sous sa responsabilité.</p></div>'+
-    '<div class="qui"><h3>Ce que la formule Avec Antonio montre aujourd’hui</h3><p>Dans cette formule, Antonio vous écrira un mot chaque mois et répondra à 2 questions par mois. Dans cette version de test, vous pouvez l’essayer sans payer, mais le mot affiché est un exemple et rien ne lui est transmis.</p></div>'+
+    '<div class="qui"><h3>Ce qui vient de vous dans « Passer le relais »</h3><p>Les phrases modèles sont écrites à l’avance, et la fiche est faite des mots que vous choisissez. Aucune intelligence artificielle n’y intervient, et le site ne lit pas vos fiches.</p></div>'+
     '<button type="button" class="btn primary wide" data-act="sheet-close">J’ai compris</button></div></div>';
 }
 

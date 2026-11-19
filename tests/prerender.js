@@ -31,4 +31,11 @@ for (const f of fiches) {
   if (!/<main[^>]*class="view fiche/.test(e.html) || e.html.indexOf(f.t.replace(/&/g, '&amp;')) < 0) { console.error('prerender: fiche introuvable, ' + f.slug); process.exit(1); }
   out.fiches.push(Object.assign({}, f, { className: e.className, html: e.html, title: e.title }));
 }
+// « Passer le relais » et la page à transmettre ont leur adresse, elles aussi.
+const relais = ecran(racine + 'relais/');
+if (!/class="view v-feuille v-relais/.test(relais.html) || relais.html.indexOf('Voir un exemple de fiche terminée') < 0) { console.error('prerender: page du relais introuvable'); process.exit(1); }
+out.relais = { className: relais.className, html: relais.html, title: relais.title };
+const transmettre = ecran(racine + 'transmettre/');
+if (!/v-transmettre/.test(transmettre.html)) { console.error('prerender: page à transmettre introuvable'); process.exit(1); }
+out.transmettre = { className: transmettre.className, html: transmettre.html, title: transmettre.title };
 process.stdout.write(JSON.stringify(out));

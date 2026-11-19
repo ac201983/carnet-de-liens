@@ -26,6 +26,11 @@ cp outils/son/compose.py outils/son/compose2.py outils/son/analyse.py outils/son
 # Ce qui sert à fabriquer, à regarder et à vérifier la version d'essai (dans l'atelier, ces fichiers sont dans build/essai/)
 mkdir -p "$BRANCHE/outils/essai"
 cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/tout2.sh build/essai/vite.sh build/essai/vite3.sh build/essai/reste.sh build/essai/vue.js build/essai/planche.py "$BRANCHE/outils/essai/" 2>/dev/null || true
+# Les outils de la passe « lancement » du 19 novembre 2026 (dans l'atelier, ces fichiers sont dans build/lancement/) :
+# le lien d'une fiche se relit à l'identique (codec.js), un lien d'exemple (lien-exemple.js), la fiche tient sur une feuille (page.js),
+# les captures de contrôle (vues.js) et la suite complète (tout3.sh).
+mkdir -p "$BRANCHE/outils/lancement"
+cp build/lancement/codec.js build/lancement/lien-exemple.js build/lancement/page.js build/lancement/vues.js build/lancement/tout3.sh build/lancement/lot3.sh "$BRANCHE/outils/lancement/" 2>/dev/null || true
 
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

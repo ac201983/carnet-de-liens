@@ -36,7 +36,10 @@ h1.m{font-size:72px}h1.l{font-size:62px}
   const ctx = await b.newContext({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
   const page = await ctx.newPage(); let total = 0;
   const tmp = '/tmp/apercu-fiche.html';
+  // Avec un 3e argument (l'adresse d'une fiche), seule cette image est refaite : les autres ne changent pas d'un octet.
+  const seule = process.argv[3] || '';
   for (const f of tout.fiches) {
+    if (seule && f.slug !== seule) continue;
     fs.writeFileSync(tmp, page0(f));
     await page.goto('file://' + tmp); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(120);
     const dest = OUT + '/' + f.slug + '.jpg';

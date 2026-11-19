@@ -24,12 +24,12 @@ const NB_NOTES = Object.keys(D.notes).filter(k => D.notes[k] && D.notes[k].t).le
   // ----- la boîte à outils : les situations rangées par thèmes
   await tab('kit');
   let r = await page.evaluate(() => { const G = [...document.querySelectorAll('.sits.groupes > .grp')]; return { g: G.map(e => e.querySelector('h2 .nom').textContent + ' ' + e.querySelector('h2 .nb').textContent + ' ' + e.querySelectorAll('.liste .sit').length), sits: document.querySelectorAll('.sits .sit').length, themes: document.querySelectorAll('[data-act="theme"]').length, ages: [...document.querySelectorAll('.chips [data-act="age"]')].map(e => e.textContent).join('|'), rangs: document.querySelectorAll('main .chips.scroll').length, souvent: [...document.querySelectorAll('.souvent .chip')].map(e => e.dataset.id) }; });
-  ok(r.g.length === 6 && r.g.join('|') === 'Le comportement 2 2|La communication 2 2|Le quotidien 6 6|L’école, les professionnels, l’avenir 3 3|La famille 4 4|Vous, parent 5 5', 'boîte à outils : 6 thèmes, chacun avec son titre, son compte et ses lignes ' + r.g.join('|'));
-  ok(r.sits === 22 && r.themes === 0 && r.rangs === 1 && r.ages === 'Tous âges|Enfant|Ado|Adulte', 'boîte à outils : 22 situations, une seule rangée de filtres, celle de l’âge ' + JSON.stringify(r).slice(0, 200));
+  ok(r.g.length === 6 && r.g.join('|') === 'Le comportement 2 2|La communication 2 2|Le quotidien 6 6|L’école, les professionnels, l’avenir 3 3|La famille 5 5|Vous, parent 5 5', 'boîte à outils : 6 thèmes, chacun avec son titre, son compte et ses lignes ' + r.g.join('|'));
+  ok(r.sits === 23 && r.themes === 0 && r.rangs === 1 && r.ages === 'Tous âges|Enfant|Ado|Adulte', 'boîte à outils : 23 situations, une seule rangée de filtres, celle de l’âge ' + JSON.stringify(r).slice(0, 200));
   ok(r.souvent.length === 4 && new Set(r.souvent).size === 4, 'boîte à outils : 4 situations fréquentes à cette heure, proposées avant la liste ' + r.souvent.join(','));
   await page.click(A('age', '[data-v="g"]')); await page.waitForTimeout(150);
   r = await page.evaluate(() => ({ g: [...document.querySelectorAll('.sits.groupes > .grp h2 .nom')].map(e => e.textContent), n: document.querySelectorAll('.sits .sit').length, comptes: [...document.querySelectorAll('.sits.groupes > .grp')].every(e => Number(e.querySelector('.nb').textContent) === e.querySelectorAll('.sit').length) }));
-  ok(r.n === 17 && r.g.length === 6 && r.comptes, 'filtre « Adulte » : 17 situations, et chaque thème recompte ses lignes ' + JSON.stringify(r));
+  ok(r.n === 18 && r.g.length === 6 && r.comptes, 'filtre « Adulte » : 18 situations, et chaque thème recompte ses lignes ' + JSON.stringify(r));
   await page.click(A('age', '[data-v="all"]')); await page.waitForTimeout(100);
   await page.fill('#q', 'crise'); await page.waitForTimeout(350);
   r = await page.evaluate(() => ({ trouve: !!document.querySelector('.sits.groupes.trouve'), h2: document.querySelectorAll('.sits h2').length, t: [...document.querySelectorAll('.sits .sit b')].map(e => e.textContent), focus: document.activeElement && document.activeElement.id }));
@@ -64,7 +64,7 @@ const NB_NOTES = Object.keys(D.notes).filter(k => D.notes[k] && D.notes[k].t).le
   r = await page.evaluate(() => { const T = [...document.querySelectorAll('.trio button')]; return { t: T.map(e => e.querySelector('b').textContent + ' ' + e.querySelector('span').textContent + ' > ' + e.dataset.view), sub: document.querySelector('main > .sub').textContent, lignes: [...document.querySelectorAll('.duo-a .sit b')].map(e => e.textContent), humeur: document.querySelectorAll('.mooddots i').length, colonnes: getComputedStyle(document.querySelector('.mooddots')).gridTemplateColumns.split(' ').length }; });
   ok(r.t.join('|') === '9 étapes faites > parcours|' + NB_NOTES + ' pages écrites > carnet|0 dépôt > depots', '« Moi » : 3 chiffres, et chacun mène à son écran ' + r.t.join('|'));
   ok(/^Vous avez commencé le 8 septembre 2026\. Vous retrouvez ici/.test(r.sub), '« Moi » : la date du début est dite en mots (' + r.sub.slice(0, 60) + ')');
-  ok(r.lignes.join('|') === 'Avec Antonio|Mon chemin' && r.humeur === 14 && r.colonnes === 14, '« Moi » : les lignes « Mes dépôts » et « Mon carnet de route » ont laissé la place aux chiffres, et l’humeur tient sur une ligne de 14 jours ' + JSON.stringify([r.lignes, r.humeur, r.colonnes]));
+  ok(r.lignes.join('|') === 'Passer le relais|Mon chemin' && r.humeur === 14 && r.colonnes === 14, '« Moi » : les lignes « Mes dépôts » et « Mon carnet de route » ont laissé la place aux chiffres, et l’humeur tient sur une ligne de 14 jours ' + JSON.stringify([r.lignes, r.humeur, r.colonnes]));
   await page.click('.trio ' + A('go', '[data-view="carnet"]')); await page.waitForTimeout(400);
   ok(/Mon carnet de route/.test(await h1()), 'le chiffre des pages ouvre le carnet');
   await page.click(A('back')); await page.waitForTimeout(400);

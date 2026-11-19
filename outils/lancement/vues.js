@@ -1,0 +1,82 @@
+// Parcourt « Passer le relais », les offres et la commande, et photographie chaque écran en entier.
+// usage : node vues.js <dossier de sortie> [largeur] [hauteur] [origine] [base]
+const { chromium } = require('playwright');
+const fs = require('fs');
+const OUT = process.argv[2] || '/tmp/vues-l';
+const W = +(process.argv[3] || 390), H = +(process.argv[4] || 664);
+const ORIGIN = process.argv[5] || 'https://localhost:8445', BASE = process.argv[6] || '/';
+fs.mkdirSync(OUT, { recursive: true });
+const A = (k, x = '') => `[data-act="rl"][data-k="${k}"]${x}`;
+(async () => {
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome', args: ['--ignore-certificate-errors'] });
+  const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: W < 700 ? 2 : 1, ignoreHTTPSErrors: true, isMobile: W < 700, hasTouch: W < 700, reducedMotion: 'reduce', locale: 'fr-CH', permissions: ['clipboard-read', 'clipboard-write'] });
+  const page = await ctx.newPage(); const errs = [];
+  page.on('pageerror', e => errs.push('pageerror: ' + e.message)); page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 200)); });
+  let n = 0; const vu = async nom => { await page.waitForTimeout(250); await page.mouse.move(2, 2); await page.screenshot({ path: `${OUT}/${String(++n).padStart(2, '0')}-${nom}.png`, fullPage: true }); };
+  const w = ms => page.waitForTimeout(ms);
+  await page.goto(ORIGIN + BASE + 'relais/'); await w(500); await vu('relais-accueil');
+  await page.click(A('exemple')); await w(300); await page.click(A('ex', '[data-v="e"]')); await vu('exemple-5-ans');
+  await page.click(A('ex', '[data-v="a"]')); await vu('exemple-16-ans');
+  await page.click(A('nouveau')); await w(300); await vu('prep-0-vide');
+  await page.click(A('pas', '[data-v="1"]')); await vu('prep-0-erreur');
+  await page.fill('#rl-qui', 'Noé'); await page.fill('#rl-chez', 'mon frère Rémi'); await page.fill('#rl-quand', 'du samedi 5 au dimanche 6 décembre'); await vu('prep-0');
+  await page.click(A('pas', '[data-v="1"]')); await w(200); await vu('prep-1-vide');
+  await page.click(A('idees', '[data-s="aide"]')); await vu('prep-1-idees');
+  await page.click(A('modele', '[data-s="aide"][data-i="0"]')); await page.click(A('idees', '[data-s="aide"]')); await page.click(A('modele', '[data-s="aide"][data-i="1"]'));
+  await page.click(A('idees', '[data-s="repas"]')); await page.click(A('modele', '[data-s="repas"][data-i="0"]')); await w(150);
+  await page.fill('[data-rl="s.repas.0"]', 'Noé mange volontiers des pâtes, du riz et des pommes.');
+  await page.click(A('idees', '[data-s="monte"]')); await page.click(A('vierge', '[data-s="monte"]')); await w(150); await page.keyboard.type('Quand Noé serre les poings, il a besoin de sortir 5 minutes.');
+  await page.click(A('idees', '[data-s="nuit"]')); await page.click(A('modele', '[data-s="nuit"][data-i="1"]')); await vu('prep-1');
+  await page.click(A('pas', '[data-v="1"]')); await w(200); await vu('prep-2-vide');
+  await page.click(A('pique') + ' >> nth=0'); await page.click(A('pique') + ' >> nth=0'); await page.fill('[data-rl="trois.2"]', 'Noé choisit lui-même son dessin animé du soir.'); await vu('prep-2');
+  await page.click(A('pas', '[data-v="1"]')); await w(200); await page.click(A('moi', '[data-i="0"]')); await w(150); await page.keyboard.type('les trains et les cartes de métro.'); await page.click(A('moi', '[data-i="1"]')); await w(150); await page.keyboard.type('qu’on finisse mes phrases.'); await vu('prep-3');
+  await page.click(A('pas', '[data-v="1"]')); await w(200); await page.fill('#rl-tn0', 'Maman'); await page.fill('#rl-tt0', '079 000 00 00'); await vu('prep-4');
+  await page.click(A('apercu')); await w(300); await vu('apercu-sans-outil');
+  await page.click('[data-act="commande"][data-v="relais"]'); await w(300); await vu('commande-relais');
+  await page.click('[data-act="cmd"][data-v="ok"]'); await w(300); await vu('commande-relais-ok');
+  await page.click(A('reprise')); await w(300); await vu('apercu-avec-outil');
+  await page.click(A('envoi')); await w(300); await vu('envoi');
+  const lien = await page.inputValue('#rl-lien'); fs.writeFileSync(OUT + '/lien.txt', lien);
+  await page.click(A('accueil') + ', ' + A('ouvre')).catch(() => { }); await page.goto(ORIGIN + BASE + 'relais/'); await w(400); await vu('relais-mes-fiches');
+  // le proche ouvre le lien, sur un autre appareil
+  const ctx2 = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: W < 700 ? 2 : 1, ignoreHTTPSErrors: true, isMobile: W < 700, hasTouch: W < 700, reducedMotion: 'reduce', locale: 'fr-CH' });
+  const p2 = await ctx2.newPage(); p2.on('pageerror', e => errs.push('pageerror (proche): ' + e.message));
+  await p2.goto(lien.replace('https://parent-ecoute.ch', ORIGIN)); await p2.waitForTimeout(700); await p2.screenshot({ path: `${OUT}/${String(++n).padStart(2, '0')}-fiche-recue.png`, fullPage: true }); await ctx2.close();
+  // le retour, puis un nouveau relais
+  await page.evaluate(() => { const k = Object.keys(localStorage).find(x => /^pepe/.test(x)); const d = JSON.parse(localStorage.getItem(k)); d.rel.fiches[0].env = '2026-11-01'; localStorage.setItem(k, JSON.stringify(d)); });
+  await page.goto(ORIGIN + BASE + 'relais/'); await w(400); await vu('relais-retour-attendu');
+  await page.click(A('retour')); await w(300); await page.fill('#rl-retour', 'Le programme dit le matin a bien aidé, et Rémi a gardé le même ordre pour le coucher.'); await vu('retour');
+  await page.click(A('retour-ok')); await w(300); await vu('relais-apres-retour');
+  await page.click(A('suivant')); await w(300); await vu('nouveau-relais');
+  await page.click(A('garde')); await w(200); await page.goto(ORIGIN + BASE + 'relais/'); await w(300);
+  await page.click(A('reunion')); await w(300); await page.click(A('avec', '[data-v="foyer"]')); await page.fill('#rl-rq', 'jeudi 3 décembre à 16 heures'); await vu('reunion-0');
+  await page.click(A('rpas', '[data-v="1"]')); await w(200); await page.click(A('obs') + ' >> nth=0'); await page.click(A('obs') + ' >> nth=2'); await vu('reunion-1');
+  await page.click(A('rpas', '[data-v="1"]')); await w(200); await vu('reunion-2'); await page.click(A('mots')); await w(150); await vu('reunion-2-mots'); await page.click(A('mot', '[data-i="2"]')); await w(150); await page.keyboard.type('prévenir Noé la veille quand un éducateur change.');
+  await page.click(A('rpas', '[data-v="1"]')); await w(200); await page.fill('[data-rl="reu.pri.0"]', 'Noé est prévenu la veille des changements.'); await page.fill('[data-rl="reu.pri.1"]', 'Un seul interlocuteur pour la famille.'); await vu('reunion-3');
+  await page.click(A('feuille-ok')); await w(300); await vu('feuille'); await page.click(A('mots')); await w(150); await vu('feuille-mots');
+  await page.click(A('accueil')); await w(200); await page.click(A('sauver')); await w(200); await vu('sauver');
+  // les offres, la commande du parcours, le cadeau, retrouver un achat
+  await page.goto(ORIGIN + BASE + '#formules'); await w(400); await vu('offres');
+  await page.click('[data-act="commande"][data-v="parcours"][data-m="six"]'); await w(300); await vu('commande-six');
+  await page.click('[data-act="cmd-mode"][data-v="une"]'); await w(150); await vu('commande-une');
+  await page.click('[data-act="cmd-mode"][data-v="six"]'); await page.click('[data-act="cmd"][data-v="refus"]'); await w(200); await vu('commande-refus');
+  await page.click('[data-act="cmd"][data-v="recap"]'); await page.click('[data-act="cmd"][data-v="abandon"]'); await w(200); await vu('commande-abandon');
+  await page.click('[data-act="cmd"][data-v="recap"]'); await page.click('[data-act="cmd-mode"][data-v="six"]'); await page.click('[data-act="cmd"][data-v="ok"]'); await w(300); await vu('commande-six-ok');
+  await page.goto(ORIGIN + BASE + '#formules'); await w(300); await page.click('[data-act="cadeau"]'); await w(300); await vu('cadeau'); await page.click('[data-act="cadeau"][data-v="relais"]'); await page.click('[data-act="cmd"][data-v="cadeau-ok"]'); await w(200); await vu('cadeau-ok');
+  await page.click('[data-act="cadeau-voir"]'); await w(300); await vu('cadeau-activer');
+  await page.goto(ORIGIN + BASE + '#formules'); await w(300); await page.click('[data-act="retrouver"]'); await w(300); await vu('retrouver');
+  await page.goto(ORIGIN + BASE); await w(500); await vu('aujourdhui');
+  await page.click('.tab[data-act="go"][data-view="me"]'); await w(300); await vu('moi');
+  await page.click('.tab[data-act="go"][data-view="kit"]'); await w(200); await page.click('[data-act="kit"][data-v="tools"]'); await w(200); await vu('outils');
+  await page.goto(ORIGIN + BASE + 'transmettre/'); await w(400); await vu('transmettre-membre');
+  // un visiteur : la vitrine entière, la page à transmettre, une fiche avec sa suite
+  const ctx3 = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: W < 700 ? 2 : 1, ignoreHTTPSErrors: true, isMobile: W < 700, hasTouch: W < 700, reducedMotion: 'reduce', locale: 'fr-CH' });
+  const p3 = await ctx3.newPage(); p3.on('pageerror', e => errs.push('pageerror (visiteur): ' + e.message));
+  const vu3 = async nom => { await p3.waitForTimeout(300); await p3.mouse.move(2, 2); await p3.screenshot({ path: `${OUT}/${String(++n).padStart(2, '0')}-${nom}.png`, fullPage: true }); };
+  await p3.goto(ORIGIN + BASE); await p3.waitForTimeout(600); await p3.screenshot({ path: `${OUT}/${String(++n).padStart(2, '0')}-vitrine-ecran.png` }); await vu3('vitrine');
+  await p3.goto(ORIGIN + BASE + 'transmettre/'); await vu3('transmettre');
+  await p3.goto(ORIGIN + BASE + 'fiches/confier-son-enfant-a-un-proche/'); await vu3('fiche-relais');
+  await ctx3.close();
+  console.log(n + ' écrans dans ' + OUT + (errs.length ? '\nERREURS :\n' + errs.join('\n') : '\naucune erreur de page'));
+  await browser.close();
+})().catch(e => { console.error('ARRÊT : ' + (e.message || e).toString().slice(0, 600)); process.exit(1); });

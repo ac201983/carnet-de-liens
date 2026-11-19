@@ -30,7 +30,7 @@ const TELLS = [
   };
   await walk(page, visit);
   await browser.close();
-  // Les contenus que le parcours des écrans n'ouvre pas tous (22 situations, 24 étapes, 18 doses, mots, exercices) : lus dans les sources.
+  // Les contenus que le parcours des écrans n'ouvre pas tous (23 situations, 24 étapes, 18 doses, mots, exercices) : lus dans les sources.
   const fs = require('fs');
   const c0 = fs.readFileSync(__dirname + '/../eparts/p2-content.js', 'utf8').replace(/<\/?script>/g, ''); const c = c0.slice(c0.indexOf('const WORDS'), c0.indexOf('const PICTOS'));
   const T1 = new Function(c + '; return {WORDS,PERMISSIONS,MOODS,MOOD_WORDS,SITS,EXOS,THEMES,AGES};')();
@@ -41,7 +41,7 @@ const TELLS = [
   let nTables = 0;
   const rec = (v, where) => { if (typeof v === 'string') { nTables++; const l = v.replace(/\s+/g, ' ').trim(); if (l && !seen.has(l)) seen.set(l, where); } else if (Array.isArray(v)) v.forEach(x => rec(x, where)); else if (v && typeof v === 'object') for (const k in v) rec(v[k], where + (Array.isArray(v) ? '' : '.' + k)); };
   for (const k in T1) rec(T1[k], 'contenu ' + k); for (const k in T2) rec(T2[k], 'contenu ' + k);
-  if (T1.SITS.length !== 22 || T2.DOSES.length !== 18 || T2.PARCOURS.reduce((n, m) => n + m.steps.length, 0) !== 24) { console.log('✗ contenus incomplets'); process.exit(1); }
+  if (T1.SITS.length !== 23 || T2.DOSES.length !== 18 || T2.PARCOURS.reduce((n, m) => n + m.steps.length, 0) !== 24) { console.log('✗ contenus incomplets'); process.exit(1); }
   const bad = [];
   for (const [l, where] of seen) { const why = TELLS.filter(([re]) => re.test(l)).map(x => x[1]); if (why.length) bad.push([l, where, why.join(', ')]); }
   if (DUMP) {

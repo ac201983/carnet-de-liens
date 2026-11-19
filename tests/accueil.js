@@ -13,7 +13,7 @@ const X = (() => {
   globalThis.document = { getElementById: id => id === 'app' ? app : null, querySelector: () => null, querySelectorAll: () => [], createElement: () => ({ setAttribute() { }, remove() { } }), addEventListener() { }, activeElement: null, title: '' };
   globalThis.window = globalThis; globalThis.location = { search: '', pathname: '/', hash: '' }; globalThis.addEventListener = () => { }; globalThis.history = { replaceState() { }, pushState() { }, state: null }; globalThis.scrollTo = () => { };
   const code = fs.readFileSync(SITE_DIR + '/app.js', 'utf8'); const fin = code.lastIndexOf('})();');
-  return (0, eval)(code.slice(0, fin) + ';return {PARCOURS,PERMISSIONS,WORDS,SITS,PICTOS,LOCAL_Q,TIERS,curatedDose,introDoseLabel};})();');
+  return (0, eval)(code.slice(0, fin) + ';return {PARCOURS,PERMISSIONS,WORDS,SITS,PICTOS,LOCAL_Q,TIERS,PRODUITS,curatedDose,introDoseLabel};})();');
 })();
 const E = []; X.PARCOURS.forEach(m => m.steps.forEach(s => E.push(s)));
 // Le même calcul que dans le navigateur, mais à une autre date.
@@ -35,22 +35,23 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
       return { sections: q('main.intro>section').map(s => s.className.split(' ').pop()), h1: q('h1').length, h2: q('main.intro h2').length, perms: tx('.acc-perms li'),
         doseT: tx('.acc-dose .dose p')[0], label: tx('.acc-dose .dose .label')[0], qT: tx('.acc-depot .mirror .q')[0], lT: tx('.acc-depot .mirror .l')[0],
         mois: q('.acc-mois details').length, etapes: tx('.acc-mois li'), nomsM: tx('.acc-mois summary b'), vecu: tx('.acc-parcours .card.vecu p.lesson'), sch: document.querySelector('.acc-parcours .card.sch').dataset.sch,
-        pictos: q('.acc-pictos img').length, chips: tx('.acc-scenes .acc-chips li a'), liens: q('.acc-scenes .acc-chips li a').map(a => a.getAttribute('href')), groupes: tx('.acc-scenes h3'), outils: tx('.acc-outils .acc-h .acc-l')[0], outils2: tx('.acc-outils-l')[0], prix: tx('.acc-plans .prix'), plans: tx('.acc-plans b'), faq: q('.faq').length, cit: tx('.acc-fin blockquote p')[0] || '', portes: tx('.herofull .porte b'), h1t: tx('h1')[0] };
+        pictos: q('.acc-pictos img').length, chips: tx('.acc-scenes .acc-chips li a'), liens: q('.acc-scenes .acc-chips li a').map(a => a.getAttribute('href')), groupes: tx('.acc-scenes h3'), outils: tx('.acc-outils .acc-h .acc-l')[0], outils2: tx('.acc-outils-l')[0], prix: tx('.acc-plans .prix'), plans: tx('.acc-plans b'), faq: q('.faq').length, cit: tx('.acc-fin blockquote p')[0] || '', portes: tx('.herofull .porte b'), h1t: tx('h1')[0], pour: tx('.herofull .pour')[0] || '', besoin: tx('.herofull .besoin-l')[0] || '', relais: tx('.acc-relais .rl-mini b')[0] || '', relaisPrix: tx('.acc-relais .prix')[0] || '' };
     });
     r.permsOk = r.perms.every(p => X.PERMISSIONS.some(x => net(x[1]) === p)); r.dose = r.doseT === net(X.curatedDose());
     r.q = X.LOCAL_Q.some(x => net(x) === r.qT); r.l = X.WORDS.some(x => net(x) === r.lT);
     r.titres = E.map(s => net(s.t)); r.nomsMois = r.nomsM.join('|') === X.PARCOURS.map(m => net(m.m)).join('|'); r.vecu2 = E[1].vecu.slice(0, 2).map(net);
     r.sits = X.SITS.map(s => net(s.t)); r.nSits = X.SITS.length; r.nPictos = X.PICTOS.length; r.tiers = Object.values(X.TIERS).map(x => net(x.t)); r.fin4 = net(E[3].vecu);
-    ok(r.sections.join(' ') === 'acc-dose acc-outils acc-depot acc-perm acc-parcours voice acc-formules acc-faq acc-fin' && r.h1 === 1 && r.h2 === 8, 'accueil : 9 chapitres, ce qui sert tout de suite en premier, un seul grand titre ' + JSON.stringify([r.sections, r.h1, r.h2]));
-    ok(/De quoi auriez-vous besoin/.test(r.h1t) && r.portes.length === 3 && r.portes[0] === 'Souffler 2 minutes' && r.portes[1] === 'Déposer ce qui pèse' && /^Trouver une idée pour /.test(r.portes[2]), 'accueil : le grand titre est la question, suivie des 3 portes ' + JSON.stringify([r.h1t, r.portes]));
+    ok(r.sections.join(' ') === 'acc-dose acc-outils acc-depot acc-perm acc-parcours acc-relais voice acc-formules acc-faq acc-fin' && r.h1 === 1 && r.h2 === 9, 'accueil : 10 chapitres, ce qui sert tout de suite en premier, un seul grand titre ' + JSON.stringify([r.sections, r.h1, r.h2]));
+    ok(r.h1t === 'On vous demande souvent comment va votre enfant. Ici, on commence par vous.' && r.pour === 'Pour la mère ou le père d’une personne en situation de handicap' && /De quoi auriez-vous besoin/.test(r.besoin) && r.portes.length === 3 && r.portes[0] === 'Souffler 2 minutes' && r.portes[1] === 'Déposer ce qui pèse' && /^Trouver une idée pour /.test(r.portes[2]), 'accueil : le public, la phrase d’Antonio en grand titre, puis la question et les 3 portes ' + JSON.stringify([r.h1t, r.portes]));
     ok(r.perms.length === 4 && r.permsOk, 'accueil : les 4 permissions sont celles de l’espace');
     ok(r.dose && /^(La dose du (lundi|mardi|mercredi|jeudi|vendredi|samedi) \d{1,2} \S+|Dose spéciale du dimanche)$/.test(r.label), 'accueil : la dose affichée est celle du jour, avec sa date (' + r.label + ')');
     ok(r.q && r.l, 'accueil : la question et la lumière de l’exemple sont prises dans celles de l’espace');
     ok(r.mois === 6 && r.etapes.length === 24 && r.etapes.join('|') === r.titres.join('|') && r.nomsMois, 'accueil : les 6 mois et les 24 étapes portent les titres du parcours');
     ok(r.vecu.length === 2 && r.vecu.join('|') === r.vecu2.join('|') && r.sch === 'vague', 'accueil : l’extrait de « Ce que j’ai vécu » est mot pour mot celui de l’étape 2, et le schéma est celui de la vague');
     ok(r.pictos === 6 && r.chips.length === 12 && r.chips.every(c => r.sits.some(t => c.endsWith(t))) && r.liens.every(h => /\/fiches\/[a-z0-9-]+\/$/.test(h)) && new Set(r.liens).size === 12 && r.groupes.join('|') === 'Avec un enfant|Avec un ado|Avec un adulte|Et pour vous' && r.outils.includes(r.nSits + ' situations') && r.outils2.includes(r.nPictos + ' images'), 'accueil : 12 situations rangées par âge avec le lien de leur fiche, et les nombres viennent de la boîte à outils');
-    ok(r.prix.join('|') === '0 CHF|14 CHF par mois|49 CHF par mois' && r.plans.join('|') === r.tiers.join('|'), 'accueil : les 3 formules et leurs prix sont ceux de l’espace ' + r.prix.join('|'));
-    ok(r.faq === 6 && r.cit.length > 40 && r.fin4.endsWith(r.cit) && /^Vous qui me lisez/.test(r.cit), 'accueil : 6 questions, et la phrase de la fin est celle qu’Antonio adresse aux parents à l’étape 4');
+    ok(r.prix.join('|') === '0 CHF|' + X.PRODUITS.parcours.p + ' CHF en tout|' + X.PRODUITS.relais.p + ' CHF une seule fois' && r.prix.join('|') === '0 CHF|84 CHF en tout|49 CHF une seule fois' && r.plans.join('|') === [r.tiers[0], X.PRODUITS.parcours.t, X.PRODUITS.relais.t].join('|'), 'accueil : les 3 offres et leurs prix sont ceux de l’espace ' + r.prix.join('|'));
+    ok(r.relais === 'Si tu ne lis que trois choses' && r.relaisPrix === '49 CHF, une seule fois', 'accueil : le chapitre « Passer le relais » montre le début d’une fiche et son prix ' + JSON.stringify([r.relais, r.relaisPrix]));
+    ok(r.faq === 7 && r.cit.length > 40 && r.fin4.endsWith(r.cit) && /^Vous qui me lisez/.test(r.cit), 'accueil : 7 questions, et la phrase de la fin est celle qu’Antonio adresse aux parents à l’étape 4');
     // ---------- 2. Le schéma se déroule sur la page d'accueil
     await page.evaluate(() => document.querySelector('.acc-parcours .card.sch').scrollIntoView({ block: 'center' })); await page.waitForTimeout(200);
     let k = 0; while (await page.$('.acc-parcours ' + A('schnext')) && k < 8) { await page.click('.acc-parcours ' + A('schnext')); await page.waitForTimeout(60); k++; }
@@ -77,9 +78,10 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
     const vus = await page.evaluate(() => [...document.querySelectorAll('.herofull h1, .herofull .porte')].map(e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }));
     ok(vus.length === 4 && vus.every(Boolean), 'premier écran : la question et les 3 portes sont visibles sans faire défiler ' + JSON.stringify(vus));
     const av = await page.evaluate(() => [...document.querySelectorAll('.faq')].filter(d => d.open).length);
-    await page.click('.faq:nth-of-type(3) summary'); await page.waitForTimeout(150);
-    const ap = await page.evaluate(() => { const d = document.querySelectorAll('.faq')[2]; const p = d.querySelector('p'); return { open: d.open, h: p.getBoundingClientRect().height, t: p.textContent }; });
-    ok(av === 0 && ap.open && ap.h > 20 && /reste sur votre appareil/.test(ap.t), 'questions : fermées au départ, une question s’ouvre et dit que tout reste sur l’appareil');
+    const iLit = await page.evaluate(() => [...document.querySelectorAll('.faq summary')].findIndex(s => /Qui lit ce que j’écris/.test(s.textContent)));
+    await page.click('.faq:nth-of-type(' + (iLit + 1) + ') summary'); await page.waitForTimeout(150);
+    const ap = await page.evaluate(i => { const d = document.querySelectorAll('.faq')[i]; const p = d.querySelector('p'); return { open: d.open, h: p.getBoundingClientRect().height, t: p.textContent }; }, iLit);
+    ok(av === 0 && iLit >= 0 && ap.open && ap.h > 20 && /reste sur votre appareil/.test(ap.t), 'questions : fermées au départ, une question s’ouvre et dit que tout reste sur l’appareil');
     await page.click('.mois:nth-of-type(3) summary'); await page.waitForTimeout(150);
     ok(await page.evaluate(() => document.querySelectorAll('.mois')[2].open && document.querySelectorAll('.mois')[0].open), 'mois : le premier est ouvert au départ, un autre s’ouvre au toucher');
     await page.click('.acc-parcours .card.vecu ' + A('peek-about')); await page.waitForTimeout(700);
@@ -89,7 +91,7 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
     await page.click('.voice ' + A('peek-about')); await page.waitForTimeout(700);
     ok(/^Avant d’accompagner/.test(await page.textContent('h1')), 'chapitre d’Antonio : le bouton « Lire mon histoire » ouvre l’histoire'); await page.click(A('back')); await page.waitForTimeout(500);
     await page.click('.acc-formules ' + A('peek-plans')); await page.waitForTimeout(500);
-    ok(/Les formules/.test(await page.textContent('h1')), 'formules : le bouton ouvre le détail'); await page.click(A('back')); await page.waitForTimeout(400);
+    ok(/Les 3 offres/.test(await page.textContent('h1')), 'offres : le bouton ouvre le détail'); await page.click(A('back')); await page.waitForTimeout(400);
     await page.click('.acc-depot ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(400);
     ok(!!(await page.$('main.deposer #draft')), 'chapitre « Déposer » : son bouton mène à l’écran pour écrire'); await page.click(A('back')); await page.waitForTimeout(400);
     ok(!!(await page.$('.herofull')) && (await page.evaluate(() => [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'après ce premier geste, « Retour » ramène à la vitrine, qui propose « Ouvrir mon espace »');

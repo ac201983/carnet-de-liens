@@ -4,6 +4,10 @@ const ORIGIN = process.env.PEPE_ORIGIN || 'https://localhost:8443';
 const BASE = ORIGIN + (process.env.PEPE_BASE || '/carnet-de-liens/');
 const APP = BASE + (process.env.PEPE_APPDIR !== undefined ? process.env.PEPE_APPDIR : 'parent-ecoute/');
 const A = (act, extra = '') => `[data-act="${act}"]${extra}`;
+const R = (k, extra = '') => `[data-act="rl"][data-k="${k}"]${extra}`;
+const KEY = process.env.PEPE_KEY || 'pepe-v1';
+// Le lien d'une petite fiche de relais, fabriqué avec le code du site (build/lancement/lien-exemple.js). Les prénoms et le numéro sont inventés.
+const FICHE_RECUE = 'relais/#f=1.YQQTTm_DqQRUEthSsMOpbWkFVCAHNSAq_jYfJweLQ69Dr0OvQ6gJQf4uBUBEL0QvRC4DgAQBokRdQwB1LeUjAQLwcyfQYQxuaWzgLbJvaXIuzxHBElI0dp9RdHI2oLLyOQDhY2GfoTgSPYByb-8GkTbdPfIkgm6KkXqwo7b_BkIYChJ_En8SfxJ_En8Sfx8SfyfKExJu3gNBcMOi468CEqByaXoQwQFiLvD_BEQthYNfg1-DX4NSLvg3MnMvQTcBMDAAQAAwL74xADkifa6BYw';
 
 async function walk(page, visit) {
   const w = ms => page.waitForTimeout(ms);
@@ -25,12 +29,30 @@ async function walk(page, visit) {
     }
     await page.evaluate(() => { document.querySelector('.acc-faq').scrollIntoView({ block: 'start' }); document.querySelectorAll('main.intro details').forEach(d => { d.open = true; }); }); await w(200); await visit('accueil-questions-ouvertes');
     await masque.evaluate(e => e.remove()); await page.evaluate(() => scrollTo(0, 0)); await w(250); }
-  await page.click(A('peek-plans')); await w(80); await visit('formules-apercu');
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('formules-apercu-bas'); await page.evaluate(() => scrollTo(0, 0));
-  // un visiteur peut essayer une étape et voir un échange avec Antonio avant d'être entré dans l'espace
-  await page.click('.formule ' + A('avec')); await w(150); await visit('avec-antonio-visiteur');
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('avec-antonio-visiteur-bas'); await page.click(A('back')); await w(200);
-  await page.click(A('back')); await w(200);
+  await page.click(A('peek-plans')); await w(80); await visit('offres-apercu');
+  await page.evaluate(() => document.querySelectorAll('details.f-concret').forEach(d => { d.open = true; })); await w(80); await visit('offres-apercu-depliees');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('offres-apercu-bas'); await page.evaluate(() => scrollTo(0, 0));
+  // un visiteur peut voir une commande, la maquette du cadeau et « Retrouver un achat » avant d'être entré dans l'espace
+  await page.click(A('commande', '[data-v="parcours"][data-m="six"]')); await w(200); await visit('commande-visiteur');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('commande-visiteur-bas');
+  await page.goto(APP + '#formules'); await w(300); await page.click(A('cadeau')); await w(200); await visit('cadeau-visiteur');
+  await page.click(A('cmd', '[data-v="cadeau-ok"]')); await w(150); await visit('cadeau-pret-visiteur');
+  await page.goto(APP + '#cadeau-relais'); await w(300); await visit('cadeau-recu-visiteur');
+  await page.goto(APP + '#formules'); await w(300); await page.click(A('retrouver')); await w(200); await visit('retrouver-visiteur');
+  // « Passer le relais », pour un visiteur : l'accueil de l'outil, puis l'exemple aux 3 âges
+  await page.goto(APP + 'relais/'); await w(300); await visit('relais-visiteur');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-visiteur-bas'); await page.evaluate(() => scrollTo(0, 0));
+  await page.click(R('exemple')); await w(250); await visit('relais-exemple');
+  for (const k of ['e', 'a']) { await page.click(R('ex', '[data-v="' + k + '"]')); await w(150); await visit('relais-exemple-' + k); }
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-exemple-bas');
+  // la fiche qu'un proche reçoit par lien, puis un lien abîmé
+  await page.goto(APP + FICHE_RECUE); await w(400); await visit('relais-fiche-recue');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-fiche-recue-bas');
+  await page.goto(APP + 'transmettre/'); await w(300); await page.goto(APP + FICHE_RECUE.slice(0, -7)); await w(400); await visit('relais-fiche-abimee');
+  // la page qu'une association ou un professionnel transmet à une famille
+  await page.goto(APP + 'transmettre/'); await w(300); await visit('transmettre');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('transmettre-bas');
+  await page.goto(APP); await w(400);
   await page.click(A('peek-about')); await w(150); await visit('histoire-apercu'); await page.click(A('back')); await w(200);
   // le SOS, ouvert par un visiteur
   await page.click('.herofull .sos'); await w(100); await visit('sos-visiteur'); await page.click('.sosview .back'); await w(200);
@@ -125,9 +147,9 @@ async function walk(page, visit) {
   await page.click(A('go', '[data-view="data"]')); await w(60); await visit('donnees');
   await page.click(A('reset')); await visit('donnees-confirmation'); await page.click(A('reset-no')); await page.click(A('back')); await w(200);
   await page.click(A('go', '[data-view="about"]')); await w(150); await page.$eval('img.medal', i => i.scrollIntoView()); await page.waitForFunction(() => { const i = document.querySelector('img.medal'); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 5000 }).catch(() => {}); await page.evaluate(() => scrollTo(0, 0)); await visit('histoire'); await page.click(A('back')); await w(80);
-  await page.click(A('go', '[data-view="plans"]')); await w(60); await visit('formules');
-  await page.click('.f-detail summary'); await w(100); await page.$eval('.f-detail', e => e.scrollIntoView({ block: 'start' })); await w(100); await visit('formules-comparaison');
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('formules-bas'); await page.evaluate(() => scrollTo(0, 0));
+  await page.click(A('go', '[data-view="plans"]')); await w(60); await visit('offres');
+  await page.evaluate(() => document.querySelectorAll('details.f-concret').forEach(d => { d.open = true; })); await w(80); await visit('offres-depliees');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('offres-bas'); await page.evaluate(() => scrollTo(0, 0));
   // ----- l'aperçu du parcours : la vague, un geste, le carnet, la semaine prochaine
   await page.click('.formule ' + A('apercu')); await w(150); await visit('apercu-vague');
   for (let k = 0; k < 8 && await page.$(A('schnext')); k++) { await page.click(A('schnext')); await w(60); }
@@ -138,16 +160,78 @@ async function walk(page, visit) {
   await page.click(A('ap', '[data-k="3"]')); await w(150); await visit('apercu-semaine');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('apercu-semaine-bas');
   // ----- la commande en démonstration : refusée, abandonnée, acceptée
-  await page.click('.offre ' + A('commande')); await w(150); await visit('commande');
+  await page.click('.offre ' + A('commande', '[data-m="une"]')); await w(150); await visit('commande');
+  await page.click(A('cmd-mode', '[data-v="six"]')); await w(120); await visit('commande-six-fois');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('commande-six-fois-bas'); await page.evaluate(() => scrollTo(0, 0));
   await page.click(A('cmd', '[data-v="refus"]')); await w(120); await visit('commande-refusee');
   await page.click(A('cmd', '[data-v="recap"]')); await w(100); await page.click(A('cmd', '[data-v="abandon"]')); await w(120); await visit('commande-abandonnee');
   await page.click(A('cmd', '[data-v="recap"]')); await w(100); await page.click(A('cmd', '[data-v="ok"]')); await w(150); await visit('commande-confirmee');
-  // ----- formule « Le parcours »
-  await tab('me'); await w(80); await page.click(A('go', '[data-view="plans"]')); await w(120); await visit('formules-parcours');
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(100); await page.click('.f-arret ' + A('arret')); await w(150); await visit('formule-arret'); await page.click(A('back')); await w(200);
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('commande-confirmee-bas');
+  // ----- « Mes achats » : les mensualités, qui s'arrêtent à la sixième (les boutons de démonstration n'existent que dans la version d'essai)
+  await tab('me'); await w(120); await visit('moi-achats');
+  if (await page.$(A('ech-suite'))) { for (let k = 0; k < 5 && await page.$(A('ech-suite')); k++) { await page.click(A('ech-suite')); await w(80); } await visit('moi-achats-payes'); }
+  await page.click(A('go', '[data-view="plans"]')); await w(120); await visit('offres-parcours');
   await tab('parcours'); await w(80); await visit('parcours-ouvert');
   // une étape qui n'est pas encore ouverte : un message, et l'écran ne change pas
   await page.click(A('step', '[data-i="1"]')); await w(80); await visit('parcours-attente');
+  // ----- « Passer le relais » : la préparation d'une fiche, l'achat de l'outil, l'envoi, le retour, un deuxième relais, une réunion, la sauvegarde
+  await page.goto(APP + 'relais/'); await w(300); await visit('relais-accueil');
+  await page.click(R('nouveau')); await w(200); await visit('relais-pour-qui');
+  await page.click(R('pas', '[data-v="1"]')); await w(150); await visit('relais-pour-qui-erreur');
+  await page.fill('#rl-qui', 'Noé'); await page.fill('#rl-chez', 'mon frère Rémi'); await page.fill('#rl-quand', 'du samedi 5 au dimanche 6 décembre');
+  await page.click(R('tu', '[data-v="0"]')); await w(80); await visit('relais-pour-qui-vous'); await page.click(R('tu', '[data-v="1"]')); await w(80);
+  await page.click(R('pas', '[data-v="1"]')); await w(200); await visit('relais-quotidien-vide');
+  await page.click(R('idees', '[data-s="aide"]')); await w(120); await visit('relais-quotidien-idees');
+  await page.click(R('modele', '[data-s="aide"][data-i="0"]')); await w(80); await page.click(R('idees', '[data-s="aide"]')); await page.click(R('modele', '[data-s="aide"][data-i="1"]')); await w(80);
+  await page.click(R('idees', '[data-s="repas"]')); await page.click(R('vierge', '[data-s="repas"]')); await w(120); await page.fill('[data-rl="s.repas.0"]', 'Noé mange volontiers des pâtes, du riz et des pommes.');
+  await page.click(R('idees', '[data-s="nuit"]')); await page.click(R('modele', '[data-s="nuit"][data-i="1"]')); await w(120); await visit('relais-quotidien');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-quotidien-bas');
+  await page.click(R('pas', '[data-v="1"]')); await w(200); await visit('relais-reperes-vide');
+  await page.click(R('pique') + ' >> nth=0'); await w(80); await page.click(R('pique') + ' >> nth=0'); await w(80); await page.fill('[data-rl="trois.2"]', 'Noé choisit lui-même son dessin animé du soir.'); await visit('relais-reperes');
+  await page.click(R('pas', '[data-v="1"]')); await w(200); await visit('relais-parole-vide');
+  await page.click(R('moi', '[data-i="0"]')); await w(120); await page.keyboard.type('les trains et les cartes de métro.'); await page.click(R('moi', '[data-i="1"]')); await w(120); await page.keyboard.type('qu’on finisse mes phrases.'); await visit('relais-parole');
+  await page.click(R('pas', '[data-v="1"]')); await w(200); await page.fill('#rl-tn0', 'Maman'); await page.fill('#rl-tt0', '079 000 00 00'); await visit('relais-joindre');
+  await page.click(R('apercu')); await w(300); await visit('relais-apercu-sans-outil');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-apercu-sans-outil-bas');
+  await page.click('.v-relais .offre ' + A('commande')); await w(200); await visit('commande-relais');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('commande-relais-bas');
+  await page.click(A('cmd', '[data-v="ok"]')); await w(200); await visit('commande-relais-confirmee');
+  await page.click(R('reprise')); await w(300); await visit('relais-apercu');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-apercu-bas');
+  await page.click(R('envoi')); await w(300); await visit('relais-envoi');
+  await page.click(R('partage')); await w(500); await visit('relais-envoi-fait');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-envoi-bas');
+  await page.goto(APP + 'relais/'); await w(300); await visit('relais-mes-fiches');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-mes-fiches-bas'); await page.evaluate(() => scrollTo(0, 0));
+  await page.click('.rl-auretour ' + R('retour')); await w(250); await visit('relais-retour');
+  await page.click(R('retour-ok')); await w(150); await visit('relais-retour-erreur');
+  await page.fill('#rl-retour', 'Le programme dit le matin a bien aidé.'); await page.click(R('retour-ok')); await w(300); await visit('relais-apres-retour');
+  await page.click(R('suivant')); await w(300); await visit('relais-deuxieme');
+  // une fiche trop chargée pour une page : l'outil le dit là où la famille écrit, puis dans l'aperçu
+  await page.evaluate(k => { const d = JSON.parse(localStorage.getItem(k)); const L = 'Une phrase assez longue pour remplir la page, avec des mots simples et un exemple précis du quotidien à la maison.'; const f = d.rel.fiches[d.rel.fiches.length - 1]; ['aide', 'repas', 'nuit', 'monte', 'comm', 'aime', 'secu'].forEach(x => { f.s[x] = [L, L, L, L, L]; }); localStorage.setItem(k, JSON.stringify(d)); }, KEY);
+  await page.goto(APP + 'relais/'); await w(300); await page.click(R('ouvrir') + ' >> nth=0'); await w(300); await page.$eval('.rl-page', e => e.scrollIntoView({ block: 'center' })); await w(120); await visit('relais-apercu-trop-long');
+  await page.click(R('aller', '[data-v="0"]')); await w(200); await page.click(R('pas', '[data-v="1"]')); await w(200); await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-quotidien-trop-long');
+  // préparer une réunion avec ce qui est déjà écrit
+  await page.goto(APP + 'relais/'); await w(300); await page.click(R('reunion')); await w(250); await visit('reunion-avec-qui');
+  await page.click(R('avec', '[data-v="foyer"]')); await page.fill('#rl-rq', 'jeudi 3 décembre à 16 heures'); await page.click(R('rpas', '[data-v="1"]')); await w(200); await visit('reunion-observations');
+  await page.click('.rl-obs .rl-m >> nth=0'); await w(80); await page.click('.rl-obs .rl-m >> nth=1'); await w(80); await visit('reunion-observations-choisies');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('reunion-observations-bas');
+  await page.click(R('rpas', '[data-v="1"]')); await w(200); await visit('reunion-demande');
+  await page.click('.rl-perds'); await w(150); await visit('reunion-demande-mots');
+  await page.click(R('mot', '[data-i="2"]')); await w(200); await page.keyboard.type('prévenir Noé la veille quand un éducateur change.'); await w(100);
+  await page.click(R('rpas', '[data-v="1"]')); await w(200); await visit('reunion-priorites');
+  await page.fill('[data-rl="reu.pri.0"]', 'Noé est prévenu la veille des changements.'); await page.fill('[data-rl="reu.pri.1"]', 'Un seul interlocuteur pour la famille.'); await page.fill('[data-rl="reu.pri.2"]', 'Le bilan peut attendre janvier.');
+  await page.click(R('feuille-ok')); await w(300); await visit('reunion-feuille');
+  await page.click('.rl-perds'); await w(150); await page.$eval('.rl-dire', e => e.scrollIntoView({ block: 'start' })); await w(120); await visit('reunion-feuille-mots');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('reunion-feuille-bas');
+  await page.goto(APP + 'relais/'); await w(300); await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('relais-mes-reunions');
+  await page.click(R('sauver')); await w(250); await visit('relais-sauvegarde');
+  // la fiche reçue, lue par un parent déjà entré, puis « Retrouver un achat » et le cadeau déjà possédé
+  await page.goto(APP + FICHE_RECUE); await w(400); await visit('relais-fiche-recue-parent');
+  await page.goto(APP + '#formules'); await w(300); await visit('offres-tout-achete'); await page.click(A('retrouver')); await w(200); await page.click(A('cmd', '[data-v="retrouve"][data-f="relais"]')); await w(200); await visit('achat-retrouve');
+  await page.goto(APP + '#cadeau-relais'); await w(300); await visit('cadeau-deja');
+  await page.goto(APP); await w(400); await visit('aujourdhui-tout-achete');
+  await tab('me'); await w(120); await page.click(A('go', '[data-view="data"]')); await w(150); await visit('donnees-sauvegarde'); await page.click(A('back')); await w(200);
   // l'aperçu d'Antonio (cinq touches sur le titre « Moi ») ouvre tout
   await tab('me'); await w(80); for (let k = 0; k < 5; k++) await page.click('h1' + A('atelier')); await w(80); await visit('moi-apercu');
   await tab('parcours'); await w(80); await visit('parcours-apercu');
@@ -165,16 +249,6 @@ async function walk(page, visit) {
   await page.fill('#ptext', 'Un chemin qui monte, mais avec de la lumière au bout.'); await page.click(A('photosave')); await w(80); await visit('photolangage');
   await page.click(A('photoback')); await w(250); await visit('photolangage-changer'); await page.click(A('photopick', '[data-id="chemin"]')); await w(250);
   if (await page.$(A('back'))) await page.click(A('back')); await w(150);
-  // ----- formule « Avec Antonio »
-  await tab('me'); await page.click(A('go', '[data-view="plans"]')); await w(120);
-  await page.click('.formule ' + A('avec')); await w(150); await visit('avec-antonio');
-  await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('avec-antonio-bas');
-  await page.click('.offre ' + A('commande')); await w(150); await visit('commande-antonio'); await page.click(A('cmd', '[data-v="ok"]')); await w(150); await visit('commande-antonio-confirmee');
-  await tab('today'); await w(100); await visit('aujourdhui-antonio');
-  await tab('me'); await visit('moi-antonio'); await page.click(A('go', '[data-view="antonio"]')); await w(80); await visit('antonio-vide');
-  await page.fill('#qdraft', 'court'); await page.click(A('qsend')); await visit('antonio-erreur');
-  await page.fill('#qdraft', 'Il refuse d’aller à l’école le matin, je fais quoi ?'); await page.click(A('qsend')); await w(60); await visit('antonio');
-  await page.click('.letter'); await w(60); await visit('mot-exemple');
   // ----- pages de texte
   for (const f of ['confidentialite', 'conditions']) {
     await page.evaluate(() => localStorage.removeItem('pepe-consent'));
@@ -188,8 +262,10 @@ async function walk(page, visit) {
   // ----- 404
   await page.goto(BASE + 'parent-ecoute/page-inconnue'); await w(200); await visit('404');
   // ----- Espace Antonio
-  await page.goto(APP + 'antonio/'); await w(200); await visit('espace-antonio');
-  await page.fill('#ans', 'court'); await page.click(A('answer')); await visit('espace-antonio-erreur');
-  await page.click(A('open', '[data-id="B"]')); await w(80); await page.click(A('send')); await visit('espace-antonio-parent');
+  if ((await page.request.get(APP + 'antonio/')).ok() && await page.goto(APP + 'antonio/').then(() => page.$('#ans')).catch(() => null)) {
+    await w(200); await visit('espace-antonio');
+    await page.fill('#ans', 'court'); await page.click(A('answer')); await visit('espace-antonio-erreur');
+    await page.click(A('open', '[data-id="B"]')); await w(80); await page.click(A('send')); await visit('espace-antonio-parent');
+  }
 }
 module.exports = { walk, ORIGIN, BASE, APP, A };

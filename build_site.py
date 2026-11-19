@@ -58,6 +58,9 @@ def data_uri(path, mime):
     return 'data:%s;base64,%s' % (mime, base64.b64encode(open(path, 'rb').read()).decode())
 
 
+RL_DICO_EMPREINTE = '9d1443c8e95638f5'   # voir build_js : le dictionnaire des liens de « Passer le relais », figé le 19 novembre 2026
+
+
 def typo(s):
     """Espaces insécables à l'intérieur des guillemets français : un « ne reste jamais seul en fin de ligne, un » jamais seul en début de ligne."""
     return s.replace('\u00ab ', '\u00ab\u00a0').replace(' \u00bb', '\u00a0\u00bb')
@@ -99,11 +102,18 @@ def build_js(site):
         media = "\nconst MEDAL=RACINE+'img/medaillon.webp';\nconst HERO=RACINE+'img/hero.webp';\n"
     else:
         media = "\nconst MEDAL='%s';\nconst HERO='%s';\n" % (data_uri(SRC + '/img/medaillon.webp', 'image/webp'), data_uri(SRC + '/img/hero.webp', 'image/webp'))
-    js = src + read(PARTS + '/p2b-parcours.js') + media + read(PARTS + '/v2-a.js') + read(PARTS + '/v2-c.js') + read(PARTS + '/v2-b.js')
+    js = src + read(PARTS + '/p2b-parcours.js') + media + read(PARTS + '/v2-a.js') + read(PARTS + '/v2-c.js') + read(PARTS + '/v2-r.js') + read(PARTS + '/v2-b.js')
     assert js.rstrip().endswith('</script>')
     js = js.rstrip()[:-len('</script>')].rstrip() + '\n'
     assert '<script' not in js and '</script' not in js
-    return typo(js)
+    js = typo(js)
+    # Le dictionnaire qui raccourcit les liens des fiches de relais est figé : s'il change d'un seul caractère, les liens déjà envoyés
+    # ne s'ouvrent plus. La forme qui compte est celle-ci, après le passage de typo(). La fabrication s'arrête si elle a bougé.
+    m = re.search(r"const RL_DICO='([^'\\]*)';", js)
+    if not m or hashlib.sha256(m.group(1).encode('utf-8')).hexdigest()[:16] != RL_DICO_EMPREINTE:
+        raise SystemExit("Le dictionnaire des liens de « Passer le relais » (RL_DICO) a changé : les liens déjà envoyés ne s'ouvriraient plus. "
+                         "Empreinte attendue " + RL_DICO_EMPREINTE + ", obtenue " + (hashlib.sha256(m.group(1).encode('utf-8')).hexdigest()[:16] if m else 'aucune') + ".")
+    return js
 
 
 def node_check(path):
@@ -131,6 +141,7 @@ def app_css():
 INLINE = ("try{var e=document.documentElement,h=location.hash==='#histoire',d=null,H=new Date().getHours();"
           "e.classList.add('h-'+((H<5||H>=22)?'nuit':H<11?'matin':H<18?'jour':'soir'));"
           "if(!/[?&](nouveau|reset|new)\\b/.test(location.search))d=JSON.parse(localStorage.getItem('" + CLE + "')||'null');"
+          "if(/^#f=/.test(location.hash))e.classList.add('rl-attend');"
           "if(h||(d&&d.onboarded))e.classList.add('returning');"
           "if(!(d&&d.fxOff)&&window.matchMedia&&!matchMedia('(prefers-reduced-motion: reduce)').matches)e.classList.add('fx');}catch(e){}")
 # Juste après l'accueil écrit à l'avance : les mots qui dépendent de l'heure (« Bonsoir », « ce soir ») sont mis avant le premier affichage.
@@ -281,6 +292,8 @@ def text_page(fname, h1, title, desc, body, v, band='center 45%'):
     assert '<!--HOST' not in body and '<!--/HOST' not in body
     # Les passages écrits pour la version d'essai (<!--ESSAI-->…<!--/ESSAI-->) ne sont gardés que là.
     body = re.sub(r'<!--ESSAI-->(.*?)<!--/ESSAI-->\n?', lambda m: m.group(1) if ESSAI else '', body, flags=re.S)
+    # À l'inverse, les passages <!--SITE-->…<!--/SITE--> décrivent le site habituel : la version d'essai ne les garde pas.
+    body = re.sub(r'<!--SITE-->(.*?)<!--/SITE-->\n?', lambda m: '' if ESSAI else m.group(1), body, flags=re.S)
     body = typo(body.replace('{{DATE_FR}}', cfg['updated_fr']).replace('{{CONTACT}}', contact_block()).replace('{{AUDIENCE_STATUS}}', audience_status()))
     assert '{{' not in body, re.findall(r'\{\{[^}]*\}\}', body)
     cur = lambda f: ' aria-current="page"' if f == fname else ''
@@ -384,6 +397,14 @@ def build_site():
             urls.append(APP_URL + 'fiches/' + f['slug'] + '/')
         if sans_image:
             print('  attention : pas d’image d’aperçu pour ' + ', '.join(sans_image))
+        # --- « Passer le relais » a son adresse : l'outil s'y présente, et une fiche envoyée s'y ouvre (elle voyage après le signe #).
+        #     La page à transmettre par une association ou un professionnel a la sienne aussi.
+        for cle, dossier, desc in (('relais', 'relais', 'Une page pour la personne qui garde votre enfant, écrite avec vos mots. Elle sait l’essentiel en 1 minute.'),
+                                   ('transmettre', 'transmettre', 'On vous demande souvent comment va votre enfant. Ici, on commence par vous. Un espace pour les parents d’une personne en situation de handicap.')):
+            if os.path.isdir(OUT + '/' + dossier):
+                shutil.rmtree(OUT + '/' + dossier)
+            write(OUT + '/' + dossier + '/index.html', ecran(tout[cle], 'pub-' + cle, APP_URL + dossier + '/', desc))
+            urls.append(APP_URL + dossier + '/')
 
     # --- pages de texte
     if MOVED:   # à l'ancienne adresse, les pages de texte ne font plus que renvoyer vers les nouvelles
@@ -396,7 +417,7 @@ def build_site():
                               'Ce que vous écrivez reste sur votre appareil. Il n’y a ni compte ni cookie, et la mesure d’audience anonyme ne se fait qu’avec votre accord.',
                               read(SRC + '/confidentialite.body.html'), v))
         urls.append(text_page('conditions.html', 'Conditions générales', 'Conditions générales de ' + NAME,
-                              'Les règles d’utilisation de l’espace, avec la version de test gratuite, ce que l’espace est et n’est pas, et les formules présentées à titre de démonstration.',
+                              'Les règles d’utilisation de l’espace, avec la version de test gratuite, ce que l’espace est et n’est pas, et les offres présentées à titre de démonstration.',
                               read(SRC + '/conditions.body.html'), v, band='left 55%'))
         if editeur_ok():
             urls.append(text_page('mentions-legales.html', 'Mentions légales', 'Mentions légales de ' + NAME,

@@ -47,7 +47,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   {
     const { ctx, page } = await ctxPage(browser);
     const raw = await (await ctx.request.get(APP)).text();
-    ok(/<h1><span class="salut"[^>]*>Bonjour\.<\/span> <span class="besoin">De quoi <span class="nb">auriez-vous<\/span> besoin<span[^>]*data-soir=" ce soir \?"[^>]*> aujourd’hui \?<\/span><\/span><\/h1>/.test(raw) && /class="herobg"[^>]*alt="[^"]{20,}"/.test(raw), 'accueil écrit dans le HTML (la question, ses variantes selon l’heure, et l’image avec texte alternatif)');
+    ok(/<p class="pour">Pour la mère ou le père d’une personne en situation de handicap<\/p><h1>On vous demande souvent comment va votre enfant\. <span class="ici">Ici, on commence par vous\.<\/span><\/h1><p class="besoin-l"><span class="salut"[^>]*>Bonjour\.<\/span> <span class="besoin">De quoi <span class="nb">auriez-vous<\/span> besoin<span[^>]*data-soir=" ce soir \?"[^>]*> aujourd’hui \?<\/span><\/span><\/p>/.test(raw) && /class="herobg"[^>]*alt="[^"]{20,}"/.test(raw), 'accueil écrit dans le HTML (le public, la phrase d’Antonio, la question et ses variantes selon l’heure, et l’image avec texte alternatif)');
     ok((raw.match(/class="porte[^"]*" data-act="porte"/g) || []).length === 3 && /Souffler 2 minutes/.test(raw) && /Déposer ce qui pèse/.test(raw) && /data-soir="Trouver une idée pour ce[\s\u00a0]soir"/.test(raw), 'les 3 portes sont écrites dans la page');
     ok(/<title>[^<]{20,70}<\/title>/.test(raw) && /<meta name="description" content="[^"]{80,180}">/.test(raw), 'titre et description meta');
     ok(new RegExp('<link rel="canonical" href="' + reEsc(PUBLIC_APP) + '">').test(raw), 'adresse canonique');
@@ -77,7 +77,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.click('.sosview .back'); await page.waitForTimeout(200); ok(await has(page, '.herofull') && (await store(page, 'pepe-v1')) === null, 'SOS : retour à l’accueil, rien n’a été créé');
     // aperçu des formules sans s’inscrire
     await page.click(A('peek-plans')); await page.waitForTimeout(100);
-    ok((await txt(page, 'h1')) === 'Les formules' && await has(page, 'table.cmp caption'), 'formules consultables depuis l’accueil');
+    ok((await txt(page, 'h1')) === 'Les 3 offres' && (await page.$$('.formules .formule')).length === 3 && (await page.$$('.formule.f-parcours .f-payer .f-mode')).length === 2, 'les 3 offres consultables depuis l’accueil, avec les 2 façons de payer Le parcours');
     await audit(page, 'formules-apercu');
     await page.click(A('back')); await page.waitForTimeout(200); ok(await has(page, '.herofull'), 'retour à l’accueil');
     await page.click(A('peek-about')); await page.waitForTimeout(200);
@@ -120,7 +120,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await audit(page, 'aujourdhui-nouveau');
     // qui parle ici
     await page.click('.dose ' + A('voix')); await page.waitForTimeout(150);
-    ok(await has(page, '.sheet #voix-t') && (await page.$$('.sheet .qui')).length === 3 && /Personne ne lit ce que vous écrivez/.test(await txt(page, '.sheet')) && /le mot affiché est un exemple/.test(await txt(page, '.sheet')), '« Qui vous parle ici ? » : ce que l’application choisit, ce qui vient d’Antonio, ce que montre « Avec Antonio »');
+    ok(await has(page, '.sheet #voix-t') && (await page.$$('.sheet .qui')).length === 3 && /Personne ne lit ce que vous écrivez/.test(await txt(page, '.sheet')) && /Aucune intelligence artificielle n’y intervient/.test(await txt(page, '.sheet')) && !/Avec Antonio/.test(await txt(page, '.sheet')), '« Qui vous parle ici ? » : ce que l’application choisit, ce qui vient d’Antonio, ce qui vient de la famille dans « Passer le relais »');
     await audit(page, 'qui-parle');
     await page.keyboard.press('Escape'); await page.waitForTimeout(100);
     // personnaliser : facultatif, rien de coché, gardé seulement avec « Enregistrer »
@@ -193,12 +193,12 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     // ============ 6. Boîte à outils ============
     await page.click('.tab' + A('go', '[data-view="kit"]')); await page.waitForTimeout(100);
     ok((await page.$$('.souvent .chip')).length === 4 && (await page.$eval('.souvent .chip', e => e.dataset.id)) === 'ado' && await page.$eval(A('age', '[data-v="all"]'), e => e.getAttribute('aria-pressed') === 'true'), '4 situations fréquentes à cette heure sont proposées, celle de l’âge donné (ado) en premier, et la liste reste entière');
-    ok((await page.$$('.sits .sit')).length === 22 && (await page.$$eval('.sits a.sit', L => L.every(a => /\/fiches\/[a-z0-9-]+\/$/.test(a.getAttribute('href'))))), '22 situations, chacune un vrai lien vers sa fiche');
+    ok((await page.$$('.sits .sit')).length === 23 && (await page.$$eval('.sits a.sit', L => L.every(a => /\/fiches\/[a-z0-9-]+\/$/.test(a.getAttribute('href'))))), '23 situations, chacune un vrai lien vers sa fiche');
     await audit(page, 'outils-situations');
     await page.click('.sits .sit'); await page.waitForTimeout(150);
     ok(/\/fiches\/la-crise\/$/.test(page.url()) && /^La crise, une fiche de/.test(await page.title()) && await has(page, A('partager')), 'la fiche a son adresse et son titre, et un bouton pour l’envoyer');
     await audit(page, 'situation'); await page.click(A('back')); await page.waitForTimeout(200);
-    ok(/\/fiches\/$/.test(page.url()) && (await page.$$('.sits .sit')).length === 22, 'retour à la liste, avec son adresse');
+    ok(/\/fiches\/$/.test(page.url()) && (await page.$$('.sits .sit')).length === 23, 'retour à la liste, avec son adresse');
     await page.click(A('kit', '[data-v="tools"]')); await audit(page, 'outils-minuteur');
     for (const t of ['ft', 'routine', 'abc', 'phr']) { await page.click(A('tool', `[data-v="${t}"]`)); await page.waitForTimeout(60); if (t === 'routine') await page.click(A('rdone', '[data-i="0"]')); await audit(page, 'outils-' + t);
       if (t === 'ft') { ok(/Par exemple, d’abord les dents, ensuite l’histoire\./.test(await txt(page, '#main')) && /Ce qu’il doit faire/.test(await txt(page, '.ftcard')), '« d’abord, ensuite » : expliqué avec un exemple, cases qui disent quoi y mettre');
@@ -234,25 +234,32 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     ok((await page.$$('main .btn.primary')).length === 0 && await has(page, '.bar .back') && await has(page, '.tabs'), 'histoire depuis « Moi » : pas de bouton d’inscription, barre et onglets présents');
     await page.evaluate(() => scrollTo(0, 0)); await audit(page, 'histoire'); await page.click(A('back')); await page.waitForTimeout(100);
     ok(/Camille|Moi/.test(await txt(page, 'h1')) && !/#histoire/.test(page.url()), 'retour à « Moi », adresse rétablie');
-    await page.click(A('go', '[data-view="plans"]')); await page.waitForTimeout(60); await audit(page, 'formules');
-    // choisir une formule ouvre la commande en démonstration, et c'est « paiement accepté » qui l'active
-    await page.click('.formule ' + A('commande', '[data-v="antonio"]')); await page.waitForTimeout(150);
-    ok(/Aucun montant réel n’est débité/.test(await txt(page, 'main')) && (await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).tier)) !== 'antonio', 'commande : une démonstration, et la formule ne change pas avant la confirmation');
+    await page.click(A('go', '[data-view="plans"]')); await page.waitForTimeout(60); await audit(page, 'offres');
+    // choisir une offre ouvre la commande en démonstration, et c'est « paiement accepté » qui l'ouvre
+    await page.click('.formule ' + A('commande', '[data-v="parcours"][data-m="six"]')); await page.waitForTimeout(150);
+    ok(/Aucun montant réel n’est débité/.test(await txt(page, 'main')) && (await page.$$('.cmd-mode .ech li')).length === 7 && (await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).tier)) === 'free', 'commande : une démonstration avec ses 6 échéances, et rien ne change avant la confirmation');
+    await audit(page, 'commande');
     await page.click(A('cmd', '[data-v="ok"]')); await page.waitForTimeout(150);
-    ok((await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).tier)) === 'antonio', 'commande acceptée (démonstration) : la formule Avec Antonio est active');
+    ok((await page.evaluate(() => { const d = JSON.parse(localStorage.getItem('pepe-v1')); return d.tier + ' ' + d.achats.parcours.m + ' ' + !!d.achats.relais; })) === 'parcours six false', 'commande acceptée (démonstration) : Le parcours est ouvert, en six fois, et « Passer le relais » reste à part');
+    await audit(page, 'commande-confirmee');
 
-    // ============ 9. Avec Antonio : démonstration honnête ============
-    await page.click('.tab' + A('go', '[data-view="today"]')); await page.waitForTimeout(100);
-    ok(/exemple/.test(await txt(page, '.letter')) && /Démonstration/.test(await txt(page, '.letter')), 'mot d’Antonio présenté comme un exemple');
-    await audit(page, 'aujourdhui-antonio');
-    await page.click('.tab' + A('go', '[data-view="me"]')); await page.click(A('go', '[data-view="antonio"]')); await page.waitForTimeout(80);
-    ok(/rien n’est transmis à Antonio/.test(await txt(page, '.demo-note')), 'avertissement de démonstration');
-    await page.fill('#qdraft', 'court'); await page.click(A('qsend')); ok(await has(page, '#err-qdraft'), 'question trop courte : message sous le champ');
-    await audit(page, 'antonio-erreur');
-    await page.fill('#qdraft', 'Il refuse d’aller à l’école le matin, je fais quoi ?'); await page.click(A('qsend')); await page.waitForTimeout(100);
-    ok(/non transmise/.test(await txt(page, '.qa .st')) && /pas transmise/.test(await txt(page, '.toast')), 'question gardée sur l’appareil, dite non transmise');
-    await audit(page, 'antonio');
-    await page.click('.letter'); await page.waitForTimeout(60); await audit(page, 'mot-exemple');
+    // ============ 9. « Passer le relais » : l'exemple, puis l'outil acheté seul ============
+    await page.click('.tab' + A('go', '[data-view="kit"]')); await page.waitForTimeout(100); await page.click(A('kit', '[data-v="tools"]')); await page.waitForTimeout(100);
+    ok(/Passer le relais/.test(await txt(page, '.rl-porte, main')), 'la boîte à outils ouvre sur « Passer le relais »');
+    await page.goto(APP + 'relais/'); await page.waitForTimeout(300);
+    ok((await txt(page, 'h1')) === 'Passer le relais' && await has(page, '.v-relais .offre') && /49 CHF/.test(await txt(page, '.v-relais .offre')), 'l’outil a son adresse, et son prix est dit dès l’accueil');
+    await audit(page, 'relais-accueil');
+    await page.click('[data-act="rl"][data-k="exemple"]'); await page.waitForTimeout(200);
+    ok(await has(page, '.v-relais .rl-fiche .rl-trois') && (await page.$$('.v-relais .rl-fiche .rl-trois li')).length === 3, 'l’exemple de fiche montre ses 3 repères avant de rien remplir');
+    await audit(page, 'relais-exemple');
+    await page.goto(APP + 'relais/'); await page.waitForTimeout(300);
+    await page.click('.v-relais .offre ' + A('commande', '[data-v="relais"]')); await page.waitForTimeout(150);
+    ok(/Total\s*49 CHF/.test(await txt(page, 'main')) && /Aucun montant réel n’est débité/.test(await txt(page, 'main')), 'commande de l’outil : 49 CHF une seule fois, en démonstration');
+    await page.click(A('cmd', '[data-v="ok"]')); await page.waitForTimeout(150);
+    ok((await page.evaluate(() => !!JSON.parse(localStorage.getItem('pepe-v1')).achats.relais)), 'commande acceptée (démonstration) : l’outil est ouvert');
+    await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(100);
+    ok(/Le parcours\s*1 mensualité sur 6/.test(await txt(page, '.mes-achats')) && /Passer le relais\s*acheté, 49 CHF/.test(await txt(page, '.mes-achats')), '« Mes achats » dit ce qui est acheté');
+    await audit(page, 'moi-achats');
 
     // ============ 10. Retour d’un habitué, puis remise à zéro ============
     await page.goto(APP); await page.waitForTimeout(250);
