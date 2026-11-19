@@ -1467,7 +1467,7 @@ function render(){
   /* « lum » : la lumière qui se lève une fois sur la photo. Si l'écran est redessiné entre-temps, elle reprend là où elle en était (--fx-age). */
   /* « v-… » dit quel écran est affiché, et « wide » marque les quatre onglets : la mise en page pour grand écran s'appuie dessus. */
   base+=' v-'+key+(TAB_VIEWS.includes(key)?' wide':'')+' h-'+moment();
-  heureClasse();
+  heureClasse();vueClasse(key);
   app.className=base+(entering?' enter':'')+(FX_OK&&age<4.8?' lum':'');
   if(FX_OK&&age<4.8&&app.style&&app.style.setProperty)app.style.setProperty('--fx-age',age.toFixed(2)+'s');
   app.removeAttribute('data-prerender');
@@ -1497,7 +1497,17 @@ function render(){
 /* ---------- « Mon histoire » : adresse partageable (#histoire, sur le site) et un seul moment d'animation ---------- */
 const STORY_HASH='#histoire';const TITLE0=SITE?TITRE_SITE:document.title;
 /* Le moment de la journée est aussi posé sur la page entière : c'est là que le script du haut de page l'écrit avant le premier affichage. */
-function heureClasse(){try{const c=document.documentElement.classList,m=moment();MOMENTS.forEach(k=>{c.toggle('h-'+k,k===m);});}catch(e){}}
+function heureClasse(){try{const c=document.documentElement.classList,m=moment();MOMENTS.forEach(k=>{c.toggle('h-'+k,k===m);});c.toggle('clair',m==='matin'||m==='jour');}catch(e){}}
+/* L'écran affiché est dit à la page entière, pour que le fond de la page suive : le papier du carnet sur la vitrine, la brume de l'étang
+   pendant la respiration. La couleur du haut du téléphone (barre d'état) suit aussi. */
+const VUES_FOND=['intro','souffle'];
+function vueClasse(key){
+  try{
+    const de=document.documentElement,c=de.classList;VUES_FOND.forEach(k=>{c.toggle('vue-'+k,k===key);});
+    const jour=c.contains('clair'),t=document.querySelector('meta[name="theme-color"]');
+    if(t)t.setAttribute('content',key==='intro'?(jour?'#F2ECDB':'#07240F'):key==='souffle'?(jour?'#0E2A1B':'#061A0D'):'#07240F');
+  }catch(e){}
+}
 function syncStory(entering){
   const on=state.view==='about';
   if(!on||!entering)return;
@@ -1557,6 +1567,31 @@ function updCount(t){
    Une page longue, en chapitres. Chaque chapitre montre un vrai morceau de l'espace, pris dans ses contenus :
    des permissions, la dose du jour, une réponse à un dépôt, un schéma du parcours, un extrait de « Ce que j'ai vécu »,
    des cartes-images, les formules. Rien n'y est inventé au nom d'Antonio. */
+/* Le sac de week-end, dessiné au trait. Il prend l'encre du moment (vert forêt le jour, vert pâle le soir), et ses pattes ont la couleur du fond. */
+const SAC='<svg class="sac" viewBox="0 0 460 300" aria-hidden="true">'+
+  '<ellipse class="sac-o" cx="208" cy="271" rx="178" ry="9"/><ellipse class="sac-o" cx="413" cy="291" rx="46" ry="5"/>'+
+  '<path d="M170 98C172 48 286 44 290 100" stroke-opacity=".5"/>'+
+  '<path class="sac-v" d="M52 150C52 118 70 104 100 100C160 92 240 92 300 100C330 104 348 118 348 150L352 232C353 254 340 266 318 266L82 266C60 266 47 254 48 232Z"/>'+
+  '<path d="M92 121C160 111 240 111 308 121" stroke-dasharray="2 8"/>'+
+  '<path d="M96 101C84 150 84 214 98 266"/><path d="M304 101C316 150 316 214 302 266"/>'+
+  '<path d="M134 150L134 98C134 34 266 34 266 98L266 150"/><path d="M152 150L152 100C152 56 248 56 248 100L248 150"/>'+
+  '<rect class="sac-p" x="125" y="140" width="36" height="42" rx="5"/><rect class="sac-p" x="239" y="140" width="36" height="42" rx="5"/>'+
+  '<path d="M134 150L152 172M152 150L134 172M248 150L266 172M266 150L248 172" stroke-width="1.8"/>'+
+  '<rect x="166" y="194" width="68" height="54" rx="6"/><path d="M166 211L234 211"/>'+
+  '<path d="M346 152C378 176 380 236 350 268"/><path d="M340 164C364 186 366 230 342 258" stroke-opacity=".6"/>'+
+  '<path d="M384 270C380 204 446 204 442 270"/><path d="M395 268C393 220 433 220 431 268" stroke-opacity=".6"/>'+
+  '<rect class="sac-p" x="372" y="250" width="23" height="40" rx="10"/><rect class="sac-p" x="431" y="250" width="23" height="40" rx="10"/></svg>';
+/* La table : le sac, et devant lui le début de la fiche d'exemple de Bastien (35 ans). Toute la feuille est un seul grand bouton :
+   le bouton du bas s'étend sur elle (voir .fb-voir::after), et il ouvre la fiche entière. En dessous, la fiche pratique qui va avec. */
+function tableHtml(){
+  const f=RL_EX.g,s=SITS.find(x=>x.id==='relais');
+  return '<div class="haut-table"><div class="nature">'+SAC+
+    '<article class="fiche-b" aria-label="Le début d’une fiche d’exemple"><span class="fb-ex">Exemple</span>'+
+    '<div class="fb-tete">'+LOGO+'<div><h2>'+esc(rlTitre(f))+'</h2><p>'+esc(rlSousTitre(f))+'</p></div></div>'+
+    '<h3>Si tu ne lis que trois choses</h3><ol>'+f.trois.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+
+    '<button type="button" class="fb-voir" data-act="rl" data-k="exemple" data-v="g">Voir la fiche '+esc(rlDe(f.qui))+' en entier</button></article></div>'+
+    (SITE&&s?'<a class="haut-sit" href="'+ficheUrl('relais')+'" data-act="sit" data-id="relais"><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span>'+I.chev+'</a>':'')+'</div>';
+}
 function introDoseLabel(){if(new Date().getDay()===0)return 'Dose spéciale du dimanche';let j='';try{j=new Date().toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});}catch(e){}return 'La dose du '+(j||fmtDate(todayIso()));}
 function viewIntro(){
   const m=moment();
@@ -1601,20 +1636,24 @@ function viewIntro(){
     ['Combien de temps cela demande-t-il ?','Vous pouvez venir 30 secondes pour lire la dose du jour, ou 2 minutes pour souffler. Si vous suivez le parcours, comptez 5 à 10 minutes par semaine pour lire une étape, puis un essai chez vous et quelques mots dans votre carnet. Si vous vous absentez, rien ne s’accumule, et votre étape vous attend.'],
     ['Est-ce que cela remplace un professionnel ?','Non. Cet espace vous soutient entre deux rendez-vous, et il ne remplace ni un médecin ni un thérapeute. En cas d’urgence, le bouton SOS vous donne les numéros à appeler.']
   ];
-  const faq='<div class="acc-faq-l">'+Q.map(q=>'<details class="faq"><summary><span>'+q[0]+'</span>'+I.chev+'</summary><p>'+q[1]+'</p></details>').join('')+'</div>';
+  /* Une espace insécable garde le point d'interrogation avec le dernier mot de la question. */
+  const faq='<div class="acc-faq-l">'+Q.map(q=>'<details class="faq"><summary><span>'+q[0].replace(/ \?$/,'\u00a0?')+'</span>'+I.chev+'</summary><p>'+q[1]+'</p></details>').join('')+'</div>';
   /* La fin : la phrase qu'Antonio adresse aux parents à l'étape 4, puis le bouton. */
   const ob=etape('objectifs');const cit=((typeof ob.vecu==='string'?ob.vecu:'').match(/Vous qui me lisez.*$/)||[''])[0];
-  /* Le premier écran : une question, et 3 réponses qui tiennent chacune en un geste. Le nom de l'espace et le SOS sont en haut. */
+  /* Le premier écran, « le carnet sur la table » : la phrase d'accueil en grand, une question, et 3 réponses qui tiennent chacune en un geste.
+     À côté, un sac de week-end et une fiche de relais d'exemple, que l'on ouvre d'un toucher. Le nom de l'espace et le SOS restent en haut de l'écran. */
   return '<main id="main" tabindex="-1" class="view intro" style="padding-top:0">'+
-    '<div class="herofull bleed" id="accueil"><img class="herobg" src="'+HERO+'" alt="Une goutte tombe sur un étang et dessine des cercles, dans la lumière d’une forêt." width="866" height="470" decoding="async" fetchpriority="high">'+
-    '<div class="hbar"><span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></div>'+
+    '<div class="hbar bleed"><span class="wordmark">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></span><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></div>'+
+    '<div class="seuil" id="accueil"><div class="haut-texte">'+
     '<p class="pour">Pour la mère ou le père d’une personne en situation de handicap</p>'+
     '<h1>On vous demande souvent comment va votre enfant. <span class="ici">Ici, on commence par vous.</span></h1>'+
-    '<p class="besoin-l"><span class="salut"'+heureAttr(SALUT)+'>'+SALUT[m]+'</span> <span class="besoin">'+besoinHtml(m,true)+'</span></p>'+
-    portes(true)+
+    '<p class="besoin-l"><span class="besoin">De quoi avez-vous besoin <span class="nb">maintenant ?</span></span></p>'+
+    portes(true)+'</div>'+
+    tableHtml()+
+    '<div class="haut-suite">'+
     (repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'">'+I.path+'<span>Reprendre mon parcours</span></button>':'<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>')+
     (membre?'<button type="button" class="voie" data-act="entrer" data-v="today">'+I.sun2+'<span>Ouvrir mon espace</span></button>':'')+
-    '<p class="rassure">'+(SITE?'Version de test, gratuite et sans compte. Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div>'+
+    '<p class="rassure">'+(SITE?'Version de test, gratuite et sans compte. Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div></div>'+
     sec('dose','Chaque matin, une dose de lumière','Voici celle d’aujourd’hui. Demain, une autre vous attendra.',dose)+
     sec('outils','Des pistes pour les jours difficiles','Vous y trouvez '+SITS.length+' situations de la vraie vie, avec des pistes à essayer dès ce soir. Chaque fiche se lit en 2 minutes'+(SITE?' et s’envoie à quelqu’un qui compte pour vous.':'.'),scenes+pictos)+
     sec('depot','Un endroit pour déposer ce qui pèse','Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
@@ -1624,7 +1663,7 @@ function viewIntro(){
     '<section class="voice" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à 10 ans, je suis travailleur social depuis mes 19 ans et je suis père de 3 enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><b>Antonio Company</b><button type="button" class="btn small" data-act="peek-about">Lire mon histoire</button></div></section>'+
     sec('formules','Vous commencez gratuitement','Ensuite, vous payez une fois ce qui vous sert, sans abonnement. Voici les 3 offres, avec les prix prévus pour la Suisse. Dans cette version d’essai, aucun montant réel n’est débité.',plans)+
     sec('faq','Vos questions','',faq)+
-    '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+HERO+'" alt="" width="866" height="470" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
+    '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+PHOTO_DIR+'eau-g.webp" alt="" width="1120" height="840" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
     '<p class="hint" style="text-align:center">'+priv+'</p>'+
     (ESSAI?'<p class="hint essai-l" style="text-align:center">Vous êtes sur une version d’essai, à une adresse à part. Le site habituel ne change pas.</p>':'')+
     '<div class="cta-flot">'+cta(false)+'</div></main>'+
@@ -1647,7 +1686,7 @@ function introLive(){
   const dp=m.querySelector('.acc-dose .dose p'),dl=m.querySelector('.acc-dose .dose .label');
   if(dp){const tx=curatedDose();if(dp.textContent!==tx)dp.textContent=tx;}
   if(dl){const lb=introDoseLabel();if(dl.textContent!==lb)dl.textContent=lb;}
-  const fl=m.querySelector('.cta-flot'),haut=m.querySelector('.herofull'),bas=m.querySelector('.acc-fin');
+  const fl=m.querySelector('.cta-flot'),haut=m.querySelector('.seuil'),bas=m.querySelector('.acc-fin');
   if(!fl||!haut||!bas||!('IntersectionObserver' in window))return;
   const vu=new Map();
   introIO=new IntersectionObserver(es=>{es.forEach(e=>vu.set(e.target,e.isIntersecting));if(vu.has(haut)&&vu.has(bas))fl.classList.toggle('on',!vu.get(haut)&&!vu.get(bas));},{threshold:0});
@@ -2377,13 +2416,25 @@ function souffleSuite(now){
 }
 /* La page a passé un moment à l'arrière-plan : tout le minutage est décalé d'autant, et la respiration reprend là où elle en était. */
 function souffleDecale(dt){const s=state.souffle;s.t0+=dt;if(s.fin)s.fin+=dt;(s.seq||[]).forEach(p=>{p.a+=dt;});}
-/* Où est la goutte sur la photo affichée ? Le cercle se pose autour du point où elle touche l'eau. */
+/* La photo de l'étang (une eau claire au pied des arbres, 1120 × 840). Le rivage est à un peu plus de la moitié de la hauteur :
+   les cercles se posent sur l'eau, au milieu, à 71 % de la hauteur de la photo, quel que soit le recadrage de l'écran. */
+const ETANG={w:1120,h:840,x:.5,y:.71};
 function soufflePose(){
-  const host=document.querySelector('.souffle .band');const r=document.querySelector('.souffle .ronds');if(!host||!r||!r.style)return;
-  const g=eauGeo(host);if(!g)return;
-  const x=(434-g.ox)*g.k,y=(259-g.oy)*g.k;
-  const w=Math.max(150,Math.min(g.w*.92,470*g.k*1.25));
-  r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.27)+'px';
+  const host=document.querySelector('.souffle .etang');const r=document.querySelector('.souffle .ronds');if(!host||!r||!r.style)return;
+  const im=host.querySelector('.etang-photo');const b=host.getBoundingClientRect();if(!im||b.width<40||b.height<40)return;
+  let px=.5,py=.5;
+  try{const m=String(getComputedStyle(im).objectPosition).match(/(-?[\d.]+)%\s+(-?[\d.]+)%/);if(m){px=m[1]/100;py=m[2]/100;}}catch(e){}
+  const k=Math.max(b.width/ETANG.w,b.height/ETANG.h),dw=ETANG.w*k,dh=ETANG.h*k;
+  /* Quand la photo est basse (le choix d'une respiration est ouvert), les cercles remontent un peu pour rester sur l'eau visible. */
+  const x=(b.width-dw)*px+dw*ETANG.x,y=Math.min((b.height-dh)*py+dh*ETANG.y,b.height*.6);
+  /* Le plus grand cercle reste dans l'écran, et il ne remonte pas jusqu'au rivage. */
+  const w=Math.max(170,Math.min(b.width*.88,dh*.9,b.height*1.5,560));
+  r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.25)+'px';
+}
+/* À chaque expiration, un cercle de plus part du centre et s'éloigne sur l'eau, puis s'efface. */
+function souffleOnde(){
+  const b=document.querySelector('.souffle .ronds b');if(!b||!b.classList)return;
+  b.classList.remove('onde');void b.offsetWidth;b.classList.add('onde');
 }
 const SOUFFLE_MOT={avant:'Installez-vous',in:'Inspirez',out:'Expirez'};
 /* La ligne sous le grand mot. En silence, elle dit comment respirer. Avec le son, elle donne la clé d'écoute pendant les premières respirations,
@@ -2419,8 +2470,8 @@ function souffleFrame(){
   if(i!==s.ix||ph!==s.ph||tr!==s.tr){
     const neuf=i!==s.ix||ph!==s.ph;
     s.ix=i;s.ph=ph;s.cyc=cyc;s.tr=tr;souffleMots();
-    /* À chaque expiration, une onde part de la goutte et s'éloigne sur l'étang. */
-    if(neuf&&ph==='out'&&fxOn())eauReady(()=>{if(state.view!=='souffle'||state.souffle.k!=='cours')return;const host=document.querySelector('.souffle .band');if(host&&eauHost(host)){eauAdd(434,259,.75,0);eauAdd(434,259,.4,.6);}});
+    /* À chaque expiration, une onde part du centre des cercles et s'éloigne sur l'étang. */
+    if(neuf&&ph==='out'&&fxOn())souffleOnde();
   }
   const r=document.querySelector('.souffle .ronds');
   if(r&&r.style&&fxOn())r.style.setProperty('--s',(.36+.64*e).toFixed(3));
@@ -2475,7 +2526,8 @@ function viewSouffle(){
   else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1>'+
     (choix?respChoixHtml():'<p class="aide">'+respPret()+'</p><div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>'+changer);
   return '<main id="main" tabindex="-1" class="view souffle s-'+k+(choix?' s-choix':'')+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
-    '<div class="band bleed" style="background-image:url('+HERO+')"><span class="ronds" aria-hidden="true"><i></i><i></i></span></div>'+
+    /* L'étang et ses cercles : le plus grand suit le souffle, il s'ouvre quand on inspire et se referme quand on expire. */
+    '<div class="etang bleed"><img class="etang-photo" src="'+PHOTO_DIR+'eau-g.webp" alt="" width="1120" height="840" decoding="async"><span class="ronds" aria-hidden="true"><i></i><i></i><i></i><b></b></span></div>'+
     '<div class="resp">'+bas+'</div></main>';
 }
 
@@ -2804,7 +2856,7 @@ const RL_LIM={l:200,nom:40,chez:60,quand:80,tel:40,lignes:5,moi:4,retour:600,dem
 /* Les rubriques de la fiche : la clé, le titre sans prénom, le titre avec prénom, puis les phrases modèles.
    Une phrase en 2 versions s'adresse au proche : la première le tutoie, la seconde le vouvoie. {P} est le nom choisi par la famille. */
 const RL_SEC=[
-  ['aide','Ce qui aide','Ce qui aide {P}',['Un signal 5 minutes avant de changer d’activité aide beaucoup {P}.','Une seule consigne à la fois, avec des mots simples.','Le programme de la journée, dit le matin en 3 étapes au plus.','Un endroit calme où se retirer quand il y a du bruit ou du monde.',['Du temps pour répondre. Compte jusqu’à 10 dans ta tête avant de répéter.','Du temps pour répondre. Comptez jusqu’à 10 dans votre tête avant de répéter.'],'Son objet du moment reste à portée de main. Il s’agit de']],
+  ['aide','Ce qui aide','Ce qui aide {P}',['Dire « encore 5 minutes » avant de changer d’activité aide beaucoup {P}.','Une seule consigne à la fois, avec des mots simples.','Le programme de la journée, dit le matin en 3 étapes au plus.','Un endroit calme où se retirer quand il y a du bruit ou du monde.',['Du temps pour répondre. Compte jusqu’à 10 dans ta tête avant de répéter.','Du temps pour répondre. Comptez jusqu’à 10 dans votre tête avant de répéter.'],'Son objet du moment reste à portée de main. Il s’agit de']],
   ['repas','Les repas','Les repas',['{Pm} mange volontiers','Proposer un aliment suffit. Insister pour goûter complique le repas.','Les aliments se servent séparés dans l’assiette.','{Pm} a besoin d’aide pour couper et se sert pour le reste.','À table, 20 minutes suffisent. Ensuite, {P} peut se lever.']],
   ['nuit','Le soir et la nuit','Le soir et la nuit',['Le coucher se fait vers 21 heures, toujours dans le même ordre.','Une veilleuse reste allumée et la porte reste entrouverte.','En cas de réveil, une phrase courte suffit, par exemple « C’est la nuit, je suis là ».','Les écrans s’arrêtent 1 heure avant le coucher.','Le matin, {P} a besoin d’un moment de calme avant de parler.']],
   ['monte','Si la tension monte','Si la tension monte',['Les premiers signes sont','Parler peu, baisser la voix et laisser de la place aide {P} à redescendre.','Mieux vaut prévenir {P} avant de s’approcher ou de toucher.','Ce qui apaise le plus, c’est','Quand c’est passé, un verre d’eau suffit. Il n’y a pas besoin d’en reparler.',['Tu peux m’appeler à tout moment, cela ne me dérange jamais.','Vous pouvez m’appeler à tout moment, cela ne me dérange jamais.']]],
@@ -3146,10 +3198,11 @@ function rlPorteHtml(){
   return '<button type="button" class="sit rl-porte" data-act="rl" data-k="ouvre"><span class="e">'+I.hand+'</span><span class="tx"><b>Passer le relais</b><span>'+(attente?'Le relais est passé ? Une seule question vous attend.':F.length?'Vos fiches, et le prochain relais en quelques gestes':'Une page pour la personne qui garde votre enfant')+'</span></span><span class="chev">'+I.chev+'</span></button>';
 }
 /* Sur la vitrine : les 3 repères d'une fiche d'exemple, pour montrer le résultat avant tout. */
+/* Plus bas dans la vitrine, l'exemple est celui de Noé (5 ans) : la fiche de Bastien (35 ans) est déjà posée sur la table, tout en haut. */
 function rlVitrineHtml(){
-  const f=RL_EX.g;
+  const f=RL_EX.e;
   return '<div class="rl-mini" aria-label="Le début d’une fiche d’exemple"><span class="label">'+esc(rlTitre(f))+', '+esc(f.quand)+'</span><b>Si tu ne lis que trois choses</b><ol>'+f.trois.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></div>'+
-    '<div class="acc-relais-b"><button type="button" class="btn" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button><span class="prix">49 CHF, une seule fois</span></div>';
+    '<div class="acc-relais-b"><button type="button" class="btn" data-act="rl" data-k="exemple" data-v="e">'+I.eye+'Voir un exemple de fiche terminée</button><span class="prix">49 CHF, une seule fois</span></div>';
 }
 
 /* ---------- les gestes ---------- */

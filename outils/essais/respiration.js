@@ -113,8 +113,8 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
   const silence = async (page, ms = 3000) => { const t = Date.now(); let s = await son(page); while (!(s.actives === 0 && s.rms < 0.0005) && Date.now() - t < ms) { await page.waitForTimeout(100); s = await son(page); }
     return Object.assign({}, s, { muet: s.actives === 0 && s.rms < 0.0005, delai: Date.now() - t }); };
   const dit = q => '(silence après ' + q.delai + ' ms, ' + q.actives + ' source, signal ' + q.rms.toFixed(5) + ')';
-  const B = '.son-souffle', PORTE = '.herofull ' + A('porte', '[data-v="souffle"]');
-  const entre = async page => { await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(350); await page.click(PORTE); await page.waitForSelector('main.souffle.s-cours'); };
+  const B = '.son-souffle', PORTE = '.seuil ' + A('porte', '[data-v="souffle"]');
+  const entre = async page => { await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(350); await page.click(PORTE); await page.waitForSelector('main.souffle.s-cours'); };
   const mots = page => page.evaluate(() => window.__son.mots.filter(x => x.m === 'Inspirez' || x.m === 'Expirez' || x.m === 'Voilà.'));
   // Attendre des mouvements entiers : le résultat donne, pour chacun, « in » ou « out », son début et sa durée, relevés à l'écran.
   const mouvements = async (page, combien, ms = 90000) => { const i0 = (await mots(page)).length; const t = Date.now(); let M = [];
@@ -127,7 +127,7 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
 
   // Ce navigateur d'essai sait-il lire les fichiers, et a-t-il une sortie audio qui tourne ? Au passage : où commence la première note du fichier, une fois décodé ?
   let lit = true, pourquoi = '', AV = 0.03;
-  { const { ctx, page } = await ouvre(ORDI); await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte');
+  { const { ctx, page } = await ouvre(ORDI); await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte');
     await page.evaluate(base => { window.__sondage = 'en cours'; document.body.addEventListener('click', async () => { const C = window.AudioContext || window.webkitAudioContext; if (!C) { window.__sondage = 'pas de son calculé dans la page'; return; }
       try { const c = new C(); if (c.resume) c.resume().catch(() => { }); const r = await fetch(base + 'son/notes.mp3'); if (!r.ok) { window.__sondage = 'fichier introuvable'; return; } const ab = await r.arrayBuffer();
         const buf = await new Promise((ok, ko) => { const q = c.decodeAudioData(ab, ok, ko); if (q && q.then) q.then(ok, ko); }); if (!(buf.duration > 50)) { window.__sondage = 'fichier illisible'; return; }
@@ -354,7 +354,7 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       const s10 = await silence(page);
       ok(s10.muet && s10.prevues === 0 && !(await page.$('main.souffle')) && (await page.$$('.son-b')).length === 0, P('4. le SOS coupe la musique, et l’écran du SOS est silencieux ' + dit(s10)));
       await page.goBack(); await page.waitForTimeout(700);
-      if (await page.$('main.souffle.s-pret')) { await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); } else if (!(await page.$('main.souffle.s-cours'))) { await page.goto(APP + '#accueil'); await page.waitForSelector('.herofull .porte'); await page.click(PORTE); await page.waitForSelector('main.souffle.s-cours'); }
+      if (await page.$('main.souffle.s-pret')) { await page.click(A('souffle-go')); await page.waitForSelector('main.souffle.s-cours'); } else if (!(await page.$('main.souffle.s-cours'))) { await page.goto(APP + '#accueil'); await page.waitForSelector('.seuil .porte'); await page.click(PORTE); await page.waitForSelector('main.souffle.s-cours'); }
       await page.waitForTimeout(300); await page.click(B); await attendEtat(page, B, 'on'); await page.waitForTimeout(400);
       await page.goBack(); await page.waitForTimeout(300);
       const s11 = await silence(page);

@@ -103,7 +103,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
 
   // Ce navigateur d'essai sait-il lire le morceau, et a-t-il une sortie audio qui tourne ? (sur une machine sans carte son, ce n'est pas toujours le cas)
   let lit = true, pourquoi = '';
-  { const { ctx, page } = await ouvre(FORMATS[1][1]); await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte');
+  { const { ctx, page } = await ouvre(FORMATS[1][1]); await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte');
     await page.evaluate(base => { window.__sondage = 'en cours'; document.body.addEventListener('click', async () => { const C = window.AudioContext || window.webkitAudioContext; if (!C) { window.__sondage = 'pas de son calculé dans la page'; return; }
       try { const c = new C(); if (c.resume) c.resume().catch(() => { }); const r = await fetch(base + 'son/instant.mp3'); if (!r.ok) { window.__sondage = 'morceau introuvable'; return; } const ab = await r.arrayBuffer();
         const buf = await new Promise((ok, ko) => { const q = c.decodeAudioData(ab, ok, ko); if (q && q.then) q.then(ok, ko); }); if (!(buf.duration > 30)) { window.__sondage = 'morceau illisible'; return; }
@@ -123,11 +123,11 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     // =====================================================================================================================
     {
       const { ctx, page, errs, sons } = await ouvre(fmt);
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(400);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(400);
       ok((await page.$$('.son-b')).length === 0 && sons.length === 0, P('1. la vitrine est silencieuse : pas de bouton de son, aucun morceau chargé'));
-      const porte3 = await page.evaluate(() => { const p = document.querySelector('.herofull .porte[data-v="piste"]'); return [p.querySelector('b').textContent, p.querySelector('.tx span').textContent]; });
+      const porte3 = await page.evaluate(() => { const p = document.querySelector('.seuil .porte[data-v="piste"]'); return [p.querySelector('b').textContent, p.querySelector('.tx span').textContent]; });
       ok(net(porte3[0]) === 'Trouver une idée pour ce soir' && net(porte3[1]) === 'Vous choisissez ce que vous vivez, avec un enfant, un ado ou un adulte.', P('3. la troisième entrée : « Trouver une idée pour ce soir », pour un enfant, un ado ou un adulte ' + JSON.stringify(porte3)));
-      await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]'));
+      await porteSouffle(page, '.seuil ' + A('porte', '[data-v="souffle"]'));
       await page.waitForTimeout(2600);
       const b0 = await bouton(page, B); const s0 = await son(page);
       ok(b0 && b0.etat === 'off' && b0.texte === 'Écouter l’étang', P('1. l’exercice commence en silence, avec la commande « Écouter l’étang » ' + JSON.stringify(b0)));
@@ -151,7 +151,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     // =====================================================================================================================
     {
       const { ctx, page, errs, sons } = await ouvre(fmt);
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(300);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(300);
       await page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click());   // « Commencer gratuitement », plus bas dans la vitrine
       await page.waitForSelector('.dose ' + D); await page.waitForTimeout(600);
       const d0 = await page.evaluate(() => { const dose = document.querySelector('.dose'), p = dose.querySelector('p'), b = dose.querySelector('.son-dose'); return { apres: (p.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) > 0, texte: b.textContent.replace(/\s+/g, ' ').trim(), h: Math.round(b.getBoundingClientRect().height) }; });
@@ -187,7 +187,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       // les écrans qui doivent rester silencieux
       const muets = [];
       await page.click(accueilSel); await page.waitForSelector('main.intro'); await page.waitForTimeout(400); muets.push(['vitrine', (await page.$$('.son-b')).length]);
-      await page.click('.herofull ' + A('porte', '[data-v="deposer"]')); await page.waitForSelector('main.deposer'); await page.waitForTimeout(300); muets.push(['dépôt', (await page.$$('.son-b')).length]);
+      await page.click('.seuil ' + A('porte', '[data-v="deposer"]')); await page.waitForSelector('main.deposer'); await page.waitForTimeout(300); muets.push(['dépôt', (await page.$$('.son-b')).length]);
       await page.click(A('go', '[data-view="sos"]')); await page.waitForTimeout(500); muets.push(['SOS', (await page.$$('.son-b')).length]);
       await page.goto(APP + 'fiches/le-coucher-et-la-nuit/'); await page.waitForSelector('main.fiche'); await page.waitForTimeout(300); muets.push(['fiche', (await page.$$('.son-b')).length]);
       ok(muets.every(m => m[1] === 0) && (await son(page)).actives === 0, P('4. la vitrine, le dépôt, le SOS et les fiches restent silencieux ' + JSON.stringify(muets)));
@@ -200,19 +200,19 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     // =====================================================================================================================
     {
       const { ctx, page, errs, onglet } = await ouvre(fmt);
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(300);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(300);
       // depuis la vitrine : Souffler, puis « Retour » ramène à la vitrine
-      await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(400);
+      await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(400);
       await page.click('.souffle .bar .back'); await page.waitForTimeout(900);
-      ok(!!(await page.$('main.intro .herofull')) && page.url() === APP + '#accueil' && (await page.$$('.herofull .porte')).length === 3, P('5. « Souffler » ouvert depuis la vitrine : « Retour » ramène à la vitrine (' + page.url().replace(ORIGIN, '') + ')'));
-      // la vitrine entière est là : l'étang, les 3 entrées, l'histoire d'Antonio, la présentation du parcours
-      const vit = await page.evaluate(() => ({ etang: !!document.querySelector('.herofull .herobg'), portes: document.querySelectorAll('.herofull .porte').length, histoire: !!document.querySelector('.voice [data-act="peek-about"]'), parcours: !!document.querySelector('.acc-parcours .acc-mois'), mois: document.querySelectorAll('.acc-parcours .mois').length, liens: [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()) }));
-      ok(vit.etang && vit.portes === 3 && vit.histoire && vit.parcours && vit.mois === 6, P('5. la vitrine est complète : l’étang, les 3 entrées, l’histoire d’Antonio et les 6 mois du parcours ' + JSON.stringify(vit)));
+      ok(!!(await page.$('main.intro .seuil')) && page.url() === APP + '#accueil' && (await page.$$('.seuil .porte')).length === 3, P('5. « Souffler » ouvert depuis la vitrine : « Retour » ramène à la vitrine (' + page.url().replace(ORIGIN, '') + ')'));
+      // la vitrine entière est là : la table du carnet, les 3 entrées, l'histoire d'Antonio, la présentation du parcours
+      const vit = await page.evaluate(() => ({ etang: !!document.querySelector('.seuil .fiche-b .fb-voir') && !!document.querySelector('.seuil .nature .sac'), portes: document.querySelectorAll('.seuil .porte').length, histoire: !!document.querySelector('.voice [data-act="peek-about"]'), parcours: !!document.querySelector('.acc-parcours .acc-mois'), mois: document.querySelectorAll('.acc-parcours .mois').length, liens: [...document.querySelectorAll('.seuil .voie')].map(e => e.textContent.trim()) }));
+      ok(vit.etang && vit.portes === 3 && vit.histoire && vit.parcours && vit.mois === 6, P('5. la vitrine est complète : la table (le sac et la fiche de Bastien), les 3 entrées, l’histoire d’Antonio et les 6 mois du parcours ' + JSON.stringify(vit)));
       // la mise en forme de la vitrine n'a pas bougé : ses phrases d'introduction restent du texte courant, sans cadre ni fond
       // (le lien « Accueil » a porté un temps le même nom de classe qu'elles, et leur donnait son cadre)
       const intro = await page.evaluate(() => [...document.querySelectorAll('.view.intro .acc-h > p.acc-l')].map(p => { const c = getComputedStyle(p); return [c.display, c.borderTopWidth, c.backgroundColor, Math.round(parseFloat(c.lineHeight) / parseFloat(c.fontSize) * 100) / 100, c.fontWeight, c.borderRadius]; }));
       ok(intro.length >= 5 && intro.every(x => x[0] === 'block' && x[1] === '0px' && /rgba\(0, 0, 0, 0\)|transparent/.test(x[2]) && x[3] >= 1.4 && +x[4] < 700 && x[5] === '0px'), P('5. les phrases d’introduction de la vitrine restent du texte courant, sans cadre (' + intro.length + ' phrases) ' + JSON.stringify(intro[0])));
-      await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForSelector('.tabs'); await page.waitForTimeout(600);
+      await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await page.waitForSelector('.tabs'); await page.waitForTimeout(600);
       ok((await h1(page)) === 'Bonsoir.', P('5. « Ouvrir mon espace » mène à « Aujourd’hui »'));
       // depuis « Aujourd'hui » : Souffler, puis « Retour » ramène à « Aujourd'hui », par le bouton comme par la flèche du navigateur
       await page.click('.portes.mini ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(400);
@@ -228,7 +228,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
         ok(menu.length === 3 && menu[0][0] === 'Accueil' && menu[0].slice(1).join() === menu[1].slice(1).join(), P('5. dans le menu de l’ordinateur, « Accueil » a la même forme que les autres entrées ' + JSON.stringify(menu.slice(0, 2)))); }
       const logoSel = tel ? '.bar a.wordmark' : '.tabs a.rail-brand';
       await page.click(logoSel); await page.waitForSelector('main.intro'); await page.waitForTimeout(600);
-      ok(page.url() === APP + '#accueil' && !!(await page.$('.herofull .porte')), P('5. le logo mène à la vitrine'));
+      ok(page.url() === APP + '#accueil' && !!(await page.$('.seuil .porte')), P('5. le logo mène à la vitrine'));
       // (on attend le titre plutôt qu'un délai fixe : sur une machine occupée, le retour en arrière peut prendre plus d'une seconde)
       await page.goBack(); { const t = Date.now(); while ((await h1(page)) !== 'Bonsoir.' && Date.now() - t < 4000) await page.waitForTimeout(150); } await page.waitForTimeout(300);
       ok((await h1(page)) === 'Bonsoir.', P('5. et « Retour » ramène à « Aujourd’hui »'));
@@ -244,10 +244,10 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       const lien2 = await page.evaluate(sel => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return { vu: r.width > 0 && r.top >= 0 && r.bottom <= innerHeight, texte: e.textContent.trim() }; }, accueilSel);
       ok(lien2 && lien2.vu && lien2.texte === 'Accueil', P('5. dans une étape aussi, « Accueil » est à portée de main ' + JSON.stringify(lien2)));
       await page.click(accueilSel); await page.waitForSelector('main.intro'); await page.waitForTimeout(700);
-      const v2 = await page.evaluate(() => [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()));
+      const v2 = await page.evaluate(() => [...document.querySelectorAll('.seuil .voie')].map(e => e.textContent.trim()));
       ok(page.url() === APP + '#accueil' && v2.join('|') === 'Reprendre mon parcours|Ouvrir mon espace', P('5. « Accueil » depuis l’étape : la vitrine affiche « Reprendre mon parcours » ' + JSON.stringify(v2)));
       ok(await page.evaluate(() => scrollY === 0), P('5. la vitrine s’ouvre en haut de page'));
-      await page.click('.herofull .voie' + A('step')); await page.waitForSelector('#note'); await page.waitForTimeout(700);
+      await page.click('.seuil .voie' + A('step')); await page.waitForSelector('#note'); await page.waitForTimeout(700);
       const apres = await notes(page);
       ok((await h1(page)) === titre && (await page.inputValue('#note')) === 'Ce soir, il s’est endormi plus vite. Je note ce qui a aidé.', P('5. « Reprendre mon parcours » ramène à la bonne étape, avec la note écrite (' + titre + ')'));
       ok(JSON.stringify(avant) === JSON.stringify(apres) && Object.keys(apres.seen).length === 1 && Object.keys(apres.notes).length === 1 && (!fait || Object.values(apres.steps).filter(Boolean).length === 1), P('5. les notes et la progression sont intactes (' + Object.keys(apres.seen).length + ' étape ouverte, ' + Object.keys(apres.notes).length + ' note, ' + Object.values(apres.steps).filter(Boolean).length + ' étape faite)'));
@@ -259,7 +259,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       const p2 = await onglet(); await p2.goto(APP, { waitUntil: 'domcontentloaded' }); await p2.waitForSelector('.tabs'); await p2.waitForTimeout(500);
       ok((await h1(p2)) === 'Bonsoir.' && !!(await p2.$('.reprendre .step.semaine')), P('5. rouvrir le lien du site : le parent retrouve « Aujourd’hui » et son étape'));
       await p2.goto(APP + '#accueil'); await p2.waitForTimeout(300); await p2.reload({ waitUntil: 'domcontentloaded' }); await p2.waitForSelector('main.intro'); await p2.waitForTimeout(500);
-      ok(!!(await p2.$('.herofull .voie' + A('step'))), P('5. l’adresse de l’accueil ouvre la vitrine, et la page rechargée la garde'));
+      ok(!!(await p2.$('.seuil .voie' + A('step'))), P('5. l’adresse de l’accueil ouvre la vitrine, et la page rechargée la garde'));
       await p2.close();
       ok(errs.length === 0, P('5. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
@@ -271,8 +271,8 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     // =====================================================================================================================
     if (NAV === 'chromium') {
       const { ctx, page, errs, sons } = await ouvre(fmt, { sansWebAudio: true });
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(300);
-      await porteSouffle(page, '.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(1500);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(300);
+      await porteSouffle(page, '.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(1500);
       ok(!(await page.$(B)) && (await attendMot(page, 'Inspirez')) === 'Inspirez', P('6. sans son calculé dans la page, la respiration ne propose pas de musique et guide en silence'));
       await page.click('.souffle .bar .back'); await page.waitForSelector('main.intro'); await page.waitForTimeout(300);
       await page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click()); await page.waitForSelector('.dose ' + D); await page.waitForTimeout(500);
@@ -295,8 +295,8 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
     {
       const { ctx, page } = await ouvre(fmt);
       await ctx.route('**/son/*', r => r.abort());
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(300);
-      await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(1800);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(300);
+      await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); await page.waitForTimeout(1800);
       await page.click(B); await page.waitForTimeout(1800);
       const b = await bouton(page, B); const t = net(await page.textContent('.toast').catch(() => ''));
       ok(b && b.etat === 'off' && t === 'Le son n’a pas pu se charger. Tout le reste fonctionne en silence.' && !!(await page.$('main.souffle.s-cours')), P('7. morceau introuvable : l’espace le dit, le bouton revient à « Écouter l’étang » et la respiration continue ' + JSON.stringify([b && b.etat, t])));
