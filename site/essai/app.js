@@ -2881,16 +2881,16 @@ function rlMesure(f0){
   finally{try{if(b&&b.parentNode)b.parentNode.removeChild(b);}catch(e){}}
 }
 function rlFicheHtml(f0,o){
-  o=o||{};const f=rlPropre(f0),tu=f.tu,P=f.qui;const H=o.h1?'h1':'h2';
+  o=o||{};const f=rlPropre(f0),tu=f.tu,P=f.qui;const H=o.h1?'h1':'h2';const T=o.h1?['<h2 class="rl-h">','</h2>']:['<h3>','</h3>'];
   const dens=o.brut?null:rlMesure(f0);if(dens&&o.mesure)o.mesure.d=dens.d,o.mesure.ok=dens.ok;
   const li=a=>a.map(x=>'<li>'+esc(x)+'</li>').join('');
-  const secs=RL_SEC.map(S=>{const L=f.s[S[0]];return L?'<section class="rl-s"><h3>'+esc(P?S[2].replace('{P}',P):S[1])+'</h3><ul>'+li(L)+'</ul></section>':'';}).join('');
+  const secs=RL_SEC.map(S=>{const L=f.s[S[0]];return L?'<section class="rl-s">'+T[0]+esc(P?S[2].replace('{P}',P):S[1])+T[1]+'<ul>'+li(L)+'</ul></section>':'';}).join('');
   return '<article class="rl-fiche'+(o.cls?' '+o.cls:'')+(dens?' rl-d'+dens.d:'')+'">'+
     '<header class="rl-tete"><span class="rl-goutte" aria-hidden="true">'+LOGO+'</span><div><'+H+' class="rl-t">'+esc(rlTitre(f))+'</'+H+'>'+(rlSousTitre(f)?'<p class="rl-st">'+esc(rlSousTitre(f))+'</p>':'')+'</div></header>'+
-    '<section class="rl-trois"><h3>'+(tu?'Si tu ne lis que trois choses':'Si vous ne lisez que trois choses')+'</h3>'+(f.trois.length?'<ol>'+li(f.trois)+'</ol>':'<p class="rl-vide">Vos 3 repères viendront ici.</p>')+'</section>'+
-    (f.moi.length?'<section class="rl-moi"><h3>Ce que je souhaite dire moi-même</h3><ul>'+li(f.moi)+'</ul>'+(P?'<p class="rl-signe">'+esc(rlMaj(P))+'</p>':'')+'</section>':'')+
+    '<section class="rl-trois">'+T[0]+(tu?'Si tu ne lis que trois choses':'Si vous ne lisez que trois choses')+T[1]+(f.trois.length?'<ol>'+li(f.trois)+'</ol>':'<p class="rl-vide">Vos 3 repères viendront ici.</p>')+'</section>'+
+    (f.moi.length?'<section class="rl-moi">'+T[0]+'Ce que je souhaite dire moi-même'+T[1]+'<ul>'+li(f.moi)+'</ul>'+(P?'<p class="rl-signe">'+esc(rlMaj(P))+'</p>':'')+'</section>':'')+
     (secs?'<div class="rl-cols">'+secs+'</div>':'')+
-    (f.tel.length?'<section class="rl-tel"><h3>Me joindre</h3><ul>'+f.tel.map(x=>'<li>'+(x.n?'<b>'+esc(x.n)+'</b> ':'')+rlTelHtml(x.t)+'</li>').join('')+'</ul></section>':'')+
+    (f.tel.length?'<section class="rl-tel">'+T[0]+'Me joindre'+T[1]+'<ul>'+f.tel.map(x=>'<li>'+(x.n?'<b>'+esc(x.n)+'</b> ':'')+rlTelHtml(x.t)+'</li>').join('')+'</ul></section>':'')+
     '<footer class="rl-pied"><span>En cas d’urgence vitale, les secours. En Suisse, le 144.</span><span>Fiche écrite par la famille'+(f.m?', le '+esc(fmtDate(f.m)):'')+'.</span></footer></article>';
 }
 function rlAvantImpression(){
