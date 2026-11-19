@@ -55,16 +55,16 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
     {
       const { ctx, page, errs } = await ouvre(fmt);
       const t0 = Date.now(); await page.goto(APP, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('.herofull .porte'); const tPortes = Date.now() - t0;
+      await page.waitForSelector('.seuil .porte'); const tPortes = Date.now() - t0;
       await page.waitForTimeout(600);
       ok(tPortes < (EN_LIGNE ? 4000 : 1500), P('1. les 3 portes sont à l’écran en ' + tPortes + ' ms'));
-      const acc = await page.evaluate(() => ({ salut: document.querySelector('.herofull .salut').textContent, besoin: document.querySelector('.herofull .besoin').textContent, portes: [...document.querySelectorAll('.herofull .porte b')].map(e => e.textContent), bandeau: !!document.getElementById('consent'), nuit: document.documentElement.className }));
-      ok(acc.salut === 'Bonsoir.' && net(acc.besoin) === 'De quoi auriez-vous besoin ce soir ?' && acc.portes.map(net).join('|') === 'Souffler 2 minutes|Déposer ce qui pèse|Trouver une idée pour ce soir' && /\bh-soir\b/.test(acc.nuit), P('1. à 21 h 40 : « Bonsoir. De quoi auriez-vous besoin ce soir ? », 3 portes, la lumière du soir ' + JSON.stringify(acc)));
+      const acc = await page.evaluate(() => ({ salut: document.querySelectorAll('.seuil .salut').length, besoin: document.querySelector('.seuil .besoin').textContent, clair: document.documentElement.classList.contains('clair'), fond: getComputedStyle(document.body).backgroundColor, portes: [...document.querySelectorAll('.seuil .porte b')].map(e => e.textContent), bandeau: !!document.getElementById('consent'), nuit: document.documentElement.className }));
+      ok(acc.salut === 0 && net(acc.besoin) === 'De quoi avez-vous besoin maintenant ?' && acc.portes.map(net).join('|') === 'Souffler 2 minutes|Déposer ce qui pèse|Trouver une idée pour ce soir' && /\bh-soir\b/.test(acc.nuit) && !acc.clair && acc.fond === 'rgb(7, 36, 15)', P('1. à 21 h 40 : « De quoi avez-vous besoin maintenant ? », 3 portes, et la table sombre du soir ' + JSON.stringify(acc)));
       ok(!acc.bandeau, P('1. aucun bandeau ne se met devant le premier écran'));
-      ok(await dansEcran(page, '.herofull h1, .herofull .porte, .herofull .sos'), P('1. la question, les 3 portes et le SOS tiennent dans l’écran sans défiler'));
+      ok(await dansEcran(page, '.seuil h1, .seuil .porte, main.intro .hbar .sos'), P('1. la question, les 3 portes et le SOS tiennent dans l’écran sans défiler'));
       ok((await notes(page)) === null, P('1. rien n’est enregistré avant le premier geste'));
       // un geste
-      const t1 = Date.now(); await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); const tGeste = Date.now() - t1;
+      const t1 = Date.now(); await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); const tGeste = Date.now() - t1;
       ok(tGeste < 1200 && !(await page.$('.sheet')) && !(await page.$('input, textarea')), P('1. un seul geste mène à la respiration (' + tGeste + ' ms), sans formulaire ni question'));
       const d0 = await notes(page);
       ok(d0 && d0.onboarded === true && d0.age === '' && d0.situation === '' && d0.me === '' && d0.weights.length === 0, P('1. rien n’est coché à la place du parent ' + JSON.stringify(d0 && [d0.age, d0.situation, d0.weights])));
@@ -94,10 +94,10 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
         ok(!!(await page.$('main.souffle.s-pret')), P('1. « Arrêter » rend la main tout de suite'));
         // le bouton Retour du téléphone, depuis la respiration : il ramène d'où l'on vient, ici la vitrine, sans sortir du site
         await page.goBack(); await page.waitForTimeout(800);
-        const vit = await page.evaluate(() => ({ intro: !!document.querySelector('main.intro'), portes: document.querySelectorAll('.herofull .porte').length, liens: [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()) }));
+        const vit = await page.evaluate(() => ({ intro: !!document.querySelector('main.intro'), portes: document.querySelectorAll('.seuil .porte').length, liens: [...document.querySelectorAll('.seuil .voie')].map(e => e.textContent.trim()) }));
         ok(page.url() === APP + '#accueil' && vit.intro && vit.portes === 3, P('1. le bouton Retour du téléphone ramène à la vitrine, d’où le parent venait (' + page.url().replace(ORIGIN, '') + ')'));
         ok(vit.liens.join('|') === 'Commencer le parcours de 6 mois|Ouvrir mon espace', P('1. la vitrine propose maintenant « Ouvrir mon espace » ' + JSON.stringify(vit.liens)));
-        await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForSelector('.tabs'); await page.waitForTimeout(700);
+        await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await page.waitForSelector('.tabs'); await page.waitForTimeout(700);
       }
       // ensuite : l'espace, avec la dose en premier, et le choix de personnaliser
       const auj = await page.evaluate(() => { const m = document.getElementById('main'); const d = m && m.querySelector('.dose'); const r = d && d.getBoundingClientRect(); return { h: document.querySelector('h1').textContent, tabs: !!document.querySelector('.tabs'), dose: !!d, doseHaut: r ? Math.round(r.top) : -1, vh: innerHeight, perso: !!document.querySelector('.card.perso'), quest: !!document.querySelector('#main [data-view="evo"]'), rouvrir: [...document.querySelectorAll('.rouvrir .chip')].map(e => e.textContent.trim()) }; });
@@ -114,12 +114,12 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
     // =====================================================================================================================
     {
       const { ctx, page, errs } = await ouvre(fmt);
-      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(500);
+      await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(500);
       // ce qui est visible : entre la barre du haut et, sur téléphone, la barre d'onglets du bas
       const visibles = (sel) => page.evaluate(sel => { const b = document.querySelector('header.bar'); const hb = b && getComputedStyle(b).display !== 'none' ? b.getBoundingClientRect().bottom : 0; const t = document.querySelector('.tabs'); const tr = t ? t.getBoundingClientRect() : null; const bas = tr && tr.top > innerHeight / 2 ? tr.top : innerHeight;
         const L = [...document.querySelectorAll(sel)]; return { n: L.length, vus: L.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= hb - 1 && r.bottom <= bas + 1; }).length, entames: L.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.top >= hb - 1 && r.top < bas - 24; }).length, textes: L.map(e => (e.querySelector('b') || e).textContent.trim()) }; }, sel);
       // « Trouver une idée pour ce soir » : 4 situations d'abord, pour un enfant, un ado, un adulte et pour le parent, à ouvrir en un geste
-      await page.click('.herofull ' + A('porte', '[data-v="piste"]')); await page.waitForSelector('main.k-piste'); await page.waitForTimeout(1300);
+      await page.click('.seuil ' + A('porte', '[data-v="piste"]')); await page.waitForSelector('main.k-piste'); await page.waitForTimeout(1300);
       const ps = await visibles('.ce-soir .sit');
       ok(net(await h1(page)) === 'Trouver une idée pour ce soir' && ps.textes.join('|') === 'Le coucher et la nuit|L’adolescence et le corps|Quand il ou elle vit ailleurs|Je n’en peux plus', P('1 bis. « Trouver une idée pour ce soir » ouvre sur 4 situations : un enfant, un ado, un adulte, et le parent ' + JSON.stringify(ps.textes)));
       // le choix de l'âge change les 4 propositions, sans quitter l'écran
@@ -236,7 +236,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
         evo: { t1: { date: iso(-10), stress: 7, comp: 4, seul: 6, regard: 5, confiance: 4, avant: 'Pas grand-chose.', change: '' } }, photo: null, photos: [], abc: [], phrases: ['On respire comme le dragon'], routineDone: {}, ft: { first: 'dents', then: 'histoire' }, three: [], letters: [], questions: [], onboarded: true, doseDate: '', doseText: '' };
       const o3 = await ouvre(fmt, { notes: AVANT, calme: true }); const { ctx, errs } = o3; let page = o3.page;
       const t0 = Date.now(); await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.step.semaine'); const tAuj = Date.now() - t0; await page.waitForTimeout(500);
-      const a = await page.evaluate(() => { const q = s => document.querySelector(s); const pos = s => { const e = q(s); return e ? Math.round(e.getBoundingClientRect().top + scrollY) : -1; }; return { h: q('h1').textContent, accueil: !!q('.herofull'), revenu: document.documentElement.classList.contains('returning'), dose: (q('.dose p') || {}).textContent || '', yDose: pos('.dose'), yEtape: pos('.step.semaine'), etape: q('.step.semaine b').textContent, lab: q('.step.semaine .label').textContent, aller: q('.step.semaine .aller').textContent.trim(), fil: q('.reprendre .fil .ou').textContent, perso: !!q('.card.perso'), portes: document.querySelectorAll('.portes.mini .porte').length }; });
+      const a = await page.evaluate(() => { const q = s => document.querySelector(s); const pos = s => { const e = q(s); return e ? Math.round(e.getBoundingClientRect().top + scrollY) : -1; }; return { h: q('h1').textContent, accueil: !!q('.seuil'), revenu: document.documentElement.classList.contains('returning'), dose: (q('.dose p') || {}).textContent || '', yDose: pos('.dose'), yEtape: pos('.step.semaine'), etape: q('.step.semaine b').textContent, lab: q('.step.semaine .label').textContent, aller: q('.step.semaine .aller').textContent.trim(), fil: q('.reprendre .fil .ou').textContent, perso: !!q('.card.perso'), portes: document.querySelectorAll('.portes.mini .porte').length }; });
       ok(tAuj < (EN_LIGNE ? 4000 : 1500) && !a.accueil && a.revenu && a.h === 'Bonsoir, Camille.', P('3. le parent déjà venu arrive directement dans son espace (' + tAuj + ' ms), sans repasser par l’accueil ' + JSON.stringify([a.h, a.accueil])));
       ok(a.dose.length > 40 && a.yDose > 0 && a.yDose < a.yEtape && a.portes === 3, P('3. il retrouve sa dose du jour en premier, et les 3 portes'));
       ok(/^Croire en lui/.test(a.etape) && a.lab === 'L’étape de la semaine' && a.aller === 'Reprendre l’étape' && a.fil === 'Étape 2 sur 24', P('3. son étape l’attend, avec un seul geste pour la reprendre ' + JSON.stringify([a.etape, a.lab, a.aller, a.fil])));

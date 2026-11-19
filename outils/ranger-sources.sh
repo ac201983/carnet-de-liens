@@ -32,5 +32,11 @@ cp build/essai/b.sh build/essai/e.sh build/essai/tout.sh build/essai/tout2.sh bu
 mkdir -p "$BRANCHE/outils/lancement"
 cp build/lancement/codec.js build/lancement/lien-exemple.js build/lancement/page.js build/lancement/vues.js build/lancement/tout3.sh build/lancement/lot3.sh "$BRANCHE/outils/lancement/" 2>/dev/null || true
 
+# Les outils de la passe « carnet et étang » du 19 novembre 2026, l'après-midi (dans l'atelier, ces fichiers sont dans build/carnet/) :
+# le style du carnet et de l'étang et le script qui le pose dans la feuille de style, les captures (vitrine, passage, états de la respiration),
+# et la suite d'essais de la passe.
+mkdir -p "$BRANCHE/outils/carnet"
+cp build/carnet/carnet.css build/carnet/poser-css.py build/carnet/voir.js build/carnet/etats.js build/carnet/passage.js build/carnet/divers.js build/carnet/lot-b.sh "$BRANCHE/outils/carnet/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

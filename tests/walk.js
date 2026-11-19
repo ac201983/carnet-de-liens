@@ -55,7 +55,7 @@ async function walk(page, visit) {
   await page.goto(APP); await w(400);
   await page.click(A('peek-about')); await w(150); await visit('histoire-apercu'); await page.click(A('back')); await w(200);
   // le SOS, ouvert par un visiteur
-  await page.click('.herofull .sos'); await w(100); await visit('sos-visiteur'); await page.click('.sosview .back'); await w(200);
+  await page.click('main.intro .hbar .sos'); await w(100); await visit('sos-visiteur'); await page.click('.sosview .back'); await w(200);
   // ----- les pages publiques : la liste des situations, puis une fiche reçue par lien direct (haut, bas, lien copié)
   await page.goto(APP + 'fiches/'); await w(250); await visit('fiches-publiques');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(150); await visit('fiches-publiques-bas');
@@ -65,7 +65,7 @@ async function walk(page, visit) {
   await page.click('.proches .sit'); await w(250); await visit('fiche-publique-suivante');
   await page.click('.pubbar .wordmark'); await w(300);
   // ----- le premier geste : souffler (en cours, arrêté), puis « Aujourd'hui » tel que le découvre un nouveau parent
-  await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await w(300); await visit('souffle-debut');
+  await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await w(300); await visit('souffle-debut');
   await w(1900); await visit('souffle-inspirez');
   // « Écouter l'étang » : le bouton pendant que le son joue, puis de nouveau en silence
   await page.click('.son-souffle'); await w(800); await visit('souffle-son'); await page.click('.son-souffle'); await w(200);
@@ -76,11 +76,11 @@ async function walk(page, visit) {
   await page.click('.resp-o[data-v="long"]'); await w(100); await page.click(A('resp-ferme')); await w(150);
   await page.click(A('souffle-stop')); await w(100); await visit('souffle-pret');
   await page.click('.resp-l'); await w(250); await visit('souffle-pret-choix'); await page.click(A('back')); await w(300);
-  await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await w(300); await page.click(A('souffle-stop')); await w(150);
+  await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await w(300); await page.click(A('souffle-stop')); await w(150);
   // « Retour » ramène à la vitrine, celle d'un parent déjà entré, qui propose « Ouvrir mon espace »
   await page.click(A('back')); await w(300); await visit('vitrine-parent');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('vitrine-parent-bas'); await page.evaluate(() => scrollTo(0, 0)); await w(150);
-  await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await w(250); await visit('aujourdhui-nouveau');
+  await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await w(250); await visit('aujourdhui-nouveau');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('aujourdhui-nouveau-bas'); await page.evaluate(() => scrollTo(0, 0));
   // « Prendre un instant », sous la dose : le bouton pendant l'écoute
   await page.$eval('.son-dose', e => e.scrollIntoView({ block: 'center' })); await w(150); await page.click('.son-dose'); await w(800); await visit('aujourdhui-instant'); await page.click('.son-dose'); await w(200); await page.evaluate(() => scrollTo(0, 0));

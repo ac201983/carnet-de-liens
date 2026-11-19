@@ -20,7 +20,7 @@ function ecran(pathname) {
   return { className: app.className, html: app.innerHTML, title: document.title, info };
 }
 const intro = ecran(racine);
-if (!/class="herofull/.test(intro.html)) { console.error('prerender: accueil introuvable'); process.exit(1); }
+if (!/class="seuil"/.test(intro.html)) { console.error('prerender: accueil introuvable'); process.exit(1); }
 const fiches = (intro.info && intro.info.fiches) || [];
 if (fiches.length < 20) { console.error('prerender: liste des fiches introuvable'); process.exit(1); }
 const liste = ecran(racine + 'fiches/');

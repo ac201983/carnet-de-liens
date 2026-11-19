@@ -16,9 +16,9 @@ const HABITUEL = JSON.stringify({ fxOff: false, tier: 'parcours', me: 'Antonio',
   ok(/<meta name="robots" content="noindex,nofollow">/.test(brut) && /pepe-essai-v1/.test(brut) && !/getItem\('pepe-v1'\)/.test(brut), 'la page d’essai n’est pas référencée, et son premier script lit la clé de l’essai');
   for (const f of ['fiches/', 'fiches/la-crise/', 'conditions.html', 'confidentialite.html']) ok(/content="noindex,nofollow"/.test(await (await ctx.request.get(APP + f)).text()), f + ' : non référencée');
   ok((await ctx.request.get(APP + 'antonio/')).status() === 404, 'l’Espace Antonio n’existe pas dans la version d’essai (il n’y serait pas fermé par son mot de passe)');
-  await page.goto(APP); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(400);
-  ok(!!(await page.$('.herofull')) && !(await page.$('.tabs')) && /version d’essai/.test(await page.textContent('.essai-l')), 'avec des notes dans l’espace habituel, l’essai commence quand même par le début, et dit qu’il est un essai');
-  await page.click('.herofull ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(400);
+  await page.goto(APP); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(400);
+  ok(!!(await page.$('.seuil')) && !(await page.$('.tabs')) && /version d’essai/.test(await page.textContent('.essai-l')), 'avec des notes dans l’espace habituel, l’essai commence quand même par le début, et dit qu’il est un essai');
+  await page.click('.seuil ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(400);
   await page.fill('#draft', 'Un dépôt écrit dans la version d’essai.'); await page.click(A('dsend')); await page.waitForTimeout(600);
   let e = JSON.parse(await lire('pepe-essai-v1'));
   ok(e.onboarded && e.depots.length === 1 && e.me === '' && (await lire('pepe-v1')) === HABITUEL, 'ce qu’on écrit dans l’essai est rangé à part, et les notes habituelles n’ont pas changé d’un caractère');
@@ -36,7 +36,7 @@ const HABITUEL = JSON.stringify({ fxOff: false, tier: 'parcours', me: 'Antonio',
   await page.$eval(A('essai-zero'), x => x.scrollIntoView({ block: 'center' })); await page.click(A('essai-zero')); await page.waitForTimeout(200);
   ok(!!(await page.$('.card.essai .confirm')), 'revoir depuis le début : une confirmation est demandée');
   await page.click(A('essai-zero-oui')); await page.waitForTimeout(600);
-  ok(!!(await page.$('.herofull')) && (await lire('pepe-essai-v1')) === null && (await lire('pepe-v1')) === HABITUEL, 'l’essai repart du premier écran, et l’espace habituel est intact');
+  ok(!!(await page.$('.seuil')) && (await lire('pepe-essai-v1')) === null && (await lire('pepe-v1')) === HABITUEL, 'l’essai repart du premier écran, et l’espace habituel est intact');
   ok(errs.length === 0, 'aucune erreur ' + errs.slice(0, 3).join(' | '));
   await b.close();
   console.log('version d’essai : ' + n + ' vérifications, ' + ko + ' échec' + (ko > 1 ? 's' : ''));

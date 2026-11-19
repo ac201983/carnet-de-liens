@@ -58,8 +58,8 @@ const CAS = [['egal', { m: 'egal', c: 8 }, 'Le souffle régulier'], ['long', { m
     const ctx = await browser.newContext({ locale: 'fr-CH', ignoreHTTPSErrors: true, bypassCSP: true, viewport: { width: 390, height: 664 }, hasTouch: true, deviceScaleFactor: 2 });
     await ctx.addInitScript(semer, [KEY, JSON.stringify({ souffle: reglage })]); await ctx.addInitScript(magneto, [MODULE]);
     const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(String(e).slice(0, 160)));
-    await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.herofull .porte'); await page.waitForTimeout(350);
-    await page.click('.herofull [data-act="porte"][data-v="souffle"]'); await page.waitForSelector('main.souffle.s-cours');
+    await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(350);
+    await page.click('.seuil [data-act="porte"][data-v="souffle"]'); await page.waitForSelector('main.souffle.s-cours');
     await page.click('.son-souffle');
     await page.waitForTimeout(SEC * 1000);
     const r = await page.evaluate(() => window.__rec.rendre());

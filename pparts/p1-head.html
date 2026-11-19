@@ -1781,6 +1781,241 @@ details.f-concret>.f-note{margin-top:10px}
 /* Une fiche reçue par lien : la page attend que la fiche soit lue dans l'adresse, pour ne pas montrer autre chose d'abord. */
 html.rl-attend #app{visibility:hidden;animation:rl-montre 0s 4s forwards}
 @keyframes rl-montre{to{visibility:visible}}
+/* >>> carnet et étang (19 novembre 2026) */
+/* ==================================================================
+   LE CARNET SUR LA TABLE : la vitrine (direction choisie par Antonio le 19 novembre 2026)
+   Le jour, de 5 h à 18 h (classe « clair » sur la page), papier ivoire et encre vert forêt.
+   Le soir, la table s'assombrit et la feuille reste du papier sous la lampe.
+   Titres en Besley, textes et descriptions en Nunito, paroles en Newsreader italique.
+   Des filets plutôt que des cadres, des angles à peine arrondis, et des pictogrammes seulement là où ils aident.
+   ================================================================== */
+:root{--font-titre:'Besley',Georgia,'Times New Roman',serif}
+.app.v-intro{--ct-titre:var(--cream);--ct-filet:rgba(244,239,216,.3);--ct-trait:#C9D6B8;--ct-feuille:#E7DFC8;--ct-ombre:rgba(0,0,0,.55);--ct-ombre-2:rgba(0,0,0,.35);
+  --ct-sos:#F08A73;--ct-sur-sos:#2A0D08}
+html.clair .app.v-intro{
+  --bg:#F2ECDB;--surface:#FCFAF2;--surface-2:#E9E1CB;--fg:#15301F;--muted:#45584A;--line:rgba(21,48,31,.2);--cream:#1D4B31;
+  --green:#1E6A39;--green-2:#2E7D46;--green-fg:#FCFAF2;--green-soft:rgba(30,106,57,.1);
+  --sun:#B9C24A;--sun-soft:rgba(185,194,74,.3);--sun-fg:#4F5410;
+  --coral:#B4472F;--coral-strong:#B3261E;--coral-soft:rgba(180,71,47,.12);--rose:#A33D4A;--rose-soft:rgba(163,61,74,.1);
+  --shadow:0 1px 2px rgba(60,48,18,.12),0 14px 34px rgba(60,48,18,.16);--shadow-sm:0 1px 2px rgba(60,48,18,.14),0 3px 10px rgba(60,48,18,.1);
+  --ct-filet:rgba(21,48,31,.24);--ct-trait:#1D4B31;--ct-feuille:#FCFAF2;--ct-ombre:rgba(60,48,18,.24);--ct-ombre-2:rgba(60,48,18,.12);
+  --ct-sos:#B3261E;--ct-sur-sos:#FFF8EC;
+  color:var(--fg);color-scheme:light}
+/* Le fond de la page entière : le papier, avec un grain très léger. */
+html.clair.vue-intro body{background-color:#F2ECDB;background-image:url(img/grain.png);background-size:128px 128px;background-repeat:repeat;background-attachment:scroll}
+html.clair.vue-intro body::before{background:#F2ECDB}
+/* Le soir, la table est d'un vert sombre uni : les lueurs du fond habituel feraient une bande derrière le nom de l'espace. */
+html.vue-intro body{background-image:none}
+html.clair.vue-intro body{background-image:url(img/grain.png)}
+html.clair .v-intro :focus-visible{outline-color:#1D4B31}
+/* Les barres de défilement et les champs du navigateur suivent le papier, le jour. */
+html.clair.vue-intro,html.clair.vue-souffle{color-scheme:light}
+
+/* -- le haut de l'écran : le nom de l'espace et le SOS, toujours à portée de doigt -- */
+.intro>.hbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;min-height:64px;padding-top:8px;padding-bottom:8px;background:var(--bg)}
+html.clair .intro>.hbar{background:#F2ECDB url(img/grain.png) 0 0/128px 128px}
+.intro>.hbar .wordmark{font-family:var(--font-titre);font-weight:640;font-size:19px;letter-spacing:-.005em;color:var(--fg);text-shadow:none}
+.intro>.hbar .wordmark small{font-size:14px;font-weight:700;margin-top:1px}
+.intro>.hbar .sos{min-height:46px;min-width:72px;justify-content:center;padding:0 16px;border-radius:4px;background:var(--ct-sos);color:var(--ct-sur-sos);font-family:var(--font-titre);font-weight:700;font-size:16px;line-height:1;letter-spacing:.08em;box-shadow:none}
+.intro>.hbar .sos .i{display:none}
+
+/* -- le premier écran : la phrase, la question, les 3 gestes -- */
+.seuil{display:flex;flex-direction:column;gap:20px;padding-top:4px}
+.haut-texte,.haut-table,.haut-suite{display:flex;flex-direction:column;min-width:0}
+.seuil .pour{font-size:16px;line-height:1.4;font-weight:600;color:var(--muted);max-width:24em;text-wrap:balance}
+.seuil h1{margin-top:10px;font-family:var(--font-titre);font-weight:620;font-size:clamp(30px,8.5vw,40px);line-height:1.07;letter-spacing:-.014em;color:var(--ct-titre);text-wrap:balance}
+.seuil h1 .ici{display:block}
+.seuil .besoin-l{margin-top:22px;font-size:18px;line-height:1.3;font-weight:800;color:var(--fg)}
+.seuil .portes{gap:0;margin-top:10px;border-top:2px solid var(--ct-titre)}
+.seuil .porte,.seuil .porte.un{grid-template-columns:minmax(0,1fr) 22px;gap:14px;min-height:68px;padding:11px 2px;background:none;border:0;border-bottom:1px solid var(--ct-filet);border-radius:0;color:var(--fg)}
+.seuil .porte .ic{display:none}
+.seuil .porte .tx b{font-family:var(--font-titre);font-weight:620;font-size:20px;line-height:1.15;letter-spacing:-.008em;color:var(--ct-titre)}
+.seuil .porte .tx>span{font-size:15.5px;line-height:1.4;color:var(--muted);margin-top:3px}
+.seuil .porte .chev{color:var(--ct-titre)}
+.seuil .porte .chev .i,.haut-sit>.i{width:22px;height:22px;stroke-width:2}
+@media (hover:hover){
+  .seuil .porte:hover,.seuil .porte.un:hover{border-color:var(--ct-filet)}
+  .seuil .porte:hover .tx b,.haut-sit:hover b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.16em}
+}
+
+/* -- la table : le sac de week-end, et la fiche de Bastien posée devant -- */
+.haut-table{gap:16px;margin-top:10px}
+.nature{position:relative;padding-top:104px}
+.sac{position:absolute;top:0;right:-10px;width:252px;height:auto;z-index:0;color:var(--ct-trait);fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.sac .sac-o{fill:currentColor;fill-opacity:.13;stroke:none}
+.sac .sac-v{fill:currentColor;fill-opacity:.1}
+.sac .sac-p{fill:var(--bg)}
+/* La feuille reste du papier, de jour comme de soir : ses encres sont fixes, et le logo y garde les siennes. */
+.fiche-b{--cream:#1D4B31;--surface-2:#F3EEDD;--green:#1E6A39;position:relative;z-index:1;width:min(100%,470px);transform:rotate(-2deg);background:var(--ct-feuille);color:#15301F;padding:22px 22px 24px;cursor:pointer;
+  box-shadow:0 1px 1px var(--ct-ombre-2),0 12px 22px -10px var(--ct-ombre),0 30px 46px -26px var(--ct-ombre)}
+.fiche-b .fb-ex{position:absolute;top:-12px;left:20px;transform:rotate(-3deg);background:var(--ct-feuille);border:1.5px solid #45584A;padding:5px 7px 4px;font-family:var(--font-titre);font-weight:600;font-size:14px;line-height:1;letter-spacing:.04em;color:#45584A}
+.fb-tete{display:flex;align-items:flex-start;gap:10px}
+.fb-tete .logo{width:30px;height:30px;margin-top:1px}
+.fiche-b h2{font-family:var(--font-titre);font-weight:640;font-size:21px;line-height:1.15;letter-spacing:-.008em;color:#15301F}
+.fb-tete p{margin-top:3px;font-size:15px;line-height:1.35;font-weight:600;color:#45584A}
+.fiche-b h3{margin-top:15px;padding-top:11px;border-top:2px solid #15301F;font-family:var(--font-titre);font-weight:640;font-size:17.5px;line-height:1.2;color:#15301F}
+.fiche-b ol{margin:9px 0 0;padding:0;list-style:none;counter-reset:r;display:flex;flex-direction:column;gap:9px}
+.fiche-b li{counter-increment:r;display:grid;grid-template-columns:20px minmax(0,1fr);column-gap:7px;font-size:16px;line-height:1.42;color:#15301F}
+.fiche-b li::before{content:counter(r);font-family:var(--font-titre);font-weight:700}
+/* Le bouton s'étend sur toute la feuille : on la touche n'importe où pour l'ouvrir en entier. */
+.fb-voir{margin-top:16px;display:inline-flex;align-items:center;min-height:48px;padding:6px 16px;border:0;border-radius:4px;background:#1D4B31;color:#FCFAF2;font-family:var(--font-titre);font-weight:620;font-size:16px;line-height:1.2;letter-spacing:-.003em;text-align:left}
+.fb-voir::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0}
+.fb-voir:focus-visible{outline:3px solid #1D4B31;outline-offset:3px}
+@media (hover:hover){.fiche-b:hover .fb-voir{background:#153A26}}
+.haut-sit{display:grid;grid-template-columns:minmax(0,1fr) 22px;align-items:center;column-gap:14px;min-height:64px;margin-top:10px;padding:11px 2px;border-top:1px solid var(--ct-filet);border-bottom:1px solid var(--ct-filet);color:var(--fg);text-decoration:none}
+.haut-sit b{display:block;font-family:var(--font-titre);font-weight:620;font-size:19px;line-height:1.18;letter-spacing:-.008em;color:var(--ct-titre)}
+.haut-sit .tx>span{display:block;margin-top:2px;font-size:15.5px;line-height:1.4;color:var(--muted)}
+.haut-sit>.i{color:var(--ct-titre)}
+.haut-suite{align-items:flex-start;gap:2px}
+.seuil .voie{display:inline-flex;align-items:center;gap:8px;min-height:48px;background:none;border:0;padding:8px 2px;color:var(--ct-titre);font-weight:800;font-size:17px;line-height:1.3;text-align:left}
+.seuil .voie .i{display:none}
+.seuil .voie span{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:.22em}
+.seuil .rassure{font-size:15px;line-height:1.45;font-weight:600;color:var(--muted);max-width:31em;margin-top:2px}
+
+/* -- la suite de la vitrine suit la même main : titres en Besley, angles à peine arrondis -- */
+.v-intro .acc-t,.v-intro .mois summary b,.v-intro .acc-plans b,.v-intro .faq summary,.v-intro .acc-scenes h3{font-family:var(--font-titre);font-weight:620;letter-spacing:-.012em}
+.v-intro .btn,.v-intro .btn.small{border-radius:4px}
+.v-intro .mois,.v-intro .mois summary,.v-intro .acc-plans li,.v-intro .mirror,.v-intro .card,.v-intro .rl-mini,.v-intro .acc-chips li{border-radius:6px}
+.v-intro .dose,.v-intro .acc-fin{border-radius:8px}
+/* Aucun texte de la vitrine sous 14 points. */
+.v-intro .label,.v-intro .mirror .lbl,.v-intro .mois summary .tx span,.v-intro .acc-plans .prix small,.v-intro .mois ol li::marker{font-size:14px}
+.v-intro .mirror .depot{border-radius:6px}
+.v-intro .acc-pictos .pc{border-radius:6px}
+html.clair .v-intro .btn{border-color:rgba(21,48,31,.36);background:rgba(255,255,255,.5);color:var(--fg)}
+html.clair .v-intro .btn.primary{background:var(--cream);color:#FCFAF2;border-color:var(--cream)}
+html.clair .v-intro .acc-pictos .pc{background:#FFFDF6;box-shadow:inset 0 0 0 1px rgba(21,48,31,.14)}
+html.clair .v-intro .dose{box-shadow:0 1px 2px rgba(60,48,18,.16),0 16px 36px -14px rgba(60,48,18,.3)}
+@media (hover:hover){html.clair .v-intro .btn:hover{border-color:var(--cream)}html.clair .v-intro .btn.primary:hover{background:#153A26;border-color:#153A26}}
+/* Un schéma et la dernière image gardent leur fond vert profond : ils sont dessinés pour lui. */
+html.clair .v-intro .card.sch,html.clair .v-intro .acc-fin{--bg:#07240F;--surface:#0F331C;--surface-2:#164426;--fg:#F4EFD8;--muted:#A9C9A0;--line:rgba(200,232,180,.16);--cream:#F4EFD8;
+  --green:#B4DE9C;--green-2:#8CC773;--green-fg:#07240F;--green-soft:rgba(180,222,156,.14);--sun:#D8DF7E;--sun-soft:rgba(216,223,126,.15);--sun-fg:#E9EDAE;color:var(--fg)}
+html.clair .v-intro .card.sch .btn,html.clair .v-intro .acc-fin .btn{border-color:rgba(214,232,210,.28);background:rgba(255,255,255,.04);color:var(--fg)}
+html.clair .v-intro .card.sch .btn.primary,html.clair .v-intro .acc-fin .btn.primary{background:var(--cream);color:var(--bg);border-color:var(--cream)}
+html.clair .v-intro .card.sch :focus-visible,html.clair .v-intro .acc-fin :focus-visible{outline-color:var(--sun)}
+/* La dernière image est l'étang de la respiration : la vitrine se termine au bord de l'eau. */
+.v-intro .acc-fin .finbg{object-position:50% 58%}
+.v-intro .acc-fin::after{background:linear-gradient(to bottom,rgba(5,24,13,.1) 0%,rgba(5,24,13,.5) 34%,rgba(5,24,13,.9) 56%,rgba(5,24,13,.96) 100%)}
+/* Le bouton qui suit le défilement se pose sur le papier. */
+html.clair .v-intro .cta-flot{background:linear-gradient(to top,#F2ECDB 0%,#F2ECDB 58%,rgba(242,236,219,0) 100%)}
+html.clair .v-intro .cta-flot .btn{box-shadow:0 10px 26px rgba(60,48,18,.28)}
+
+@media (min-width:1024px){
+  /* -- sur grand écran : les mots à gauche, la table à droite -- */
+  .app.v-intro>main.view{padding-top:0 !important}
+  .intro>.hbar{min-height:78px;padding-top:14px;padding-bottom:14px}
+  .intro>.hbar .wordmark{font-size:21px}
+  .seuil{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);grid-template-areas:"texte table" "suite table";grid-template-rows:auto 1fr;column-gap:clamp(40px,6vw,92px);row-gap:16px;align-items:start;padding-top:22px}
+  .haut-texte{grid-area:texte}
+  .haut-table{grid-area:table;margin-top:0;gap:24px}
+  .haut-suite{grid-area:suite}
+  .seuil .pour{font-size:19px;max-width:none}
+  .seuil h1{margin-top:14px;font-size:clamp(44px,4.1vw,56px);line-height:1.06}
+  .seuil .besoin-l{margin-top:32px;font-size:21px}
+  .seuil .portes{margin-top:12px;max-width:none}
+  .seuil .porte,.seuil .porte.un{min-height:78px;padding:14px 2px}
+  .seuil .porte .tx b{font-size:24px}
+  .seuil .porte .tx>span{font-size:16.5px}
+  .nature{padding-top:clamp(108px,12.2vw,172px)}
+  .sac{width:clamp(300px,30vw,420px);right:-2vw}
+  .fiche-b{width:min(92%,452px);transform:rotate(-2.4deg);padding:26px 26px 28px}
+  .fiche-b li{font-size:16.5px}
+  .haut-sit{margin-top:0}
+  .haut-sit b{font-size:21px}
+  .seuil .voie{font-size:18.5px}
+  .seuil .rassure{font-size:15.5px}
+}
+
+/* Sur un écran d'ordinateur peu haut, le premier écran se resserre : les 3 gestes restent visibles sans faire défiler. */
+@media (min-width:1024px) and (max-height:860px){
+  .intro>.hbar{min-height:68px;padding-top:10px;padding-bottom:10px}
+  .seuil{padding-top:12px}
+  .seuil .pour{font-size:17.5px}
+  .seuil h1{margin-top:10px;font-size:clamp(40px,3.6vw,46px)}
+  .seuil .besoin-l{margin-top:22px;font-size:19.5px}
+  .seuil .porte,.seuil .porte.un{min-height:70px;padding:11px 2px}
+  .seuil .porte .tx b{font-size:22px}
+  .seuil .porte .tx>span{font-size:16px}
+  .nature{padding-top:clamp(96px,10.4vw,150px)}
+}
+@media (min-width:1024px) and (max-height:720px){
+  .seuil h1{font-size:clamp(34px,3.1vw,40px)}
+  .seuil .besoin-l{margin-top:16px}
+  .seuil .porte,.seuil .porte.un{min-height:62px;padding:8px 2px}
+}
+
+/* ==================================================================
+   AU BORD DE L'ÉTANG : souffler 2 minutes
+   Quand le parent choisit « Souffler 2 minutes », il quitte la table et entre au bord de l'eau :
+   une photo d'eau claire, des cercles fins posés sur l'eau qui suivent le souffle, et beaucoup de lumière le jour.
+   ================================================================== */
+html.clair .app.v-souffle{
+  --bg:#F4F6F0;--surface:#FDFEFB;--surface-2:#E6ECDF;--fg:#12301F;--muted:#44574B;--line:rgba(18,48,31,.18);--cream:#0F4A2C;
+  --green:#1E6A39;--green-2:#2E7D46;--green-fg:#FDFEFB;--green-soft:rgba(30,106,57,.1);
+  --sun:#B9C24A;--sun-soft:rgba(185,194,74,.28);--sun-fg:#4F5410;
+  --coral:#B4472F;--coral-strong:#B3261E;--coral-soft:rgba(180,71,47,.12);--rose:#A33D4A;--rose-soft:rgba(163,61,74,.1);
+  --shadow:0 1px 2px rgba(18,48,31,.1),0 14px 34px rgba(18,48,31,.14);--shadow-sm:0 1px 2px rgba(18,48,31,.12),0 3px 10px rgba(18,48,31,.08);
+  color:var(--fg);color-scheme:light}
+html.vue-souffle body{background-image:none}
+html.clair.vue-souffle body{background-color:#F4F6F0}
+html.vue-souffle body::before{background:#0B2014}
+html.clair .v-souffle :focus-visible{outline-color:#0F4A2C}
+.souffle{position:relative}
+.souffle .etang{position:relative;overflow:hidden;height:clamp(250px,54vh,500px);background-color:#1B3324;--et0:rgba(7,36,15,0);--et-soir:rgba(4,18,10,.3)}
+@supports (height:1svh){.souffle .etang{height:clamp(250px,54svh,500px)}}
+html.clair .souffle .etang{--et0:rgba(244,246,240,0);--et-soir:rgba(4,18,10,0)}
+.etang-photo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:50% 62%}
+/* Un voile en haut pour lire « Retour » et « SOS », et la photo qui se fond dans le sol en bas. */
+.souffle .etang::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;z-index:1;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(4,20,11,.72) 0,rgba(4,20,11,.6) 64px,rgba(4,20,11,0) 168px),linear-gradient(to bottom,var(--et0) 60%,var(--bg) 100%),linear-gradient(var(--et-soir),var(--et-soir))}
+.souffle .etang>.ronds{position:absolute;left:50%;top:71%;width:300px;height:75px;transform:translate(-50%,-50%);--s:.62;z-index:2;pointer-events:none}
+.souffle .ronds i,.souffle .ronds b{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:50%;border-style:solid;will-change:transform}
+.souffle .ronds i:nth-child(1){transform:scale(var(--s));border-width:calc(2px / var(--s));border-color:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(255,255,255,.22)}
+.souffle .ronds i:nth-child(2){transform:scale(calc(var(--s) * .64));border-width:calc(2.1px / var(--s));border-color:rgba(255,255,255,.62)}
+.souffle .ronds i:nth-child(3){transform:scale(calc(var(--s) * .32));border-width:calc(3.4px / var(--s));border-color:rgba(255,255,255,.44)}
+.souffle .ronds b{border-width:1.5px;border-color:rgba(255,255,255,0)}
+html.fx .souffle .ronds b.onde{animation:et-onde 4.4s cubic-bezier(.2,.6,.3,1) both}
+@keyframes et-onde{0%{transform:scale(.98);border-color:rgba(255,255,255,.72)}100%{transform:scale(1.8);border-color:rgba(255,255,255,0)}}
+.souffle.s-pret .etang>.ronds,.souffle.s-fini .etang>.ronds{--s:.8}
+.souffle.s-fini .etang{height:clamp(200px,38vh,380px)}
+.souffle.s-choix .etang{height:clamp(190px,27vh,300px)}
+@supports (height:1svh){.souffle.s-fini .etang{height:clamp(200px,38svh,380px)}.souffle.s-choix .etang{height:clamp(190px,27svh,300px)}}
+.souffle .resp{margin-top:-34px}
+.souffle .mot{font-weight:500;letter-spacing:-.012em}
+.souffle.s-pret h1.mot{font-size:clamp(31px,9.2vw,46px)}
+html.clair .souffle .mot{text-shadow:none}
+.v-souffle .btn{border-radius:999px}
+html.clair .v-souffle .btn{border-color:rgba(18,48,31,.34);background:rgba(255,255,255,.6);color:var(--fg)}
+html.clair .v-souffle .btn.ghost{background:rgba(255,255,255,0)}
+html.clair .v-souffle .btn.primary{background:var(--cream);color:#FDFEFB;border-color:var(--cream)}
+html.clair .v-souffle .son-b{border-color:rgba(18,48,31,.34);background:rgba(255,255,255,.6);color:var(--fg)}
+html.clair .v-souffle .son-b[data-etat="on"],html.clair .v-souffle .son-b[data-etat="charge"]{background:var(--sun-soft);border-color:var(--sun-fg);color:var(--sun-fg)}
+html.clair .souffle .tours i{background:rgba(18,48,31,.2)}
+html.clair .souffle .tours i.f{background:var(--green)}
+html.clair .souffle .tours i.c{background:#0F4A2C;box-shadow:0 0 0 3px rgba(15,74,44,.2)}
+html.clair .souffle .resp-l{text-decoration-color:rgba(18,48,31,.45)}
+html.clair .v-souffle .resp-p{border-color:rgba(18,48,31,.5)}
+html.clair .v-souffle .resp-o[aria-pressed="true"]{border-color:var(--sun-fg)}
+html.clair .v-souffle .resp-o[aria-pressed="true"] .resp-p{border-color:var(--sun-fg);background:radial-gradient(circle,var(--sun-fg) 0,var(--sun-fg) 5px,rgba(79,84,16,0) 6px)}
+html.clair .v-souffle .resp-cad .btn[aria-disabled="true"]{color:rgba(18,48,31,.5);border-color:rgba(18,48,31,.16)}
+@media (hover:hover){html.clair .v-souffle .btn:hover{border-color:var(--cream)}html.clair .v-souffle .btn.primary:hover{background:#0B3A22;border-color:#0B3A22}}
+/* Le passage entre deux écrans clairs (le carnet et l'étang, le jour) : l'écran qu'on quitte s'efface dans une eau claire au lieu d'une eau sombre,
+   et le bord de l'onde est un cercle blanc. Vers un écran sombre, l'onde habituelle ne change pas. */
+html.fx.fx-onde.clair.vue-souffle::view-transition,html.fx.fx-onde.clair.vue-souffle::view-transition-group(root){background:#DDE6DB}
+html.fx.fx-onde.clair.vue-intro::view-transition,html.fx.fx-onde.clair.vue-intro::view-transition-group(root){background:#E6DEC9}
+html.fx.fx-ring.clair.vue-souffle #onde i{background:radial-gradient(ellipse closest-side,rgba(255,255,255,0) 40%,rgba(255,255,255,.12) 50%,rgba(255,255,255,0) 58%,rgba(255,255,255,.2) 71%,rgba(255,255,255,.9) 83%,rgba(255,255,255,.25) 89%,rgba(255,255,255,0) 93%),radial-gradient(ellipse closest-side,rgba(221,230,219,0) 68%,rgba(221,230,219,.5) 83%,rgba(221,230,219,.93) 91%,rgba(221,230,219,.97) 95%,rgba(221,230,219,0) 100%)}
+html.fx.fx-ring.clair.vue-intro #onde i{background:radial-gradient(ellipse closest-side,rgba(255,255,255,0) 40%,rgba(255,255,255,.12) 50%,rgba(255,255,255,0) 58%,rgba(255,255,255,.2) 71%,rgba(255,255,255,.9) 83%,rgba(255,255,255,.25) 89%,rgba(255,255,255,0) 93%),radial-gradient(ellipse closest-side,rgba(230,222,201,0) 68%,rgba(230,222,201,.5) 83%,rgba(230,222,201,.93) 91%,rgba(230,222,201,.97) 95%,rgba(230,222,201,0) 100%)}
+@media (max-width:1023px){
+  /* Sur téléphone, « Retour » et « SOS » se posent sur la photo, qui monte jusqu'en haut de l'écran. */
+  .souffle>.bar{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;margin:0;padding-inline:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .souffle>.bar .back{color:#F6F3E4;text-shadow:0 1px 10px rgba(0,0,0,.6)}
+}
+@media (min-width:1024px){
+  .souffle>.bar{max-width:none}
+  .souffle .etang{border-radius:30px;height:clamp(300px,52vh,520px)}
+  .souffle .etang::after{background:linear-gradient(to bottom,var(--et0) 62%,var(--bg) 100%),linear-gradient(var(--et-soir),var(--et-soir))}
+  .souffle .resp{margin-top:-40px}
+}
+/* <<< carnet et étang */
 @media print{
   :root,:root:not([data-theme="light"]){--bg:#fff;--surface:#fff;--surface-2:#eef1e6;--fg:#141a12;--cream:#141a12;--muted:#4a5546;--line:#cdd5c2;--green:#2f6b2f;--green-2:#6aa35a;--green-soft:#e6f0df;--sun:#b99a00;--sun-soft:#f5f0c8;--sun-fg:#6b5a00;--shadow:none;--shadow-sm:none;color-scheme:light}
   html,body{background:#fff !important;color:#141a12 !important}

@@ -47,7 +47,8 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   {
     const { ctx, page } = await ctxPage(browser);
     const raw = await (await ctx.request.get(APP)).text();
-    ok(/<p class="pour">Pour la mère ou le père d’une personne en situation de handicap<\/p><h1>On vous demande souvent comment va votre enfant\. <span class="ici">Ici, on commence par vous\.<\/span><\/h1><p class="besoin-l"><span class="salut"[^>]*>Bonjour\.<\/span> <span class="besoin">De quoi <span class="nb">auriez-vous<\/span> besoin<span[^>]*data-soir=" ce soir \?"[^>]*> aujourd’hui \?<\/span><\/span><\/p>/.test(raw) && /class="herobg"[^>]*alt="[^"]{20,}"/.test(raw), 'accueil écrit dans le HTML (le public, la phrase d’Antonio, la question et ses variantes selon l’heure, et l’image avec texte alternatif)');
+    ok(/<p class="pour">Pour la mère ou le père d’une personne en situation de handicap<\/p><h1>On vous demande souvent comment va votre enfant\. <span class="ici">Ici, on commence par vous\.<\/span><\/h1><p class="besoin-l"><span class="besoin">De quoi avez-vous besoin <span class="nb">maintenant \?<\/span><\/span><\/p>/.test(raw) && /<article class="fiche-b" aria-label="Le début d’une fiche d’exemple">.*<h2>Le relais de Bastien<\/h2>.*Voir la fiche de Bastien en entier<\/button>/s.test(raw) && /<svg class="sac"[^>]*aria-hidden="true"/.test(raw), 'accueil écrit dans le HTML (le public, la phrase d’Antonio, la question, puis le sac dessiné et la fiche de Bastien avec son bouton)');
+    ok(/<html lang="fr" data-vue="intro">/.test(raw) && /<link rel="preload" href="[^"]*fonts\/besley\.woff2" as="font" type="font\/woff2" crossorigin>/.test(raw) && !/rel="preload" href="[^"]*img\/hero\.webp"/.test(raw), 'la vitrine demande tout de suite la police de son grand titre, et plus la photo de la goutte');
     ok((raw.match(/class="porte[^"]*" data-act="porte"/g) || []).length === 3 && /Souffler 2 minutes/.test(raw) && /Déposer ce qui pèse/.test(raw) && /data-soir="Trouver une idée pour ce[\s\u00a0]soir"/.test(raw), 'les 3 portes sont écrites dans la page');
     ok(/<title>[^<]{20,70}<\/title>/.test(raw) && /<meta name="description" content="[^"]{80,180}">/.test(raw), 'titre et description meta');
     ok(new RegExp('<link rel="canonical" href="' + reEsc(PUBLIC_APP) + '">').test(raw), 'adresse canonique');
@@ -66,20 +67,22 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     // la question suit l'heure du visiteur, dès le premier affichage
     { const h = new Date().getHours(), m = (h < 5 || h >= 22) ? 'nuit' : h < 11 ? 'matin' : h < 18 ? 'jour' : 'soir';
       const veut = { matin: ['Bonjour.', 'De quoi auriez-vous besoin ce matin ?', 'Trouver une idée pour ce matin'], jour: ['Bonjour.', 'De quoi auriez-vous besoin aujourd’hui ?', 'Trouver une idée pour aujourd’hui'], soir: ['Bonsoir.', 'De quoi auriez-vous besoin ce soir ?', 'Trouver une idée pour ce soir'], nuit: ['Il est tard.', 'De quoi auriez-vous besoin, là, maintenant ?', 'Trouver une idée pour cette nuit'] }[m];
-      const vu = await page.evaluate(() => [document.querySelector('.herofull .salut').textContent, document.querySelector('.herofull .besoin').textContent, document.querySelector('.herofull .porte[data-v="piste"] b').textContent.split(String.fromCharCode(160)).join(' '), document.documentElement.className, document.getElementById('app').className]);
-      ok(vu[0] === veut[0] && vu[1] === veut[1] && vu[2] === veut[2] && new RegExp('\\bh-' + m + '\\b').test(vu[3]) && new RegExp('\\bh-' + m + '\\b').test(vu[4]), 'accueil : le bonjour, la question et la lumière sont ceux de l’heure (' + m + ')'); }
-    ok((await page.$$('.herofull .porte')).length === 3 && (await page.$$('.herofull ' + A('entrer', '[data-v="parcours"]'))).length === 1 && await has(page, '.herofull .sos'), 'premier écran : 3 portes, le parcours de 6 mois, et le SOS');
+      const vu = await page.evaluate(() => [document.querySelectorAll('.seuil .salut').length, document.querySelector('.seuil .besoin').textContent, document.querySelector('.seuil .porte[data-v="piste"] b').textContent.split(String.fromCharCode(160)).join(' '), document.documentElement.className, document.getElementById('app').className, getComputedStyle(document.body).backgroundColor, (document.querySelector('meta[name="theme-color"]') || {}).content]);
+      const jour = m === 'matin' || m === 'jour';
+      ok(vu[0] === 0 && vu[1] === 'De quoi avez-vous besoin maintenant ?' && vu[2] === veut[2] && new RegExp('\\bh-' + m + '\\b').test(vu[3]) && new RegExp('\\bh-' + m + '\\b').test(vu[4]), 'accueil : la question est « De quoi avez-vous besoin maintenant ? » à toute heure, et la troisième porte suit l’heure (' + m + ')');
+      ok(/\bvue-intro\b/.test(vu[3]) && /\bclair\b/.test(vu[3]) === jour && vu[5] === (jour ? 'rgb(242, 236, 219)' : 'rgb(7, 36, 15)') && vu[6] === (jour ? '#F2ECDB' : '#07240F'), 'accueil : le papier du carnet le jour, la table sombre le soir, jusqu’en haut du téléphone (' + m + ') ' + JSON.stringify(vu.slice(3))); }
+    ok((await page.$$('.seuil .porte')).length === 3 && (await page.$$('.seuil ' + A('entrer', '[data-v="parcours"]'))).length === 1 && await has(page, 'main.intro .hbar .sos'), 'premier écran : 3 portes, le parcours de 6 mois, et le SOS');
     ok((await page.$$eval(A('entrer', '[data-v="today"]'), L => L.length === 2 && L.every(b => b.textContent.trim() === 'Commencer gratuitement'))) && (await page.$$eval('.btn.primary', L => L.every(b => b.dataset.act === 'entrer' || !!b.closest('.sch')))), '« Commencer gratuitement » en bas et en flottant, et le seul autre bouton plein est celui du schéma');
     ok((await page.$$eval('.acc-scenes a[data-act="sit"]', L => L.length === 12 && L.every(a => /\/fiches\/[a-z0-9-]+\/$/.test(a.getAttribute('href'))))) && await has(page, 'a[data-act="fiches"][href$="/fiches/"]'), 'accueil : 12 situations par âge, chacune avec le lien de sa fiche');
     // le SOS s'ouvre sans être entré dans l'espace
-    await page.click('.herofull .sos'); await page.waitForTimeout(150);
+    await page.click('main.intro .hbar .sos'); await page.waitForTimeout(150);
     ok(await has(page, '.sosview') && (await page.$$eval('.emg a.tel', a => a.length)) === 3, 'SOS ouvert depuis l’accueil, sans inscription');
-    await page.click('.sosview .back'); await page.waitForTimeout(200); ok(await has(page, '.herofull') && (await store(page, 'pepe-v1')) === null, 'SOS : retour à l’accueil, rien n’a été créé');
+    await page.click('.sosview .back'); await page.waitForTimeout(200); ok(await has(page, '.seuil') && (await store(page, 'pepe-v1')) === null, 'SOS : retour à l’accueil, rien n’a été créé');
     // aperçu des formules sans s’inscrire
     await page.click(A('peek-plans')); await page.waitForTimeout(100);
     ok((await txt(page, 'h1')) === 'Les 3 offres' && (await page.$$('.formules .formule')).length === 3 && (await page.$$('.formule.f-parcours .f-payer .f-mode')).length === 2, 'les 3 offres consultables depuis l’accueil, avec les 2 façons de payer Le parcours');
     await audit(page, 'formules-apercu');
-    await page.click(A('back')); await page.waitForTimeout(200); ok(await has(page, '.herofull'), 'retour à l’accueil');
+    await page.click(A('back')); await page.waitForTimeout(200); ok(await has(page, '.seuil'), 'retour à l’accueil');
     await page.click(A('peek-about')); await page.waitForTimeout(200);
     ok(/^Avant d’accompagner des familles/.test(await txt(page, 'h1')) && /#histoire$/.test(page.url()) && /^Mon histoire/.test(await page.title()), '« Lire mon histoire » ouvre la page, avec son adresse et son titre');
     ok(!/[:;—]/.test(await page.$eval('.story', e => e.innerText)) && !/[:;—]/.test(await page.$eval('.band.story h1', e => e.innerText)), 'l’histoire se lit comme on parle, sans deux-points, point-virgule ni tiret long');
@@ -87,17 +90,17 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     ok((await page.$$('main .btn.primary')).length === 1 && await has(page, 'main ' + A('entrer')), 'histoire : un seul bouton d’action avant d’entrer');
     await audit(page, 'histoire-apercu');
     await page.click(A('back')); await page.waitForTimeout(250);
-    ok(await has(page, '.herofull') && !/#/.test(page.url()) && !/^Mon histoire/.test(await page.title()), 'retour à l’accueil : adresse et titre rétablis');
+    ok(await has(page, '.seuil') && !/#/.test(page.url()) && !/^Mon histoire/.test(await page.title()), 'retour à l’accueil : adresse et titre rétablis');
     await page.click(A('peek-about')); await page.waitForTimeout(200); await page.goBack(); await page.waitForTimeout(250);
-    ok(await has(page, '.herofull') && !(await has(page, '.places')), 'le bouton Retour du téléphone ramène à l’accueil');
+    ok(await has(page, '.seuil') && !(await has(page, '.places')), 'le bouton Retour du téléphone ramène à l’accueil');
     await page.goForward(); await page.waitForTimeout(250);
     ok(/^Avant d’accompagner/.test(await txt(page, 'h1')) && /#histoire$/.test(page.url()), 'le bouton Suivant du navigateur rouvre l’histoire');
     await page.goBack(); await page.waitForTimeout(250);
     await page.reload(); await page.waitForTimeout(200);
-    ok(await has(page, '.herofull') && (await store(page, 'pepe-v1')) === null, 'après rechargement : toujours l’accueil, et rien n’a été enregistré tant qu’aucun geste n’est fait');
+    ok(await has(page, '.seuil') && (await store(page, 'pepe-v1')) === null, 'après rechargement : toujours l’accueil, et rien n’a été enregistré tant qu’aucun geste n’est fait');
 
     // ============ 2. Le premier geste : souffler tout de suite, sans rien remplir ============
-    await page.click('.herofull .porte[data-v="souffle"]'); await page.waitForTimeout(250);
+    await page.click('.seuil .porte[data-v="souffle"]'); await page.waitForTimeout(250);
     ok(await has(page, 'main.souffle.s-cours') && !(await has(page, '.sheet')) && !(await has(page, '.tabs')), 'un geste : l’écran de respiration, sans question préalable');
     { const d0 = await store(page, 'pepe-v1'); ok(d0.onboarded === true && d0.age === '' && d0.situation === '' && d0.weights.length === 0 && d0.me === '' && d0.perso === false, 'l’espace est créé par le geste, et rien n’est coché à la place du parent'); }
     ok((await txt(page, '#souffle-mot')) === 'Installez-vous' && (await page.$$('.souffle .tours i')).length === 12, 'respiration : un mot pour s’installer, et 12 respirations annoncées');
@@ -108,10 +111,10 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await audit(page, 'souffle-pret');
     await page.click(A('back')); await page.waitForTimeout(350);
     // « Retour » ramène d'où l'on vient : ici la vitrine. Le parent y trouve maintenant « Ouvrir mon espace ».
-    ok(await has(page, 'main.intro .herofull') && !(await has(page, '.tabs')) && (await page.$$('.herofull .porte')).length === 3 && /#accueil$/.test(page.url()), 'retour : la vitrine, d’où le parent venait');
-    ok((await page.evaluate(() => [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'la vitrine d’un parent déjà entré propose « Ouvrir mon espace »');
-    await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(350);
-    ok(await has(page, '.tabs') && /\.$/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')), '« Ouvrir mon espace » : le parent est dans son espace, sur « Aujourd’hui »');
+    ok(await has(page, 'main.intro .seuil') && !(await has(page, '.tabs')) && (await page.$$('.seuil .porte')).length === 3 && /#accueil$/.test(page.url()), 'retour : la vitrine, d’où le parent venait');
+    ok((await page.evaluate(() => [...document.querySelectorAll('.seuil .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'la vitrine d’un parent déjà entré propose « Ouvrir mon espace »');
+    await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(350);
+    ok(await has(page, '.tabs') && /\.$/.test(await txt(page, 'h1')) && !(await has(page, '.seuil')), '« Ouvrir mon espace » : le parent est dans son espace, sur « Aujourd’hui »');
     // « Aujourd'hui » : la question, les 3 portes, puis la dose avant tout le reste
     ok((await page.$$('.portes.mini .porte')).length === 3 && /De quoi auriez-vous besoin/.test(await txt(page, '.band .besoin')), '« Aujourd’hui » : la question du moment et les 3 portes');
     ok(await page.evaluate(() => { const m = document.getElementById('main'), d = m.querySelector('.dose'), st = m.querySelector('.step.semaine'), q = m.querySelector('[data-view="evo"]'); return !!d && !!st && !q && (d.compareDocumentPosition(st) & Node.DOCUMENT_POSITION_FOLLOWING) > 0; }), '« Aujourd’hui » : la dose passe avant l’étape, et le questionnaire n’est plus devant elle');
@@ -263,9 +266,9 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
 
     // ============ 10. Retour d’un habitué, puis remise à zéro ============
     await page.goto(APP); await page.waitForTimeout(250);
-    ok(await page.evaluate(() => document.documentElement.classList.contains('returning')) && /Camille/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')), 'habitué : arrive directement sur « Aujourd’hui »');
+    ok(await page.evaluate(() => document.documentElement.classList.contains('returning')) && /Camille/.test(await txt(page, 'h1')) && !(await has(page, '.seuil')), 'habitué : arrive directement sur « Aujourd’hui »');
     await page.goto(APP + '?nouveau'); await page.waitForTimeout(250);
-    ok(await has(page, '.herofull') && (await store(page, 'pepe-v1')) === null && !/nouveau/.test(page.url()), '?nouveau : repart de zéro');
+    ok(await has(page, '.seuil') && (await store(page, 'pepe-v1')) === null && !/nouveau/.test(page.url()), '?nouveau : repart de zéro');
     await ctx.close();
   }
 
@@ -273,7 +276,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   {
     const { ctx, page } = await ctxPage(browser);
     await page.goto(APP + '#histoire'); await page.waitForTimeout(350);
-    ok(/^Avant d’accompagner/.test(await txt(page, 'h1')) && !(await has(page, '.herofull')) && await page.evaluate(() => document.documentElement.classList.contains('returning')), 'lien direct vers l’histoire : la page s’ouvre dessus, sans passer par l’accueil');
+    ok(/^Avant d’accompagner/.test(await txt(page, 'h1')) && !(await has(page, '.seuil')) && await page.evaluate(() => document.documentElement.classList.contains('returning')), 'lien direct vers l’histoire : la page s’ouvre dessus, sans passer par l’accueil');
     await page.click('main ' + A('entrer')); await page.waitForTimeout(250);
     ok(/\.$/.test(await txt(page, 'h1')) && await has(page, '.tabs') && !(await has(page, '.sheet')) && !/#histoire/.test(page.url()), 'depuis l’histoire, « Commencer gratuitement » ouvre « Aujourd’hui » d’un seul geste, adresse rétablie');
     await page.goto(APP + '#histoire'); await page.waitForTimeout(350);
@@ -309,7 +312,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     ok(await page.$eval('link[rel="stylesheet"]', e => e.sheet && e.sheet.cssRules.length > 50), '404 : styles chargés depuis une adresse profonde');
     await page.evaluate(() => { const b = document.getElementById('consent'); if (b) b.remove(); });
     await audit(page, '404');
-    await page.click('main .btn'); await page.waitForTimeout(200); ok(await has(page, '.herofull'), '404 : le bouton ramène à l’accueil');
+    await page.click('main .btn'); await page.waitForTimeout(200); ok(await has(page, '.seuil'), '404 : le bouton ramène à l’accueil');
     await page.goto(APP + 'antonio/'); await page.waitForTimeout(200);
     ok(!(await has(page, '#consent')) && await has(page, 'meta[name="robots"][content*="noindex"]'), 'Espace Antonio : ni bandeau ni indexation');
     await audit(page, 'espace-antonio');
@@ -347,10 +350,10 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
     await page.goto(APP + 'fiches/quand-il-ou-elle-vit-ailleurs/'); await page.waitForTimeout(150); await audit(page, 'fiche-publique-' + w);
     await page.goto(APP + 'fiches/'); await page.waitForTimeout(150); await audit(page, 'fiches-' + w);
     await page.goto(APP); await page.waitForTimeout(150);
-    await page.click('.herofull ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(150); await audit(page, 'souffle-' + w); await page.click(A('back')); await page.waitForTimeout(200);
+    await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(150); await audit(page, 'souffle-' + w); await page.click(A('back')); await page.waitForTimeout(200);
     await page.click(A('porte', '[data-v="deposer"]')); await page.waitForTimeout(100); await audit(page, 'deposer-' + w); await page.click(A('back')); await page.waitForTimeout(200);
     // « Retour » a ramené à la vitrine, celle d'un parent déjà entré : on la contrôle à cette largeur, puis « Ouvrir mon espace »
-    await audit(page, 'vitrine-parent-' + w); await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(250);
+    await audit(page, 'vitrine-parent-' + w); await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(250);
     await page.click('.card.perso ' + A('onboard')); await audit(page, 'entree-' + w); await page.click(A('ob-done')); await page.waitForTimeout(100); await audit(page, 'aujourdhui-' + w);
     await page.click('.tab' + A('go', '[data-view="parcours"]')); await audit(page, 'parcours-' + w);
     await page.click('.tab' + A('go', '[data-view="kit"]')); await audit(page, 'outils-' + w);
@@ -364,7 +367,7 @@ const store = (page, k) => page.evaluate(k => JSON.parse(localStorage.getItem(k)
   {
     const { ctx, page } = await ctxPage(browser);
     await page.goto(APP); await page.waitForTimeout(150);
-    await page.click('.herofull ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(150);
+    await page.click('.seuil ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(150);
     await page.fill('#draft', 'Je n’ai plus envie de vivre comme ça, je suis épuisée.'); await page.click(A('dsend')); await page.waitForTimeout(250);
     ok(/143/.test((await txt(page, '.toast')) || ''), 'détresse : message immédiat avec le 143');
     await audit(page, 'aujourdhui-detresse');

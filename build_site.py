@@ -125,7 +125,9 @@ RESET = 'html{box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adju
 FONTS = ("@font-face{font-family:'Newsreader';font-style:normal;font-weight:400 700;font-display:swap;src:url(fonts/newsreader.woff2) format('woff2')}\n"
          "@font-face{font-family:'Newsreader';font-style:italic;font-weight:400 600;font-display:swap;src:url(fonts/newsreader-italic.woff2) format('woff2')}\n"
          "@font-face{font-family:'Nunito';font-style:normal;font-weight:200 1000;font-display:swap;src:url(fonts/nunito.woff2) format('woff2')}\n"
-         "@font-face{font-family:'Nunito';font-style:italic;font-weight:200 1000;font-display:swap;src:url(fonts/nunito-italic.woff2) format('woff2')}\n")
+         "@font-face{font-family:'Nunito';font-style:italic;font-weight:200 1000;font-display:swap;src:url(fonts/nunito-italic.woff2) format('woff2')}\n"
+         # Besley : les titres de la vitrine « le carnet sur la table » (choisie par Antonio le 19 novembre 2026).
+         "@font-face{font-family:'Besley';font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/besley.woff2) format('woff2')}\n")
 
 
 def app_css():
@@ -140,9 +142,13 @@ def app_css():
 # Il pose aussi le moment de la journée (h-matin, h-jour, h-soir, h-nuit) : la photo de l'étang prend la lumière de l'heure dès le premier affichage.
 INLINE = ("try{var e=document.documentElement,h=location.hash==='#histoire',d=null,H=new Date().getHours();"
           "e.classList.add('h-'+((H<5||H>=22)?'nuit':H<11?'matin':H<18?'jour':'soir'));"
+          "if(H>=5&&H<18)e.classList.add('clair');"
           "if(!/[?&](nouveau|reset|new)\\b/.test(location.search))d=JSON.parse(localStorage.getItem('" + CLE + "')||'null');"
-          "if(/^#f=/.test(location.hash))e.classList.add('rl-attend');"
-          "if(h||(d&&d.onboarded))e.classList.add('returning');"
+          "var f=/^#f=/.test(location.hash),r=h||(d&&d.onboarded);"
+          "if(f)e.classList.add('rl-attend');"
+          "if(r)e.classList.add('returning');"
+          "if(e.getAttribute('data-vue')==='intro'&&!f&&!r){e.classList.add('vue-intro');"
+          "if(H>=5&&H<18){var t=document.querySelector('meta[name=theme-color]');if(t)t.setAttribute('content','#F2ECDB');}}"
           "if(!(d&&d.fxOff)&&window.matchMedia&&!matchMedia('(prefers-reduced-motion: reduce)').matches)e.classList.add('fx');}catch(e){}")
 # Juste après l'accueil écrit à l'avance : les mots qui dépendent de l'heure (« Bonsoir », « ce soir ») sont mis avant le premier affichage.
 # L'accueil porte ses variantes dans des attributs data-matin, data-jour, data-soir et data-nuit, écrits par l'app elle-même.
@@ -184,7 +190,7 @@ def csp(inline=''):
             "connect-src 'self' https://cloudflareinsights.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests")
 
 
-def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=True, noconsent=False, hero=True, og=None, corps=()):
+def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=True, noconsent=False, hero=True, og=None, corps=(), vue=''):
     """a = préfixe des fichiers de l'app ('' pour une page du dossier de l'app, chemin absolu pour le 404 et pour les fiches).
     og = (adresse de l'image d'aperçu, sa description, le titre court) pour une page qui a la sienne.
     corps = les scripts écrits dans le corps de la page, que la consigne de sécurité doit connaître."""
@@ -192,7 +198,7 @@ def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=
     if ESSAI:
         robots = 'noindex,nofollow'
     inlines = [inline] + list(corps)
-    out = ['<!doctype html>', '<html lang="fr"%s>' % (' data-noconsent' if noconsent else ''), '<head>', '<meta charset="utf-8">',
+    out = ['<!doctype html>', '<html lang="fr"%s%s>' % (' data-noconsent' if noconsent else '', (' data-vue="%s"' % vue) if vue else ''), '<head>', '<meta charset="utf-8">',
            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
            '<meta http-equiv="Content-Security-Policy" content="%s">' % e(csp(inlines)),
            '<title>%s</title>' % e(title),
@@ -217,6 +223,8 @@ def head(title, desc, canonical, a, v, robots='index,follow', inline='', social=
                 '<meta name="twitter:card" content="summary_large_image">']
     if hero:  # l'image du haut de page est l'élément le plus grand : on la demande tout de suite
         out.append('<link rel="preload" href="%simg/hero.webp" as="image" type="image/webp" fetchpriority="high">' % a)
+    if vue == 'intro':  # la vitrine : son grand titre est l'élément le plus grand du premier écran, sa police est demandée tout de suite
+        out.append('<link rel="preload" href="%sfonts/besley.woff2" as="font" type="font/woff2" crossorigin>' % a)
     out += ['<link rel="preload" href="%sfonts/nunito.woff2" as="font" type="font/woff2" crossorigin>' % a,
             '<link rel="preload" href="%sfonts/newsreader.woff2" as="font" type="font/woff2" crossorigin>' % a,
             '<link rel="stylesheet" href="%sapp.css?v=%s">' % (a, v['css'])]
@@ -364,7 +372,7 @@ def build_site():
     desc = ('Souffler 2 minutes, déposer ce qui pèse ou trouver une piste pour ce soir. '
             'Un espace d’écoute pour tout parent, par Antonio Company, travailleur social.')
     # Les fichiers de la page sont appelés par leur chemin complet : l'adresse change quand on ouvre une fiche, et un chemin relatif ne mènerait plus au bon endroit.
-    index = (head(title, desc, MOVED or APP_URL, APP_PATH, v, inline=(inline_moved() + INLINE) if MOVED else INLINE, corps=(INLINE_HEURE,))
+    index = (head(title, desc, MOVED or APP_URL, APP_PATH, v, inline=(inline_moved() + INLINE) if MOVED else INLINE, corps=(INLINE_HEURE,), hero=False, vue='intro')
              + '<body>\n<div id="app" class="' + classe(pre) + '" data-prerender="intro">' + pre['html'] + '</div>\n'
              + '<script>' + INLINE_HEURE + '</script>\n'
              + '<noscript><p class="noscript">Cet espace a besoin de JavaScript pour fonctionner. Activez-le dans votre navigateur, puis rechargez la page.</p></noscript>\n'

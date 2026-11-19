@@ -352,13 +352,25 @@ function souffleSuite(now){
 }
 /* La page a passé un moment à l'arrière-plan : tout le minutage est décalé d'autant, et la respiration reprend là où elle en était. */
 function souffleDecale(dt){const s=state.souffle;s.t0+=dt;if(s.fin)s.fin+=dt;(s.seq||[]).forEach(p=>{p.a+=dt;});}
-/* Où est la goutte sur la photo affichée ? Le cercle se pose autour du point où elle touche l'eau. */
+/* La photo de l'étang (une eau claire au pied des arbres, 1120 × 840). Le rivage est à un peu plus de la moitié de la hauteur :
+   les cercles se posent sur l'eau, au milieu, à 71 % de la hauteur de la photo, quel que soit le recadrage de l'écran. */
+const ETANG={w:1120,h:840,x:.5,y:.71};
 function soufflePose(){
-  const host=document.querySelector('.souffle .band');const r=document.querySelector('.souffle .ronds');if(!host||!r||!r.style)return;
-  const g=eauGeo(host);if(!g)return;
-  const x=(434-g.ox)*g.k,y=(259-g.oy)*g.k;
-  const w=Math.max(150,Math.min(g.w*.92,470*g.k*1.25));
-  r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.27)+'px';
+  const host=document.querySelector('.souffle .etang');const r=document.querySelector('.souffle .ronds');if(!host||!r||!r.style)return;
+  const im=host.querySelector('.etang-photo');const b=host.getBoundingClientRect();if(!im||b.width<40||b.height<40)return;
+  let px=.5,py=.5;
+  try{const m=String(getComputedStyle(im).objectPosition).match(/(-?[\d.]+)%\s+(-?[\d.]+)%/);if(m){px=m[1]/100;py=m[2]/100;}}catch(e){}
+  const k=Math.max(b.width/ETANG.w,b.height/ETANG.h),dw=ETANG.w*k,dh=ETANG.h*k;
+  /* Quand la photo est basse (le choix d'une respiration est ouvert), les cercles remontent un peu pour rester sur l'eau visible. */
+  const x=(b.width-dw)*px+dw*ETANG.x,y=Math.min((b.height-dh)*py+dh*ETANG.y,b.height*.6);
+  /* Le plus grand cercle reste dans l'écran, et il ne remonte pas jusqu'au rivage. */
+  const w=Math.max(170,Math.min(b.width*.88,dh*.9,b.height*1.5,560));
+  r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.25)+'px';
+}
+/* À chaque expiration, un cercle de plus part du centre et s'éloigne sur l'eau, puis s'efface. */
+function souffleOnde(){
+  const b=document.querySelector('.souffle .ronds b');if(!b||!b.classList)return;
+  b.classList.remove('onde');void b.offsetWidth;b.classList.add('onde');
 }
 const SOUFFLE_MOT={avant:'Installez-vous',in:'Inspirez',out:'Expirez'};
 /* La ligne sous le grand mot. En silence, elle dit comment respirer. Avec le son, elle donne la clé d'écoute pendant les premières respirations,
@@ -394,8 +406,8 @@ function souffleFrame(){
   if(i!==s.ix||ph!==s.ph||tr!==s.tr){
     const neuf=i!==s.ix||ph!==s.ph;
     s.ix=i;s.ph=ph;s.cyc=cyc;s.tr=tr;souffleMots();
-    /* À chaque expiration, une onde part de la goutte et s'éloigne sur l'étang. */
-    if(neuf&&ph==='out'&&fxOn())eauReady(()=>{if(state.view!=='souffle'||state.souffle.k!=='cours')return;const host=document.querySelector('.souffle .band');if(host&&eauHost(host)){eauAdd(434,259,.75,0);eauAdd(434,259,.4,.6);}});
+    /* À chaque expiration, une onde part du centre des cercles et s'éloigne sur l'étang. */
+    if(neuf&&ph==='out'&&fxOn())souffleOnde();
   }
   const r=document.querySelector('.souffle .ronds');
   if(r&&r.style&&fxOn())r.style.setProperty('--s',(.36+.64*e).toFixed(3));
@@ -450,7 +462,8 @@ function viewSouffle(){
   else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1>'+
     (choix?respChoixHtml():'<p class="aide">'+respPret()+'</p><div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>'+changer);
   return '<main id="main" tabindex="-1" class="view souffle s-'+k+(choix?' s-choix':'')+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
-    '<div class="band bleed" style="background-image:url('+HERO+')"><span class="ronds" aria-hidden="true"><i></i><i></i></span></div>'+
+    /* L'étang et ses cercles : le plus grand suit le souffle, il s'ouvre quand on inspire et se referme quand on expire. */
+    '<div class="etang bleed"><img class="etang-photo" src="'+PHOTO_DIR+'eau-g.webp" alt="" width="1120" height="840" decoding="async"><span class="ronds" aria-hidden="true"><i></i><i></i><i></i><b></b></span></div>'+
     '<div class="resp">'+bas+'</div></main>';
 }
 

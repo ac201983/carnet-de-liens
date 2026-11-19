@@ -35,14 +35,18 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
       return { sections: q('main.intro>section').map(s => s.className.split(' ').pop()), h1: q('h1').length, h2: q('main.intro h2').length, perms: tx('.acc-perms li'),
         doseT: tx('.acc-dose .dose p')[0], label: tx('.acc-dose .dose .label')[0], qT: tx('.acc-depot .mirror .q')[0], lT: tx('.acc-depot .mirror .l')[0],
         mois: q('.acc-mois details').length, etapes: tx('.acc-mois li'), nomsM: tx('.acc-mois summary b'), vecu: tx('.acc-parcours .card.vecu p.lesson'), sch: document.querySelector('.acc-parcours .card.sch').dataset.sch,
-        pictos: q('.acc-pictos img').length, chips: tx('.acc-scenes .acc-chips li a'), liens: q('.acc-scenes .acc-chips li a').map(a => a.getAttribute('href')), groupes: tx('.acc-scenes h3'), outils: tx('.acc-outils .acc-h .acc-l')[0], outils2: tx('.acc-outils-l')[0], prix: tx('.acc-plans .prix'), plans: tx('.acc-plans b'), faq: q('.faq').length, cit: tx('.acc-fin blockquote p')[0] || '', portes: tx('.herofull .porte b'), h1t: tx('h1')[0], pour: tx('.herofull .pour')[0] || '', besoin: tx('.herofull .besoin-l')[0] || '', relais: tx('.acc-relais .rl-mini b')[0] || '', relaisPrix: tx('.acc-relais .prix')[0] || '' };
+        pictos: q('.acc-pictos img').length, chips: tx('.acc-scenes .acc-chips li a'), liens: q('.acc-scenes .acc-chips li a').map(a => a.getAttribute('href')), groupes: tx('.acc-scenes h3'), outils: tx('.acc-outils .acc-h .acc-l')[0], outils2: tx('.acc-outils-l')[0], prix: tx('.acc-plans .prix'), plans: tx('.acc-plans b'), faq: q('.faq').length, cit: tx('.acc-fin blockquote p')[0] || '', portes: tx('.seuil .porte b'), h1t: tx('h1')[0], pour: tx('.seuil .pour')[0] || '', besoin: tx('.seuil .besoin-l')[0] || '', relais: tx('.acc-relais .rl-mini b')[0] || '', relaisPrix: tx('.acc-relais .prix')[0] || '', relaisQui: tx('.acc-relais .rl-mini .label')[0] || '',
+        salut: q('.seuil .salut').length, fiche: tx('.fiche-b h2')[0] || '', fichePour: tx('.fiche-b .fb-tete p')[0] || '', ficheEx: tx('.fiche-b .fb-ex')[0] || '', trois: tx('.fiche-b li'), voir: tx('.fiche-b .fb-voir')[0] || '', sac: q('.nature svg.sac').length, pratique: tx('.haut-sit b')[0] || '', pratiqueLien: (document.querySelector('.haut-sit') || { getAttribute() { return ''; } }).getAttribute('href') };
     });
     r.permsOk = r.perms.every(p => X.PERMISSIONS.some(x => net(x[1]) === p)); r.dose = r.doseT === net(X.curatedDose());
     r.q = X.LOCAL_Q.some(x => net(x) === r.qT); r.l = X.WORDS.some(x => net(x) === r.lT);
     r.titres = E.map(s => net(s.t)); r.nomsMois = r.nomsM.join('|') === X.PARCOURS.map(m => net(m.m)).join('|'); r.vecu2 = E[1].vecu.slice(0, 2).map(net);
     r.sits = X.SITS.map(s => net(s.t)); r.nSits = X.SITS.length; r.nPictos = X.PICTOS.length; r.tiers = Object.values(X.TIERS).map(x => net(x.t)); r.fin4 = net(E[3].vecu);
-    ok(r.sections.join(' ') === 'acc-dose acc-outils acc-depot acc-perm acc-parcours acc-relais voice acc-formules acc-faq acc-fin' && r.h1 === 1 && r.h2 === 9, 'accueil : 10 chapitres, ce qui sert tout de suite en premier, un seul grand titre ' + JSON.stringify([r.sections, r.h1, r.h2]));
-    ok(r.h1t === 'On vous demande souvent comment va votre enfant. Ici, on commence par vous.' && r.pour === 'Pour la mère ou le père d’une personne en situation de handicap' && /De quoi auriez-vous besoin/.test(r.besoin) && r.portes.length === 3 && r.portes[0] === 'Souffler 2 minutes' && r.portes[1] === 'Déposer ce qui pèse' && /^Trouver une idée pour /.test(r.portes[2]), 'accueil : le public, la phrase d’Antonio en grand titre, puis la question et les 3 portes ' + JSON.stringify([r.h1t, r.portes]));
+    ok(r.sections.join(' ') === 'acc-dose acc-outils acc-depot acc-perm acc-parcours acc-relais voice acc-formules acc-faq acc-fin' && r.h1 === 1 && r.h2 === 10, 'accueil : 10 chapitres, ce qui sert tout de suite en premier, un seul grand titre (le dixième titre de second rang est celui de la fiche posée sur la table) ' + JSON.stringify([r.sections, r.h1, r.h2]));
+    ok(r.h1t === 'On vous demande souvent comment va votre enfant. Ici, on commence par vous.' && r.pour === 'Pour la mère ou le père d’une personne en situation de handicap' && r.besoin === 'De quoi avez-vous besoin maintenant ?' && r.salut === 0 && r.portes.length === 3 && r.portes[0] === 'Souffler 2 minutes' && r.portes[1] === 'Déposer ce qui pèse' && /^Trouver une idée pour /.test(r.portes[2]), 'accueil : le public, la phrase d’Antonio en grand titre, puis la question et les 3 portes ' + JSON.stringify([r.h1t, r.portes]));
+    // La table du carnet : le sac dessiné, et la fiche d'exemple de Bastien, dont le bouton dit « en entier ». Plus bas, l'exemple est celui de Noé.
+    ok(r.sac === 1 && r.fiche === 'Le relais de Bastien' && /^Pour son oncle Rémi, du samedi /.test(r.fichePour) && r.ficheEx === 'Exemple' && r.trois.length === 3 && /^Bastien a besoin de savoir/.test(r.trois[0]) && r.voir === 'Voir la fiche de Bastien en entier', 'accueil : sur la table, le sac et la fiche de Bastien, avec ses 3 repères et le bouton « Voir la fiche de Bastien en entier » ' + JSON.stringify([r.sac, r.fiche, r.voir]));
+    ok(r.pratique === 'Confier son enfant à un proche' && /\/fiches\/confier-son-enfant-a-un-proche\/$/.test(r.pratiqueLien || '') && /^Le relais de Noé, /.test(r.relaisQui), 'accueil : sous la fiche, le lien vers la fiche pratique, et plus bas l’exemple de Noé ' + JSON.stringify([r.pratique, r.pratiqueLien, r.relaisQui]));
     ok(r.perms.length === 4 && r.permsOk, 'accueil : les 4 permissions sont celles de l’espace');
     ok(r.dose && /^(La dose du (lundi|mardi|mercredi|jeudi|vendredi|samedi) \d{1,2} \S+|Dose spéciale du dimanche)$/.test(r.label), 'accueil : la dose affichée est celle du jour, avec sa date (' + r.label + ')');
     ok(r.q && r.l, 'accueil : la question et la lumière de l’exemple sont prises dans celles de l’espace');
@@ -75,8 +79,18 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
   {
     const { ctx, page, errs } = await ouvre();
     // le premier écran tient dans la hauteur visible d'un téléphone : la question et les 3 portes sont là sans faire défiler
-    const vus = await page.evaluate(() => [...document.querySelectorAll('.herofull h1, .herofull .porte')].map(e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }));
+    const vus = await page.evaluate(() => [...document.querySelectorAll('.seuil h1, .seuil .porte')].map(e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }));
     ok(vus.length === 4 && vus.every(Boolean), 'premier écran : la question et les 3 portes sont visibles sans faire défiler ' + JSON.stringify(vus));
+    // Toute la fiche de Bastien est cliquable : on la touche au milieu d'un repère, loin du bouton, et elle s'ouvre en entier.
+    {
+      const pt = await page.evaluate(() => { const li = document.querySelectorAll('.fiche-b li')[1]; li.scrollIntoView({ block: 'center' }); const r = li.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const el = document.elementFromPoint(x, y); return { x, y, sous: el ? el.className : '', curseur: getComputedStyle(document.querySelector('.fiche-b')).cursor }; });
+      await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(700);
+      const ex = await page.evaluate(() => ({ relais: !!document.querySelector('.v-relais'), t: (document.querySelector('.v-relais .rl-fiche') || document.body).textContent }));
+      ok(pt.sous === 'fb-voir' && pt.curseur === 'pointer' && ex.relais && /Le relais de Bastien/.test(ex.t) && /Ce que je souhaite dire moi-même/.test(ex.t), 'fiche de Bastien : un toucher au milieu de la feuille ouvre la fiche entière ' + JSON.stringify([pt.sous, pt.curseur, ex.relais]));
+      await page.click(A('back')); await page.waitForTimeout(600);
+      ok(!!(await page.$('.seuil')), 'fiche de Bastien : « Retour » ramène à la vitrine');
+      await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(150);
+    }
     const av = await page.evaluate(() => [...document.querySelectorAll('.faq')].filter(d => d.open).length);
     const iLit = await page.evaluate(() => [...document.querySelectorAll('.faq summary')].findIndex(s => /Qui lit ce que j’écris/.test(s.textContent)));
     await page.click('.faq:nth-of-type(' + (iLit + 1) + ') summary'); await page.waitForTimeout(150);
@@ -87,16 +101,16 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
     await page.click('.acc-parcours .card.vecu ' + A('peek-about')); await page.waitForTimeout(700);
     ok(/^Avant d’accompagner/.test(await page.textContent('h1')), 'extrait de l’étape 2 : « Lire mon histoire » ouvre l’histoire');
     await page.click(A('back')); await page.waitForTimeout(600);
-    ok(!!(await page.$('.herofull')), 'histoire : le bouton Retour ramène à l’accueil');
+    ok(!!(await page.$('.seuil')), 'histoire : le bouton Retour ramène à l’accueil');
     await page.click('.voice ' + A('peek-about')); await page.waitForTimeout(700);
     ok(/^Avant d’accompagner/.test(await page.textContent('h1')), 'chapitre d’Antonio : le bouton « Lire mon histoire » ouvre l’histoire'); await page.click(A('back')); await page.waitForTimeout(500);
     await page.click('.acc-formules ' + A('peek-plans')); await page.waitForTimeout(500);
     ok(/Les 3 offres/.test(await page.textContent('h1')), 'offres : le bouton ouvre le détail'); await page.click(A('back')); await page.waitForTimeout(400);
     await page.click('.acc-depot ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(400);
     ok(!!(await page.$('main.deposer #draft')), 'chapitre « Déposer » : son bouton mène à l’écran pour écrire'); await page.click(A('back')); await page.waitForTimeout(400);
-    ok(!!(await page.$('.herofull')) && (await page.evaluate(() => [...document.querySelectorAll('.herofull .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'après ce premier geste, « Retour » ramène à la vitrine, qui propose « Ouvrir mon espace »');
-    await page.click('.herofull ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(500);
-    ok(!!(await page.$('.tabs')) && !(await page.$('.herofull')), '« Ouvrir mon espace » mène dans l’espace du parent');
+    ok(!!(await page.$('.seuil')) && (await page.evaluate(() => [...document.querySelectorAll('.seuil .voie')].map(e => e.textContent.trim()).join('|'))) === 'Commencer le parcours de 6 mois|Ouvrir mon espace', 'après ce premier geste, « Retour » ramène à la vitrine, qui propose « Ouvrir mon espace »');
+    await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await page.waitForTimeout(500);
+    ok(!!(await page.$('.tabs')) && !(await page.$('.seuil')), '« Ouvrir mon espace » mène dans l’espace du parent');
     ok(errs.length === 0, 'accueil (liens) : aucune erreur ' + errs.slice(0, 2).join(' | '));
     await ctx.close();
   }
@@ -117,7 +131,7 @@ const autreJour = (dec, f) => { const D0 = Date; class D2 extends D0 { construct
   for (const [w, h] of [[320, 568], [1280, 800]]) {
     const { ctx, page, errs } = await ouvre({ ctx: { viewport: { width: w, height: h } } });
     await page.evaluate(() => document.querySelectorAll('main.intro details').forEach(d => { d.open = true; })); await page.waitForTimeout(150);
-    const r = await page.evaluate(() => { const a = document.querySelector('.acc-parcours'), hh = a.querySelector('.acc-h').getBoundingClientRect(), c = a.querySelector('.acc-c').getBoundingClientRect(); const hors = [...document.querySelectorAll('main.intro *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > innerWidth + 1 && !e.closest('.cta-flot') && !e.matches('.herobg,canvas.eau'); }).length;   /* la photo de l’accueil est plus large que son cadre sur grand écran, et le cadre la coupe */ return { sw: document.documentElement.scrollWidth, iw: innerWidth, cote: hh.right <= c.left, hors }; });
+    const r = await page.evaluate(() => { const a = document.querySelector('.acc-parcours'), hh = a.querySelector('.acc-h').getBoundingClientRect(), c = a.querySelector('.acc-c').getBoundingClientRect(); const hors = [...document.querySelectorAll('main.intro *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > innerWidth + 1 && !e.closest('.cta-flot') && !e.matches('canvas.eau'); }).length;   /* la photo de l’accueil est plus large que son cadre sur grand écran, et le cadre la coupe */ return { sw: document.documentElement.scrollWidth, iw: innerWidth, cote: hh.right <= c.left, hors }; });
     ok(r.sw <= r.iw && r.hors === 0, w + ' px : rien ne dépasse sur la page d’accueil ' + JSON.stringify(r));
     ok(w < 1024 ? !r.cote : r.cote, w + ' px : ' + (w < 1024 ? 'le titre est au-dessus du contenu' : 'le titre est à gauche du contenu'));
     ok(errs.length === 0, w + ' px : aucune erreur ' + errs.slice(0, 2).join(' | '));

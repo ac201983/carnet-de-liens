@@ -64,7 +64,7 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     }
     await page.waitForTimeout(1700); return seen;
   };
-  let s = await shot('.herofull ' + A('entrer', '[data-v="parcours"]'), 'entree', [120, 300, 480, 660, 840, 1100]);
+  let s = await shot('.seuil ' + A('entrer', '[data-v="parcours"]'), 'entree', [120, 300, 480, 660, 840, 1100]);
   ok(/D’où je pars/.test(await page.$eval('h1', e => e.textContent)) && !!(await page.$('.tabs')), 'entrée : un geste, et la première étape du parcours est affichée');
   ok(s[0].vt === !OLD && (OLD ? s[0].nav : true), 'entrée : le changement d’écran est en cours juste après le toucher (' + JSON.stringify(s[0]) + ')');
   ok(OLD ? (s.some(x => x.voile > 0) && s[1].fxe >= 2) : (s[1].onde && s[1].fxe === 0), OLD ? 'entrée (navigateur ancien) : les blocs remontent l’un après l’autre' : 'entrée : l’onde de lumière traverse l’écran, et les blocs n’ont pas à arriver un par un (' + JSON.stringify(s[1]) + ')');
@@ -159,38 +159,40 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     const p = await c2.newPage(); listen(p);
     const eau = sel => p.evaluate(sel => { const c = document.querySelector(sel + '>canvas.eau'); return c ? c.width * c.height : 0; }, sel);
     await p.goto(APP); await p.waitForTimeout(600);
-    // la lumière qui se lève change à elle seule une bonne part de la photo : on la retire ici pour ne mesurer que l'eau
-    if (process.argv[4] !== 'lumiere') await p.addStyleTag({ content: '.lum .herofull::before{display:none!important}' });
-    const heroClip = { x: 0, y: 0, width: W, height: 340 }; const seen = []; const t0 = Date.now();
-    for (const ms of [600, 1300, 2200, 3200, 4300]) { const d = ms - (Date.now() - t0); if (d > 0) await p.waitForTimeout(d); await p.screenshot({ path: OUT + '/accueil-' + String(ms).padStart(4, '0') + '.png', clip: heroClip }); seen.push(await eau('.herofull')); }
-    await p.waitForTimeout(3200); await p.screenshot({ path: OUT + '/accueil-calme.png', clip: heroClip });
-    ok(seen.filter(v => v > 0).length >= 3, 'accueil : le calque de l’eau est là pendant que l’onde passe (' + seen.join(',') + ')');
-    ok(!(await eau('.herofull')), 'accueil : le calque s’enlève tout seul quand l’onde s’est éteinte');
     const sharp = require('sharp'); const rd = async f => (await sharp(OUT + '/' + f).removeAlpha().raw().toBuffer()); const diff = (x, y) => { let k = 0; for (let i = 0; i < x.length; i += 3) if (Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]) > 24) k++; return k / (x.length / 3); };
-    const calm = await rd('accueil-calme.png'); const d1 = diff(await rd('accueil-2200.png'), calm);
-    ok(d1 > 0.004 && d1 < 0.35, 'accueil : l’eau bouge vraiment, sans tout bouleverser (' + (d1 * 100).toFixed(1) + ' % des points changent à 2,2 s)');
-    await p.waitForTimeout(800); await p.screenshot({ path: OUT + '/accueil-calme2.png', clip: heroClip });
-    ok(diff(await rd('accueil-calme2.png'), calm) === 0, 'accueil : une fois calme, plus rien ne bouge');
-    // toucher l'eau : une onde naît sous le doigt ; toucher la forêt : rien
-    await tap(p, Math.round(W * .22), 150); await p.waitForTimeout(900);
-    ok((await eau('.herofull')) > 0, 'toucher l’eau : une onde naît sous le doigt'); await p.screenshot({ path: OUT + '/toucher-0900.png', clip: heroClip });
-    await p.waitForTimeout(4600); ok(!(await eau('.herofull')), 'toucher l’eau : le calque s’enlève quand l’onde s’est éteinte');
-    await tap(p, Math.round(W * .5), 40); await p.waitForTimeout(500);
-    ok(!(await eau('.herofull')), 'toucher la forêt : l’eau ne bouge pas');
-    // toucher la goutte : elle rebondit, et l'onde part quand elle touche l'eau
-    const g = await p.$eval('.herofull .herobg', e => { const r = e.getBoundingClientRect(), k = Math.max(r.width / 866, r.height / 470); return { x: r.left + r.width / 2 + (434.8 - 433) * k, y: r.top + r.height / 2 + (167.5 - 235) * k }; });
-    await tap(p, Math.round(g.x), Math.round(g.y)); await p.waitForTimeout(700);
-    ok((await eau('.herofull')) > 0, 'toucher la goutte : elle rebondit (le calque est là)'); await p.screenshot({ path: OUT + '/goutte-0700.png', clip: heroClip });
-    await p.waitForTimeout(5200); ok(!(await eau('.herofull')), 'toucher la goutte : tout redevient calme ensuite');
-    await p.screenshot({ path: OUT + '/accueil-calme3.png', clip: heroClip }); ok(diff(await rd('accueil-calme3.png'), calm) === 0, 'après le rebond, la photo est exactement comme avant');
-    // « Aujourd'hui » : l'onde part aussi de la goutte du bandeau, puis tout redevient calme
-    await p.click('.herofull ' + A('entrer', '[data-v="today"]')).catch(() => p.$eval('.acc-fin ' + A('entrer'), e => e.click())); await p.waitForTimeout(2600);
+    // La vitrine est un carnet posé sur une table, sans photo : aucun calque d'eau n'y est posé, et une fois l'écran arrivé plus rien ne bouge.
+    { const clip = { x: 0, y: 0, width: W, height: 700 }; const vus = []; const t0 = Date.now();
+      for (const ms of [600, 1300, 2200, 3200]) { const d = ms - (Date.now() - t0); if (d > 0) await p.waitForTimeout(d); vus.push((await p.$$('canvas.eau')).length); }
+      await p.waitForTimeout(2400); await p.screenshot({ path: OUT + '/accueil-calme.png', clip }); await p.waitForTimeout(900); await p.screenshot({ path: OUT + '/accueil-calme2.png', clip });
+      ok(vus.every(v => v === 0) && !!(await p.$('.seuil .fiche-b')), 'accueil : le carnet n’a pas de photo, aucun calque d’eau n’y est posé (' + vus.join(',') + ')');
+      ok(diff(await rd('accueil-calme2.png'), await rd('accueil-calme.png')) === 0, 'accueil : une fois l’écran arrivé, plus rien ne bouge'); }
+    // « Aujourd'hui » : la goutte du bandeau saute à l'arrivée, l'onde part, puis tout redevient calme
+    await p.click('.seuil ' + A('entrer', '[data-v="today"]')).catch(() => p.$eval('.acc-fin ' + A('entrer'), e => e.click())); await p.waitForTimeout(2600);
     ok((await eau('.band')) > 0, '« Aujourd’hui » : la goutte du bandeau saute, l’onde part');
     await p.waitForTimeout(5600); ok(!(await eau('.band')), '« Aujourd’hui » : le calque s’enlève ensuite');
-    // souffler : à chaque expiration, une onde part sur l'étang
+    // Le bandeau garde la photo de l'étang : l'eau y répond au doigt. Un point de la photo (866 × 470) est converti en point de l'écran.
+    await p.evaluate(() => scrollTo(0, 0));
+    const pt = (ix, iy) => p.$eval('.band', (e, [ix, iy]) => { const r = e.getBoundingClientRect(), k = Math.max(r.width / 866, r.height / 470); const m = getComputedStyle(e).backgroundPosition.match(/(-?[\d.]+)%\s+(-?[\d.]+)%/); const px = m ? m[1] / 100 : .5, py = m ? m[2] / 100 : .5; return { x: Math.round(r.left + (r.width - 866 * k) * px + ix * k), y: Math.round(r.top + (r.height - 470 * k) * py + iy * k) }; }, [ix, iy]);
+    const bandClip = await p.$eval('.band', e => { const r = e.getBoundingClientRect(); return { x: 0, y: Math.max(0, Math.round(r.top)), width: innerWidth, height: Math.round(Math.min(r.height, 150)) }; });
+    await p.screenshot({ path: OUT + '/bandeau-calme.png', clip: bandClip });
+    // toucher l'eau : une onde naît sous le doigt ; toucher la forêt : rien
+    { const e1 = await pt(150, 300); await tap(p, e1.x, e1.y); await p.waitForTimeout(900);
+      ok((await eau('.band')) > 0, 'toucher l’eau : une onde naît sous le doigt ' + JSON.stringify(e1)); await p.screenshot({ path: OUT + '/toucher-0900.png', clip: bandClip });
+      ok(diff(await rd('toucher-0900.png'), await rd('bandeau-calme.png')) > 0.002, 'toucher l’eau : l’eau bouge vraiment');
+      await p.waitForTimeout(4600); ok(!(await eau('.band')), 'toucher l’eau : le calque s’enlève quand l’onde s’est éteinte');
+      const e2 = await pt(250, 60); await tap(p, e2.x, e2.y); await p.waitForTimeout(500);
+      ok(!(await eau('.band')), 'toucher la forêt : l’eau ne bouge pas ' + JSON.stringify(e2)); }
+    // toucher la goutte : elle rebondit, et l'onde part quand elle touche l'eau
+    { const g = await pt(434.8, 180); await tap(p, g.x, g.y); await p.waitForTimeout(700);
+      ok((await eau('.band')) > 0, 'toucher la goutte : elle rebondit (le calque est là) ' + JSON.stringify(g)); await p.screenshot({ path: OUT + '/goutte-0700.png', clip: bandClip });
+      await p.waitForTimeout(5200); ok(!(await eau('.band')), 'toucher la goutte : tout redevient calme ensuite');
+      await p.screenshot({ path: OUT + '/bandeau-calme3.png', clip: bandClip }); ok(diff(await rd('bandeau-calme3.png'), await rd('bandeau-calme.png')) === 0, 'après le rebond, la photo est exactement comme avant'); }
+    // souffler : l'étang a sa propre photo et ses cercles dessinés. Aucun calque d'eau n'y est posé, et à chaque expiration un cercle de plus part sur l'eau.
     await p.click('.portes ' + A('porte', '[data-v="souffle"]')); await p.waitForTimeout(1400 + 4000 + 900);
-    ok((await eau('.souffle .band')) > 0 && (await p.textContent('#souffle-mot')) === 'Expirez', 'souffler : à l’expiration, une onde part sur l’étang');
-    await p.click(A('souffle-stop')); await p.waitForTimeout(4600); ok(!(await eau('.souffle .band')), 'souffler : arrêté, l’étang redevient calme');
+    { const so = await p.evaluate(() => { const b = document.querySelector('.souffle .ronds b'), im = document.querySelector('.souffle .etang-photo'), r = document.querySelector('.souffle .ronds').getBoundingClientRect(), h = document.querySelector('.souffle .etang').getBoundingClientRect(); return { mot: document.getElementById('souffle-mot').textContent, onde: !!b && b.classList.contains('onde'), anim: b ? getComputedStyle(b).animationName : '', photo: !!im && im.complete && im.naturalWidth > 0, eau: document.querySelectorAll('canvas.eau').length, surLEau: r.top + r.height / 2 > h.top + h.height * .45 && r.bottom < h.bottom + 2, large: Math.round(r.width) }; });
+      ok(so.mot === 'Expirez' && so.onde && so.anim === 'et-onde' && so.photo && so.eau === 0 && so.surLEau && so.large >= 170, 'souffler : la photo de l’étang est là, les cercles sont posés sur l’eau, et à l’expiration un cercle part sur l’étang ' + JSON.stringify(so)); }
+    await p.click(A('souffle-stop')); await p.waitForTimeout(4600);
+    ok(await p.evaluate(() => { const b = document.querySelector('.souffle .ronds b'); const bc = getComputedStyle(b).borderTopColor; return /rgba\(255, 255, 255, 0\)|transparent/.test(bc) || !b.classList.contains('onde'); }), 'souffler : arrêté, l’étang redevient calme');
     await p.click(A('back')); await p.waitForTimeout(2600);
     for (const [v, nom] of [['parcours', 'Parcours'], ['kit', 'Outils']]) { await p.click('.tab' + A('go', '[data-view="' + v + '"]')); await p.waitForTimeout(3000); ok((await eau('.band')) > 0, 'onglet « ' + nom + ' » : la goutte saute là aussi'); await p.waitForTimeout(4200); ok(!(await eau('.band')), 'onglet « ' + nom + ' » : puis tout redevient calme'); }
     await p.click('.tab' + A('go', '[data-view="me"]')); await p.waitForTimeout(2600);
