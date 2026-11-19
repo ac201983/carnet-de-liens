@@ -265,6 +265,73 @@ const toast = page => page.evaluate(() => { const t = document.querySelector('.t
     await ctx.close();
   }
 
+  // ---------- 5 bis. Le repère des schémas : un petit point suit la courbe à chaque « Voir la suite » ----------
+  {
+    const DON = Object.assign({}, BASE_DATA, { tier: 'parcours', start: iso(-200), steps: {}, pv: 2, seen: {}, notes: {}, atelier: true, tout: true });
+    const lis = page => page.evaluate(() => { const b = document.querySelector('.card.sch'), g = b.querySelector('.s-rep'), s = b.querySelector('.s-sillage'); if (!g || !s) return null; const m = /translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(g.getAttribute('transform') || ''); return { x: m ? +m[1] : NaN, y: m ? +m[2] : NaN, trait: +s.getAttribute('stroke-dashoffset'), cache: s.getAttribute('visibility') === 'hidden', pos: b.querySelector('.sch-pos').textContent, attente: b.style.getPropertyValue('--rep-d') }; });
+    const pres = (r, x, y) => !!r && Math.hypot(r.x - x, r.y - y) < 1;
+    // a) avec les animations, sur la vague de l'étape 7
+    {
+      const { ctx, page, errs } = await ouvre(browser, DON, { anim: true });
+      await parcours(page); await page.waitForTimeout(1500);
+      await page.click(A('step', '[data-i="6"]')); await page.waitForTimeout(1900);
+      await page.$eval('.card.sch', e => e.scrollIntoView({ block: 'center' })); await page.waitForTimeout(300);
+      const r0 = await lis(page);
+      ok(pres(r0, 99, 110) && Math.abs(r0.trait - 0.7423) < 0.002 && !r0.cache && r0.pos === '1 sur 5', 'repère : à l’arrivée, il est posé sur le premier point de la vague, avec le trait plein jusqu’à lui, et rien ne bouge ' + JSON.stringify(r0));
+      await page.waitForTimeout(700); const r0b = await lis(page);
+      ok(r0b.x === r0.x && r0b.y === r0.y, 'repère : il n’avance pas tout seul');
+      await page.click(A('schnext')); await page.waitForTimeout(420);
+      const r1 = await lis(page);
+      const neuf = await page.evaluate(() => { const g = document.querySelector('.card.sch .sp.neuf'), li = document.querySelector('.sch-caps li.cur'); return { p: g && g.dataset.p, op: g ? parseFloat(getComputedStyle(g).opacity) : -1, phrase: li ? li.textContent : '', vue: li ? getComputedStyle(li).display !== 'none' : false }; });
+      ok(r1.x > 101 && r1.x < 169 && r1.y < 109 && r1.y > 45 && parseFloat(r1.attente) > 0.4, 'repère : après l’appui, il est en route sur la courbe, entre le point 1 et le sommet ' + JSON.stringify(r1));
+      ok(neuf.p === '2' && neuf.op < 0.2 && neuf.vue && /^Au sommet/.test(neuf.phrase) && r1.pos === '2 sur 5', 'repère : la phrase arrive dès l’appui, et le point d’arrivée attend le repère ' + JSON.stringify(neuf));
+      await page.waitForTimeout(1900);
+      const r2 = await lis(page); const op2 = await page.$eval('.card.sch .sp.neuf', g => parseFloat(getComputedStyle(g).opacity));
+      ok(pres(r2, 170, 44) && Math.abs(r2.trait - 0.5) < 0.002 && op2 > 0.98, 'repère : il s’arrête au sommet, le trait plein l’a suivi, et le point 2 est là ' + JSON.stringify(r2));
+      // des appuis rapprochés : le repère repart de là où il est, et finit au bon endroit
+      for (let k = 0; k < 3; k++) { await page.click(A('schnext')); await page.waitForTimeout(45); }
+      await page.waitForTimeout(2600);
+      const r5 = await lis(page);
+      ok(pres(r5, 320, 176) && r5.trait < 0.001 && r5.pos === '5 sur 5' && (await page.$$('.card.sch .sp.on')).length === (await page.$$('.card.sch .sp')).length, 'repère : après 3 appuis rapprochés, il est au bout de la vague et tout le dessin est là ' + JSON.stringify(r5));
+      await page.click(A('schagain')); await page.waitForTimeout(120);
+      const r6 = await lis(page);
+      ok(pres(r6, 99, 110) && Math.abs(r6.trait - 0.7423) < 0.002 && r6.pos === '1 sur 5', '« Revoir depuis le début » remet le repère sur le premier point ' + JSON.stringify(r6));
+      // l'écran redessiné (un aller-retour par « Aujourd'hui ») : le repère est posé au bon endroit, sans rejouer
+      await page.click(A('schnext')); await page.waitForTimeout(1800);
+      await page.click(A('back')); await page.waitForTimeout(700); await page.click(A('step', '[data-i="6"]')); await page.waitForTimeout(1500);
+      const r7 = await lis(page);
+      ok(!!r7 && r7.pos === '1 sur 5' && pres(r7, 99, 110), 'repère : en rouvrant l’étape, le schéma repart du début et le repère est à sa place ' + JSON.stringify(r7));
+      ok(errs.length === 0, 'aucune erreur (repère, avec les animations) ' + errs.slice(0, 2).join(' | '));
+      await ctx.close();
+    }
+    // b) avec « Réduire les animations » : sur les 7 schémas à repère, il est posé d'un coup, à l'endroit exact de la courbe
+    {
+      const { ctx, page, errs } = await ouvre(browser, DON);
+      await parcours(page);
+      for (const [i, sch, moments] of [[0, 'points', 4], [6, 'vague', 5], [10, 'cap', 5], [11, 'creux', 5], [20, 'ravito', 5], [22, 'arche', 5], [23, 'sentier', 5]]) {
+        await page.click(A('step', `[data-i="${i}"]`)); await page.waitForTimeout(160);
+        const ecarts = []; let pb = '';
+        for (let k = 1; k <= moments; k++) {
+          const m = await page.evaluate(() => { const b = document.querySelector('.card.sch'), g = b.querySelector('.s-rep'), s = b.querySelector('.s-sillage'); const S = b.dataset.sch; const mt = /translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(g.getAttribute('transform')); const tr = 1 - (+s.getAttribute('stroke-dashoffset')); const cache = s.getAttribute('visibility') === 'hidden';
+            // l'endroit de la courbe le plus proche du repère
+            const L = s.getTotalLength(); let best = 1e9; for (let j = 0; j <= 4000; j++) { const q = s.getPointAtLength(L * j / 4000), d = Math.hypot(q.x - (+mt[1]), q.y - (+mt[2])); if (d < best) best = d; }
+            const pts = [...b.querySelectorAll('.s-f')].map(e => ({ f: +e.dataset.f, vu: getComputedStyle(e).visibility === 'visible' && getComputedStyle(e.closest('.sp')).display !== 'none', attendu: +e.dataset.f <= tr + 0.002 && e.closest('.sp').classList.contains('on') }));
+            return { sch: S, ecart: +best.toFixed(2), tr: +tr.toFixed(4), cache, pts, anim: getComputedStyle(g).animationName, k: b.querySelector('.sch-pos').textContent }; });
+          ecarts.push(m.ecart);
+          if (m.sch !== sch || m.ecart > 1 || (m.tr > 0.001) === m.cache || m.pts.some(p => p.vu !== p.attendu)) pb += ' moment ' + k + ' ' + JSON.stringify(m);
+          if (k < moments) { await page.click(A('schnext')); await page.waitForTimeout(70); }
+        }
+        ok(!pb, 'repère : schéma « ' + sch + ' » (étape ' + (i + 1) + '), le repère est sur la courbe à chaque moment, et les points de la courbe ne se montrent qu’une fois atteints (écarts ' + ecarts.join(' ') + ')' + pb);
+        await page.click(A('back')); await page.waitForTimeout(120);
+      }
+      // les schémas sans courbe n'ont pas de repère
+      await page.click(A('step', '[data-i="1"]')); await page.waitForTimeout(160);
+      ok(!(await page.$('.card.sch .s-rep')) && !(await page.$('.card.sch .s-sillage')), 'repère : la boucle de l’étape 2, qui n’a pas de courbe à suivre, n’a pas de repère');
+      ok(errs.length === 0, 'aucune erreur (repère, sans animations) ' + errs.slice(0, 2).join(' | '));
+      await ctx.close();
+    }
+  }
+
   // ---------- Le mois 2 écrit en entier, l'étape du MDH-PPH, les accroches, la question ouverte selon la situation ----------
   {
     const fs = require('fs');

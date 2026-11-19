@@ -325,7 +325,12 @@ const PAS_JOURS=7;
    Un schéma se construit morceau par morceau, à la demande (« Voir la suite »). vb : le cadre du dessin ;
    alt : ce que le dessin montre, pour les lecteurs d'écran ; base : ce qui est toujours là ;
    l : les morceaux, dans l'ordre où ils sont dessinés, chacun avec le numéro du moment où il apparaît ;
-   caps : une phrase par moment. Les mots du dessin restent très courts, la phrase complète est dessous. */
+   caps : une phrase par moment. Les mots du dessin restent très courts, la phrase complète est dessous.
+   rep : le repère, pour les schémas qui ont une courbe. C'est un petit point clair qui suit la courbe d'un moment au suivant,
+   chaque fois que le parent appuie sur « Voir la suite ». d : la courbe suivie ; f : la place du repère à chaque moment, de 0 (le début
+   de la courbe) à 1 (la fin) ; p : le même endroit en coordonnées, pour le dessin immobile ; tr : jusqu'où le trait plein est dessiné
+   à chaque moment (sans tr, le trait suit le repère). Un morceau marqué « tot » apparaît dès l'appui, sans attendre l'arrivée du repère.
+   Les places ont été calculées par le navigateur (build/goutte/fractions.js), et tests/parcours.js vérifie que p et f disent la même chose. */
 const sFleche=k=>'<defs><marker id="fl-'+k+'" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="s-tete" d="M2 1.5 L8 5 L2 8.5"/></marker><marker id="flr-'+k+'" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="s-tete rose" d="M2 1.5 L8 5 L2 8.5"/></marker></defs>';
 const sBulle=(cx,cy,w,lignes,cls,num,haut)=>{const h=haut||(lignes.length>1?46:36),x=cx-w/2,y=cy-h/2,dx=num?11:0;
   return '<rect class="s-bulle'+(cls?' '+cls:'')+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(h>40?16:18)+'"/>'+
@@ -340,9 +345,12 @@ const sNum=(cx,cy,n)=>'<circle class="s-num" cx="'+cx+'" cy="'+cy+'" r="10.5"/><
 /* Un groupe (un rond) et ses membres (des points). Le point « lui » est l'enfant dont on parle. */
 const sRond=(cx,cy,r,cls)=>'<circle class="s-groupe'+(cls?' '+cls:'')+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>';
 const sPts=(L,cls)=>L.map(p=>'<circle class="s-pt'+(cls?' '+cls:'')+'" cx="'+p[0]+'" cy="'+p[1]+'" r="5"/>').join('');
+/* Les mêmes points, posés sur la courbe que suit le repère : chacun attend que le repère soit passé (p[2] est sa place sur la courbe, de 0 à 1). */
+const sPtsF=(L,cls)=>L.map(p=>'<circle class="s-pt s-f'+(cls?' '+cls:'')+'" data-f="'+p[2]+'" cx="'+p[0]+'" cy="'+p[1]+'" r="5"/>').join('');
 const SCHEMAS={
   points:{vb:'0 0 340 200',
     alt:'Un chemin qui monte, avec 3 points. Le premier est posé aujourd’hui, le deuxième au milieu du parcours et le troisième à la fin. Une ligne relie les 3 points.',
+    rep:{d:'M30 152 C 95 152, 105 98, 170 98 S 250 44, 310 44',f:[0,.5003,1,1],p:[[30,152],[170,98],[310,44],[310,44]],tr:[0,0,0,0]},
     base:'<path class="s-route" d="M30 152 C 95 152, 105 98, 170 98 S 250 44, 310 44"/>',
     l:[[4,'<path class="s-trace" pathLength="1" d="M30 152 C 95 152, 105 98, 170 98 S 250 44, 310 44"/>'],
        [1,'<circle class="s-halo" cx="30" cy="152" r="16"/><circle class="s-point" cx="30" cy="152" r="9"/><text class="s-t" x="16" y="186" text-anchor="start">Aujourd’hui</text>'],
@@ -396,9 +404,9 @@ const SCHEMAS={
     caps:['Au départ, tout est mélangé dans une seule phrase, « je m’en veux ».','Je prends une feuille et je trace 2 colonnes.','À gauche, j’écris ce qui dépendait de moi. J’ai crié ce matin.','À droite, j’écris ce qui n’en dépendait pas, comme sa nuit agitée et ma fatigue.','La colonne de gauche se répare, par un mot ou par un geste.','La colonne de droite se dépose. Je n’ai rien cassé, je n’ai donc rien à réparer.']},
   vague:{vb:'0 0 340 214',
     alt:'Une vague qui monte puis redescend, avec 5 repères. L’émotion monte, elle atteint son sommet, je fais mon geste, elle redescend, et je parle une fois en bas.',
+    rep:{d:'M20 176 C 90 176, 110 44, 170 44 S 250 176, 320 176',f:[.2577,.5,.6438,.7422,1],p:[[98.8,109.9],[170,44],[218.2,75.8],[241.2,109.9],[320,176]]},
     base:sFleche('vague')+'<path class="s-sol" d="M12 186 L328 186"/><path class="s-route" d="M20 176 C 90 176, 110 44, 170 44 S 250 176, 320 176"/>',
-    l:[[5,'<path class="s-trace" pathLength="1" d="M20 176 C 90 176, 110 44, 170 44 S 250 176, 320 176"/>'],
-       [1,sPoint(99,110,1)],
+    l:[[1,sPoint(99,110,1)],
        [2,sPoint(170,44,2)+'<text class="s-t" x="170" y="19" text-anchor="middle">Le sommet</text>'],
        [3,sTrait('M244 68 L230 77','vague')+sBulle(276,48,118,['Mon geste'],'vert',3)],
        [4,sPoint(241,110,4)],
@@ -436,9 +444,9 @@ const SCHEMAS={
     caps:['Votre enfant est une personne entière, avec bien plus de facettes que l’on n’en voit au premier regard.','Un diagnostic ou une étiquette agit comme un projecteur. Il éclaire les difficultés, et elles prennent toute la place.','Le reste n’a pas disparu pour autant. Son humour, ses goûts, ses talents et ses peurs sont toujours là, dans l’ombre.','Regarder d’abord qui il est, c’est élargir la lumière. Tout ce qui était dans l’ombre réapparaît.','Ses difficultés sont toujours là, à leur vraie place. Elles sont une partie de lui, parmi beaucoup d’autres.']}
   ,cap:{vb:'0 0 340 214',
     alt:'Une route part d’aujourd’hui et monte vers une image posée au loin. Au milieu, un nuage de flou cache la route. On y nomme sa peur, puis on fait un premier petit pas.',
+    rep:{d:'M30 156 C 120 156, 160 84, 304 84',f:[0,0,0,0,.159],p:[[30,156],[30,156],[30,156],[30,156],[74.9,149.8]]},
     base:'<path class="s-route" d="M30 156 C 120 156, 160 84, 304 84"/>',
     l:[[2,'<path class="s-brume" d="M118 158 C 90 158, 88 128, 112 124 C 110 100, 144 88, 162 104 C 176 82, 220 86, 224 112 C 252 110, 260 150, 234 158 Z"/><text class="s-t" x="172" y="76" text-anchor="middle">Le flou</text>'],
-       [5,'<path class="s-trace" pathLength="1" d="M30 156 C 46.2 156, 60.8 153.7, 74.6 149.8"/>'],
        [1,sPoint(30,156,1)+'<text class="s-t" x="12" y="128" text-anchor="start">Aujourd’hui</text>'],
        [3,sPoint(304,84,3)+sBulle(258,40,140,['Mon image'],'vert')],
        [4,sBulle(172,131,120,['Ma peur'],'rose',4)],
@@ -446,9 +454,9 @@ const SCHEMAS={
     caps:['Vous êtes ici, aujourd’hui, avec votre enfant tel qu’il est.','Devant vous, l’avenir est flou. Dans le flou, la peur imagine souvent le pire.','Vous posez une image au loin. C’est une journée de votre enfant dans 10 ans, belle et possible.','Vous nommez ce qui vous fait peur entre aujourd’hui et cette image. Une peur qui a un nom prend moins de place.','Vous choisissez un petit pas pour cette semaine. La route se fait un pas après l’autre.']}
   ,creux:{vb:'0 0 340 222',
     alt:'Une courbe en forme de vallée. L’élan est haut au départ, il baisse vers la moitié du chemin, et il remonte à l’approche du but. Dans le creux, on se retourne pour mesurer le chemin fait, puis on se donne un but tout proche.',
+    rep:{d:'M20 56 C 90 56, 110 160, 170 160 S 250 56, 320 56',f:[0,.5,.5,.5,.6622],p:[[20,56],[170,160],[170,160],[170,160],[221.9,130.9]]},
     base:sFleche('creux')+'<path class="s-sol" d="M12 198 L328 198"/><path class="s-route" d="M20 56 C 90 56, 110 160, 170 160 S 250 56, 320 56"/>',
-    l:[[5,'<path class="s-trace" pathLength="1" d="M170 160 C 191 160, 207.1 147.3, 222.2 130.7"/>'],
-       [1,sPoint(20,56,1)+'<text class="s-t" x="4" y="28" text-anchor="start">Le départ</text>'],
+    l:[[1,sPoint(20,56,1)+'<text class="s-t" x="4" y="28" text-anchor="start">Le départ</text>'],
        [2,sPoint(170,160,2)+'<text class="s-t" x="170" y="132" text-anchor="middle">Le creux</text>'],
        [3,sPoint(320,56,3)+'<text class="s-t" x="336" y="28" text-anchor="end">Le but</text>'],
        [4,sTrait('M90 51 L46 55','creux')+sBulle(170,50,152,['Je me retourne'],'vert',4)],
@@ -529,11 +537,13 @@ const SCHEMAS={
     caps:['Les professionnels ont leur savoir. Ils connaissent des méthodes, et ils ont accompagné beaucoup d’enfants.','Vous avez le vôtre. Vous connaissez l’histoire de votre enfant, ses goûts, et tout ce qui a déjà été essayé.','Les bonnes décisions se prennent là où les 2 savoirs se rencontrent.','Vous y entrez avec 3 points écrits, à savoir ce qui va bien, ce qui vous inquiète et ce que vous demandez.','Vous en ressortez avec des décisions notées, et la date du prochain point.']}
   ,ravito:{vb:'0 0 340 232',
     alt:'Un graphique de vos forces pendant 6 mois. Sans recharge, la ligne descend un peu chaque jour et touche le sol avant la fin. Avec un rituel régulier, elle remonte à chaque fois, et un relais la fait remonter plus haut. Au bout des 6 mois, elle est toujours en haut.',
+    rep:{d:'M30 62 L90 101 L90 66 L150 105 L150 70 L210 109 L210 58 L270 97 L270 62 L312 90 L312 60',f:[0,0,.5446,.7791,1],p:[[30,62],[30,62],[210,109],[270,97],[312,60]]},
     base:sFleche('ravito')+'<path class="s-sol" d="M14 200 L326 200"/><path class="s-sol" d="M14 200 L14 46"/>',
     l:[[2,'<path class="s-pente" d="M30 62 L240 200"/><path class="s-bout" d="M228 200 L252 200"/>'+sBulle(82,168,124,['Sans recharge'],'rose')],
-       [3,'<path class="s-trace" pathLength="1" d="M30 62 L90 101 L90 66 L150 105 L150 70 L210 109"/>'+sPts([[90,66],[150,70]],'lui')+sTrait('M140 40 C 126 50, 108 54, 97 61','ravito')+sBulle(160,22,118,['Un rituel'],'vert',3)],
-       [4,'<path class="s-trace" pathLength="1" d="M210 109 L210 58 L270 97"/>'+sPts([[210,58]],'lui')+sTrait('M262 40 C 250 46, 232 48, 217 54','ravito')+sBulle(274,22,108,['Un relais'],'vert',4)],
-       [5,'<path class="s-trace" pathLength="1" d="M270 97 L270 62 L312 90 L312 60"/>'+sPts([[270,62]],'lui')+sPoint(312,60,5)],
+       [3,sPtsF([[90,66,.2039],[150,70,.4077]],'lui')+sTrait('M140 40 C 126 50, 108 54, 97 61','ravito')+sBulle(160,22,118,['Un rituel'],'vert',3),'tot'],
+       [4,sPtsF([[210,58,.6422]],'lui')+sTrait('M262 40 C 250 46, 232 48, 217 54','ravito')+sBulle(274,22,108,['Un relais'],'vert',4),'tot'],
+       [5,sPtsF([[270,62,.846]],'lui'),'tot'],
+       [5,sPoint(312,60,5)],
        [1,sPoint(30,62,1)+'<text class="s-t" x="8" y="30" text-anchor="start">Mes forces</text><text class="s-t" x="14" y="222" text-anchor="start">Aujourd’hui</text><text class="s-t" x="326" y="222" text-anchor="end">Dans 6 mois</text>']],
     caps:['Au départ, vos forces sont là.','Ce qui pèse les fait descendre un peu chaque jour. Sans recharge, la ligne touche le sol bien avant la fin.','Chaque rituel la fait remonter. Vous le posez à l’avance, comme un poste de ravitaillement sur le parcours.','Un relais la fait remonter plus haut, parce qu’il vous enlève un poids pendant quelques heures.','Avec vos rituels et un relais, vous êtes encore debout dans 6 mois, et la course continue.']}
   ,gue:{vb:'0 0 340 236',
@@ -547,11 +557,9 @@ const SCHEMAS={
     caps:['Entre aujourd’hui et la journée que vous avez imaginée dans 10 ans, il y a une rivière. Personne ne la traverse d’un seul saut.','Vous posez une première pierre. C’est une seule décision, assez petite pour être prise dans les 6 prochains mois.','Vous lui donnez une date, et vous l’écrivez dans votre agenda.','Vous décidez du moment où vous ferez le premier geste, avec les mots « quand » et « alors ».','Les autres pierres viendront ensuite, une par saison. Vous n’avez pas besoin de les voir toutes pour poser la première.']}
   ,arche:{vb:'0 0 340 236',
     alt:'Une arche avec 4 repères. En bas à gauche, je ne sais pas faire et je ne le vois pas. En haut à gauche, je le vois. En haut à droite, je sais faire en y pensant. En bas à droite, je fais sans y penser. Une bulle, le bilan, pointe vers ce dernier repère.',
+    rep:{d:'M44 184 C 70 18, 270 18, 296 184',f:[0,.294,.706,1,1],p:[[44,184],[96.3,85.8],[243.7,85.8],[296,184],[296,184]]},
     base:sFleche('arche')+'<path class="s-sol" d="M12 204 L328 204"/><path class="s-route" d="M44 184 C 70 18, 270 18, 296 184"/>',
     l:[[1,'<path class="s-pli" d="M170 30 L170 132"/><text class="s-t" x="88" y="22" text-anchor="middle">Je ne sais pas encore</text><text class="s-t" x="252" y="22" text-anchor="middle">Je sais faire</text>'],
-       [2,'<path class="s-trace" pathLength="1" d="M44 184 C 51 139.2, 70.7 106.5, 96.3 85.8"/>'],
-       [3,'<path class="s-trace" pathLength="1" d="M96.3 85.8 C 139.8 50.7, 200.2 50.7, 243.7 85.8"/>'],
-       [4,'<path class="s-trace" pathLength="1" d="M243.7 85.8 C 269.3 106.5, 289 139.2, 296 184"/>'],
        [1,sPoint(44,184,1)+'<text class="s-t" x="52" y="226" text-anchor="middle">Sans le voir</text>'],
        [2,sPoint(96,86,2)+'<text class="s-t" x="74" y="90.6" text-anchor="end">Je le vois</text>'],
        [3,sPoint(244,86,3)+'<text class="s-t" x="266" y="90.6" text-anchor="start">J’y pense</text>'],
@@ -560,8 +568,9 @@ const SCHEMAS={
     caps:['Au début, il y a des choses que vous ne savez pas faire, et vous ne le voyez pas.','Un jour, vous le voyez. C’est souvent le moment le plus inconfortable, et c’est pourtant le signe que vous avancez.','Puis vous savez faire, à condition d’y penser. Cela demande de l’attention.','Un jour enfin, vous faites sans y penser. C’est devenu un réflexe.','Ce que vous faites sans y penser ne se voit plus. Le bilan sert à le retrouver.']}
   ,sentier:{vb:'0 0 340 250',
     alt:'Un sentier en lacets qui monte. En bas, le départ. 5 petits repères marquent les mois, et le sixième, plus haut, est aujourd’hui. Encore plus haut, une bulle en pointillé porte les mots le parent parfait, et personne ne s’y trouve. Une flèche part d’une bulle, ma lettre, et redescend vers le départ.',
+    rep:{d:'M30 214 C 110 214, 196 216, 204 194 C 212 170, 100 186, 92 160 C 84 132, 190 128, 224 104',f:[0,1,1,1,1],p:[[30,214],[224,104],[224,104],[224,104],[224,104]]},
     base:sFleche('sentier')+'<path class="s-route" d="M30 214 C 110 214, 196 216, 204 194 C 212 170, 100 186, 92 160 C 84 132, 190 128, 224 104"/>',
-    l:[[2,'<path class="s-trace" pathLength="1" d="M30 214 C 110 214, 196 216, 204 194 C 212 170, 100 186, 92 160 C 84 132, 190 128, 224 104"/>'+sPts([[105.3,213.8],[180.4,207.5],[163.9,178.6],[92.5,161.3],[152.7,127.9]],'lui')+'<text class="s-t" x="12" y="136" text-anchor="start">6 mois</text>'],
+    l:[[2,sPtsF([[105.3,213.8,.1664],[180.4,207.5,.3332],[163.9,178.6,.5001],[92.5,161.3,.6669],[152.7,127.9,.833]],'lui')+'<text class="s-t" x="12" y="136" text-anchor="start">6 mois</text>','tot'],
        [1,sPoint(30,214,1)+'<text class="s-t" x="12" y="186" text-anchor="start">Le départ</text>'],
        [3,sPoint(224,104,3)+'<text class="s-t" x="246" y="108.6" text-anchor="start">Aujourd’hui</text>'],
        [4,'<path class="s-route" d="M228 86 C 232 70, 240 58, 250 50"/>'+sBulle(250,30,164,['Le parent parfait'],'ombre')],

@@ -70,6 +70,8 @@ async function walk(page, visit) {
   // « Écouter l'étang » : le bouton pendant que le son joue, puis de nouveau en silence
   await page.click('.son-souffle'); await w(800); await visit('souffle-son'); await page.click('.son-souffle'); await w(200);
   await w(3100); await visit('souffle-expirez');
+  // la pause : le temps attend, et il ne reste que « Reprendre » et « Arrêter »
+  await page.click(A('souffle-pause')); await w(300); await visit('souffle-pause'); await page.click(A('souffle-pause')); await w(200);
   // « Changer de respiration » : le choix ouvert pendant l'exercice, puis « À mon rythme » avec sa cadence
   await page.click('.resp-l'); await w(250); await visit('souffle-choix');
   await page.click('.resp-o[data-v="libre"]'); await w(200); await visit('souffle-choix-rythme');
@@ -82,8 +84,10 @@ async function walk(page, visit) {
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(3300); await visit('vitrine-parent-bas'); await page.evaluate(() => scrollTo(0, 0)); await w(150);
   await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await w(250); await visit('aujourdhui-nouveau');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('aujourdhui-nouveau-bas'); await page.evaluate(() => scrollTo(0, 0));
-  // « Prendre un instant », sous la dose : le bouton pendant l'écoute
-  await page.$eval('.son-dose', e => e.scrollIntoView({ block: 'center' })); await w(150); await page.click('.son-dose'); await w(800); await visit('aujourdhui-instant'); await page.click('.son-dose'); await w(200); await page.evaluate(() => scrollTo(0, 0));
+  // « Prendre un instant », sous la dose : l'étang à regarder ou à toucher, en silence, puis avec le son demandé
+  await page.$eval('.dose .instant-b', e => e.scrollIntoView({ block: 'center' })); await w(150); await page.click('.dose .instant-b'); await w(500); await visit('instant');
+  { const sb = await page.$('main.instant .son-dose'); if (sb) { await sb.click(); await w(800); await visit('instant-son'); await page.click('main.instant .son-dose'); await w(200); } }
+  await page.click(A('back')); await w(300); await page.evaluate(() => scrollTo(0, 0));
   await page.click('.dose ' + A('voix')); await w(150); await visit('qui-parle'); await page.keyboard.press('Escape'); await w(100);
   await page.click('.card.perso ' + A('onboard')); await w(150); await visit('entree');
   await page.fill('#ob-me', 'Camille'); await page.click(A('ob', '[data-k="age"][data-v="a"]')); await page.click(A('obw', '[data-v="fatigue"]')); await visit('entree-remplie');
@@ -129,7 +133,11 @@ async function walk(page, visit) {
   await page.fill('#q', 'zzz'); await w(400); await visit('outils-recherche-vide'); await page.fill('#q', ''); await w(400);
   await page.click('.sits .sit'); await w(150); await visit('situation');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(150); await visit('situation-bas'); await page.click(A('back')); await w(200);
+  // la fiche « Les transitions » parle du minuteur visuel : son bouton y mène tout droit
+  { const tr = await page.$(A('sit', '[data-id="transitions"]')); if (tr) { await tr.click(); await w(200); await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(150); await visit('situation-transitions-bas'); await page.click('.quick [data-tool="timer"]'); await w(300); await visit('outils-minuteur-depuis-fiche'); await page.evaluate(() => scrollTo(0, 0)); } }
   await page.click(A('kit', '[data-v="tools"]')); await visit('outils-minuteur');
+  // le minuteur en marche, avec une autre couleur
+  await page.click(A('tset', '[data-m="1"]')); await page.click(A('ttoggle')); await page.click(A('mvc', '[data-v="bleu"]')); await w(1200); await page.$eval('.minuteur', e => e.scrollIntoView({ block: 'center' })); await w(120); await visit('outils-minuteur-en-marche'); await page.click(A('ttoggle')); await page.click(A('treset')); await page.click(A('mvc', '[data-v="soleil"]')); await page.evaluate(() => scrollTo(0, 0)); await w(80);
   for (const t of ['ft', 'routine', 'abc', 'phr']) {
     await page.click(A('tool', `[data-v="${t}"]`)); await w(60);
     if (t === 'routine') await page.click(A('rdone', '[data-i="0"]'));
@@ -154,7 +162,7 @@ async function walk(page, visit) {
   await page.click(A('go', '[data-view="depots"]')); await w(80); await visit('mes-depots'); await page.click(A('back')); await w(200);
   await page.click(A('go', '[data-view="data"]')); await w(60); await visit('donnees');
   await page.click(A('reset')); await visit('donnees-confirmation'); await page.click(A('reset-no')); await page.click(A('back')); await w(200);
-  await page.click(A('go', '[data-view="about"]')); await w(150); await page.$eval('img.medal', i => i.scrollIntoView()); await page.waitForFunction(() => { const i = document.querySelector('img.medal'); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 5000 }).catch(() => {}); await page.evaluate(() => scrollTo(0, 0)); await visit('histoire'); await page.click(A('back')); await w(80);
+  await page.click(A('go', '[data-view="about"]')); await w(150); await page.$eval('.logo-sceau', i => i.scrollIntoView()); await w(80); await page.evaluate(() => scrollTo(0, 0)); await visit('histoire'); await page.click(A('back')); await w(80);
   await page.click(A('go', '[data-view="plans"]')); await w(60); await visit('offres');
   await page.evaluate(() => document.querySelectorAll('details.f-concret').forEach(d => { d.open = true; })); await w(80); await visit('offres-depliees');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('offres-bas'); await page.evaluate(() => scrollTo(0, 0));

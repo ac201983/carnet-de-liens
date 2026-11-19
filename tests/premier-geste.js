@@ -74,7 +74,9 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       await page.waitForFunction(() => document.getElementById('souffle-mot').textContent === 'Expirez', null, { timeout: 6000 }); const tOut = Date.now();
       const s2 = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')));
       ok(Math.abs((tOut - tIn) - 4000) < 450, P('1. l’inspiration dure 4 secondes (' + (tOut - tIn) + ' ms)'));
-      ok(s2 > 0.9 && s2 > s1, P('1. le cercle s’est ouvert pendant l’inspiration (' + s1 + ' → ' + s2 + ')'));
+      // À l'inspiration la goutte de la photo s'élève. Quand le navigateur ne dessine pas l'eau, 2 cercles posés sur l'eau se resserrent à sa place.
+      const eauVive = await page.evaluate(() => { const e = document.querySelector('.souffle .etang'); return e.classList.contains('eau-vive') && !!e.querySelector('canvas.eau'); });
+      ok(eauVive || (s2 < 0.6 && s2 < s1), P('1. ' + (eauVive ? 'la goutte de la photo suit l’inspiration' : 'les cercles se sont resserrés pendant l’inspiration (' + s1 + ' → ' + s2 + ')')));
       await page.waitForFunction(() => document.getElementById('souffle-mot').textContent === 'Inspirez', null, { timeout: 8000 }); const tIn2 = Date.now();
       ok(Math.abs((tIn2 - tOut) - 6000) < 450 && (await page.$$('.souffle .tours i.f')).length === 1, P('1. l’expiration dure 6 secondes (' + (tIn2 - tOut) + ' ms), et la première respiration est comptée'));
       ok(await dansEcran(page, '#souffle-mot, .souffle .tours, ' + A('souffle-stop') + ', .souffle .sos'), P('1. le mot, le compte et « Arrêter » tiennent dans l’écran'));
@@ -206,7 +208,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
         ok((await h1(page)) === 'Quand il ou elle vit ailleurs' && (await notes(page)) === null, P('2. le lien rouvert plus tard mène toujours à la fiche'));
         // et l'espace, à un geste : la porte « Déposer » en bas de la fiche
         await page.$eval('.invite', e => e.scrollIntoView({ block: 'start' })); await page.waitForTimeout(200);
-        ok((await page.$$('.invite .porte')).length === 3 && /Antonio Company, travailleur social/.test(await page.textContent('.invite')), P('2. en bas de la fiche : d’où elle vient, et les 3 portes'));
+        ok((await page.$$('.invite .porte')).length === 3 && /Antonio Company, éducateur social, responsable d’une équipe socio-éducative et père de 3 enfants/.test(await page.textContent('.invite')), P('2. en bas de la fiche : d’où elle vient (avec les 2 rôles d’Antonio), et les 3 portes'));
         await page.click('.invite ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(900);
         ok(!!(await page.$('main.deposer #draft')) && page.url() === APP && (await notes(page)).onboarded === true, P('2. « Déposer ce qui pèse » ouvre l’écran pour écrire, à l’adresse de l’espace'));
         await page.goBack(); await page.waitForTimeout(900);

@@ -25,7 +25,7 @@ const RL_RPAS=['Avec qui','Mes observations','Ma demande','Mes 3 priorités'];
 /* « Je perds mes mots » : des débuts de phrase pour écrire sa demande, puis des phrases à dire pendant la réunion. */
 const RL_MOTS_ECRIRE=['Ce que j’observe à la maison, c’est que','Ce qui aide {P}, c’est','Je vous demande de','Pouvons-nous essayer pendant un mois de','J’ai besoin de savoir','Ce qui m’inquiète le plus, c’est'];
 const RL_MOTS_DIRE=['Je reprends mes notes un instant.','Je voudrais revenir à ma première priorité.','Pouvez-vous me le redire avec des mots simples ?','Qui fait quoi, et pour quand ?','Je préfère y réfléchir et vous répondre par écrit.','J’aimerais que ce soit noté dans le compte rendu.'];
-/* Trois fiches d'exemple, inventées : à 5 ans, à 16 ans, à 35 ans. Les prénoms et les numéros ne sont ceux de personne. */
+/* Trois fiches d'exemple, inventées : un enfant, une adolescente, un adulte. Aucun âge n'est affiché : l'outil sert à tout âge. Les prénoms et les numéros ne sont ceux de personne. */
 const RL_EX={
   e:{id:'ex-e',qui:'Noé',chez:'sa grand-mère',quand:'du samedi 21 au dimanche 22 novembre',tu:true,m:'',
     trois:['Noé ne parle pas encore avec des phrases. Il montre, il tire par la main, et il comprend bien plus qu’il ne dit.','Avant chaque changement, montre-lui l’image ou l’objet de ce qui vient après.','S’il se met à crier, ce n’est pas un caprice. Baisse la voix, éloigne-le du bruit et attends avec lui.'],
@@ -91,13 +91,42 @@ function rlFicheHtml(f0,o){
   const dens=o.brut?null:rlMesure(f0);if(dens&&o.mesure)o.mesure.d=dens.d,o.mesure.ok=dens.ok;
   const li=a=>a.map(x=>'<li>'+esc(x)+'</li>').join('');
   const secs=RL_SEC.map(S=>{const L=f.s[S[0]];return L?'<section class="rl-s">'+T[0]+esc(P?S[2].replace('{P}',P):S[1])+T[1]+'<ul>'+li(L)+'</ul></section>':'';}).join('');
-  return '<article class="rl-fiche'+(o.cls?' '+o.cls:'')+(dens?' rl-d'+dens.d:'')+'">'+
+  /* « se-pose » : la feuille vient se poser, une seule fois, quand l'aperçu s'ouvre (voir rlSePose). */
+  const ps=o.pose==null?null:o.pose;
+  return '<article class="rl-fiche'+(o.cls?' '+o.cls:'')+(dens?' rl-d'+dens.d:'')+(ps!=null?' se-pose':'')+'"'+(ps>.05?' style="--pose-d:-'+ps.toFixed(2)+'s"':'')+'>'+
     '<header class="rl-tete"><span class="rl-goutte" aria-hidden="true">'+LOGO+'</span><div><'+H+' class="rl-t">'+esc(rlTitre(f))+'</'+H+'>'+(rlSousTitre(f)?'<p class="rl-st">'+esc(rlSousTitre(f))+'</p>':'')+'</div></header>'+
     '<section class="rl-trois">'+T[0]+(tu?'Si tu ne lis que trois choses':'Si vous ne lisez que trois choses')+T[1]+(f.trois.length?'<ol>'+li(f.trois)+'</ol>':'<p class="rl-vide">Vos 3 repères viendront ici.</p>')+'</section>'+
     (f.moi.length?'<section class="rl-moi">'+T[0]+'Ce que je souhaite dire moi-même'+T[1]+'<ul>'+li(f.moi)+'</ul>'+(P?'<p class="rl-signe">'+esc(rlMaj(P))+'</p>':'')+'</section>':'')+
     (secs?'<div class="rl-cols">'+secs+'</div>':'')+
     (f.tel.length?'<section class="rl-tel">'+T[0]+'Me joindre'+T[1]+'<ul>'+f.tel.map(x=>'<li>'+(x.n?'<b>'+esc(x.n)+'</b> ':'')+rlTelHtml(x.t)+'</li>').join('')+'</ul></section>':'')+
     '<footer class="rl-pied"><span>En cas d’urgence vitale, les secours. En Suisse, le 144.</span><span>Fiche écrite par la famille'+(f.m?', le '+esc(fmtDate(f.m)):'')+'.</span></footer></article>';
+}
+/* La feuille qui se pose. Quand le parent ouvre l'aperçu de sa fiche (ou l'exemple), la feuille descend de quelques millimètres,
+   se redresse et son ombre se resserre, comme une feuille que l'on pose devant lui. Cela dure 1 seconde, une seule fois.
+   rlSePose rend le temps écoulé depuis l'ouverture, ou null quand il n'y a rien à jouer : si l'écran est redessiné pendant le mouvement,
+   il continue là où il en était. Avec « Réduire les animations », la feuille est simplement là. Imprimée, elle ne bouge jamais. */
+function rlSePose(){const t=state.rl.poseT;if(!t||!fxOn())return null;const dt=(performance.now()-t)/1000;return dt<1.5?dt:null;}
+/* À l'ouverture, le titre « Si tu ne lis que trois choses » et ses 3 repères doivent se lire ensemble, sans faire défiler.
+   Si l'écran est assez grand, la page ne bouge pas. Sinon elle s'ouvre un peu plus bas, juste ce qu'il faut, et toujours au début
+   d'un bloc entier (jamais au milieu d'une ligne) : d'abord sans le petit titre, puis sans le grand titre, puis directement sur la feuille.
+   Ce qui est passé au-dessus reste à portée de doigt. Sur un très petit écran, la page s'ouvre sur le titre des 3 repères. */
+function rlVoirTrois(){
+  try{
+    const fe=document.querySelector('.v-relais .feuille'),fi=fe&&fe.querySelector(':scope>.rl-fiche'),t=fi&&fi.querySelector('.rl-trois');if(!t)return;
+    const barre=document.querySelector('header.bar');const haut=(barre?Math.max(0,barre.getBoundingClientRect().bottom):0)+6;
+    let bas=window.innerHeight;const tabs=document.querySelector('.tabs');
+    if(tabs&&getComputedStyle(tabs).position==='fixed'){const y=tabs.getBoundingClientRect().top;if(y>window.innerHeight/2)bas=y;}
+    bas-=6;
+    const r=t.getBoundingClientRect(),manque=r.bottom-bas;if(manque<=0)return;
+    /* les débuts de bloc possibles, de haut en bas, jusqu'à la feuille */
+    const C=[];
+    for(const el of fe.children){if(el===fi){C.push(el.getBoundingClientRect().top-haut);break;}
+      if(el.classList.contains('f-tete'))[].forEach.call(el.children,x=>C.push(x.getBoundingClientRect().top-haut));else C.push(el.getBoundingClientRect().top-haut);}
+    let dy=C.filter(v=>v>=manque-1).sort((a,b)=>a-b)[0];
+    if(dy==null)dy=manque;
+    dy=Math.min(dy,r.top-haut);
+    if(dy>0)window.scrollTo(0,Math.round(window.scrollY+dy));
+  }catch(e){}
 }
 function rlAvantImpression(){
   try{
@@ -199,9 +228,9 @@ function rlVueAccueil(){
 function rlVueExemple(){
   const k=RL_EX[state.rl.ex]?state.rl.ex:'g';
   return '<div class="f-tete"><span class="label">Un exemple, inventé pour vous montrer</span><h1 class="t1">Une fiche terminée</h1><p class="sub">Voici ce que reçoit la personne qui prend le relais. Elle l’ouvre sur son téléphone, sans compte et sans rien acheter.</p></div>'+
-    '<div class="chips rl-ages" role="group" aria-label="Choisir un âge">'+[['e','À 5 ans'],['a','À 16 ans'],['g','À 35 ans']].map(x=>'<button type="button" class="chip" data-act="rl" data-k="ex" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>').join('')+'</div>'+
-    rlFicheHtml(RL_EX[k],{cls:'rl-ex'})+
-    '<p class="hint">Ces 3 âges sont des exemples, et l’outil sert quel que soit l’âge de votre enfant. Les prénoms et les numéros de cet exemple sont inventés.</p>'+
+    '<div class="chips rl-ages" role="group" aria-label="Choisir un exemple">'+[['e','Un enfant'],['a','Une adolescente'],['g','Un adulte']].map(x=>'<button type="button" class="chip" data-act="rl" data-k="ex" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>').join('')+'</div>'+
+    rlFicheHtml(RL_EX[k],{cls:'rl-ex',pose:rlSePose()})+
+    '<p class="hint">Ces 3 fiches sont des exemples. L’outil sert quel que soit l’âge de votre enfant, tout-petit ou adulte depuis longtemps. Les prénoms et les numéros sont inventés.</p>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="nouveau">'+I.pen+(rel().fiches.length?'Préparer un relais':'Préparer mon premier relais')+'</button><p class="hint">Vous choisissez chaque phrase, et rien ne part sans vous.</p>'+(SITE?'<button type="button" class="lien-f" data-act="rl" data-k="imprimer">Imprimer cet exemple</button>':'')+'</div>';
 }
 function rlChamp(id,ch,lab,val,ph,lim,aide){return '<div class="field"><label for="'+id+'">'+lab+'</label><input type="text" id="'+id+'" data-rl="'+ch+'" maxlength="'+lim+'" value="'+esc(val||'')+'" placeholder="'+esc(ph)+'" autocomplete="off">'+(aide?'<p class="hint">'+aide+'</p>':'')+'</div>';}
@@ -253,7 +282,7 @@ function rlVuePrep(){
 }
 function rlVueApercu(){
   const f=rlFiche(state.rl.id);if(!f)return rlVueAccueil();const a=rlOuvert();const n3=(f.trois||[]).filter(x=>clean(x,9)).length;
-  const M={d:0,ok:true};const fiche=rlFicheHtml(f,{mesure:M});
+  const M={d:0,ok:true};const fiche=rlFicheHtml(f,{mesure:M,pose:rlSePose()});
   return '<div class="f-tete"><span class="label">Avant d’envoyer</span><h1 class="t1">Voici exactement ce que vous transmettez</h1><p class="sub">Rien d’autre ne part. Vos autres écrits restent sur votre appareil.</p></div>'+
     (n3<3?'<p class="rl-alerte">'+I.info+'<span>'+(n3?'Il vous reste '+(3-n3)+' repère'+(3-n3>1?'s':'')+' à choisir.':'Vos 3 repères ne sont pas encore choisis.')+'</span><button type="button" class="lien-f" data-act="rl" data-k="aller" data-v="2">Les choisir</button></p>':'')+
     fiche+
@@ -358,6 +387,8 @@ function rlVueLu(){
 }
 function viewRelais(){
   const e=state.rl.e||'accueil';
+  /* L'aperçu ou l'exemple vient de s'ouvrir (et l'écran n'est pas seulement redessiné) : la feuille se posera. */
+  {const R=state.rl,cle=e+'/'+(R.id||'');if(!/relais$/.test(state.lastKey||'')||R.vu!==cle)R.poseT=(e==='apercu'||e==='exemple')?performance.now():0;R.vu=cle;}
   const c=e==='lu'?rlVueLu():e==='exemple'?rlVueExemple():e==='prep'?rlVuePrep():e==='apercu'?rlVueApercu():e==='envoi'?rlVueEnvoi():e==='retour'?rlVueRetour():e==='reunion'?rlVueReunion():e==='feuille'?rlVueFeuille():e==='sauver'?rlVueSauver():rlVueAccueil();
   return '<main id="main" tabindex="-1" class="view v-feuille v-relais rl-e-'+e+'"><div class="feuille">'+c+'</div></main>';
 }

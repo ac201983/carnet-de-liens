@@ -81,7 +81,7 @@ function viewSit(){
     '<div class="comfort"><span class="label">Un mot pour vous</span><p>'+esc(s.moi)+'</p></div>'+
     '<div class="card sec aide"><h2><span class="dot"></span>Quand demander de l’aide</h2><p>'+esc(s.aide)+'</p></div></div>'+
     versAp+part+
-    (pub?'':'<div class="quick"><button type="button" class="btn" data-act="porte" data-v="deposer">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="kit" data-v="tools">'+I.tools+'Les outils</button></div>')+
+    (pub?'':'<div class="quick"><button type="button" class="btn" data-act="porte" data-v="deposer">'+I.drop+'Déposer</button>'+(/minuteur visuel/.test(s.ess.join(' '))?'<button type="button" class="btn" data-act="kit" data-v="tools" data-tool="timer">'+I.timer+'Le minuteur visuel</button>':'<button type="button" class="btn" data-act="kit" data-v="tools">'+I.tools+'Les outils</button>')+'</div>')+
     (pr.length?'<section class="grp proches"><h2><span class="nom">Dans le même thème</span></h2><div class="liste">'+pr.map(sitRow).join('')+'</div></section>':'')+'</main>';
 }
 function kitTools(){
@@ -91,8 +91,30 @@ function kitTools(){
   if(state.tool==='timer')body=toolTimer();else if(state.tool==='ft')body=toolFT();else if(state.tool==='routine')body=toolRoutine();else if(state.tool==='abc')body=toolABC();else body=toolPhr();
   return rlPorteHtml()+seg+body;
 }
-function toolTimer(){const t=state.timer;const mins=[1,2,3,5,10,15];return '<div class="card green" style="align-items:center"><span class="label">Minuteur visuel</span><p class="hint" style="text-align:center">Votre enfant voit le temps qui reste. Vous pouvez lui dire « Quand le vert a disparu, on range ».</p><div class="timerwrap"><div class="ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" style="fill:none;stroke:var(--surface);stroke-width:12"/><circle id="arc" cx="60" cy="60" r="52" style="fill:none;stroke:var(--green);stroke-width:12;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:0"/></svg><div class="num" id="tnum">'+Math.floor(t.left/60)+':'+pad(t.left%60)+'</div></div><div class="bigrow">'+mins.map(m=>'<button type="button" class="btn small'+(t.total===m*60?' primary':'')+'" data-act="tset" data-m="'+m+'">'+m+' min</button>').join('')+'</div><div class="bigrow"><button type="button" class="btn primary" data-act="ttoggle">'+(t.running?I.stop+'Pause':I.timer+'Lancer')+'</button><button type="button" class="btn" data-act="treset">Remettre</button></div></div></div>';}
-function drawTimer(){const t=state.timer;const arc=document.getElementById('arc');const num=document.getElementById('tnum');if(!arc||!num)return;const frac=t.total?t.left/t.total:0;arc.style.strokeDashoffset=String(326.7*(1-frac));num.textContent=Math.floor(t.left/60)+':'+pad(t.left%60);arc.style.stroke=frac<.2?'var(--coral)':'var(--green)';}
+/* ---------- Le minuteur visuel ----------
+   Un disque de couleur montre le temps qui reste, et il diminue peu à peu, dans le sens des aiguilles d'une montre.
+   Quand la couleur a disparu, c'est fini. L'enfant le voit sans savoir lire l'heure, et le parent a les chiffres en dessous.
+   Le dessin est celui de cet espace (la couleur du soleil sur le vert, sans cadran et sans chiffres autour).
+   « Time Timer » est le nom d'une marque déposée, et son disque rouge aussi : l'outil s'appelle donc « Minuteur visuel », et il a ses propres couleurs. */
+const MV_C=2*Math.PI*27;
+/* La couleur du disque se choisit, parce qu'un enfant a souvent la sienne. Aucune n'est rouge. Le choix est gardé sur l'appareil. */
+const MV_COUL=[['soleil','Soleil'],['vert','Vert'],['bleu','Bleu'],['lilas','Lilas']];
+function mvCoul(){const c=D().mvc;return MV_COUL.some(x=>x[0]===c)?c:'soleil';}
+function mvDash(frac){const r=Math.max(0,Math.min(1,frac))*MV_C;return '0 '+(MV_C-r).toFixed(2)+' '+r.toFixed(2)+' '+MV_C.toFixed(2);}
+function toolTimer(){const t=state.timer;const mins=[1,2,3,5,10,15];const frac=t.total?t.left/t.total:0;
+  const coul=mvCoul();
+  return '<div class="card green minuteur mv-c-'+coul+'" style="align-items:center"><span class="label">Minuteur visuel</span><p class="hint" style="text-align:center">Votre enfant voit le temps qui reste, sans avoir besoin de lire l’heure. Vous pouvez lui dire « Quand la couleur a disparu, on range ».</p>'+
+    '<div class="timerwrap"><div class="ring disque"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="mv-fond" cx="60" cy="60" r="54"/><circle id="mv-part" class="mv-part" cx="60" cy="60" r="27" style="stroke-dasharray:'+mvDash(frac)+'"/><circle class="mv-bord" cx="60" cy="60" r="54"/></svg></div>'+
+    '<div class="mv-num" id="tnum" role="timer" aria-live="off" aria-label="Temps restant">'+Math.floor(t.left/60)+':'+pad(t.left%60)+'</div>'+
+    '<div class="bigrow">'+mins.map(m=>'<button type="button" class="btn small'+(t.total===m*60?' primary':'')+'" data-act="tset" data-m="'+m+'">'+m+' min</button>').join('')+'</div><div class="bigrow"><button type="button" class="btn primary" data-act="ttoggle">'+(t.running?I.stop+'Pause':I.timer+'Lancer')+'</button><button type="button" class="btn" data-act="treset">Remettre</button></div>'+
+    '<div class="mv-coul" role="group" aria-labelledby="mv-coul-l"><span class="hint" id="mv-coul-l">La couleur du disque</span><div class="mv-pastilles">'+MV_COUL.map(c=>'<button type="button" class="mv-p mv-p-'+c[0]+'" data-act="mvc" data-v="'+c[0]+'" aria-pressed="'+(coul===c[0])+'"><i aria-hidden="true"></i><span class="sr">'+c[1]+'</span></button>').join('')+'</div></div></div></div>';}
+function minuteurEnVue(){try{const c=document.querySelector('.minuteur');if(!c)return;const barre=document.querySelector('header.bar');const haut=(barre?Math.max(0,barre.getBoundingClientRect().bottom):0)+12;const y=Math.round(c.getBoundingClientRect().top+window.scrollY-haut);if(y>0)window.scrollTo(0,y);}catch(e){}}
+/* Le même minutage sert à l'outil (un disque) et à l'exercice « Une minute pour moi » (un anneau). */
+function drawTimer(){const t=state.timer;const num=document.getElementById('tnum');if(!num)return;const frac=t.total?t.left/t.total:0;
+  const arc=document.getElementById('arc'),part=document.getElementById('mv-part');
+  if(arc){arc.style.strokeDashoffset=String(326.7*(1-frac));arc.style.stroke=frac<.2?'var(--coral)':'var(--green)';}
+  if(part)part.style.strokeDasharray=mvDash(frac);
+  num.textContent=Math.floor(t.left/60)+':'+pad(t.left%60);}
 function tick(){const t=state.timer;if(!t.running)return;t.left=Math.max(0,t.left-1);drawTimer();if(t.left===0){t.running=false;clearInterval(t.h);t.h=null;try{if(navigator.vibrate)navigator.vibrate([200,100,200]);}catch(e){}toast('C’est fini. Bravo.');render();}}
 function stopTimer(){const t=state.timer;t.running=false;if(t.h){clearInterval(t.h);t.h=null;}}
 /* ---------- « D'abord, ensuite » et la routine : des cartes-images ---------- */
@@ -439,7 +461,7 @@ function viewTransmettre(){
   const url=PUBLIC+'transmettre/';
   return '<main id="main" tabindex="-1" class="view v-feuille v-transmettre"><div class="feuille">'+
     '<div class="f-tete"><span class="label">Quelqu’un qui vous accompagne vous a transmis cette page</span><h1 class="t1">On vous demande souvent comment va votre enfant. Ici, on commence par vous.</h1></div>'+
-    '<p class="lecture-l">Parent écouté, parent éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, quel que soit l’âge de votre enfant, à 5 ans comme à 16 ou à 35 ans. Il a été créé par Antonio Company, travailleur social et père de 3 enfants.</p>'+
+    '<p class="lecture-l">Parent écouté, parent éclairé est un espace pour la mère ou le père d’une personne en situation de handicap, quel que soit son âge, tout-petit ou adulte depuis longtemps. Il a été créé par Antonio Company, éducateur social, responsable d’une équipe socio-éducative et père de 3 enfants.</p>'+
     '<p class="lecture-l">Vous pouvez commencer par 2 minutes pour vous, tout de suite. C’est gratuit, sans compte, et rien de ce que vous écrivez ne quitte votre appareil.</p>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="porte" data-v="souffle">'+I.wind+'Souffler 2 minutes, maintenant</button></div>'+
     '<section class="tr-suite" aria-labelledby="tr-suite-t"><h2 id="tr-suite-t">Ensuite, si vous le souhaitez</h2><ul class="tr-liens"><li><a class="lien-f" href="'+RACINE+'fiches/" data-act="fiches">'+I.kit+'Ouvrir une fiche pratique</a><span>Sur le coucher, les crises, l’école ou la vie en foyer.</span></li><li><button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une vraie étape du parcours</button><span>En 3 minutes, sans rien créer.</span></li><li><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche de relais</button><span>Pour confier votre enfant à un proche.</span></li></ul></section>'+
@@ -479,7 +501,7 @@ function viewAntonio(){
 function viewLetter(){
   const i=state.letter;const l=i>=0?D().letters[i]:null;const txt=l?l.text:LETTER_EXAMPLE;
   return '<main id="main" tabindex="-1" class="view v-feuille"><div class="feuille f-lettre"><div class="f-tete"><span class="label">'+(l?'Le mot d’Antonio du '+esc(fmtDate(l.date)):'Un exemple de ce que sera le mot d’Antonio')+'</span><h1 class="t1">'+(D().me?'Bonjour '+esc(D().me)+',':'Bonjour,')+'</h1></div>'+
-    '<div class="mots-a mots-grand">'+txt.split('\n').map(p=>'<p>'+esc(p)+'</p>').join('')+'<div class="from" style="margin-top:6px"><span class="av" aria-hidden="true">A</span><div><b>Antonio Company</b><small>travailleur social</small></div></div></div>'+
+    '<div class="mots-a mots-grand">'+txt.split('\n').map(p=>'<p>'+esc(p)+'</p>').join('')+'<div class="from" style="margin-top:6px"><span class="av" aria-hidden="true">A</span><div><b>Antonio Company</b><small>'+ROLE_A+'</small></div></div></div>'+
     (l?'':'<p class="hint">Ceci est un exemple. Dans la version complète, Antonio écrira ce mot chaque mois à partir des dépôts que vous aurez partagés, de votre humeur et de vos étapes. Il ne citera jamais de prénom et ne posera jamais de diagnostic.</p>')+
     '<div class="quick"><button type="button" class="btn" data-act="porte" data-v="deposer">'+I.drop+'Déposer</button><button type="button" class="btn" data-act="go" data-view="antonio">'+I.question+'Poser une question</button></div></div></main>';
 }
@@ -529,7 +551,7 @@ function viewAbout(){
     '<p>Si je vous raconte tout cela, c’est pour que vous sachiez d’où vient cet espace. Il vient d’un enfant qui a eu la chance d’être écouté.</p>'+
     '<p>Ici, vous n’avez rien à prouver à personne. Vous pouvez simplement déposer ce qui vous pèse.</p>'+
     '<p>Merci d’avoir pris le temps de me lire.</p>'+
-    '<div class="sign"><img class="medal seal" src="'+MEDAL+'" alt="Logo de Parent écouté, parent éclairé, une goutte qui tombe sur un étang dans la lumière d’une forêt." width="64" height="64" loading="lazy" decoding="async"><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
+    '<div class="sign"><span class="logo-sceau" role="img" aria-label="Le logo de Parent écouté, parent éclairé : une goutte au-dessus de ses 2 ondes.">'+LOGO+'</span><div><b>Antonio Company</b><span>Travailleur social depuis mes 19 ans, responsable d’une équipe socio-éducative, père de trois enfants.</span></div></div>'+
     '</div>'+
     (peek?'<button type="button" class="btn primary wide" data-act="entrer" data-v="today">'+I.sun2+'Commencer gratuitement</button>':'')+
     '<div class="card green"><h2 class="label">Ce que cet espace n’est pas</h2><ul class="list"><li>Ce n’est pas un diagnostic ni une thérapie. Pour cela, il y a votre pédiatre, votre médecin et les thérapeutes.</li><li>Ce n’est pas un service d’urgence. En cas de danger, appelez le '+tel('144')+'. Si vous êtes à bout, appelez le '+tel('143')+'.</li><li>Cela ne remplace pas les personnes qui vous entourent. C’est plutôt un pont vers elles.</li></ul></div><p class="hint">Version de test.</p></div></main>';
@@ -538,7 +560,7 @@ function viewAbout(){
 function tabs(){
   const grp={today:['today','deposer'],parcours:['parcours','step','carnet','evo','photo'],kit:['kit','sit','exo','relais'],me:['me','plans','depots','antonio','letter','data','about']};
   const cur=v=>grp[v].includes(state.view)?' aria-current="page"':'';
-  return '<nav class="tabs" aria-label="Navigation"><a class="rail-brand" href="'+RACINE+'#accueil" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><div class="tabs-in">'+(large()?'<a class="tab tab-accueil" href="'+RACINE+'#accueil" data-act="accueil">'+I.home+'Accueil</a>':'')+'<button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
+  return '<nav class="tabs" aria-label="Navigation"><a class="rail-brand" href="'+RACINE+'#accueil" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté,<small>parent éclairé</small></span></a><div class="tabs-in">'+(large()?'<a class="tab tab-accueil" href="'+RACINE+'#accueil" data-act="accueil">'+I.home+'Accueil</a>':'')+'<button type="button" class="tab" data-act="go" data-view="today"'+cur('today')+'>'+I.sun2+'Aujourd’hui</button><button type="button" class="tab" data-act="go" data-view="parcours"'+cur('parcours')+'>'+I.path+'Parcours</button><button type="button" class="tab" data-act="go" data-view="kit"'+cur('kit')+'>'+I.kit+'Outils</button><button type="button" class="tab" data-act="go" data-view="me"'+cur('me')+'>'+I.user+'Moi</button></div>'+(large()?'<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button>':'')+'</nav>';
 }
 /* « Faisons connaissance » : la personnalisation de l'espace. Elle est facultative, rien n'y est coché à l'avance,
    et les réponses ne sont gardées qu'au moment où le parent touche « Enregistrer » (state.ob est le brouillon). */
@@ -581,6 +603,7 @@ function handle(act,d,el){
     /* « Encore 2 minutes » : si le parent écoutait l'étang, le son repart avec la respiration. Sinon, tout recommence en silence. */
     case 'souffle-go':{const avecSon=SON.voulu;souffleStart();if(avecSon)sonSouffle();break;}
     case 'souffle-stop':SON.voulu=false;souffleStop();break;
+    case 'souffle-pause':soufflePause();break;
     /* « Changer de respiration » : le choix s'ouvre et se referme sans arrêter l'exercice. Un choix ou un réglage prend effet au mouvement suivant. */
     case 'resp-ouvre':state.souffle.choix=true;state.souffle.foc='.resp-o[aria-pressed="true"]';break;
     case 'resp-ferme':state.souffle.choix=false;state.souffle.foc='.resp-l';break;
@@ -591,7 +614,7 @@ function handle(act,d,el){
       const nom=d.v==='instant'?'instant':'etang';
       if(SON.etat!=='off'&&SON.piste===nom){if(nom==='etang')SON.voulu=false;sonCoupe();}
       else if(nom==='etang'){if(state.view!=='souffle'||state.souffle.k!=='cours')return;SON.voulu=true;sonSouffle();}
-      else sonJoue('instant','dose',null);
+      else{if(state.view!=='instant')return;sonJoue('instant','dose',null);}
       return;}
     case 'voix':state.sheet='voix';break;
     case 'partager':partager(d.id);return;
@@ -615,7 +638,7 @@ function handle(act,d,el){
     case 'back':{if(HIST.ok&&HIST.i>0){try{history.back();return;}catch(e){}}
       if(!data.onboarded){state.view=['apercu','commande'].includes(state.view)?'plans':'intro';state.sheet=null;break;}const v=state.view;if(v==='souffle')souffleStop();let t;if(v==='sit'||v==='exo'){t='kit';stopTimer();}else if(v==='step'||v==='carnet'||v==='final'||v==='photo'||v==='evo')t='parcours';else if(v==='letter')t='antonio';else if(['apercu','commande'].includes(v))t='plans';else if(v==='relais')t='kit';else if(v==='transmettre')t='intro';else if(['plans','depots','antonio','data','about'].includes(v))t='me';else t='today';if(state.prev&&state.prev!==v&&state.prev!=='sos')t=state.prev;state.prev=null;state.view=t;break;}
     case 'mood':data.moods[todayIso()]=Number(d.i);save();break;
-    case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();break;
+    case 'kit':nav('kit');state.kit=d.v;if(d.v!=='tools')stopTimer();else if(d.tool==='timer')state.tool='timer';break;
     case 'sit':state.sit=d.id;nav('sit');noteRecent('sit',d.id);break;
     case 'age':state.age=d.v;break;
     case 'theme':state.theme=d.v;break;
@@ -707,6 +730,7 @@ function handle(act,d,el){
       {if(!Array.isArray(data.photos))data.photos=[];const L=data.photos,der=L[L.length-1],r={id:data.photo.id,text:data.photo.text,date:data.photo.date};if(der&&der.date===r.date)L[L.length-1]=r;else L.push(r);if(L.length>12)L.splice(0,L.length-12);}
       state.pdraft=null;save();render();toast('Gardé.');return;}
     case 'tool':state.tool=d.v;if(d.v!=='timer')stopTimer();noteRecent('tool',d.v);break;
+    case 'mvc':if(MV_COUL.some(x=>x[0]===d.v)){data.mvc=d.v;save();}break;
     case 'tset':stopTimer();state.timer.total=Number(d.m)*60;state.timer.left=state.timer.total;break;
     case 'ttoggle':if(state.timer.running)stopTimer();else{if(state.timer.left===0)state.timer.left=state.timer.total;state.timer.running=true;state.timer.h=setInterval(tick,1000);}break;
     case 'treset':stopTimer();state.timer.left=state.timer.total;break;
@@ -736,7 +760,12 @@ function handle(act,d,el){
   }
   const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre','dfin'].includes(act)||((act==='rl'||act==='dire')&&fxSig()!==sig0);
   /* Chaque nouvel écran est une page de l'historique. Ce qui se passe à l'intérieur d'un même écran (une rubrique de la boîte à outils, le choix d'une photo) remplace la page au lieu d'en ajouter une. */
-  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);},act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
+  /* L'aperçu d'une fiche du relais (ou la fiche d'exemple) : l'écran arrive en simple fondu, parce que c'est la feuille qui fait le mouvement.
+     Elle vient se poser, et la page s'ouvre de façon que ses 3 repères se lisent ensemble. */
+  const pose=act==='rl'&&state.view==='relais'&&(state.rl.e==='apercu'||state.rl.e==='exemple');
+  /* Le bouton « Le minuteur visuel » d'une fiche mène tout droit au minuteur, et pas en haut de la boîte à outils. */
+  const versMinuteur=act==='kit'&&d.tool==='timer';
+  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);if(pose)rlVoirTrois();if(versMinuteur)minuteurEnVue();},pose?'fade':act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
@@ -819,7 +848,7 @@ if(SITE)window.addEventListener('hashchange',()=>{
 });
 if(SITE)window.addEventListener('popstate',histRetour);
 /* La respiration s'arrête quand l'écran s'éteint ou que l'on change d'onglet, et reprend là où elle en était. */
-document.addEventListener('visibilitychange',()=>{const z=state.souffle;if(z.k!=='cours')return;
+document.addEventListener('visibilitychange',()=>{const z=state.souffle;if(z.k!=='cours'||z.pz)return;
   if(document.visibilityState==='hidden'){if(!z.hid)z.hid=performance.now();veilleOff();}
   else{if(z.hid){souffleDecale(performance.now()-z.hid);z.hid=0;}veilleOn();souffleApres();}});
 /* Le son s'arrête dès que la page passe à l'arrière-plan. Au retour, celui de la respiration reprend là où en est l'exercice. Celui de la dose reste coupé. */

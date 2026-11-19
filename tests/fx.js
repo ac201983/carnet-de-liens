@@ -108,16 +108,36 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
     ok(!(await page.evaluate(() => /fx-(nav|onde|ring)/.test(document.documentElement.className))), 'deux onglets coup sur coup : l’état de passage est bien retiré ensuite');
   }
   // un nouvel affichage du même écran ne rejoue pas l'arrivée
-  await page.click('.tab' + A('go', '[data-view="today"]')); await page.waitForTimeout(2400);
+  await page.click('.tab' + A('go', '[data-view="kit"]')); await page.waitForTimeout(1900);
+  await page.click('.tab' + A('go', '[data-view="today"]'));
+  // la dose de lumière : un reflet de soleil effleure une fois le bord de la carte, et la phrase ne bouge pas
+  const dose = () => page.evaluate(() => { const d = document.querySelector('#app .dose'), p = d.querySelector('p'), r = d.querySelectorAll('.dose-reflet'); const s = r[0]; return { n: r.length, phrase: Math.round(p.getBoundingClientRect().top - d.getBoundingClientRect().top), pos: s ? getComputedStyle(s).position + ' ' + getComputedStyle(s).pointerEvents : '', traits: s ? [...s.querySelectorAll('rect')].map(x => x.getAttribute('stroke-dasharray') ? 1 : 0).join('') : '', op: getComputedStyle(d).opacity, anim: getComputedStyle(p).animationName + ' ' + getComputedStyle(p).transform, coin: getComputedStyle(d, '::before').animationName, lueur: getComputedStyle(d, '::after').content }; });
+  await page.waitForTimeout(450); const dz0 = await dose();
+  await page.waitForTimeout(1500); const dz1 = await dose();
+  ok(dz0.n === 0 && dz1.n === 1 && dz1.pos === 'absolute none' && dz1.traits === '111' && dz1.phrase === dz0.phrase && dz1.anim === 'none none', 'dose : le reflet arrive un instant après la carte, sur son bord, et la phrase est immobile ' + JSON.stringify([dz0, dz1]));
+  ok(dz1.coin === 'none' && (dz1.lueur === 'none' || dz1.lueur === 'normal'), 'dose : plus de lueur qui traverse la carte, et la lueur du coin ne pulse plus ' + JSON.stringify([dz1.coin, dz1.lueur]));
+  await page.waitForTimeout(450);
   await page.click(A('mood', '[data-i="2"]')); await page.waitForTimeout(80);
   ok((await page.evaluate(() => [...document.querySelectorAll('#app .card,#app .dose')].filter(e => parseFloat(getComputedStyle(e).opacity) < 0.98).length)) === 0, 'même écran redessiné : l’arrivée ne rejoue pas');
+  const dz2 = await dose();
+  ok(dz2.n === 1 && dz2.phrase === dz0.phrase, 'dose : si l’écran est redessiné pendant le reflet, il continue sur la carte, sans repartir du début ' + JSON.stringify(dz2));
+  await page.waitForTimeout(2300); const dz3 = await dose();
+  await page.click(A('mood', '[data-i="3"]')); await page.waitForTimeout(1600); const dz4 = await dose();
+  ok(dz3.n === 0 && dz4.n === 0 && dz3.op === '1' && dz4.phrase === dz0.phrase, 'dose : le reflet ne passe qu’une fois, puis la carte est tout à fait immobile ' + JSON.stringify([dz3, dz4]));
 
-  // --- le dépôt : le texte se dissout, la réponse remonte
+  // --- le dépôt : une seule goutte tombe à côté des mots, qui ne bougent pas, et la suite est là tout de suite
   await page.click('.portes ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(1900);
   await page.fill('#draft', 'Ce soir j’ai crié et je m’en veux.'); await page.$eval('#draft', e => e.scrollIntoView({ block: 'center' })); await page.waitForTimeout(200);
-  await page.click(A('dsend')); await page.waitForTimeout(260); await page.screenshot({ path: OUT + '/depot-0260.png' });
+  await page.click(A('dsend')); await page.waitForTimeout(120);
+  const mots0 = await page.evaluate(() => { const e = document.querySelector('.emporte'), m = e && e.querySelector('.em-texte'), g = e && e.querySelector('.depose-g'); return { suite: !!(e && e.querySelector('.em-suite ' + '[data-act="dfin"]') && e.querySelector('.em-suite ' + '[data-act="dire"]')), texte: m ? m.textContent : '', ecart: m ? Math.round(m.getBoundingClientRect().top - e.getBoundingClientRect().top) : -1, net: m ? getComputedStyle(m).opacity + ' ' + getComputedStyle(m).transform + ' ' + getComputedStyle(m).animationName : '', goutte: !!g, chute: g ? getComputedStyle(g.querySelector('.dg-g')).animationName : '', touche: g ? getComputedStyle(g).pointerEvents : '' }; });
+  ok(mots0.suite && mots0.texte === 'Ce soir j’ai crié et je m’en veux.' && mots0.net === '1 none none', 'dépôt : dès l’appui, les mots sont là, entiers et immobiles, et la suite est accessible ' + JSON.stringify(mots0));
+  ok(mots0.goutte && mots0.chute === 'dg-chute' && mots0.touche === 'none', 'dépôt : une goutte tombe à côté des mots, sans gêner le doigt ' + JSON.stringify([mots0.goutte, mots0.chute]));
+  await page.waitForTimeout(140); await page.screenshot({ path: OUT + '/depot-0260.png' });
   await page.waitForTimeout(300); await page.screenshot({ path: OUT + '/depot-0560.png' }); await page.waitForTimeout(500); await page.screenshot({ path: OUT + '/depot-1060.png' }); await page.waitForTimeout(500); await page.screenshot({ path: OUT + '/depot-1560.png' }); await page.waitForTimeout(1600);
   ok(await page.$('.mirror .q') && (await page.$eval('#draft', e => e.value)) === '' && (await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).depots.length)) === 1, 'dépôt : un seul dépôt enregistré, champ vidé, réponse affichée');
+  await page.waitForTimeout(700);
+  const mots1 = await page.evaluate(() => { const e = document.querySelector('.emporte'), m = e.querySelector('.em-texte'), g = e.querySelector('.depose-g'); return { ecart: Math.round(m.getBoundingClientRect().top - e.getBoundingClientRect().top), goutte: g ? getComputedStyle(g.querySelector('.dg-g')).visibility : 'retirée', ondes: g ? [...g.querySelectorAll('ellipse')].map(x => getComputedStyle(x).strokeOpacity).join(' ') : '0 0', n: document.querySelectorAll('.depose-g').length }; });
+  ok(mots1.ecart === mots0.ecart && (mots1.goutte === 'hidden' || mots1.goutte === 'retirée') && mots1.ondes === '0 0' && mots1.n <= 1, 'dépôt : la goutte est tombée une seule fois, ses ondes se sont effacées, et les mots n’ont pas bougé ' + JSON.stringify(mots1));
   await page.waitForTimeout(400);
   const flou = await page.$eval('.mirror', e => [e, ...e.querySelectorAll('*')].filter(x => parseFloat(getComputedStyle(x).opacity) < 0.98 || getComputedStyle(x).filter !== 'none').map(x => x.tagName + '.' + x.className + ' ' + getComputedStyle(x).opacity + ' ' + getComputedStyle(x).filter));
   ok(!flou.length, 'dépôt : la réponse et chacune de ses lignes sont pleinement visibles et nettes à la fin ' + flou.join(' | '));
@@ -129,14 +149,36 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   ok(op > 0.9, 'message bref : toujours pleinement visible juste après un nouvel affichage de l’écran (opacité ' + op + ')');
   await page.waitForTimeout(3600); ok(!(await page.$('.toast')), 'message bref : retiré la deuxième fois aussi');
   await page.keyboard.press('Escape'); await page.waitForTimeout(900);
-  // --- souffler : le cercle s'ouvre et se referme, sans rien d'estompé, et le mot suit
+  // --- souffler : à l'inspiration la goutte s'élève (sans carte graphique, les cercles se resserrent), à l'expiration elle redescend
+  //     et les ondes s'élargissent, sans rien d'estompé, et le mot suit
   await page.click(A('back')); await page.waitForTimeout(1900);
   await page.click('.portes ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(2400);
   { const a = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')) }));
     await page.waitForTimeout(2600); const b = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')) }));
     await page.waitForTimeout(4000); const c = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')), dim: [...document.querySelectorAll('.souffle *')].filter(e => parseFloat(getComputedStyle(e).opacity) < 0.98).length }));
-    ok(a.mot === 'Inspirez' && b.mot === 'Inspirez' && b.s > a.s + 0.2 && c.mot === 'Expirez' && c.s < b.s - 0.1 && c.dim === 0, 'souffler : le cercle s’ouvre à l’inspiration et se referme à l’expiration, rien n’est estompé ' + JSON.stringify([a, b, c])); }
+    const eau = await page.evaluate(() => { const e = document.querySelector('.souffle .etang'); return e.classList.contains('eau-vive') && !!e.querySelector('canvas.eau'); });
+    ok(a.mot === 'Inspirez' && b.mot === 'Inspirez' && c.mot === 'Expirez' && c.dim === 0 && (eau || (b.s < a.s - 0.2 && c.s > b.s + 0.1)), 'souffler : ' + (eau ? 'la goutte de la photo suit le souffle' : 'les cercles se resserrent à l’inspiration et s’élargissent à l’expiration') + ', rien n’est estompé ' + JSON.stringify([a, b, c]));
+    // la pause : tout attend, sans rien d'estompé non plus
+    await page.click(A('souffle-pause')); await page.waitForTimeout(500);
+    const pz = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')), dim: [...document.querySelectorAll('.souffle *')].filter(e => parseFloat(getComputedStyle(e).opacity) < 0.98).length }));
+    await page.waitForTimeout(1500); const pz2 = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s')));
+    ok(pz.mot === 'En pause' && pz.dim === 0 && pz2 === pz.s, 'souffler : en pause, le dessin attend là où il en était ' + JSON.stringify([pz, pz2]));
+    await page.click(A('souffle-pause')); await page.waitForTimeout(400); }
   await page.click(A('souffle-stop')); await page.waitForTimeout(300); await page.click(A('back')); await page.waitForTimeout(1900);
+  // --- les écrans calmes : sur le SOS, là où l'on écrit et là où l'on paie, rien ne bouge une fois l'écran arrivé
+  {
+    const bouge = () => page.evaluate(() => ({ anims: document.getAnimations().filter(a => a.playState === 'running').map(a => (a.animationName || a.transitionProperty || '?') + ' sur ' + ((a.effect && a.effect.target && (a.effect.target.className || a.effect.target.tagName)) || '?')).slice(0, 4), reflet: document.querySelectorAll('.dose-reflet,.depose-g,.s-rep,.onde-doigt').length, calque: !!document.querySelector('canvas.eau'), h1: (document.querySelector('main h1') || {}).textContent || '' }));
+    await page.click(A('go', '[data-view="sos"]')); await page.waitForTimeout(1900); const c1 = await bouge();
+    ok(!!(await page.$('main.sosview')) && c1.anims.length === 0 && c1.reflet === 0 && !c1.calque, 'écran calme : le SOS est immobile dès son arrivée ' + JSON.stringify(c1));
+    await page.click(A('back')); await page.waitForTimeout(1900);
+    await page.click('.portes ' + A('porte', '[data-v="deposer"]')); await page.waitForTimeout(2300); await page.focus('#draft'); await page.keyboard.type('Quelques mots.'); await page.waitForTimeout(700); const c2 = await bouge();
+    ok(c2.anims.length === 0 && !c2.calque, 'écran calme : pendant que le parent écrit, rien ne bouge ' + JSON.stringify(c2));
+    await page.fill('#draft', ''); await page.click(A('back')); await page.waitForTimeout(1900);
+    await page.evaluate(() => { location.hash = '#cadeau-parcours'; }); await page.waitForTimeout(2600); const c3 = await bouge();
+    ok(/commande|cadeau/i.test(c3.h1) && c3.anims.length === 0 && c3.reflet === 0 && !c3.calque, 'écran calme : l’écran de la commande est immobile ' + JSON.stringify(c3));
+    await page.click(A('back')).catch(() => { }); await page.waitForTimeout(1900);
+    if (!(await page.$('.tabs'))) { await page.goBack().catch(() => { }); await page.waitForTimeout(1500); }
+  }
   // --- une feuille qui se referme : elle s'efface, et rien ne reste bloqué
   await page.click('.tab' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(1900);
   const lock = await page.$(A('upgrade'));
@@ -187,12 +229,23 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
       ok((await eau('.band')) > 0, 'toucher la goutte : elle rebondit (le calque est là) ' + JSON.stringify(g)); await p.screenshot({ path: OUT + '/goutte-0700.png', clip: bandClip });
       await p.waitForTimeout(5200); ok(!(await eau('.band')), 'toucher la goutte : tout redevient calme ensuite');
       await p.screenshot({ path: OUT + '/bandeau-calme3.png', clip: bandClip }); ok(diff(await rd('bandeau-calme3.png'), await rd('bandeau-calme.png')) === 0, 'après le rebond, la photo est exactement comme avant'); }
-    // souffler : l'étang a sa propre photo et ses cercles dessinés. Aucun calque d'eau n'y est posé, et à chaque expiration un cercle de plus part sur l'eau.
-    await p.click('.portes ' + A('porte', '[data-v="souffle"]')); await p.waitForTimeout(1400 + 4000 + 900);
-    { const so = await p.evaluate(() => { const b = document.querySelector('.souffle .ronds b'), im = document.querySelector('.souffle .etang-photo'), r = document.querySelector('.souffle .ronds').getBoundingClientRect(), h = document.querySelector('.souffle .etang').getBoundingClientRect(); return { mot: document.getElementById('souffle-mot').textContent, onde: !!b && b.classList.contains('onde'), anim: b ? getComputedStyle(b).animationName : '', photo: !!im && im.complete && im.naturalWidth > 0, eau: document.querySelectorAll('canvas.eau').length, surLEau: r.top + r.height / 2 > h.top + h.height * .45 && r.bottom < h.bottom + 2, large: Math.round(r.width) }; });
-      ok(so.mot === 'Expirez' && so.onde && so.anim === 'et-onde' && so.photo && so.eau === 0 && so.surLEau && so.large >= 170, 'souffler : la photo de l’étang est là, les cercles sont posés sur l’eau, et à l’expiration un cercle part sur l’étang ' + JSON.stringify(so)); }
+    // souffler : la goutte de la photo suit le souffle. Le calque d'eau est posé sur l'étang, les cercles de secours sont cachés,
+    // la goutte s'élève à l'inspiration, redescend à l'expiration, et la photo redevient exactement la même à l'arrêt.
+    await p.click('.portes ' + A('porte', '[data-v="souffle"]')); await p.waitForSelector('main.souffle.s-cours'); await p.waitForTimeout(1400 + 500);
+    { const clip = await p.$eval('.souffle .etang', e => { const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width * .3), y: Math.max(0, Math.round(r.top + r.height * .12)), width: Math.round(r.width * .4), height: Math.round(r.height * .62) }; });
+      await p.screenshot({ path: OUT + '/souffle-in-debut.png', clip }); await p.waitForTimeout(3000); await p.screenshot({ path: OUT + '/souffle-in-fin.png', clip });
+      await p.waitForTimeout(500 + 3500);
+      const so = await p.evaluate(() => { const e = document.querySelector('.souffle .etang'), im = e.querySelector('.etang-photo'); return { mot: document.getElementById('souffle-mot').textContent, photo: !!im && im.complete && im.naturalWidth > 0, eau: e.querySelectorAll('canvas.eau').length, vive: e.classList.contains('eau-vive'), ronds: getComputedStyle(e.querySelector('.ronds')).visibility, aide: document.getElementById('souffle-aide').textContent }; });
+      await p.screenshot({ path: OUT + '/souffle-out.png', clip });
+      const monte = diff(await rd('souffle-in-fin.png'), await rd('souffle-in-debut.png')), descend = diff(await rd('souffle-out.png'), await rd('souffle-in-fin.png'));
+      ok(so.mot === 'Expirez' && so.photo && so.eau === 1 && so.vive && so.ronds === 'hidden' && /redescend/.test(so.aide), 'souffler : la photo de la goutte est là, l’eau y est dessinée, les cercles de secours sont cachés, et la ligne d’aide parle de la goutte ' + JSON.stringify(so));
+      ok(monte > 0.002 && descend > 0.002, 'souffler : la goutte s’élève pendant l’inspiration, puis redescend pendant l’expiration (image changée sur ' + (monte * 100).toFixed(2) + ' % puis ' + (descend * 100).toFixed(2) + ' % des points)');
+      // la pause : l'image ne bouge plus du tout, puis elle reprend
+      await p.click(A('souffle-pause')); await p.waitForTimeout(500); await p.screenshot({ path: OUT + '/souffle-pause-1.png', clip }); await p.waitForTimeout(1500); await p.screenshot({ path: OUT + '/souffle-pause-2.png', clip });
+      ok(diff(await rd('souffle-pause-2.png'), await rd('souffle-pause-1.png')) === 0, 'souffler : en pause, la goutte attend en l’air, parfaitement immobile');
+      await p.click(A('souffle-pause')); await p.waitForTimeout(600); }
     await p.click(A('souffle-stop')); await p.waitForTimeout(4600);
-    ok(await p.evaluate(() => { const b = document.querySelector('.souffle .ronds b'); const bc = getComputedStyle(b).borderTopColor; return /rgba\(255, 255, 255, 0\)|transparent/.test(bc) || !b.classList.contains('onde'); }), 'souffler : arrêté, l’étang redevient calme');
+    ok(await p.evaluate(() => { const e = document.querySelector('.souffle .etang'); return !e.querySelector('canvas.eau') && !e.classList.contains('eau-vive'); }), 'souffler : arrêté, la goutte est revenue à sa place et l’étang redevient calme');
     await p.click(A('back')); await p.waitForTimeout(2600);
     for (const [v, nom] of [['parcours', 'Parcours'], ['kit', 'Outils']]) { await p.click('.tab' + A('go', '[data-view="' + v + '"]')); await p.waitForTimeout(3000); ok((await eau('.band')) > 0, 'onglet « ' + nom + ' » : la goutte saute là aussi'); await p.waitForTimeout(4200); ok(!(await eau('.band')), 'onglet « ' + nom + ' » : puis tout redevient calme'); }
     await p.click('.tab' + A('go', '[data-view="me"]')); await p.waitForTimeout(2600);

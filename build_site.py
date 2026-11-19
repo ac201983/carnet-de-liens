@@ -306,7 +306,7 @@ def text_page(fname, h1, title, desc, body, v, band='center 45%'):
     assert '{{' not in body, re.findall(r'\{\{[^}]*\}\}', body)
     cur = lambda f: ' aria-current="page"' if f == fname else ''
     page = (head(title, desc, canonical, '', v)
-            + '<body>\n<div class="app nobar">\n<header class="bar"><a class="wordmark" href="./" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">' + LOGO + '<span>Parent écouté<small>parent éclairé</small></span></a></header>\n'
+            + '<body>\n<div class="app nobar">\n<header class="bar"><a class="wordmark" href="./" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">' + LOGO + '<span>Parent écouté,<small>parent éclairé</small></span></a></header>\n'
             + '<main id="main" class="view doc" style="padding-top:0">\n<div class="band thin bleed" style="background-image:url(img/hero.webp);background-position:' + band + '"><h1 class="t1">' + html.escape(h1) + '</h1></div>\n'
             + body.strip() + '\n<a class="btn primary" href="./" style="align-self:flex-start">Revenir à l’espace</a>\n</main>\n'
             + '<footer class="foot"><a href="./">Accueil</a><a href="confidentialite.html"' + cur('confidentialite.html') + '>Confidentialité</a><a href="conditions.html"' + cur('conditions.html') + '>Conditions générales</a>'
@@ -459,7 +459,7 @@ def build_site():
     # --- 404 (à la racine du dépôt : GitHub Pages la sert pour toute adresse inconnue du projet)
     home = MOVED or APP_PATH   # après le déménagement, la page 404 de l'ancienne adresse ramène à la nouvelle
     nf = (head('Page introuvable sur ' + NAME, 'Cette page n’existe pas ou plus.', '', APP_PATH, v, robots='noindex', social=False, hero=False)
-          + '<body>\n<div class="app nobar">\n<header class="bar"><a class="wordmark" href="' + home + '" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">' + LOGO + '<span>Parent écouté<small>parent éclairé</small></span></a></header>\n'
+          + '<body>\n<div class="app nobar">\n<header class="bar"><a class="wordmark" href="' + home + '" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">' + LOGO + '<span>Parent écouté,<small>parent éclairé</small></span></a></header>\n'
           + '<main id="main" class="view notfound">\n<p class="label">Erreur 404</p>\n<h1>Ce chemin ne mène nulle part.</h1>\n'
           + '<p>La page que vous cherchez n’existe pas ou n’existe plus, mais l’espace est toujours là.</p>\n'
           + '<a class="btn primary" href="' + home + '">Revenir à l’accueil</a>\n'

@@ -2104,6 +2104,129 @@ html.fx.fx-ring.clair.vue-intro #onde i{background:radial-gradient(ellipse close
   .emporte>h2{font-size:28px}
 }
 /* <<< la parole */
+/* >>> la goutte (19 novembre 2026, le soir) */
+/* ==================================================================
+   LA GOUTTE (demande d'Antonio du 19 novembre 2026, 17 h 59)
+   Le logo officiel est la goutte au-dessus de ses 2 ondes. Le nom se lit d'un trait : « Parent écouté, » puis « parent éclairé », avec la même présence.
+   Les mouvements du site prennent la goutte de « Souffler » pour mesure : lents, doux, jamais répétés seuls, et arrêtés si le téléphone demande moins d'animations.
+   ================================================================== */
+
+/* -- le nom complet, sur 2 lignes de même présence (en-tête de l'accueil, barre de l'espace, pages publiques, colonne de l'ordinateur) -- */
+.wordmark small,.intro>.hbar .wordmark small,.rail-brand small{display:block;margin-top:0;font-family:inherit;font-weight:inherit;font-size:1em;letter-spacing:inherit;color:inherit}
+.wordmark,.rail-brand{line-height:1.08}
+.wordmark .logo,.rail-brand .logo{width:38px;height:38px}
+/* dans la barre de l'espace, à côté de « Accueil » et du SOS, le nom garde sa place sur un téléphone étroit */
+@media (max-width:1023px){.bar a.wordmark{font-size:18px;gap:8px}.bar a.wordmark .logo{width:34px;height:34px}}
+@media (max-width:379px){.bar a.wordmark{font-size:16.5px}}
+
+/* -- le logo en sceau (signature de « Mon histoire ») : le même dessin que sur les fiches de relais -- */
+.logo-sceau{--cream:#F4EFD8;--green:#B4DE9C;--surface-2:#164426;flex:none;width:60px;height:60px;border-radius:50%;background:#0F331C;display:grid;place-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.logo-sceau .logo{width:40px;height:40px}
+
+/* -- le rôle d'Antonio, sous son nom -- */
+.mot-a figcaption b{display:block;font-size:15.5px;line-height:1.35;font-weight:800;color:var(--fg)}
+.mot-a figcaption span{display:block;font-size:14.5px;line-height:1.4;font-weight:700;color:var(--muted)}
+.voice .who .who-tx{display:flex;flex-direction:column;gap:1px;min-width:0;margin-right:auto}
+.voice .who .who-tx b{margin-right:0}
+.voice .who .who-tx small{font-size:14px;line-height:1.35;font-weight:700;color:var(--muted)}
+
+/* -- « Souffler » : la goutte suspendue au-dessus de l'étang. Le calque d'eau fait monter et redescendre la goutte de la photo. -- */
+html.fx .etang>canvas.eau{display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.souffle .etang .etang-photo,.instant .etang .etang-photo{object-position:50% 46%}
+/* les 2 cercles ne se montrent que si l'eau n'est pas dessinée : ils s'élargissent à l'expiration */
+.etang.eau-vive>.ronds{visibility:hidden}
+.souffle .ronds i:nth-child(2){transform:scale(calc(var(--s) * .6))}
+/* la pause : le premier bouton, large, à portée du pouce */
+.souffle .souffle-a{flex-wrap:wrap;justify-content:center}
+.souffle .souffle-a .souffle-pz{flex:1 0 100%;width:100%;max-width:none;min-height:54px;font-size:17px}
+@media (min-width:1024px){.souffle .souffle-a .souffle-pz{flex:0 0 auto;width:auto;min-width:220px}}
+html.clair .v-souffle .btn.souffle-pz{background:rgba(255,255,255,.78)}
+
+/* -- « Prendre un instant » : l'étang, à regarder ou à toucher -- */
+.dose .instant-b{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;position:relative;z-index:1;min-height:46px;margin-top:2px;padding:8px 16px;border-radius:999px;border:1px solid rgba(20,51,32,.35);background:rgba(255,255,255,.42);color:#143320;font-family:inherit;font-weight:800;font-size:15.5px;line-height:1.2;text-align:left}
+.dose .instant-b .i{width:19px;height:19px;flex:none}
+.dose .instant-b .tx{display:flex;flex-direction:column;gap:2px}
+.dose .instant-b small{font-size:14px;font-weight:700;color:#2F4A16}
+@media (hover:hover){.dose .instant-b:hover{border-color:#143320}}
+.instant .etang{height:clamp(300px,60vh,620px)}
+@supports (height:1svh){.instant .etang{height:clamp(300px,60svh,620px)}}
+.instant .son-b small{font-size:14px}
+/* sans carte graphique : le cercle fin qui naît sous le doigt */
+.onde-doigt{position:absolute;z-index:2;width:calc(150px * var(--k,1));height:calc(40px * var(--k,1));margin:calc(-20px * var(--k,1)) 0 0 calc(-75px * var(--k,1));border-radius:50%;border:1.5px solid rgba(255,255,255,0);pointer-events:none}
+html.fx .onde-doigt{animation:onde-doigt 2.6s cubic-bezier(.2,.6,.3,1) both}
+@keyframes onde-doigt{0%{transform:scale(.12);border-color:rgba(255,255,255,.85)}100%{transform:scale(1.9);border-color:rgba(255,255,255,0)}}
+
+/* -- Le repère des schémas : un petit point clair qui suit la courbe, et le trait plein derrière lui -- */
+.s-sillage{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.s-rep-c{fill:#FBF8EA}
+.s-rep-h{fill:rgba(244,239,216,.32)}
+.s-f{visibility:hidden}
+.s-f.vu{visibility:visible}
+@media (prefers-reduced-motion:no-preference){
+  /* ce qui attend le repère au bout de sa course n'apparaît qu'à son arrivée */
+  html.fx .sch.rep-attend .sp.neuf:not(.tot){animation-delay:var(--rep-d,0s);animation-duration:.6s}
+  html.fx .sch.rep-attend .sp.neuf:not(.tot) .s-halo,html.fx .sch.rep-attend .sp.neuf:not(.tot) .s-anneau{animation-delay:var(--rep-d,0s);animation-duration:.7s}
+  html.fx .s-f.pop{transform-box:fill-box;transform-origin:center;animation:sch-pop .5s var(--fx-ease) backwards}
+  @keyframes sch-pop{from{transform:scale(.3)}to{transform:scale(1)}}
+}
+
+/* -- Déposer : une seule goutte tombe sur le bord du cadre qui garde les mots, 2 ondes s'élargissent, puis l'eau redevient calme -- */
+.em-eau{position:relative;min-width:0}
+.depose-g{position:absolute;z-index:1;right:30px;top:-37px;width:48px;height:48px;overflow:visible;color:var(--fg);pointer-events:none}
+.depose-g .dg-o1,.depose-g .dg-o2{fill:none;stroke:currentColor;stroke-width:1.8;stroke-opacity:0}
+.depose-g .dg-g{fill:currentColor;visibility:hidden}
+@media (prefers-reduced-motion:no-preference){
+  html.fx .depose-g .dg-g{transform-box:fill-box;transform-origin:50% 100%;animation:dg-chute 1.2s cubic-bezier(.55,.06,.9,.5) calc(.35s + var(--dg-d,0s)) both}
+  html.fx .depose-g .dg-o1{transform-box:fill-box;transform-origin:center;animation:dg-onde 1.9s cubic-bezier(.2,.6,.3,1) calc(1.42s + var(--dg-d,0s)) both}
+  html.fx .depose-g .dg-o2{transform-box:fill-box;transform-origin:center;animation:dg-onde 2.1s cubic-bezier(.2,.6,.3,1) calc(1.6s + var(--dg-d,0s)) both}
+  @keyframes dg-chute{0%{visibility:visible;transform:translateY(-26px) scale(.82);fill-opacity:0}14%{fill-opacity:1}89%{visibility:visible;transform:translateY(7px) scale(.82);fill-opacity:1}100%{visibility:hidden;transform:translateY(9px) scale(1,.2);fill-opacity:0}}
+  @keyframes dg-onde{0%{transform:scale(.12);stroke-opacity:0}14%{stroke-opacity:.85}100%{transform:scale(1);stroke-opacity:0}}
+}
+
+/* -- « Passer le relais » : la feuille vient se poser devant le parent, et le titre des 3 repères ressort -- */
+.rl-fiche .rl-trois h3,.rl-fiche .rl-trois .rl-h{font-size:1.34em;line-height:1.16;text-wrap:balance}
+.rl-fiche .rl-trois h3::after,.rl-fiche .rl-trois .rl-h::after{content:"";display:block;width:2.7em;margin-top:.4em;border-top:3px solid currentColor;border-radius:2px;transform-origin:0 50%}
+.v-relais{overflow-x:clip}
+@media (prefers-reduced-motion:no-preference){
+  html.fx .v-relais .rl-fiche.se-pose{transform-origin:50% 0;animation:rl-pose 1.05s cubic-bezier(.22,.7,.25,1) calc(.16s + var(--pose-d,0s)) backwards}
+  html.fx .v-relais .rl-fiche.se-pose .rl-trois h3::after,html.fx .v-relais .rl-fiche.se-pose .rl-trois .rl-h::after{animation:rl-trait .7s cubic-bezier(.3,.6,.3,1) calc(1s + var(--pose-d,0s)) backwards}
+  @keyframes rl-pose{0%{opacity:0;transform:translateY(-24px) rotate(-.7deg) scale(1.03);box-shadow:0 10px 16px rgba(17,48,28,.05),0 46px 76px rgba(17,48,28,.2)}16%{opacity:1}72%{transform:translateY(1.5px) rotate(.12deg) scale(1)}}
+  @keyframes rl-trait{from{transform:scaleX(0)}}
+}
+/* imprimée, la fiche ne bouge jamais */
+@media print{
+  .rl-fiche,.rl-fiche *,.rl-fiche *::before,.rl-fiche *::after{animation:none !important;transition:none !important}
+  .rl-fiche{transform:none !important;opacity:1 !important}
+}
+
+/* -- La dose de lumière : un reflet de soleil effleure une fois le bord de la carte, et la phrase ne bouge pas -- */
+html .dose>svg.dose-reflet{position:absolute;z-index:2;left:1.5px;top:1.5px;width:calc(100% - 3px);height:calc(100% - 3px);overflow:visible;pointer-events:none}
+.dose::before{animation:none}                    /* la lueur du coin ne pulse plus : la carte est immobile */
+html.fx .lum .dose::after{content:none}          /* l'ancienne lueur traversait la carte, derrière la phrase */
+@media (prefers-reduced-motion:no-preference){
+  /* la carte apparaît sur place, sans glisser : la phrase se lit tout de suite */
+  html.fx .enter .dose.reveal,html.fx .dose.fxe{animation-name:fx-fade}
+  html.fx:not(.fxsd) .dose.fxr.fxw{transform:none}
+  html.fx.fxsd .dose.fxr{animation:none}
+}
+
+/* -- Le minuteur visuel : un disque de couleur qui diminue (les couleurs de cet espace, sans cadran) -- */
+.minuteur .ring.disque{width:232px;height:232px}
+.mv-fond{fill:var(--surface)}
+.mv-part{fill:none;stroke:var(--mv,var(--sun));stroke-width:54}
+.mv-bord{fill:none;stroke:rgba(244,239,216,.3);stroke-width:1.5}
+.mv-num{font-family:var(--font-display);font-size:34px;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums}
+@media (max-width:400px){.minuteur .ring.disque{width:204px;height:204px}}
+.minuteur{--mv:var(--sun)}
+.minuteur.mv-c-vert{--mv:#8FD694}.minuteur.mv-c-bleu{--mv:#8EC5E8}.minuteur.mv-c-lilas{--mv:#C7B5EA}
+.mv-coul{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:2px}
+.mv-pastilles{display:flex;gap:6px}
+.mv-p{width:48px;height:48px;border-radius:50%;border:0;background:none;display:grid;place-items:center;padding:0}
+.mv-p i{width:30px;height:30px;border-radius:50%;background:var(--sun);box-shadow:0 0 0 2px rgba(244,239,216,.28)}
+.mv-p-vert i{background:#8FD694}.mv-p-bleu i{background:#8EC5E8}.mv-p-lilas i{background:#C7B5EA}
+.mv-p[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--bg,#07240F),0 0 0 4.5px var(--cream)}
+@media (prefers-reduced-motion:no-preference){html.fx .mv-part{transition:stroke-dasharray 1s linear}}
+/* <<< la goutte */
 @media print{
   :root,:root:not([data-theme="light"]){--bg:#fff;--surface:#fff;--surface-2:#eef1e6;--fg:#141a12;--cream:#141a12;--muted:#4a5546;--line:#cdd5c2;--green:#2f6b2f;--green-2:#6aa35a;--green-soft:#e6f0df;--sun:#b99a00;--sun-soft:#f5f0c8;--sun-fg:#6b5a00;--shadow:none;--shadow-sm:none;color-scheme:light}
   html,body{background:#fff !important;color:#141a12 !important}

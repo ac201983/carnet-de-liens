@@ -216,7 +216,7 @@ async function partager(id){
 }
 
 /* ---------- ce que le parent a ouvert dernièrement, pour le rouvrir sans chercher ---------- */
-const OUTILS_NOMS={timer:'Le minuteur',ft:'D’abord, ensuite',routine:'La routine du soir',abc:'Le journal',phr:'Mes phrases qui marchent'};
+const OUTILS_NOMS={timer:'Le minuteur visuel',ft:'D’abord, ensuite',routine:'La routine du soir',abc:'Le journal',phr:'Mes phrases qui marchent'};
 function noteRecent(k,id){
   const d=D();if(!d.onboarded)return;
   if(!Array.isArray(d.recents))d.recents=[];
@@ -324,7 +324,7 @@ function viewDire(){
     '<div class="card dire-c">'+
     '<span class="label" id="dire-a-l">À qui aimeriez-vous le dire ?</span><div class="chips" role="group" aria-labelledby="dire-a-l">'+DIRE_A.map(a=>'<button type="button" class="chip" data-act="dire" data-k="a" data-v="'+a[0]+'" aria-pressed="'+(s.a===a[0])+'">'+a[1]+'</button>').join('')+'</div>'+
     '<div class="field"><label for="amorce">Pour commencer</label><textarea id="amorce" rows="4" maxlength="'+DIRE_LIM+'">'+esc(s.t)+'</textarea></div>'+mots+
-    '<div class="em-mots"><span class="label" id="dire-mots-l">Vos mots, tels que vous les avez écrits</span>'+motsHtml(x.text,'dire-mots-l')+
+    '<div class="em-mots"><span class="label" id="dire-mots-l">Vos mots, tels que vous les avez écrits</span>'+motsCadre(x,'dire-mots-l')+
     '<button type="button" class="chip dire-joint" data-act="dire" data-k="joint" aria-pressed="'+(!!s.j)+'">'+I.check+'Ajouter mes mots à la suite</button></div>'+
     '<div class="dire-b"><button type="button" class="btn primary" data-act="dire" data-k="copie">Copier</button><button type="button" class="btn ghost" data-act="dire" data-k="laisse">Finalement, je garde mes mots pour moi</button></div>'+
     '</div>'+pret+outil+'</main>';
@@ -354,11 +354,14 @@ function respReglage(){const r=D().souffle||{};const c=Math.round(Number(r.c));r
 function respDurees(){const r=respReglage();if(r.m==='libre')return {m:'libre',in:r.c*.4,out:r.c*.6};return {m:r.m,in:RESP[r.m].in,out:RESP[r.m].out};}
 function respGarde(m,c){const r=respReglage();D().souffle={m:RESP[m]?m:r.m,c:c||r.c};save();}
 function respCadTxt(c){return 'Une respiration dure '+c+' secondes.';}
-function respPret(){const r=respReglage();return RESP[r.m].p+(r.m==='libre'?' '+respCadTxt(r.c):'')+' Le cercle posé sur l’eau vous guide.';}
+/* Ce qui guide les yeux : la goutte quand l'eau est dessinée, 2 cercles sinon, et seulement les mots si le téléphone demande moins de mouvement. */
+/* On regarde dès l'écran de préparation si le téléphone sait dessiner l'eau : la phrase dit alors vrai, et la photo est prête quand l'exercice commence. */
+function souffleGuide(){if(!fxOn())return 'mots';if(EAU.ok===null)eauInit();return EAU.ok?'goutte':'cercles';}
+function respPret(){const r=respReglage(),g=souffleGuide();return RESP[r.m].p+(r.m==='libre'?' '+respCadTxt(r.c):'')+(g==='goutte'?' La goutte vous guide. Elle monte quand vous inspirez, et elle redescend quand vous soufflez.':g==='cercles'?' Les cercles posés sur l’eau vous guident.':' Les mots à l’écran vous guident.');}
 /* L'écran reste allumé pendant la respiration, et tant qu'un son de la page joue : sans cela, un téléphone réglé sur 30 secondes
    se verrouille au milieu de l'exercice ou avant la fin de l'instant d'écoute. Dès que c'est fini, le téléphone reprend son réglage. */
 let veille=null,veilleP=false;
-function veilleVoulue(){return state.souffle.k==='cours'||SON.etat!=='off';}
+function veilleVoulue(){return (state.souffle.k==='cours'&&!state.souffle.pz)||SON.etat!=='off';}
 function veilleOn(){
   try{
     if(!navigator.wakeLock||veille||veilleP||document.visibilityState!=='visible')return;
@@ -375,7 +378,7 @@ function veilleSync(){if(veilleVoulue())veilleOn();else veilleOff();}
 function souffleStart(){
   const s=state.souffle;souffleStop();
   const d0=respDurees();
-  s.k='cours';s.ph='';s.cyc=-1;s.ix=-1;s.tr=-1;s.t0=performance.now()+SOUFFLE.avant;s.hid=0;s.fin=0;s.cle=-1;s.choix=false;
+  s.k='cours';s.ph='';s.cyc=-1;s.ix=-1;s.tr=-1;s.e=0;s.t0=performance.now()+SOUFFLE.avant;s.hid=0;s.pz=0;s.pzSon=false;s.fin=0;s.cle=-1;s.choix=false;eauPause(false);
   /* La première inspiration est décidée tout de suite : si le parent écoute l'étang, ses premières notes sont prêtes avant qu'elle commence. */
   s.seq=[{ty:'in',a:s.t0,d:d0.in*1000,c:0,m:d0.m}];
   veilleOn();
@@ -383,8 +386,23 @@ function souffleStart(){
 function souffleStop(){
   const s=state.souffle;if(s.raf){(window.cancelAnimationFrame||clearTimeout)(s.raf);s.raf=0;}
   if(s.k==='cours')s.k='pret';
-  s.choix=false;
+  s.choix=false;s.pz=0;s.pzSon=false;
+  /* La goutte ne retombe pas d'un coup : elle redescend doucement à sa place, puis l'eau redevient calme. */
+  eauPause(false);if(EAU.resp)EAU.resp.ret={de:EAU.resp.dy,t:eauNow()};
   veilleSync();
+}
+/* La pause : tout s'arrête là où on en est, la goutte, les mots, le compte des 2 minutes et la musique. « Reprendre » repart du même point. */
+function soufflePause(){
+  const s=state.souffle;if(s.k!=='cours')return;
+  if(!s.pz){
+    s.pz=performance.now();s.pzSon=SON.etat!=='off'&&SON.proprio==='souffle';
+    if(s.raf){(window.cancelAnimationFrame||clearTimeout)(s.raf);s.raf=0;}
+    if(s.pzSon)sonCoupe(true);
+    eauPause(true);veilleSync();
+  }else{
+    souffleDecale(performance.now()-s.pz);s.pz=0;eauPause(false);veilleOn();
+    if(s.pzSon&&SON.voulu){s.pzSon=false;sonSouffle();}
+  }
 }
 /* Décider la suite. Après une inspiration vient une expiration, puis une nouvelle inspiration,
    tant qu'elle commencerait avant 1 minute 55. L'exercice se termine donc toujours à la fin d'une expiration, autour de 2 minutes. */
@@ -401,9 +419,11 @@ function souffleSuite(now){
 }
 /* La page a passé un moment à l'arrière-plan : tout le minutage est décalé d'autant, et la respiration reprend là où elle en était. */
 function souffleDecale(dt){const s=state.souffle;s.t0+=dt;if(s.fin)s.fin+=dt;(s.seq||[]).forEach(p=>{p.a+=dt;});}
-/* La photo de l'étang (une eau claire au pied des arbres, 1120 × 840). Le rivage est à un peu plus de la moitié de la hauteur :
-   les cercles se posent sur l'eau, au milieu, à 71 % de la hauteur de la photo, quel que soit le recadrage de l'écran. */
-const ETANG={w:1120,h:840,x:.5,y:.71};
+/* La photo de la goutte suspendue au-dessus de l'étang (866 × 470). La goutte est au milieu, et son pied touche l'eau à 55 % de la hauteur.
+   Quand l'eau est dessinée, la goutte de la photo s'élève à l'inspiration et redescend à l'expiration, et 2 ondes s'élargissent sur l'étang.
+   Sinon (pas de carte graphique, téléphone qui peine), 2 cercles posés au même endroit s'élargissent à l'expiration : ils tiennent lieu de guide. */
+const ETANG={w:866,h:470,x:434/866,y:259/470};
+const GOUTTE_H=38;   /* de combien la goutte s'élève, en points de la photo : un peu plus que sa propre hauteur */
 function soufflePose(){
   const host=document.querySelector('.souffle .etang');const r=document.querySelector('.souffle .ronds');if(!host||!r||!r.style)return;
   const im=host.querySelector('.etang-photo');const b=host.getBoundingClientRect();if(!im||b.width<40||b.height<40)return;
@@ -413,10 +433,10 @@ function soufflePose(){
   /* Quand la photo est basse (le choix d'une respiration est ouvert), les cercles remontent un peu pour rester sur l'eau visible. */
   const x=(b.width-dw)*px+dw*ETANG.x,y=Math.min((b.height-dh)*py+dh*ETANG.y,b.height*.6);
   /* Le plus grand cercle reste dans l'écran, et il ne remonte pas jusqu'au rivage. */
-  const w=Math.max(170,Math.min(b.width*.88,dh*.9,b.height*1.5,560));
-  r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.25)+'px';
+  const w=Math.max(150,Math.min(b.width*.8,470*k*1.1,560));
+  r.style.left=Math.round(x)+'px';r.style.top=Math.round(y)+'px';r.style.width=Math.round(w)+'px';r.style.height=Math.round(w*.27)+'px';
 }
-/* À chaque expiration, un cercle de plus part du centre et s'éloigne sur l'eau, puis s'efface. */
+/* Sans le dessin de l'eau : à chaque expiration, un cercle de plus part du pied de la goutte et s'éloigne, puis s'efface. */
 function souffleOnde(){
   const b=document.querySelector('.souffle .ronds b');if(!b||!b.classList)return;
   b.classList.remove('onde');void b.offsetWidth;b.classList.add('onde');
@@ -426,15 +446,18 @@ const SOUFFLE_MOT={avant:'Installez-vous',in:'Inspirez',out:'Expirez'};
    puis elle se tait : la musique et ses silences guident le moment. */
 function souffleAide(){
   const s=state.souffle,son=SON.proprio==='souffle'?SON.etat:'off',ph=s.ph||'avant';
-  if(ph==='avant')return son!=='off'?SOUFFLE_CLE:'Posez vos épaules et vos pieds. Le cercle va vous guider.';
+  if(s.pz)return 'Reprenez quand vous voulez. Tout vous attend là où vous étiez.';
+  const g=souffleGuide();
+  if(ph==='avant')return son!=='off'?SOUFFLE_CLE:(g==='goutte'?'Posez vos épaules et vos pieds. La goutte va vous guider.':g==='cercles'?'Posez vos épaules et vos pieds. Les cercles vont vous guider.':'Posez vos épaules et vos pieds. Les mots vont vous guider.');
   if(son==='charge')return SOUFFLE_CLE;
   if(son==='on')return s.cyc<=s.cle?SOUFFLE_CLE:'';
-  return ph==='in'?'Par le nez, pendant que le cercle s’ouvre.':'Par la bouche, lentement, pendant que le cercle se referme.';
+  if(ph==='in')return g==='goutte'?'Par le nez, pendant que la goutte monte.':g==='cercles'?'Par le nez, pendant que les cercles se resserrent.':'Par le nez, doucement.';
+  return g==='goutte'?'Par la bouche, lentement, pendant qu’elle redescend.':g==='cercles'?'Par la bouche, lentement, pendant que les cercles s’élargissent.':'Par la bouche, lentement.';
 }
 function souffleMots(){
   const s=state.souffle;if(s.k!=='cours')return;
   const mot=document.getElementById('souffle-mot'),aide=document.getElementById('souffle-aide'),tours=document.querySelector('.souffle .tours');
-  const M=SOUFFLE_MOT[s.ph||'avant'];
+  const M=s.pz?'En pause':SOUFFLE_MOT[s.ph||'avant'];
   if(mot&&M&&mot.textContent!==M)mot.textContent=M;
   if(aide){const a=souffleAide();if(aide.textContent!==a)aide.textContent=a;}
   /* Les 12 points comptent le temps, 10 secondes par point, quelle que soit la cadence choisie. */
@@ -443,23 +466,25 @@ function souffleMots(){
 function souffleFrame(){
   const s=state.souffle;s.raf=0;
   /* Page à l'arrière-plan : le minutage attend. Il sera décalé au retour, et la respiration reprendra là où elle en était. */
-  if(s.k!=='cours'||state.view!=='souffle'||s.hid)return;
+  if(s.k!=='cours'||state.view!=='souffle'||s.hid||s.pz)return;
   const now=performance.now();
   souffleSuite(now);
-  if(s.fin&&now>=s.fin){rsSuite(now);s.k='fini';s.choix=false;veilleSync();noteRecent('exo','breath');render();return;}
+  if(s.fin&&now>=s.fin){rsSuite(now);s.k='fini';s.choix=false;if(EAU.resp)EAU.resp.ret={de:EAU.resp.dy,t:eauNow()};veilleSync();noteRecent('exo','breath');render();return;}
   let i=typeof s.ix==='number'?s.ix:-1;
   while(i+1<s.seq.length&&s.seq[i+1].a<=now)i++;
   let ph='avant',cyc=-1,e=0;
   if(i>=0){const p=s.seq[i],x=Math.max(0,Math.min(1,(now-p.a)/p.d));ph=p.ty;cyc=p.c;e=p.ty==='in'?.5-.5*Math.cos(Math.PI*x):.5+.5*Math.cos(Math.PI*x);}
   const tr=now<s.t0?-1:Math.min(SOUFFLE.n-1,Math.floor((now-s.t0)/10000));
+  /* La goutte suit le souffle, avec la même courbe douce que les mots et la musique : elle s'élève quand on inspire, elle redescend quand on expire. */
+  const vive=eauRespire(document.querySelector('.souffle .etang'),-GOUTTE_H*e);s.e=e;
   if(i!==s.ix||ph!==s.ph||tr!==s.tr){
     const neuf=i!==s.ix||ph!==s.ph;
     s.ix=i;s.ph=ph;s.cyc=cyc;s.tr=tr;souffleMots();
-    /* À chaque expiration, une onde part du centre des cercles et s'éloigne sur l'étang. */
-    if(neuf&&ph==='out'&&fxOn())souffleOnde();
+    /* À chaque expiration, 2 ondes partent du pied de la goutte et s'élargissent sur l'étang, l'une après l'autre. */
+    if(neuf&&ph==='out'&&fxOn()){if(vive){eauAdd(434,259,.9,0);eauAdd(434,259,.55,1.25);}else souffleOnde();}
   }
   const r=document.querySelector('.souffle .ronds');
-  if(r&&r.style&&fxOn())r.style.setProperty('--s',(.36+.64*e).toFixed(3));
+  if(r&&r.style&&fxOn()&&!vive)r.style.setProperty('--s',(1-.5*e).toFixed(3));
   /* La musique reçoit les mouvements décidés par ce même minutage. */
   rsSuite(now);
   s.raf=(window.requestAnimationFrame||(f=>setTimeout(f,50)))(souffleFrame);
@@ -469,7 +494,12 @@ function souffleApres(){
   if(state.view!=='souffle')return;
   soufflePose();
   const s=state.souffle;
-  if(s.k==='cours'){souffleMots();if(!s.raf)s.raf=(window.requestAnimationFrame||(f=>setTimeout(f,50)))(souffleFrame);}
+  if(s.k==='cours'){
+    souffleMots();
+    /* L'écran vient d'être redessiné (pause, choix d'une respiration) : les 2 cercles de secours reprennent la taille qu'ils avaient. */
+    try{const r=document.querySelector('.souffle .ronds');if(r&&r.style&&fxOn()&&typeof s.e==='number')r.style.setProperty('--s',(1-.5*s.e).toFixed(3));}catch(e){}
+    if(!s.raf&&!s.pz)s.raf=(window.requestAnimationFrame||(f=>setTimeout(f,50)))(souffleFrame);
+  }
   /* Quand le choix s'ouvre ou se referme, le curseur du clavier et du lecteur d'écran suit. */
   if(s.foc){const q=s.foc;s.foc='';try{const el=document.querySelector(q);if(el)el.focus({preventScroll:true});}catch(e){}}
 }
@@ -499,10 +529,10 @@ function viewSouffle(){
   const tours='<div class="tours" aria-hidden="true">'+Array.from({length:SOUFFLE.n},()=>'<i></i>').join('')+'</div>';
   const changer='<button type="button" class="resp-l" data-act="resp-ouvre">'+I.swap+'Changer de respiration</button>';
   let bas='';
-  if(k==='cours')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">'+SOUFFLE_MOT[s.ph||'avant']+'</p>'+
+  if(k==='cours')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">'+(s.pz?'En pause':SOUFFLE_MOT[s.ph||'avant'])+'</p>'+
     (choix?respChoixHtml():'<p class="aide" id="souffle-aide">'+souffleAide()+'</p>'+tours+
-    /* L'exercice commence en silence. « Écouter l'étang » ajoute la musique, et le même bouton la coupe sans arrêter la respiration. */
-    '<div class="actions">'+sonBoutonHtml('souffle')+'<button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>'+changer);
+    /* La pause est le premier bouton, large, à portée du pouce. L'exercice commence en silence : « Écouter l'étang » ajoute la musique, et le même bouton la coupe sans arrêter la respiration. */
+    '<div class="actions souffle-a">'+(s.pz?'<button type="button" class="btn primary souffle-pz" data-act="souffle-pause">'+I.wind+'Reprendre</button>':'<button type="button" class="btn souffle-pz" data-act="souffle-pause">'+I.pause+'Pause</button>'+sonBoutonHtml('souffle'))+'<button type="button" class="btn ghost" data-act="souffle-stop">'+I.stop+'Arrêter</button></div>'+(s.pz?'':changer));
   else if(k==='fini')bas='<h1 class="sr">Souffler 2 minutes</h1><p class="mot" id="souffle-mot" role="status">Voilà.</p><p class="aide">Vous venez de prendre 2 minutes rien que pour vous. Vous êtes aussi une personne, et pas seulement un parent.</p>'+
     /* Un parent arrivé par la porte de l'accueil n'a pas encore vu « Aujourd'hui » : le bouton lui dit ce qu'il va y trouver d'abord. */
     '<div class="actions col"><button type="button" class="btn primary wide" data-act="go" data-view="today">'+I.sun2+(state.vuAuj?'Revenir à aujourd’hui':'Lire la dose du jour')+'</button><button type="button" class="btn wide" data-act="porte" data-v="deposer">'+I.drop+'Déposer ce qui pèse</button><button type="button" class="btn ghost wide" data-act="souffle-go">'+I.wind+'Encore 2 minutes</button></div>'+
@@ -511,9 +541,20 @@ function viewSouffle(){
   else bas='<h1 class="mot" id="souffle-mot">Souffler 2 minutes</h1>'+
     (choix?respChoixHtml():'<p class="aide">'+respPret()+'</p><div class="actions"><button type="button" class="btn primary" data-act="souffle-go">'+I.wind+'Commencer</button></div>'+changer);
   return '<main id="main" tabindex="-1" class="view souffle s-'+k+(choix?' s-choix':'')+'" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
-    /* L'étang et ses cercles : le plus grand suit le souffle, il s'ouvre quand on inspire et se referme quand on expire. */
-    '<div class="etang bleed"><img class="etang-photo" src="'+PHOTO_DIR+'eau-g.webp" alt="" width="1120" height="840" decoding="async"><span class="ronds" aria-hidden="true"><i></i><i></i><i></i><b></b></span></div>'+
+    /* La goutte suspendue au-dessus de l'étang. Elle s'élève quand on inspire, elle redescend quand on expire, et 2 ondes s'élargissent sur l'eau. */
+    '<div class="etang bleed"><img class="etang-photo" src="'+HERO+'" alt="" width="866" height="470" decoding="async"><span class="ronds" aria-hidden="true"><i></i><i></i><b></b></span></div>'+
     '<div class="resp">'+bas+'</div></main>';
+}
+
+/* ---------- prendre un instant : l'étang, à regarder ou à toucher ---------- */
+/* On y arrive depuis la dose du jour. L'écran s'ouvre en silence : la goutte rebondit une fois, puis l'eau redevient calme.
+   Un toucher sur l'eau fait naître une onde fine, qui s'efface d'elle-même. Le son (40 secondes d'étang) ne part que si le parent le demande,
+   et il s'arrête dès que l'on quitte l'écran. Le doigt ne retient pas la page : elle défile comme partout ailleurs. */
+function viewInstant(){
+  return '<main id="main" tabindex="-1" class="view souffle instant s-pret" style="padding-top:0"><header class="bar sub"><button type="button" class="back" data-act="back">'+I.back+'Retour</button><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>'+
+    '<div class="etang bleed"><img class="etang-photo" src="'+HERO+'" alt="Une goutte suspendue au-dessus d’un étang, dans la lumière d’une forêt." width="866" height="470" decoding="async"></div>'+
+    '<div class="resp"><h1 class="mot">Prendre un instant</h1><p class="aide">'+(fxOn()?'Touchez l’eau si vous en avez envie. Vous pouvez aussi simplement la regarder.':'Regardez l’eau aussi longtemps que vous voulez. Ici, rien ne vous attend.')+'</p>'+
+    '<div class="actions">'+sonBoutonHtml('dose')+'</div></div></main>';
 }
 
 /* ---------- le son de l'étang ---------- */
@@ -763,7 +804,7 @@ function sonCoupe(vite){
 /* Le son appartient à l'écran qui l'a lancé : la respiration en cours (ou tout juste finie), ou « Aujourd'hui » pour l'instant de la dose. */
 function sonChezLui(){
   if(SON.proprio==='souffle')return state.view==='souffle'&&(state.souffle.k==='cours'||state.souffle.k==='fini');
-  if(SON.proprio==='dose')return state.view==='today'&&!state.sheet;
+  if(SON.proprio==='dose')return state.view==='instant'&&!state.sheet;
   if(SON.proprio==='avec')return state.view==='avec'&&!state.sheet;
   return false;
 }
@@ -773,13 +814,13 @@ function sonGarde(){
   if((SON.etat!=='off'||SON.reprise)&&!sonChezLui()){SON.reprise=null;sonCoupe();}
   sonMenage();
 }
-const SON_TXT={souffle:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Couper le son'},dose:{off:'Prendre un instant',charge:'L’étang arrive…',on:'Revenir au silence'},avec:{off:'Écouter Antonio, 30 secondes',charge:'Un instant…',on:'Arrêter'}};
+const SON_TXT={souffle:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Couper le son'},dose:{off:'Écouter l’étang',charge:'L’étang arrive…',on:'Revenir au silence'},avec:{off:'Écouter Antonio, 30 secondes',charge:'Un instant…',on:'Arrêter'}};
 const SON_NOMS={souffle:'etang',dose:'instant',avec:'antonio'};
 function sonBoutonHtml(ou){
   if(!SON_OK||(ou==='souffle'&&!sonWA()))return '';
   const nom=SON_NOMS[ou]||'instant';
   const e=(SON.piste===nom&&SON.proprio===ou)?SON.etat:'off';
-  return '<button type="button" class="son-b son-'+ou+'" data-act="son" data-v="'+nom+'" data-etat="'+e+'"'+(e==='charge'?' aria-busy="true"':'')+'>'+(e==='off'?I.son:I.silence)+'<span class="tx"><b>'+SON_TXT[ou][e]+'</b>'+(ou==='dose'&&e==='off'?' <small>40 secondes d’étang, avec le son</small>':'')+'</span></button>';
+  return '<button type="button" class="son-b son-'+ou+'" data-act="son" data-v="'+nom+'" data-etat="'+e+'"'+(e==='charge'?' aria-busy="true"':'')+'>'+(e==='off'?I.son:I.silence)+'<span class="tx"><b>'+SON_TXT[ou][e]+'</b>'+(ou==='dose'&&e==='off'?' <small>40 secondes, quand vous voulez</small>':'')+'</span></button>';
 }
 /* Le bouton change sur place, sans redessiner l'écran : la respiration et la lecture ne sont pas dérangées. */
 function sonBoutons(){
@@ -812,10 +853,10 @@ function sheetVoix(sheetIn){
 
 /* ---------- pour un visiteur arrivé par un lien : le haut et le bas des pages publiques ---------- */
 function barPub(){
-  return '<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté<small>parent éclairé</small></span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
+  return '<header class="bar pubbar"><a class="wordmark" href="'+RACINE+'" data-act="accueil" aria-label="Parent écouté, parent éclairé. Revenir à l’accueil">'+LOGO+'<span>Parent écouté,<small>parent éclairé</small></span></a><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></header>';
 }
 function piedPub(){
-  return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent écouté, parent éclairé » a été créé par Antonio Company, travailleur social et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
+  return '<section class="invite" aria-labelledby="invite-t"><h2 id="invite-t">Cette fiche vient d’un espace d’écoute pour les parents</h2><p>« Parent écouté, parent éclairé » a été créé par Antonio Company, éducateur social, responsable d’une équipe socio-éducative et père de 3 enfants. Vous pouvez y souffler, y déposer ce qui pèse et y recevoir chaque jour une dose de lumière. C’est gratuit pour commencer, et il n’y a pas de compte à créer.</p>'+
     portes(true)+
     '<a class="btn wide" href="'+RACINE+'" data-act="accueil">Découvrir l’espace</a></section>'+
     '<footer class="foot"><a href="'+RACINE+'fiches/" data-act="fiches">Toutes les situations</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a><a href="'+RACINE+'conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">Mentions légales</a>':'')+'</footer>';
