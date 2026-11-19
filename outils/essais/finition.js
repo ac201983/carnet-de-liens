@@ -67,12 +67,15 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
 (async () => {
   const LOCAL = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
   const exe = NAV === 'chromium' ? (process.env.PEPE_CHROME || (require('fs').existsSync(LOCAL) ? LOCAL : undefined)) : undefined;
-  const lance = { chromium: { args: ['--ignore-certificate-errors', '--autoplay-policy=user-gesture-required'] }, firefox: {}, webkit: {} }[NAV];
+  // PEPE_EAU=1 (dans l'atelier seulement, avec Chrome) : la carte graphique est émulée et la garde de l'eau est levée, pour rejouer l'essai avec la goutte dessinée, comme sur un appareil qui sait dessiner l'eau.
+  const EAU_EMULEE = NAV === 'chromium' && !!process.env.PEPE_EAU;
+  const lance = { chromium: { args: ['--ignore-certificate-errors', '--autoplay-policy=user-gesture-required'].concat(EAU_EMULEE ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] : []) }, firefox: {}, webkit: {} }[NAV];
   const browser = await pw[NAV].launch(Object.assign({}, lance, exe ? { executablePath: exe } : {}));
   const ouvre = async (fmt, opt = {}) => {
     const f = Object.assign({}, fmt); if (NAV === 'chromium' && f.hasTouch) f.isMobile = true;
     const ctx = await browser.newContext(Object.assign({ locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: opt.calme ? 'reduce' : 'no-preference' }, f));
     await ctx.addInitScript(horloge, [opt.heure === undefined ? 21 + 40 / 60 : opt.heure]);
+    if (EAU_EMULEE) await ctx.addInitScript(() => { window.__eauSansGarde = true; });
     if (opt.sansWebAudio) await ctx.addInitScript(sansWebAudio);
     await ctx.addInitScript(sonde);
     const errs = [], sons = [];
@@ -135,10 +138,16 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       ok(sons.length === 0 && s0.contextes === 0 && s0.lancees === 0 && s0.audios.length === 0, P('1. en silence, aucun morceau n’est chargé et rien n’est joué ' + JSON.stringify([sons, s0.contextes, s0.lancees])));
       ok(s0.ecran === 1, P('1. pendant la respiration, l’écran est tenu allumé (' + s0.ecran + ' demande en cours)'));
       await attendMot(page, 'Inspirez');
+      // Ce qui guide les yeux dépend de l'appareil : la goutte de la photo quand il sait dessiner l'eau, 2 cercles posés sur l'eau sinon. La ligne d'aide dit lequel.
+      const eauVue = () => { const e = document.querySelector('.souffle .etang'); return !!e && e.classList.contains('eau-vive') && !!e.querySelector('canvas.eau'); };
+      const photoEtang = async () => { try { return await (await page.$('.souffle .etang')).screenshot(); } catch (e) { return null; } };
       const g1 = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, aide: document.getElementById('souffle-aide').textContent, tours: document.querySelectorAll('.souffle .tours i').length, s: getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s') }));
+      g1.eau = await page.evaluate(eauVue); const parGoutte = /goutte/.test(g1.aide); const ph1 = parGoutte ? await photoEtang() : null;
       await attendMot(page, 'Expirez'); await page.waitForTimeout(700);
       const g2 = await page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, s: getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s') }));
-      ok(g1.mot === 'Inspirez' && g2.mot === 'Expirez' && g1.tours === 12 && g1.s !== g2.s && /cercle/.test(g1.aide), P('1. en silence, le guidage visuel est complet : le mot, la consigne, le cercle et les 12 points ' + JSON.stringify([g1, g2])));
+      g2.eau = await page.evaluate(eauVue); const ph2 = parGoutte ? await photoEtang() : null;
+      ok(g1.mot === 'Inspirez' && g2.mot === 'Expirez' && g1.tours === 12 && (parGoutte ? g1.eau && g2.eau : g1.s !== g2.s && /cercle/.test(g1.aide)), P('1. en silence, le guidage visuel est complet : le mot, la consigne, ' + (parGoutte ? 'la goutte dessinée sur l’eau' : 'les cercles') + ' et les 12 points ' + JSON.stringify([g1, g2])));
+      if (parGoutte) notesFin.push(P('la goutte est dessinée par la carte graphique de cette machine. ' + (ph1 && ph2 ? (Buffer.compare(ph1, ph2) ? 'L’image de l’étang a changé entre « Inspirez » et « Expirez ».' : 'L’image de l’étang photographiée est restée la même entre « Inspirez » et « Expirez » : ce navigateur d’essai ne photographie peut-être pas l’eau dessinée.') : 'L’étang n’a pas pu être photographié.')));
       const z = await page.$eval(B, e => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), r.bottom <= innerHeight, getComputedStyle(e).fontSize]; });
       ok(z[1] >= 44 && z[2] && parseFloat(z[3]) >= 15, P('1. la commande est lisible et assez grande pour le doigt ' + JSON.stringify(z)));
       await page.click(A('souffle-stop')); await page.waitForSelector('main.souffle.s-pret');
