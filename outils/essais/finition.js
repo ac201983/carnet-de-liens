@@ -1,6 +1,7 @@
 // La passe de finition, de bout en bout, comme la vivrait un parent :
 //   - la vitrine silencieuse et « Souffler 2 minutes » qui commence en silence (la musique de la respiration est vérifiée dans respiration.js) ;
-//   - « Prendre un instant » après la dose : le son part quand on le demande, se coupe d'un geste, et s'arrête dès qu'on quitte l'écran ;
+//   - « Prendre un instant » après la dose : l'étang à regarder ou à toucher (une onde naît sous le doigt, la page défile toujours),
+//     le son part quand on le demande, se coupe d'un geste, et s'arrête dès qu'on quitte l'écran ;
 //   - la troisième entrée de la vitrine ;
 //   - « Accueil » à tout moment, le logo, « Reprendre mon parcours », et le sens de « Retour ».
 // usage : node finition.js [--court]      (--court : sans attendre la fin des 40 secondes)
@@ -70,7 +71,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
   const browser = await pw[NAV].launch(Object.assign({}, lance, exe ? { executablePath: exe } : {}));
   const ouvre = async (fmt, opt = {}) => {
     const f = Object.assign({}, fmt); if (NAV === 'chromium' && f.hasTouch) f.isMobile = true;
-    const ctx = await browser.newContext(Object.assign({ locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: 'no-preference' }, f));
+    const ctx = await browser.newContext(Object.assign({ locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: opt.calme ? 'reduce' : 'no-preference' }, f));
     await ctx.addInitScript(horloge, [opt.heure === undefined ? 21 + 40 / 60 : opt.heure]);
     if (opt.sansWebAudio) await ctx.addInitScript(sansWebAudio);
     await ctx.addInitScript(sonde);
@@ -153,44 +154,85 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       const { ctx, page, errs, sons } = await ouvre(fmt);
       await page.goto(APP, { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.seuil .porte'); await page.waitForTimeout(300);
       await page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click());   // « Commencer gratuitement », plus bas dans la vitrine
-      await page.waitForSelector('.dose ' + D); await page.waitForTimeout(600);
-      const d0 = await page.evaluate(() => { const dose = document.querySelector('.dose'), p = dose.querySelector('p'), b = dose.querySelector('.son-dose'); return { apres: (p.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) > 0, texte: b.textContent.replace(/\s+/g, ' ').trim(), h: Math.round(b.getBoundingClientRect().height) }; });
-      ok(d0.apres && d0.texte === 'Prendre un instant 40 secondes d’étang, avec le son' && d0.h >= 44, P('4. sous le texte de la dose, « Prendre un instant » annonce 40 secondes d’étang, avec le son ' + JSON.stringify(d0)));
-      ok(sons.length === 0 && (await son(page)).contextes === 0, P('4. tant que le parent ne le demande pas, rien n’est chargé'));
+      // Sous le texte de la dose, « Prendre un instant » ouvre un écran à part : l'étang, à regarder ou à toucher. Le son reste à l'initiative du parent.
+      const IB = '.dose .instant-b', IN = 'main.instant';
+      await page.waitForSelector(IB); await page.waitForTimeout(600);
+      const d0 = await page.evaluate(() => { const dose = document.querySelector('.dose'), p = dose.querySelector('p'), b = dose.querySelector('.instant-b'); return { apres: (p.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) > 0, texte: b.textContent.replace(/\s+/g, ' ').trim(), h: Math.round(b.getBoundingClientRect().height), sons: document.querySelectorAll('.son-b').length }; });
+      ok(d0.apres && d0.texte === 'Prendre un instant L’étang, à regarder ou à toucher' && d0.h >= 44 && d0.sons === 0, P('4. sous le texte de la dose, « Prendre un instant » annonce l’étang, à regarder ou à toucher, et « Aujourd’hui » n’a pas de bouton de son ' + JSON.stringify(d0)));
+      await page.click(IB); await page.waitForSelector(IN + ' .etang'); await page.waitForTimeout(900);
+      const e0 = await page.evaluate(() => { const m = document.querySelector('main.instant'), t = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : ''; const ph = m.querySelector('.etang-photo'), b = m.querySelector('.son-dose'); return { h1: t(m.querySelector('h1')), aide: t(m.querySelector('.aide')), son: t(b), etat: b ? b.getAttribute('data-etat') : '', photo: !!ph && ph.complete && ph.naturalWidth > 0 && (ph.getAttribute('alt') || '').length > 20, retour: !!document.querySelector('.bar .back'), sos: !!document.querySelector('.bar .sos'), champs: m.querySelectorAll('input,textarea').length, action: getComputedStyle(m.querySelector('.etang')).touchAction }; });
+      ok(e0.h1 === 'Prendre un instant' && /^(Touchez l’eau si vous en avez envie\. Vous pouvez aussi simplement la regarder\.|Regardez l’eau aussi longtemps que vous voulez\. Ici, rien ne vous attend\.)$/.test(e0.aide) && e0.photo && e0.retour && e0.sos && e0.champs === 0, P('4. l’écran « Prendre un instant » montre l’étang, dit qu’on peut le toucher ou seulement le regarder, et garde « Retour » et le SOS ' + JSON.stringify([e0.h1, e0.aide])));
+      ok(sons.length === 0 && (await son(page)).contextes === 0 && e0.etat === 'off' && e0.son === 'Écouter l’étang 40 secondes, quand vous voulez', P('4. l’étang s’ouvre en silence : le son attend que le parent le demande, et rien n’est chargé ' + JSON.stringify([sons, e0.son])));
+      // Toucher l'eau : une onde naît sous le doigt, puis s'efface. Toucher la forêt ne fait rien. Le geste ne retient pas la page.
+      const touche = (fy, annulable) => page.evaluate(([fy, annulable]) => { const ph = document.querySelector('main.instant .etang-photo'), r = ph.getBoundingClientRect(); const ev = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: r.left + r.width * .3, clientY: r.top + r.height * fy, button: 0, pointerId: 1, pointerType: 'touch' }); ph.dispatchEvent(ev); let tenu = ev.defaultPrevented; if (annulable && window.TouchEvent) { try { const te = new Event('touchstart', { bubbles: true, cancelable: true }); ph.dispatchEvent(te); tenu = tenu || te.defaultPrevented; } catch (e) { } } return tenu; }, [fy, annulable]);
+      const eau = () => page.evaluate(() => ({ calque: !!document.querySelector('main.instant .etang canvas.eau'), cercle: document.querySelectorAll('main.instant .onde-doigt').length }));
+      const foret = await touche(.06, false); await page.waitForTimeout(250); const o0 = await eau();
+      const tenu = await touche(.72, true); await page.waitForTimeout(350); const o1 = await eau();
+      ok(!foret && !tenu && e0.action !== 'none' && (o1.calque || o1.cercle === 1), P('4. toucher l’eau fait naître une onde sous le doigt (' + (o1.calque ? 'dessinée dans la photo' : 'un cercle fin') + '), sans retenir le geste : la page peut toujours défiler ' + JSON.stringify([e0.action, o1])));
+      ok(!o0.cercle || o1.calque, P('4. toucher la forêt, au-dessus de l’eau, ne fait rien'));
+      await page.waitForTimeout(4300); const o2 = await eau();
+      ok(!o2.calque && o2.cercle === 0, P('4. l’onde s’efface d’elle-même, et l’étang redevient immobile ' + JSON.stringify(o2)));
+      ok(sons.length === 0 && (await son(page)).contextes === 0, P('4. toucher l’eau ne déclenche aucun son'));
+      if (NAV === 'chromium' && tel) {
+        // Un vrai doigt, posé sur l'étang puis glissé vers le haut (événements tactiles du navigateur). L'écran est rendu plus bas,
+        // pour que la page dépasse : elle doit défiler jusqu'au bout, et l'onde naît quand même sous le doigt.
+        const cdp = await ctx.newCDPSession(page);
+        const glisse = async (x, y, dist) => { await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] }); for (let k = 1; k <= 10; k++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y - dist * k / 10 }] }); await page.waitForTimeout(16); } await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await page.waitForTimeout(500); return page.evaluate(() => Math.round(scrollY)); };
+        await page.setViewportSize({ width: 390, height: 430 }); await page.waitForTimeout(300); await page.evaluate(() => scrollTo(0, 0));
+        const pt = await page.$eval('main.instant .etang-photo', e => { const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height * .6), reste: document.documentElement.scrollHeight - innerHeight }; });
+        let y1 = -1; try { y1 = await glisse(pt.x, pt.y, 160); } catch (e) { y1 = -2; }
+        const sous = await eau();
+        ok(pt.reste > 30 && y1 >= Math.min(60, pt.reste) - 2 && (sous.calque || sous.cercle >= 1), P('4. un doigt posé sur l’étang puis glissé vers le haut fait défiler la page, comme partout ailleurs (' + y1 + ' points sur ' + pt.reste + ' possibles), et l’onde naît quand même'));
+        await page.setViewportSize(fmt.viewport); await page.waitForTimeout(300); await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(3600);
+      }
       if (lit) {
-        await page.click(D); ok(await attendEtat(page, D, 'on'), P('4. un geste, et l’instant commence')); await page.waitForTimeout(2700);
+        await page.click(D); ok(await attendEtat(page, D, 'on'), P('4. un geste, et l’instant d’écoute commence')); await page.waitForTimeout(2700);
         const i1 = await son(page); const bi = await bouton(page, D);
         ok(sons.join(',') === 'instant.mp3' && i1.actives === 1 && i1.dernier.offset === 0 && Math.abs(i1.dernier.dur - 40) < 0.5 && i1.volume > 0.85 && i1.rms > 0.001 && bi.texte === 'Revenir au silence', P('4. c’est le morceau court (40 s) qui joue, depuis son début, et le bouton propose « Revenir au silence » ' + JSON.stringify([sons, i1.dernier.dur, bi.texte])));
-        ok(!!(await page.$('.dose p')) && !(await page.$('.sheet')), P('4. le texte de la dose reste à l’écran pendant l’écoute'));
         ok(i1.ecran === 1, P('4. pendant l’instant d’écoute, l’écran reste allumé'));
         await page.click(D);
         const i2 = await silence(page);
-        ok(i2.muet && (await bouton(page, D)).texte.startsWith('Prendre un instant'), P('4. le même geste ramène le silence ' + dit(i2)));
+        ok(i2.muet && (await bouton(page, D)).texte.startsWith('Écouter l’étang'), P('4. le même geste ramène le silence ' + dit(i2)));
         ok(i2.ecran === 0, P('4. et le téléphone retrouve sa mise en veille habituelle'));
+        // quitter l'exercice coupe le son : par « Retour », puis par le SOS
         await page.click(D); await attendEtat(page, D, 'on'); await page.waitForTimeout(300);
-        await page.click('.tabs ' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(300);
-        { const q = await silence(page); const reste = (await page.$$('.son-b')).length; ok(q.muet && reste === 0, P('4. changer d’onglet coupe le son ' + dit(q) + (reste ? ', le bouton du son est encore à l’écran' : ''))); }
-        await page.click('.tabs ' + A('go', '[data-view="today"]')); await page.waitForSelector(D); await page.waitForTimeout(400);
-        ok((await bouton(page, D)).etat === 'off', P('4. de retour sur « Aujourd’hui », le bouton est revenu à « Prendre un instant »'));
+        await page.click('.bar .back'); await page.waitForSelector(IB); await page.waitForTimeout(300);
+        { const q = await silence(page); const reste = (await page.$$('.son-b')).length; ok(q.muet && reste === 0 && !(await page.$(IN)), P('4. « Retour » quitte l’étang et coupe le son ' + dit(q) + (reste ? ', le bouton du son est encore à l’écran' : ''))); }
+        await page.click(IB); await page.waitForSelector(D); await page.waitForTimeout(500);
+        ok((await bouton(page, D)).etat === 'off', P('4. en revenant sur l’étang, le son n’a pas repris tout seul'));
         await page.click(D); await attendEtat(page, D, 'on'); await page.waitForTimeout(300);
-        await page.click('.dose .qui-b'); await page.waitForSelector('.sheet');
-        { const q = await silence(page); ok(q.muet, P('4. ouvrir une feuille par-dessus coupe le son ' + dit(q))); }
-        await page.keyboard.press('Escape'); await page.waitForTimeout(500);
+        await page.click('.bar .sos'); await page.waitForTimeout(500);
+        { const q = await silence(page); ok(q.muet && (await page.$$('.son-b')).length === 0, P('4. le SOS coupe le son, et son écran est silencieux ' + dit(q))); }
+        await page.click('.bar .back').catch(() => { }); await page.waitForTimeout(500);
+        if (!(await page.$(D))) { if (!(await page.$(IB))) { await page.click(A('go', '[data-view="today"]')).catch(() => { }); await page.waitForSelector(IB); } await page.click(IB); await page.waitForSelector(D); await page.waitForTimeout(400); }
         if (tel && !COURT) {
           await page.click(D); await attendEtat(page, D, 'on');
           let fin = null; for (let i = 0; i < 180; i++) { const s = await son(page); if (s.actives === 0) { fin = s; break; } await page.waitForTimeout(250); }
           await page.waitForTimeout(300);
-          ok(fin && fin.dernier.ended && fin.dernier.stop === null && Math.abs(fin.dernier.joue - fin.dernier.dur) < 0.6 && (await bouton(page, D)).etat === 'off', P('4. au bout de 40 secondes, l’instant s’éteint de lui-même et le bouton redevient « Prendre un instant »'));
+          ok(fin && fin.dernier.ended && fin.dernier.stop === null && Math.abs(fin.dernier.joue - fin.dernier.dur) < 0.6 && (await bouton(page, D)).etat === 'off', P('4. au bout de 40 secondes, l’instant s’éteint de lui-même et le bouton redevient « Écouter l’étang »'));
           ok((await son(page)).ecran === 0, P('4. une fois l’instant fini, l’écran n’est plus retenu'));
         }
       }
+      // Avec « Réduire les animations » : l'étang se regarde, la phrase le dit, et rien ne bouge sous le doigt.
+      {
+        const c = await ouvre(fmt, { calme: true });
+        await c.page.goto(APP, { waitUntil: 'domcontentloaded' }); await c.page.waitForSelector('.seuil .porte'); await c.page.waitForTimeout(300);
+        await c.page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click()); await c.page.waitForSelector(IB); await c.page.waitForTimeout(400);
+        await c.page.click(IB); await c.page.waitForSelector(IN + ' .etang'); await c.page.waitForTimeout(500);
+        await c.page.evaluate(() => { const ph = document.querySelector('main.instant .etang-photo'), r = ph.getBoundingClientRect(); ph.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.left + r.width * .4, clientY: r.top + r.height * .7, button: 0, pointerId: 1, pointerType: 'touch' })); }); await c.page.waitForTimeout(400);
+        const r = await c.page.evaluate(() => ({ aide: document.querySelector('main.instant .aide').textContent.replace(/\s+/g, ' ').trim(), calque: !!document.querySelector('main.instant canvas.eau'), cercle: document.querySelectorAll('.onde-doigt').length, reflet: document.querySelectorAll('.dose-reflet').length }));
+        ok(r.aide === 'Regardez l’eau aussi longtemps que vous voulez. Ici, rien ne vous attend.' && !r.calque && r.cercle === 0 && c.errs.length === 0, P('4. avec « Réduire les animations », l’étang reste immobile sous le doigt, et la phrase ne promet pas de mouvement ' + JSON.stringify(r)));
+        await c.ctx.close();
+      }
       // les écrans qui doivent rester silencieux
       const muets = [];
+      if (!(await page.$(IB))) { await page.click('.bar .back').catch(() => { }); await page.waitForSelector(IB, { timeout: 6000 }).catch(() => { }); }
+      muets.push(['aujourd’hui', (await page.$$('.son-b')).length]);
       await page.click(accueilSel); await page.waitForSelector('main.intro'); await page.waitForTimeout(400); muets.push(['vitrine', (await page.$$('.son-b')).length]);
       await page.click('.seuil ' + A('porte', '[data-v="deposer"]')); await page.waitForSelector('main.deposer'); await page.waitForTimeout(300); muets.push(['dépôt', (await page.$$('.son-b')).length]);
       await page.click(A('go', '[data-view="sos"]')); await page.waitForTimeout(500); muets.push(['SOS', (await page.$$('.son-b')).length]);
       await page.goto(APP + 'fiches/le-coucher-et-la-nuit/'); await page.waitForSelector('main.fiche'); await page.waitForTimeout(300); muets.push(['fiche', (await page.$$('.son-b')).length]);
-      ok(muets.every(m => m[1] === 0) && (await son(page)).actives === 0, P('4. la vitrine, le dépôt, le SOS et les fiches restent silencieux ' + JSON.stringify(muets)));
+      ok(muets.every(m => m[1] === 0) && (await son(page)).actives === 0, P('4. « Aujourd’hui », la vitrine, le dépôt, le SOS et les fiches restent silencieux ' + JSON.stringify(muets)));
       ok(errs.length === 0, P('4. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }
@@ -275,16 +317,17 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTou
       await porteSouffle(page, '.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForTimeout(1500);
       ok(!(await page.$(B)) && (await attendMot(page, 'Inspirez')) === 'Inspirez', P('6. sans son calculé dans la page, la respiration ne propose pas de musique et guide en silence'));
       await page.click('.souffle .bar .back'); await page.waitForSelector('main.intro'); await page.waitForTimeout(300);
-      await page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click()); await page.waitForSelector('.dose ' + D); await page.waitForTimeout(500);
-      await page.click(D); ok(await attendEtat(page, D, 'on'), P('6. pour l’instant de la dose, le lecteur ordinaire prend le relais')); await page.waitForTimeout(1500);
+      await page.evaluate(() => document.querySelector('[data-act="entrer"][data-v="today"]').click()); await page.waitForSelector('.dose .instant-b'); await page.waitForTimeout(400);
+      await page.click('.dose .instant-b'); await page.waitForSelector('main.instant ' + D); await page.waitForTimeout(500);
+      await page.click(D); ok(await attendEtat(page, D, 'on'), P('6. pour l’instant d’écoute, sur l’étang, le lecteur ordinaire prend le relais')); await page.waitForTimeout(1500);
       const e1 = await son(page);
       ok(e1.contextes === 0 && e1.audios.length === 1 && !e1.audios[0].paused && e1.audios[0].src === 'instant.mp3' && e1.audios[0].t > 0.5 && sons.join(',') === 'instant.mp3', P('6. un seul lecteur joue le morceau de 40 secondes (' + (e1.audios[0] ? e1.audios[0].t.toFixed(2) : '?') + ' s)'));
       for (let i = 0; i < 6; i++) { await page.click(D); await page.waitForTimeout(45); } await page.waitForTimeout(900);
       const e2 = await son(page); const be = await bouton(page, D);
       ok(e2.audios.length === 1 && (be.etat === 'on') === !e2.audios[0].paused, P('6. après des pressions rapides, il n’y a toujours qu’un lecteur, et le bouton dit ce qu’il fait (' + be.etat + ')'));
       if (be.etat !== 'on') { await page.click(D); await attendEtat(page, D, 'on'); }
-      await page.click('.tabs ' + A('go', '[data-view="parcours"]')); await page.waitForTimeout(500);
-      ok((await son(page)).audios[0].paused, P('6. changer d’onglet coupe ce lecteur aussi'));
+      await page.click('.bar .back'); await page.waitForSelector('.dose .instant-b'); await page.waitForTimeout(500);
+      ok((await son(page)).audios[0].paused && !(await page.$('main.instant')), P('6. quitter l’étang coupe ce lecteur aussi'));
       ok(errs.length === 0, P('6. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }

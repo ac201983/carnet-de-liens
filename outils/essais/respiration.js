@@ -177,12 +177,14 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       const s0 = await son(page); const b0 = await bouton(page, B);
       ok(sons.length === 0 && s0.contextes === 0 && s0.lancees === 0 && s0.audios.length === 0 && b0 && b0.etat === 'off' && b0.texte === 'Écouter l’étang', P('1. l’exercice se fait en silence tant que le parent n’a rien demandé : aucun fichier de son chargé ' + JSON.stringify([sons, s0.contextes, b0])));
       const aides = (await page.evaluate(() => window.__son.aides.map(x => x.a))).filter(Boolean);
-      ok(aides.includes('Par le nez, pendant que le cercle s’ouvre.') && aides.includes('Par la bouche, lentement, pendant que le cercle se referme.') && !aides.some(a => /notes/.test(a)), P('1. en silence, la ligne d’aide dit comment respirer, et ne parle pas de notes ' + JSON.stringify(aides.slice(0, 4))));
-      // le cercle s'ouvre quand on inspire, se referme quand on souffle
-      const cercle = async () => page.evaluate(() => new Promise(fin => { const r = document.querySelector('.souffle .ronds'); const v = []; let k = 0; const f = () => { v.push([document.getElementById('souffle-mot').textContent, parseFloat(getComputedStyle(r).getPropertyValue('--s'))]); if (++k < 40) requestAnimationFrame(f); else fin(v); }; requestAnimationFrame(f); }));
-      const c1 = await cercle(); const sens = []; for (let i = 1; i < c1.length; i++) if (c1[i][0] === c1[i - 1][0]) sens.push([c1[i][0], c1[i][1] - c1[i - 1][1]]);
-      const bon = sens.filter(x => x[0] === 'Inspirez' ? x[1] >= -0.0005 : x[1] <= 0.0005).length;
-      ok(sens.length > 20 && bon === sens.length, P('1. le cercle s’ouvre pendant « Inspirez » et se referme pendant « Expirez » (' + bon + ' images sur ' + sens.length + ')'));
+      // Ce qui guide les yeux dépend du téléphone : la goutte de la photo quand il sait dessiner l'eau, 2 cercles posés sur l'eau sinon. La ligne d'aide dit lequel.
+      const A_IN = ['Par le nez, pendant que la goutte monte.', 'Par le nez, pendant que les cercles se resserrent.'], A_OUT = ['Par la bouche, lentement, pendant qu’elle redescend.', 'Par la bouche, lentement, pendant que les cercles s’élargissent.'];
+      ok(aides.some(a => A_IN.includes(a)) && aides.some(a => A_OUT.includes(a)) && !aides.some(a => /notes/.test(a)), P('1. en silence, la ligne d’aide dit comment respirer, et ne parle pas de notes ' + JSON.stringify(aides.slice(0, 4))));
+      // À l'inspiration la goutte s'élève (les cercles se resserrent), à l'expiration elle redescend et les ondes s'élargissent.
+      const cercle = async () => page.evaluate(() => new Promise(fin => { const r = document.querySelector('.souffle .ronds'), e = document.querySelector('.souffle .etang'); const v = []; let k = 0; const f = () => { v.push([document.getElementById('souffle-mot').textContent, parseFloat(getComputedStyle(r).getPropertyValue('--s')), e.classList.contains('eau-vive') && !!e.querySelector('canvas.eau')]); if (++k < 40) requestAnimationFrame(f); else fin(v); }; requestAnimationFrame(f); }));
+      const c1 = await cercle(); const sens = []; let eau = 0; for (let i = 1; i < c1.length; i++) { if (c1[i][2]) eau++; else if (c1[i][0] === c1[i - 1][0] && !c1[i - 1][2]) sens.push([c1[i][0], c1[i][1] - c1[i - 1][1]]); }
+      const bon = sens.filter(x => x[0] === 'Inspirez' ? x[1] <= 0.0005 : x[1] >= -0.0005).length;
+      ok(sens.length + eau > 20 && bon === sens.length, P('1. ' + (eau > sens.length ? 'la goutte de la photo suit le souffle (' + eau + ' images avec l’eau dessinée)' : 'les cercles se resserrent pendant « Inspirez » et s’élargissent pendant « Expirez » (' + bon + ' images sur ' + sens.length + ')')));
       const lien = await page.$eval('.resp-l', e => { const r = e.getBoundingClientRect(), a = document.querySelector('.souffle .actions').getBoundingClientRect(), p = document.querySelector('.souffle .btn.ghost'); return { texte: e.textContent.replace(/\s+/g, ' ').trim(), h: Math.round(r.height), sous: r.top >= a.bottom - 1, visible: r.bottom <= innerHeight, taille: parseFloat(getComputedStyle(e).fontSize), autre: parseFloat(getComputedStyle(p).fontSize), fond: getComputedStyle(e).backgroundColor }; });
       ok(lien.texte === 'Changer de respiration' && lien.h >= 44 && lien.sous && lien.visible && lien.taille < lien.autre && /rgba\(0, 0, 0, 0\)|transparent/.test(lien.fond), P('1. « Changer de respiration » est là, discret, sous les boutons, et assez grand pour le doigt ' + JSON.stringify(lien)));
 
@@ -240,7 +242,7 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       // « Arrêter », puis l'écran d'attente : il décrit la respiration choisie, et propose aussi d'en changer
       await page.click(A('souffle-stop')); await page.waitForSelector('main.souffle.s-pret');
       const pret = await page.evaluate(() => ({ aide: document.querySelector('.souffle .aide').textContent, lien: !!document.querySelector('.resp-l'), go: document.querySelector('[data-act="souffle-go"]').textContent.trim() }));
-      ok(pret.aide === 'Vous inspirez par le nez, puis vous soufflez par la bouche un peu plus longtemps, à la cadence que vous avez choisie. Une respiration dure 7 secondes. Le cercle posé sur l’eau vous guide.' && pret.lien && pret.go === 'Commencer', P('2. après « Arrêter », l’écran décrit la respiration choisie ' + JSON.stringify(pret.aide)));
+      ok(['La goutte vous guide. Elle monte quand vous inspirez, et elle redescend quand vous soufflez.', 'Les cercles posés sur l’eau vous guident.'].some(g => pret.aide === 'Vous inspirez par le nez, puis vous soufflez par la bouche un peu plus longtemps, à la cadence que vous avez choisie. Une respiration dure 7 secondes. ' + g) && pret.lien && pret.go === 'Commencer', P('2. après « Arrêter », l’écran décrit la respiration choisie ' + JSON.stringify(pret.aide)));
       await page.click('.resp-l'); await page.waitForSelector('.resp-choix');
       const pc = await page.evaluate(() => ({ note: !!document.querySelector('.resp-note'), go: !!document.querySelector('.resp-choix [data-act="souffle-go"]'), pres: [...document.querySelectorAll('.resp-o')].map(o => o.getAttribute('aria-pressed')).join() }));
       ok(!pc.note && pc.go && pc.pres === 'false,false,true', P('2. avant de commencer aussi, on peut choisir sa respiration, puis « Commencer » ' + JSON.stringify(pc)));
@@ -318,7 +320,7 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       ok(q3.muet && q3.audibles === 0 && q3.prevues === 0 && q3.delai < 1500, P('4. tout se tait aussitôt, y compris les notes déjà prévues ' + dit(q3)));
       const Ms = await mouvements(page, 2);
       ok(Ms.length === 2 && !!(await page.$('main.souffle.s-cours')), P('4. couper le son n’interrompt pas la respiration (' + deux(Ms) + ')'));
-      ok(/cercle/.test(await page.textContent('#souffle-aide')), P('4. en silence, la ligne d’aide revient'));
+      ok(/cercles|goutte|redescend/.test(await page.textContent('#souffle-aide')), P('4. en silence, la ligne d’aide revient'));
       let pire = 0;
       for (let i = 0; i < 7; i++) { await page.click(B); await page.waitForTimeout(45); pire = Math.max(pire, (await son(page)).audibles); }
       await page.waitForTimeout(2600);
@@ -468,6 +470,43 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
       await page.click('.resp-l'); await page.waitForSelector('.resp-choix'); await page.click('.resp-o[data-v="egal"]'); await mouvements(page, 1); const M2 = await mouvements(page, 2);
       ok(dureesOk(M2, 'egal'), P('7. et « Changer de respiration » fonctionne de la même façon (' + deux(M2) + ')'));
       ok(errs.length === 0, P('7. aucune erreur ' + errs.slice(0, 3).join(' | ')));
+      await ctx.close();
+    }
+
+    // =====================================================================================================================
+    // 8. La pause : un grand bouton, facile à atteindre. Le temps, les cercles et le son attendent, puis tout reprend là où c'en était.
+    // =====================================================================================================================
+    {
+      const { ctx, page, errs } = await ouvre(fmt);
+      await entre(page);
+      await mouvements(page, 1); await page.waitForTimeout(1300);
+      const PZ = '.souffle ' + A('souffle-pause');
+      const avant = await page.evaluate(sel => { const b = document.querySelector(sel), r = b.getBoundingClientRect(), a = document.querySelector('.souffle .actions'); return { texte: b.textContent.replace(/\s+/g, ' ').trim(), h: Math.round(r.height), l: Math.round(r.width), vue: r.top >= 0 && r.bottom <= innerHeight, premier: a.querySelector('button') === b, large: Math.round(a.getBoundingClientRect().width) }; }, PZ);
+      ok(avant.texte === 'Pause' && avant.h >= 54 && avant.vue && avant.premier && (!tel || avant.l >= avant.large - 2), P('8. le bouton « Pause » est le premier des boutons, grand (' + avant.l + ' sur ' + avant.h + ') et à l’écran sans défiler'));
+      const T0 = await mots(page); const dernier = T0[T0.length - 1];
+      const tp = await maintenant(page); await page.click(PZ); await page.waitForTimeout(350);
+      const lis = () => page.evaluate(() => ({ mot: document.getElementById('souffle-mot').textContent, aide: document.getElementById('souffle-aide').textContent, boutons: [...document.querySelectorAll('.souffle .actions button')].map(b => b.textContent.replace(/\s+/g, ' ').trim()), lien: !!document.querySelector('.resp-l'), s: getComputedStyle(document.querySelector('.souffle .ronds')).getPropertyValue('--s'), cours: !!document.querySelector('main.souffle.s-cours') }));
+      const p1 = await lis();
+      ok(p1.cours && p1.mot === 'En pause' && /^Reprenez quand vous voulez\./.test(p1.aide) && p1.boutons.join('|') === 'Reprendre|Arrêter' && !p1.lien, P('8. en pause, l’écran le dit, et il ne reste que « Reprendre » et « Arrêter » ' + JSON.stringify([p1.mot, p1.boutons])));
+      await page.waitForTimeout(6600);        // plus long qu'un mouvement entier : sans la pause, le mot aurait changé
+      const p2 = await lis(); const T1 = await mots(page);
+      ok(p2.mot === 'En pause' && p2.s === p1.s && T1.length === T0.length, P('8. pendant la pause, rien n’avance : ni le mot, ni les cercles (' + p1.s + ', ' + p2.s + ')'));
+      const tr = await maintenant(page); await page.click(PZ);
+      await mouvements(page, 1); const M = await mouvements(page, 2);
+      const T2 = await mots(page); const suite = T2.slice(T0.length);       // le mot du mouvement interrompu revient, puis le mouvement suivant commence
+      const actif = suite.length > 1 ? ((tp - dernier.t) + (suite[1].t - tr)) / 1000 : -1, voulu = durees('long')[dernier.m === 'Inspirez' ? 0 : 1];
+      ok(suite.length > 1 && suite[0].m === dernier.m && suite[1].m !== dernier.m && proche(actif, voulu, 0.5), P('8. « Reprendre » : le mouvement interrompu reprend là où il en était (' + actif.toFixed(2) + ' secondes de mouvement en tout, pour ' + voulu + ')'));
+      ok(dureesOk(M, 'long') && (await lis()).boutons[0] === 'Pause', P('8. et la respiration continue à son rythme (' + deux(M) + ')'));
+      if (lit) {
+        await page.click(B); const joue = await attendEtat(page, B, 'on', 12000); await page.waitForTimeout(900);
+        await page.click(PZ); const q = await silence(page, 3000);
+        ok(joue && q.muet, P('8. avec la mélodie, « Pause » fait aussi taire le son ' + dit(q)));
+        await page.click(PZ); const revient = await attendEtat(page, B, 'on', 12000);
+        ok(revient, P('8. et « Reprendre » le remet, sans avoir à le redemander'));
+        await page.click(A('souffle-stop')); const q2 = await silence(page, 3000);
+        ok(q2.muet, P('8. « Arrêter » coupe le son ' + dit(q2)));
+      }
+      ok(errs.length === 0, P('8. aucune erreur ' + errs.slice(0, 3).join(' | ')));
       await ctx.close();
     }
   }

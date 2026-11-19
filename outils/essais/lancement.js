@@ -55,7 +55,7 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
   const sorties = [];   // toute requête vers un autre site que celui de l'essai
   const ouvre = async (fmt, opt = {}) => {
     const f = Object.assign({}, fmt); if (NAV === 'chromium' && f.hasTouch) f.isMobile = true;
-    const ctx = await browser.newContext(Object.assign({ locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: 'reduce', acceptDownloads: true }, f));
+    const ctx = await browser.newContext(Object.assign({ locale: 'fr-CH', ignoreHTTPSErrors: true, reducedMotion: opt.anim ? 'no-preference' : 'reduce', acceptDownloads: true }, f));
     await ctx.addInitScript(horloge, [21 + 40 / 60, opt.jours || 0]);
     if (opt.notes) await ctx.addInitScript(([k, d]) => { try { if (!localStorage.getItem('__pose')) { localStorage.setItem(k, d); localStorage.setItem('__pose', '1'); } } catch (e) { } }, [KEY, JSON.stringify(opt.notes)]);
     const errs = [], urls = [];
@@ -233,7 +233,10 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       ok(/49 CHF une seule fois/.test(accT) && /Voir l’exemple, préparer votre fiche et la relire est gratuit/.test(accT) && /Vos fiches restent sur votre appareil/.test(accT), P('3. le prix, ce qui est gratuit et la confidentialité sont dits dès l’accueil de l’outil'));
       await clic(page, R('exemple'), 400);
       const ex = {};
-      for (const [k, age, prenom] of [['e', 'À 5 ans', 'Noé'], ['a', 'À 16 ans', 'Lina'], ['g', 'À 35 ans', 'Bastien']]) {
+      // Les 3 exemples ne citent plus d'âge : un âge écrit laisserait dehors un bébé de 1 an comme un adulte de 60 ans.
+      const puces = await page.$$eval('.v-relais .rl-ages .chip', L => L.map(b => b.innerText.replace(/\s+/g, ' ').trim()));
+      ok(puces.join('|') === 'Un enfant|Une adolescente|Un adulte' && !/\d+ ans/.test(await texte(page, '.v-relais .rl-ages')), P('3. les 3 exemples se choisissent sans âge écrit : ' + puces.join(', ')));
+      for (const [k, age, prenom] of [['e', 'd’un enfant', 'Noé'], ['a', 'd’une adolescente', 'Lina'], ['g', 'd’un adulte', 'Bastien']]) {
         await clic(page, R('ex', '[data-v="' + k + '"]'), 250);
         ex[k] = await page.evaluate(() => { const f = document.querySelector('.v-relais .rl-fiche'); const t = e => e ? e.innerText.replace(/\s+/g, ' ').trim() : ''; const enf = [...f.children].map(e => e.className.split(' ')[0]);
           return { titre: t(f.querySelector('.rl-t')), enfants: enf.join(' '), trois: f.querySelectorAll('.rl-trois li').length, moi: f.querySelectorAll('.rl-moi li').length, signe: t(f.querySelector('.rl-signe')), tete: t(f.querySelector('.rl-trois h3')), tout: t(f) }; });
@@ -241,8 +244,9 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
         ok(ex[k].titre === 'Le relais de ' + prenom && ex[k].trois === 3 && ex[k].tete === 'Si tu ne lis que trois choses' && /^rl-tete rl-trois/.test(ex[k].enfants), P('3. exemple ' + age + ' : « ' + ex[k].titre + ' », avec « Si tu ne lis que trois choses » en tête et 3 repères'));
         ok(ex[k].moi >= 2 && ex[k].signe === prenom && ex[k].enfants.indexOf('rl-moi') > 0, P('3. exemple ' + age + ' : « Ce que je souhaite dire moi-même » a sa place à part, signée ' + ex[k].signe));
       }
-      ok(/adulte/.test(ex.g.tout), P('3. l’exemple à 35 ans parle d’un adulte : la personne donne son avis'));
-      ok(/Les prénoms et les numéros de cet exemple sont inventés/.test(await texte(page, 'main')), P('3. l’exemple se dit inventé'));
+      ok(/adulte/.test(ex.g.tout), P('3. le 3e exemple parle d’un adulte : la personne donne son avis'));
+      const mainEx = await texte(page, 'main');
+      ok(/Les prénoms et les numéros sont inventés/.test(mainEx) && /quel que soit l’âge de votre enfant, tout-petit ou adulte depuis longtemps/.test(mainEx) && !/\b(5|16|35) ans\b/.test(mainEx), P('3. l’exemple se dit inventé, et l’outil se dit fait pour tous les âges sans en citer aucun'));
       ok((await garde(page)) === null, P('3. voir l’exemple ne crée rien sur l’appareil'));
       // préparer la première fiche : gratuit jusqu'à l'aperçu
       const gestes = await prepare(page);
@@ -276,7 +280,40 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       ok(!!d.achats.relais && !d.achats.parcours && d.tier === 'free', P('3. « Passer le relais » s’achète seul : l’outil est ouvert, et le parcours n’est pas acheté pour autant'));
       await clic(page, R('reprise'), 400);
       ok((await ficheTexte(page)) === apercu && !!(await page.$(R('envoi'))) && !!(await page.$(R('imprimer'))), P('3. après l’achat, le parent revient à sa fiche, et peut l’envoyer ou l’imprimer'));
-      // l'impression sur une page (mesurable dans Chrome)
+      // La feuille vient se poser : en ouvrant l'aperçu, le titre « Si tu ne lis que trois choses » ressort, et ses 3 repères se lisent ensemble sans faire défiler.
+      await page.goto(APP + 'relais/', { waitUntil: 'domcontentloaded' }); await page.waitForSelector('.v-relais ' + R('ouvrir')); await page.waitForTimeout(400);
+      await page.click(R('ouvrir')); await page.waitForSelector('.v-relais .feuille>.rl-fiche');
+      const pose0 = await page.evaluate(() => { const f = document.querySelector('.v-relais .feuille>.rl-fiche'), cs = getComputedStyle(f); return { classe: f.classList.contains('se-pose'), anim: cs.animationName, calme: matchMedia('(prefers-reduced-motion: reduce)').matches, effets: document.documentElement.classList.contains('fx') }; });
+      await page.waitForTimeout(1700);
+      const pose1 = await page.evaluate(() => { const f = document.querySelector('.v-relais .feuille>.rl-fiche'), t = f.querySelector('.rl-trois'), h = t.querySelector('h3,.rl-h'), cs = getComputedStyle(f), autre = f.querySelector('.rl-s h3, .rl-moi h3, .rl-tel h3');
+        const tabs = document.querySelector('.tabs'); let bas = innerHeight; if (tabs && getComputedStyle(tabs).position === 'fixed') { const y = tabs.getBoundingClientRect().top; if (y > innerHeight / 2) bas = y; }
+        const barre = document.querySelector('header.bar'), haut = barre ? Math.max(0, barre.getBoundingClientRect().bottom) : 0;
+        return { transform: cs.transform, op: cs.opacity, titre: h.textContent.replace(/\s+/g, ' ').trim(), tete: Math.round(h.getBoundingClientRect().top), haut: Math.round(haut), lis: [...t.querySelectorAll('li')].map(e => Math.round(e.getBoundingClientRect().bottom)), bas: Math.round(bas), gros: +(parseFloat(getComputedStyle(h).fontSize) / parseFloat(getComputedStyle(autre).fontSize)).toFixed(2), trait: getComputedStyle(h, '::after').borderTopWidth, y: Math.round(scrollY) }; });
+      ok((pose0.effets && !pose0.calme ? (pose0.classe && pose0.anim === 'rl-pose') : pose0.anim !== 'rl-pose') && pose1.transform === 'none' && pose1.op === '1', P('3. en ouvrant l’aperçu, la feuille vient se poser, puis elle est tout à fait immobile ' + JSON.stringify([pose0, pose1.transform, pose1.op])));
+      ok(pose1.titre === 'Si tu ne lis que trois choses' && pose1.gros > 1.12 && parseFloat(pose1.trait) >= 2 && pose1.lis.length === 3 && pose1.tete >= pose1.haut && pose1.lis.every(y => y <= pose1.bas), P('3. le titre « Si tu ne lis que trois choses » ressort, et ses 3 repères se lisent ensemble dès l’ouverture, sans faire défiler ' + JSON.stringify(pose1)));
+      // l'impression sur une page (mesurable dans Chrome), et parfaitement fixe
+      await page.emulateMedia({ media: 'print' });
+      const imp = await page.evaluate(() => { const f = document.querySelector('.v-relais .feuille>.rl-fiche'), cs = getComputedStyle(f), h = f.querySelector('.rl-trois h3,.rl-trois .rl-h'); return { classe: f.classList.contains('se-pose'), anim: cs.animationName, tr: cs.transform, op: cs.opacity, bouge: [...f.querySelectorAll('*')].filter(e => getComputedStyle(e).animationName !== 'none').length, trait: getComputedStyle(h, '::after').animationName, titre: getComputedStyle(h).color }; });
+      await page.emulateMedia({ media: 'screen' });
+      ok(imp.anim === 'none' && imp.tr === 'none' && imp.op === '1' && imp.bouge === 0 && imp.trait === 'none', P('3. imprimée, la fiche est parfaitement fixe : aucune animation, aucun décalage ' + JSON.stringify(imp)));
+      // Avec les animations du téléphone (les autres contrôles de cette série se font en mouvement réduit) : la feuille se pose une fois, en 1 seconde.
+      {
+        const an = await ouvre(fmt, { anim: true, notes: Object.assign(PARENT(), { achats: { relais: { le: iso(0) } }, rel: { fiches: [{ id: 'fa', c: iso(0), m: iso(0), qui: 'Lina', chez: 'sa tante Élise', quand: 'samedi 21 novembre', tu: true, trois: ['Lina a besoin de savoir ce qui vient après.', 'Quand elle se bouche les oreilles, le bruit est trop fort.', 'Son traitement est dans la poche avant du sac.'], moi: ['J’aime dessiner.'], s: { repas: ['Lina mange de tout, lentement.'] }, tel: [{ n: 'Maman', t: '079 000 00 00' }], env: '', retour: '', retourLe: '', garde: '' }], reunions: [] } }) });
+        await an.page.goto(APP + 'relais/', { waitUntil: 'domcontentloaded' }); await an.page.waitForSelector('.v-relais ' + R('ouvrir')); await an.page.waitForTimeout(1200);
+        const lisPose = () => an.page.evaluate(() => { const f = document.querySelector('.v-relais .feuille>.rl-fiche'); if (!f) return null; const cs = getComputedStyle(f), t = f.querySelector('.rl-trois'); const tabs = document.querySelector('.tabs'); let bas = innerHeight; if (tabs && getComputedStyle(tabs).position === 'fixed') { const y = tabs.getBoundingClientRect().top; if (y > innerHeight / 2) bas = y; } return { classe: f.classList.contains('se-pose'), anim: cs.animationName, tr: cs.transform, op: +cs.opacity, large: document.documentElement.scrollWidth > innerWidth + 1, lis: [...t.querySelectorAll('li')].map(e => Math.round(e.getBoundingClientRect().bottom)), bas: Math.round(bas) }; });
+        await an.page.click(R('ouvrir')); await an.page.waitForSelector('.v-relais .feuille>.rl-fiche');
+        // on la regarde plusieurs fois pendant sa première seconde : sur une machine lente, un seul regard pourrait tomber après la fin
+        let a1 = null, large = false; for (let k = 0; k < 14; k++) { const v = await lisPose(); if (v) { large = large || v.large; if (!a1 || (a1.tr === 'none' && v.tr !== 'none')) a1 = v; } await an.page.waitForTimeout(70); }
+        await an.page.waitForTimeout(1300); const a2 = await lisPose();
+        ok(a1 && a1.classe && a1.anim === 'rl-pose' && a1.tr !== 'none' && !large && a2.tr === 'none' && a2.op === 1 && !a2.large, P('3. avec les animations, la feuille est en train de se poser juste après l’ouverture, puis immobile, sans jamais élargir la page ' + JSON.stringify([a1, a2.tr])));
+        ok(a2.lis.length === 3 && a2.lis.every(y => y <= a2.bas), P('3. et ses 3 repères se lisent ensemble dès l’ouverture ' + JSON.stringify([a2.lis, a2.bas])));
+        // l'écran redessiné sans changer d'écran (la rotation du téléphone, par exemple) ne la fait pas se poser à nouveau
+        await an.page.evaluate(() => window.dispatchEvent(new Event('resize'))); await an.page.waitForTimeout(500);
+        await an.page.click('.v-relais ' + R('aller', '[data-v="0"]')); await an.page.waitForTimeout(700); await an.page.goBack(); await an.page.waitForSelector('.v-relais .feuille>.rl-fiche'); await an.page.waitForTimeout(1600);
+        const a3 = await lisPose();
+        ok(a3 && a3.tr === 'none' && a3.op === 1 && an.errs.length === 0, P('3. en revenant sur l’aperçu, la fiche est de nouveau immobile, sans erreur ' + JSON.stringify([a3 && a3.tr, an.errs.slice(0, 2)])));
+        await an.ctx.close();
+      }
       if (NAV === 'chromium') {
         await page.emulateMedia({ media: 'print' }); const pdf = await page.pdf({ format: 'A4', printBackground: true }); await page.emulateMedia({ media: 'screen' });
         const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
@@ -419,7 +456,7 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       const inspire = await o.page.waitForFunction(() => /Inspirez/.test(document.querySelector('main.souffle').innerText), null, { timeout: 12000 }).then(() => true).catch(() => false);
       const so = await o.page.evaluate(() => ({ t: document.querySelector('main.souffle').innerText.replace(/\s+/g, ' ').trim(), champs: document.querySelectorAll('main.souffle input:not([type=range]), main.souffle textarea').length, cercle: !!document.querySelector('main.souffle .rond, main.souffle .cercle, main.souffle [class*="cercle"], main.souffle svg circle, main.souffle .bulle') }));
       vus.push(so.t);
-      ok(dt < (EN_LIGNE ? 4000 : 1500) && so.champs === 0 && /Souffler 2 minutes/.test(debut) && /Le cercle va vous guider/.test(debut) && inspire, P('4. usage 1 : un geste depuis la vitrine, et le parent est dans la respiration (' + dt + ' ms), sans formulaire. Quelques secondes plus tard, le cercle dit « Inspirez »'));
+      ok(dt < (EN_LIGNE ? 4000 : 1500) && so.champs === 0 && /Souffler 2 minutes/.test(debut) && /(La goutte va|Les cercles vont|Les mots vont) vous guider/.test(debut) && inspire, P('4. usage 1 : un geste depuis la vitrine, et le parent est dans la respiration (' + dt + ' ms), sans formulaire. Quelques secondes plus tard, l’écran dit « Inspirez »'));
       ok(!VENTE.test(so.t) && !VENTE.test(debut), P('4. usage 1 : la respiration ne propose rien à acheter'));
       await o.page.click('.bar .back').catch(() => { }); await o.page.waitForTimeout(600);
       ok(!!(await o.page.$('main.intro')), P('4. usage 1 : « Retour » ramène à la vitrine, d’où il venait'));
@@ -520,7 +557,7 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       await page.goto(APP + 'transmettre/', { waitUntil: 'domcontentloaded' }); await page.waitForSelector('main h1'); await page.waitForTimeout(400);
       const tr = await page.evaluate(() => { const t = e => e ? e.innerText.replace(/\s+/g, ' ').trim() : ''; const b = document.querySelector('main .btn.primary'); return { h1: t(document.querySelector('main h1')), tout: t(document.querySelector('main')), bouton: t(b), yBouton: b ? Math.round(b.getBoundingClientRect().top) : 9999, vh: innerHeight, mot: t(document.querySelector('.tr-mot')), liens: [...document.querySelectorAll('main .tr-suite a, main .tr-suite button')].map(t) }; });
       vus.push(tr.tout);
-      ok(net(tr.h1) === PHRASE && /Antonio Company, travailleur social/.test(tr.tout) && /personne en situation de handicap/.test(tr.tout), P('5. la page à transmettre s’ouvre sur la phrase d’Antonio et dit à qui s’adresse l’espace'));
+      ok(net(tr.h1) === PHRASE && /Antonio Company, éducateur social, responsable d’une équipe socio-éducative et père de 3 enfants/.test(tr.tout) && /personne en situation de handicap, quel que soit son âge, tout-petit ou adulte depuis longtemps/.test(tr.tout) && !/\b(5|16|35) ans\b/.test(tr.tout), P('5. la page à transmettre s’ouvre sur la phrase d’Antonio, dit à qui s’adresse l’espace sans citer d’âge, et donne les 2 rôles d’Antonio'));
       ok(tr.bouton === 'Souffler 2 minutes, maintenant' && /C’est gratuit, sans compte/.test(tr.tout), P('5. elle mène à une expérience gratuite précise : « ' + tr.bouton + ' »'));
       const lienTr = await page.$eval('#tr-lien', e => e.value).catch(() => '');
       ok(tr.mot.length > 80 && /Je vous transmets cette page/.test(tr.mot) && lienTr === PUBLIC + 'transmettre/', P('5. elle donne au professionnel une phrase humaine à reprendre, et le lien de la page'));
@@ -628,9 +665,9 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
       await s.page.goto(APP, { waitUntil: 'domcontentloaded' }); await s.page.waitForSelector('.seuil .porte'); await s.page.waitForTimeout(300);
       const acc = await s.page.evaluate(() => { const q = sel => [...document.querySelectorAll(sel)].map(e => e.textContent.split(String.fromCharCode(160)).join(' ').replace(/\s+/g, ' ').trim());
         return { marque: (document.querySelector('main.intro .hbar .wordmark') || {}).innerText || '', besoin: q('.seuil .besoin')[0], portes: q('.seuil .porte b'), nom: q('.nom-sens h2')[0], sens: q('.nom-sens .ns-l'), mot: q('.mot-a blockquote p')[0], signe: q('.mot-a figcaption')[0], titre: document.title }; });
-      ok(/^Parent écouté\s*parent éclairé$/.test(acc.marque.trim()) && acc.nom === 'Parent écouté, parent éclairé' && !/Parent Écouté|Parent Éclairé/.test(await texte(s.page, '#app')) && !/Parent Écouté|Parent Éclairé/.test(acc.titre), P('7. le nom s’écrit « Parent écouté, parent éclairé », en haut de l’écran et dans la page ' + JSON.stringify([acc.marque, acc.titre])));
+      ok(/^Parent écouté,\s*parent éclairé$/.test(acc.marque.trim()) && acc.nom === 'Parent écouté, parent éclairé' && !/Parent Écouté|Parent Éclairé/.test(await texte(s.page, '#app')) && !/Parent Écouté|Parent Éclairé/.test(acc.titre), P('7. le nom s’écrit « Parent écouté, parent éclairé », en haut de l’écran et dans la page ' + JSON.stringify([acc.marque, acc.titre])));
       ok(acc.besoin === Q1 && acc.portes.slice(0, 2).join('|') === 'Déposer ce qui pèse|Souffler 2 minutes', P('7. après la phrase d’accueil, la question « ' + Q1 + ' », puis « Déposer ce qui pèse » et « Souffler 2 minutes » ' + JSON.stringify(acc.portes)));
-      ok(acc.sens.length === 2 && /^Écouté\. /.test(acc.sens[0]) && /^Éclairé\. /.test(acc.sens[1]) && acc.mot === MOT_A && acc.signe === 'Antonio Company, éducateur social', P('7. le nom est expliqué en 2 phrases, et le mot d’Antonio est repris mot pour mot, avec sa signature'));
+      ok(acc.sens.length === 2 && /^Écouté\. /.test(acc.sens[0]) && /^Éclairé\. /.test(acc.sens[1]) && acc.mot === MOT_A && /^Antonio Company\s*Éducateur social, responsable d’une équipe socio-éducative$/.test(acc.signe), P('7. le nom est expliqué en 2 phrases, et le mot d’Antonio est repris mot pour mot, avec sa signature et ses 2 rôles (' + acc.signe + ')'));
 
       // ---- avant d'écrire : la question, le fonctionnement réel, qui peut lire et où le texte reste ----
       await clic(s.page, '.seuil ' + A('porte', '[data-v="deposer"]'), 500); await s.page.waitForSelector('main.deposer #draft'); await s.page.waitForTimeout(400);
