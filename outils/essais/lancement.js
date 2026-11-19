@@ -58,7 +58,7 @@ const echeances = () => { const d = new Date(); const out = []; for (let i = 0; 
     if (opt.notes) await ctx.addInitScript(([k, d]) => { try { if (!localStorage.getItem('__pose')) { localStorage.setItem(k, d); localStorage.setItem('__pose', '1'); } } catch (e) { } }, [KEY, JSON.stringify(opt.notes)]);
     const errs = [], urls = [];
     const onglet = async () => { const page = await ctx.newPage();
-      page.on('pageerror', e => errs.push(String(e).slice(0, 200))); page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|net::ERR/.test(m.text())) errs.push(m.text().slice(0, 200)); });
+      page.on('pageerror', e => errs.push(String(e).slice(0, 200))); page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|net::ERR|downloadable font: download failed[^]*status=2152398850/.test(m.text())) errs.push(m.text().slice(0, 200)); });
       page.on('request', r => { const u = r.url(); urls.push(u); if (!u.startsWith(ORIGIN) && !/^(data|blob|about):/.test(u)) sorties.push(u.slice(0, 120)); });
       return page; };
     const page = await onglet();

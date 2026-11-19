@@ -100,7 +100,7 @@ const durees = (mode, cad) => mode === 'libre' ? [cad * .4, cad * .6] : DUREES[m
     await ctx.addInitScript(sonde);
     const errs = [], sons = [];
     const page = await ctx.newPage();
-    page.on('pageerror', e => errs.push(String(e).slice(0, 200))); page.on('console', m => { if (m.type() === 'error' && !/son\/|Failed to load resource|net::ERR/.test(m.text())) errs.push(m.text().slice(0, 200)); });
+    page.on('pageerror', e => errs.push(String(e).slice(0, 200))); page.on('console', m => { if (m.type() === 'error' && !/son\/|Failed to load resource|net::ERR|downloadable font: download failed[^]*status=2152398850/.test(m.text())) errs.push(m.text().slice(0, 200)); });
     page.on('request', r => { const u = r.url(); if (/\/son\//.test(u)) sons.push(u.replace(/^.*\/son\//, '').replace(/\?.*$/, '')); else if (!u.startsWith(ORIGIN) && !/^(data|blob|about):/.test(u)) errs.push('requête vers un autre site : ' + u.slice(0, 100)); });
     return { ctx, page, errs, sons };
   };
