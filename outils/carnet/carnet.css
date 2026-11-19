@@ -94,7 +94,7 @@ html.clair .intro>.hbar{background:#F2ECDB url(img/grain.png) 0 0/128px 128px}
 .v-intro .mois,.v-intro .mois summary,.v-intro .acc-plans li,.v-intro .mirror,.v-intro .card,.v-intro .rl-mini,.v-intro .acc-chips li{border-radius:6px}
 .v-intro .dose,.v-intro .acc-fin{border-radius:8px}
 /* Aucun texte de la vitrine sous 14 points. */
-.v-intro .label,.v-intro .mirror .lbl,.v-intro .mois summary .tx span,.v-intro .acc-plans .prix small,.v-intro .mois ol li::marker{font-size:14px}
+.v-intro .label,.v-intro .mirror .lbl,.v-intro .mois summary .tx span,.v-intro .acc-plans .prix small,.v-intro .mois ol li::marker,.v-intro .card.vecu .from small,.v-intro .sch-nav .sch-pos{font-size:14px}
 .v-intro .mirror .depot{border-radius:6px}
 .v-intro .acc-pictos .pc{border-radius:6px}
 html.clair .v-intro .btn{border-color:rgba(21,48,31,.36);background:rgba(255,255,255,.5);color:var(--fg)}

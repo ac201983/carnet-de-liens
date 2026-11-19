@@ -1382,7 +1382,7 @@ a.sit{text-decoration:none;color:var(--fg)}
   .tab:hover{color:var(--cream);background:rgba(244,239,216,.05)}
   .tab[aria-current="page"]:hover{color:var(--sun-fg);background:var(--sun-soft)}
   .tabs .sos{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--coral-strong);color:#fff;border:0;border-radius:14px;padding:13px 14px;font-weight:800;font-size:16px;box-shadow:var(--shadow-sm)}
-  .tabs .sos:hover{filter:brightness(1.08)}
+  .tabs .sos:hover{filter:brightness(.93)}   /* au survol, le bouton fonce un peu : en s'éclaircissant, son texte blanc passait sous le contraste AA (4,38 pour 4,5) */
   /* la barre du haut ne porte plus que le bouton Retour, sur les écrans où il existe */
   .app:not(.nobar)>.bar{position:sticky;top:0;z-index:5;width:auto;max-width:none;margin:0;min-height:60px;padding:16px max(var(--pad),calc((100vw - var(--rail) - var(--lire))/2)) 14px;background:linear-gradient(to bottom,var(--bg) 0,rgba(7,36,15,.94) 62%,rgba(7,36,15,0) 100%);-webkit-backdrop-filter:none;backdrop-filter:none}
   .app.v-plans>.bar.sub{padding-inline:max(var(--pad),calc((100vw - var(--rail) - 1000px)/2))}
@@ -1878,7 +1878,7 @@ html.clair .intro>.hbar{background:#F2ECDB url(img/grain.png) 0 0/128px 128px}
 .v-intro .mois,.v-intro .mois summary,.v-intro .acc-plans li,.v-intro .mirror,.v-intro .card,.v-intro .rl-mini,.v-intro .acc-chips li{border-radius:6px}
 .v-intro .dose,.v-intro .acc-fin{border-radius:8px}
 /* Aucun texte de la vitrine sous 14 points. */
-.v-intro .label,.v-intro .mirror .lbl,.v-intro .mois summary .tx span,.v-intro .acc-plans .prix small,.v-intro .mois ol li::marker{font-size:14px}
+.v-intro .label,.v-intro .mirror .lbl,.v-intro .mois summary .tx span,.v-intro .acc-plans .prix small,.v-intro .mois ol li::marker,.v-intro .card.vecu .from small,.v-intro .sch-nav .sch-pos{font-size:14px}
 .v-intro .mirror .depot{border-radius:6px}
 .v-intro .acc-pictos .pc{border-radius:6px}
 html.clair .v-intro .btn{border-color:rgba(21,48,31,.36);background:rgba(255,255,255,.5);color:var(--fg)}
