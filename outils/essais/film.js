@@ -73,11 +73,13 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
   // ----- 1. Les fichiers, tels que le serveur les donne
   const api = await pw.request.newContext({ ignoreHTTPSErrors: true });
   if (mode === 'absent') {
-    for (const f of FICHIERS) { const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023' } }).catch(() => null); ok(r && r.status() === 404, '1. sans film, ' + f + ' n’existe pas ' + (r ? r.status() : 'pas de réponse')); }
+    for (const f of FICHIERS) { const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); ok(r && r.status() === 404, '1. sans film, ' + f + ' n’existe pas ' + (r ? r.status() : 'pas de réponse')); }
   } else {
     const poids = [];
     for (const f of FICHIERS) {
-      const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023' } }).catch(() => null);
+      // Comme un lecteur vidéo, on demande un morceau du fichier tel quel, sans compression. (L'outil d'essai, laissé à ses réglages, accepte une réponse
+      // compressée : le serveur du site lui envoie alors le fichier entier, avec le code 200. Un navigateur ne demande jamais une vidéo ainsi.)
+      const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null);
       const h = r ? r.headers() : {}; const total = Number((/\/(\d+)$/.exec(h['content-range'] || '') || [])[1] || 0);
       ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || '') && total > 500000 && (await r.body()).length === 1024,
         '1. ' + f + ' : le serveur donne un morceau du fichier (206), annoncé comme video/mp4 ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
