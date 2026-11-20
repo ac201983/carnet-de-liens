@@ -14,10 +14,11 @@
 #     chaque note comparée au mot affiché, les sorties en cours d'exercice, et les 2 minutes entières jusqu'à la dernière respiration.
 #   finition.js :
 #     « Prendre un instant » après la dose, la troisième entrée, « Accueil », « Reprendre mon parcours » et le sens de « Retour ».
-#   film.js (quand la version d'essai contient le film « Et vous ? ») :
+#   film.js (quand la version d'essai contient le film de présentation « Ce qu'on ne dit pas par SMS » et la capsule « Et vous ? ») :
 #     l'accueil où rien du film n'est chargé à part sa petite image, la commande après les 3 portes, le lecteur, la lecture réelle du MP4
 #     (le film vertical au format téléphone, l'horizontal au format ordinateur), la pause, le son, la fermeture, le retour arrière
-#     et la position retrouvée sur l'accueil, puis l'adresse …/#film. Tant que le film est en attente (réglage « pret »), cet essai
+#     et la position retrouvée sur l'accueil, le bouton de fin « Ouvrir mon espace » et le retour à l'accueil, l'adresse …/#film,
+#     puis la capsule de respiration à l'adresse …/#capsule. Tant que le film est en attente (réglage « pret »), cet essai
 #     est le seul rejoué : il dit vite si le MP4 se lit réellement en ligne. Les autres parcours sont rejoués à la mise en ligne suivante.
 #   lancement.js :
 #     la vitrine et les 3 offres, la commande en démonstration (acceptée, refusée, abandonnée, les 6 mensualités, l'achat retrouvé),

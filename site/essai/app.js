@@ -13,7 +13,7 @@ const CONTACT_R="hc.etuoce-tnerap@ruojnob";
 const AVEC_REPONSE="";
 const AVEC_VOIX=false;
 const FILM="actif";
-const FILM_V="52975184";
+const FILM_V="3accce21";
 const I={
   back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
@@ -2378,7 +2378,7 @@ function routeDe(){
   if(location.hash===STORY_HASH)return {v:'about'};
   if(location.hash==='#accueil')return {v:'intro'};
   /* L'adresse …/#film ouvre l'accueil, puis le lecteur du film (version d'essai). */
-  if(FILM_ON&&location.hash===FILM_HASH)return {v:'intro'};
+  if(filmDe(location.hash))return {v:'intro'};
   if(VUES_HASH[location.hash])return {v:VUES_HASH[location.hash]};
   return null;
 }
@@ -2471,13 +2471,13 @@ function histRetour(e){
   if(!HIST.ok||location.hash==='#atelier')return;
   const st=e&&e.state;souffleStop();stopTimer();
   /* L'adresse …/#film, tapée alors que la page est déjà là : après l'accueil, le lecteur s'ouvre et attend le geste du parent. */
-  const film=FILM_ON&&!(st&&st.pepe)&&location.hash===FILM_HASH;
+  const film=(st&&st.pepe)?'':filmDe(location.hash);
   if(st&&st.pepe&&st.s){HIST.i=st.i||0;navApply(st.s);}
   else{const r=routeDe()||{};HIST.i=0;navApply({v:r.v||'today',sit:r.sit,kit:r.kit,re:r.re,cf:r.cf,ck:r.ck});try{history.replaceState(histEtat(),'',urlDe());}catch(x){}}
   const y=(st&&st.y)||0;
   /* « apres » : un message à dire une fois revenu sur l'écran d'avant (par exemple après avoir enregistré le point de départ). */
   const dire=state.apres||'';state.apres='';
-  fxGo(()=>{render();window.scrollTo(0,y);if(dire)toast(dire);if(film)filmOuvre(false);},'back');
+  fxGo(()=>{render();window.scrollTo(0,y);if(dire)toast(dire);if(film)filmOuvre(false,film);},'back');
 }
 
 /* ---------- après un dépôt : la réponse vient sous les yeux ---------- */
@@ -3164,20 +3164,25 @@ function essaiCarte(){
     (state.confirmEssai?'<div class="confirm" role="alert"><span>Effacer ce que contient la version d’essai sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="essai-zero-oui">Oui, effacer</button><button type="button" class="btn" data-act="essai-zero-non">Annuler</button></div></div>':'<button type="button" class="btn" data-act="essai-zero" style="align-self:flex-start">Revoir la version d’essai depuis le début</button>')+reperesHtml()+'</div>';
 }
 
-/* ---------- le film « Et vous ? » (version d'essai seulement) ---------- */
-/* Le film dure 35 secondes et n'a pas de paroles. Tant que le parent ne l'a pas demandé, rien n'est chargé : ni la vidéo, ni son affiche.
+/* ---------- les 2 films (version d'essai seulement) ---------- */
+/* « Ce qu'on ne dit pas par SMS » est le film de présentation : 1 minute 45, sans paroles. C'est lui que la commande de l'accueil ouvre.
+   « Et vous ? » (35 secondes) reste la capsule de respiration. Elle garde ses fichiers et s'ouvre par son adresse, …/#capsule.
+   Tant que le parent ne l'a pas demandé, rien n'est chargé : ni la vidéo, ni son affiche.
    Le lecteur s'ouvre par-dessus l'accueil, qui ne bouge pas dessous. « Fermer », la touche Échap ou le bouton Retour du téléphone
    arrêtent le son et rendent la page comme elle était, au même endroit.
-   Le film démarre toujours en silence (choix d'Antonio, le 20 novembre 2026) : le son ne vient que si le parent touche « Activer le son »,
+   Un film démarre toujours en silence (choix d'Antonio, le 20 novembre 2026) : le son ne vient que si le parent touche « Activer le son »,
    un bouton clair, écrit en toutes lettres, dans la barre du bas. À chaque ouverture du lecteur, le film repart en silence.
-   À la fin du film (V3, le 20 novembre 2026), un vrai bouton « Souffler 2 minutes » apparaît sous la vidéo. Il ferme le lecteur et ouvre l'exercice
-   à son écran de départ, exactement comme la porte de l'accueil : le bouton Retour ramène donc à l'accueil.
+   À la fin, un vrai bouton apparaît sous la vidéo. Après le film de présentation, « Ouvrir mon espace » : il fait ce que fait le bouton du même nom sur l'accueil.
+   Après la capsule, « Souffler 2 minutes » : il ouvre l'exercice à son écran de départ, comme la porte de l'accueil. Dans les 2 cas, le bouton Retour ramène à l'accueil.
+   Les prix et le détail des offres ne sont pas dans le lecteur : ils restent sur leur page.
    FILM vaut « pret » (le lecteur n'existe que par l'adresse …/#film, le temps de vérifier que la vidéo se lit en ligne)
    ou « actif » (la commande « Voir le film » est sur l'accueil, juste après les 3 portes). Sans ce réglage, rien de tout cela n'existe. */
 const FILM_ON=!!(SITE&&FILM);
-const FILM_HASH='#film';
-const FILM_LIEN=FILM_ON&&!PRE&&typeof location!=='undefined'&&location.hash===FILM_HASH;
-const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false};
+const FILM_HASH='#film',CAPSULE_HASH='#capsule';
+/* Le film qu'une adresse demande : « film », « capsule », ou rien. */
+function filmDe(h){return FILM_ON?(h===FILM_HASH?'film':(h===CAPSULE_HASH?'capsule':'')):'';}
+const FILM_LIEN=(!PRE&&typeof location!=='undefined')?filmDe(location.hash):'';
+const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false,quel:'film'};
 const FI={
   jouer:'<svg class="i fi-plein" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>',
   pause:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>',
@@ -3186,14 +3191,21 @@ const FI={
   muet:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3l4.5-4v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
   fermer:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
-/* Ce que le film montre, pour la personne qui ne le voit pas. */
-const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il écrit qu’elle va bien, laisse passer un instant, puis envoie sa réponse et retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone et touche Souffler 2 minutes dans Parent écouté, parent éclairé. L’écran l’invite à s’installer. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous. À la fin, un bouton Souffler 2 minutes apparaît sous le film et ouvre l’exercice.';
+/* Ce que chaque film montre, pour la personne qui ne le voit pas. */
+const FILM_DESC='Ce film dure 1 minute 45 et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Les photos illustrent une fiction. Un soir, un père reçoit un message d’Élise, qui lui demande comment va sa fille. Il répond qu’elle va bien, puis repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Une phrase dit ensuite que ce site est fait pour les parents d’enfants, d’ados et d’adultes en situation de handicap. Le père ouvre Déposer ce qui pèse. Il écrit qu’ils se sont encore disputés pour la tablette, et que jouer avec sa fille lui manque. Il choisit J’aimerais le dire à quelqu’un et reçoit une première phrase, qu’il peut changer. Le lendemain, il lit la fiche Les écrans et lance le minuteur visuel. Sur une photo, la tablette est fermée. Sa fille adolescente, qui porte un appareil auditif, pose un domino et le regarde. Une goutte redescend au-dessus de l’étang, le temps d’une expiration. Dans une autre cuisine, Bastien, un adulte qui se déplace en fauteuil roulant, prépare avec sa mère la fiche de relais pour son oncle Rémi. On y lit une phrase qu’il a choisie, J’aime prendre mon café seul, le matin. Le dimanche, chez Rémi, Bastien boit son café près de la fenêtre. Quelques semaines plus tard, le père ouvre l’étape 7 du parcours, Me calmer, puis lâcher prise. Il choisit Poser les mains à plat et garde ce geste dans son carnet. Le parcours compte 24 étapes sur 6 mois. Le père écrit alors lui-même à Élise. Il lui demande si elle a 5 minutes ce soir, parce qu’il aimerait lui raconter sa journée. Le film se termine sur ces mots, Ici, on commence par vous. À la fin, un bouton Ouvrir mon espace apparaît sous le film.';
+const CAPSULE_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il écrit qu’elle va bien, laisse passer un instant, puis envoie sa réponse et retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone et touche Souffler 2 minutes dans Parent écouté, parent éclairé. L’écran l’invite à s’installer. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous. À la fin, un bouton Souffler 2 minutes apparaît sous le film et ouvre l’exercice.';
 /* Ce qui est dit à la personne qui ne voit pas l'écran, quand le film est fini. */
-const FILM_FIN='Le film est terminé. Juste après la vidéo, le bouton Souffler 2 minutes ouvre l’exercice.';
+const FILM_FIN='Le film est terminé. Juste après la vidéo, le bouton Ouvrir mon espace ouvre votre espace.';
+const CAPSULE_FIN='Le film est terminé. Juste après la vidéo, le bouton Souffler 2 minutes ouvre l’exercice.';
+/* t : le titre. s : la durée en mots. f : le début du nom des fichiers. a : le début du nom des affiches. d : la durée en secondes. */
+const FILMS={
+  film:{t:'Ce qu’on ne dit pas par SMS',s:'1 minute 45, sans paroles',f:'ce-quon-ne-dit-pas-par-sms',a:'affiche-film',d:105,desc:FILM_DESC,fin:FILM_FIN},
+  capsule:{t:'Et vous ?',s:'35 secondes, sans paroles',f:'et-vous',a:'affiche',d:35,desc:CAPSULE_DESC,fin:CAPSULE_FIN}
+};
 /* La commande de l'accueil : secondaire, après les 3 portes. Son image pèse quelques kilo-octets, et le film n'est demandé qu'au toucher. */
 function filmCmdHtml(){
   if(!FILM_ON||FILM!=='actif')return '';
-  return '<button type="button" class="film-cmd" data-act="film" aria-label="Voir le film, 35 secondes"><span class="film-vig" aria-hidden="true"><img src="'+RACINE+'film/apercu.webp?v='+FILM_V+'" alt="" width="112" height="63" loading="lazy" decoding="async">'+FI.jouer+'</span><span class="film-lib">Voir le film · 35 secondes</span></button>';
+  return '<button type="button" class="film-cmd" data-act="film" aria-label="Voir le film, 1 minute 45"><span class="film-vig" aria-hidden="true"><img src="'+RACINE+'film/apercu-film.webp?v='+FILM_V+'" alt="" width="112" height="63" loading="lazy" decoding="async">'+FI.jouer+'</span><span class="film-lib">Voir le film · 1 minute 45</span></button>';
 }
 /* Sur un téléphone tenu droit, le film vertical. Ailleurs, le film horizontal. */
 function filmFormat(){
@@ -3225,10 +3237,10 @@ function filmSync(){
   if(vol){vol.hidden=!FV.volOK||muet;if(!muet&&document.activeElement!==vol)vol.value=String(Math.round(v.volume*100));}
   /* Le film est fini : la suite vient sous la vidéo. Elle s'en va si le parent revoit le film. */
   const su=FV.el.querySelector('#film-suite'),fin=FV.el.querySelector('#film-fin'),fini=!!v.ended&&!FV.erreur;
-  if(su&&su.hidden===fini){su.hidden=!fini;if(fin)fin.textContent=fini?FILM_FIN:'';}
+  if(su&&su.hidden===fini){su.hidden=!fini;if(fin)fin.textContent=fini?FILMS[FV.quel].fin:'';}
 }
 function filmAvance(){
-  const v=FV.vid;if(!v||!FV.el)return;const d=v.duration>0&&isFinite(v.duration)?v.duration:35;
+  const v=FV.vid;if(!v||!FV.el)return;const d=v.duration>0&&isFinite(v.duration)?v.duration:FILMS[FV.quel].d;
   const p=FV.el.querySelector('#film-p'),t=FV.el.querySelector('#film-tps');
   if(p)p.style.width=(Math.min(1,Math.max(0,v.currentTime/d))*100).toFixed(2)+'%';
   if(t)t.textContent=filmTemps(v.currentTime);
@@ -3273,7 +3285,7 @@ function filmTouches(e){
   const v=FV.vid;if(!v)return;
   if(e.key===' '||e.key==='k'||e.key==='K'){e.preventDefault();filmJoue();}
   else if(e.key==='m'||e.key==='M'){filmSon();}
-  else if(e.key==='ArrowRight'||e.key==='ArrowLeft'){try{v.currentTime=Math.min(Math.max(0,v.currentTime+(e.key==='ArrowRight'?5:-5)),(v.duration||35)-.05);}catch(x){}}
+  else if(e.key==='ArrowRight'||e.key==='ArrowLeft'){try{v.currentTime=Math.min(Math.max(0,v.currentTime+(e.key==='ArrowRight'?5:-5)),(v.duration||FILMS[FV.quel].d)-.05);}catch(x){}}
 }
 /* Quand l'écran s'éteint ou que l'on change d'onglet, le film se met en pause. Il reprendra où il en était, au geste du parent. */
 function filmCache(){if(FV.ouvert&&FV.vid&&document.visibilityState==='hidden'&&!FV.vid.paused){try{FV.vid.pause();}catch(e){}}}
@@ -3281,28 +3293,30 @@ function filmCache(){if(FV.ouvert&&FV.vid&&document.visibilityState==='hidden'&&
 function filmFige(e){const t=e.target;if(t&&t.id==='film-vol')return;if(e.touches&&e.touches.length>1)return;if(e.cancelable)e.preventDefault();}
 function filmClic(e){
   if(!FV.el)return;const b=e.target.closest&&e.target.closest('[data-film]');
-  if(b){const q=b.getAttribute('data-film');if(q==='fermer')filmFerme(false);else if(q==='jouer')filmJoue();else if(q==='son')filmSon();else if(q==='souffle')filmSouffle();return;}
+  if(b){const q=b.getAttribute('data-film');if(q==='fermer')filmFerme(false);else if(q==='jouer')filmJoue();else if(q==='son')filmSon();else if(q==='souffle')filmSouffle();else if(q==='espace')filmEspace();return;}
   if(e.target===FV.vid)filmJoue();
 }
-/* lance : vrai quand le parent vient de toucher « Voir le film » (la lecture commence), faux quand le lecteur s'ouvre par son adresse (il attend). */
-function filmOuvre(lance){
+/* lance : vrai quand le parent vient de toucher « Voir le film » (la lecture commence), faux quand le lecteur s'ouvre par son adresse (il attend).
+   lequel : « film » (le film de présentation, par défaut) ou « capsule » (la capsule de respiration de 35 secondes). */
+function filmOuvre(lance,lequel){
   if(!FILM_ON||FV.ouvert||PRE)return;
-  const quel=filmFormat(),base=RACINE+'film/',q='?v='+FILM_V,src=base+'et-vous-'+(quel==='vertical'?'vertical':'horizontal')+'.mp4'+q;
+  FV.quel=lequel==='capsule'?'capsule':'film';const F=FILMS[FV.quel];
+  const quel=filmFormat(),base=RACINE+'film/',q='?v='+FILM_V,src=base+F.f+'-'+(quel==='vertical'?'vertical':'horizontal')+'.mp4'+q;
   /* Un seul son à la fois : celui de l'étang ou de la dose se tait. */
   try{if(SON.etat!=='off')sonCoupe(true);}catch(e){}
   const el=document.createElement('div');el.className='film-l '+(quel==='vertical'?'fv':'fh');el.id='film-l';
   el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','film-t');el.setAttribute('aria-describedby','film-d');
   el.innerHTML=
-    '<div class="film-haut"><h2 id="film-t">Et vous ?<small>35 secondes, sans paroles</small></h2><button type="button" class="film-x" data-film="fermer" aria-label="Fermer le film">'+FI.fermer+'</button></div>'+
-    '<div class="film-scene"><video id="film-v" playsinline webkit-playsinline preload="none" tabindex="-1" data-src="'+src+'" poster="'+base+'affiche-'+(quel==='vertical'?'verticale':'horizontale')+'.webp'+q+'" width="'+(quel==='vertical'?1080:1920)+'" height="'+(quel==='vertical'?1920:1080)+'"></video>'+
+    '<div class="film-haut"><h2 id="film-t">'+F.t+'<small>'+F.s+'</small></h2><button type="button" class="film-x" data-film="fermer" aria-label="Fermer le film">'+FI.fermer+'</button></div>'+
+    '<div class="film-scene"><video id="film-v" playsinline webkit-playsinline preload="none" tabindex="-1" data-src="'+src+'" poster="'+base+F.a+'-'+(quel==='vertical'?'verticale':'horizontale')+'.webp'+q+'" width="'+(quel==='vertical'?1080:1920)+'" height="'+(quel==='vertical'?1920:1080)+'"></video>'+
       '<button type="button" class="film-go" data-film="jouer">'+FI.jouer+'<span>Lire le film</span></button>'+
       '<p class="film-etat" role="status" hidden></p></div>'+
-    '<div class="film-suite" id="film-suite" hidden><button type="button" class="film-souffle" data-film="souffle">'+I.wind+'<span>Souffler 2 minutes</span></button></div>'+
+    '<div class="film-suite" id="film-suite" hidden>'+(FV.quel==='capsule'?'<button type="button" class="film-souffle" data-film="souffle">'+I.wind+'<span>Souffler 2 minutes</span></button>':'<button type="button" class="film-souffle" data-film="espace">'+I.sun2+'<span>Ouvrir mon espace</span></button>')+'</div>'+
     '<div class="film-bas"><button type="button" class="film-b" data-film="jouer" id="film-j" aria-label="Lire le film">'+FI.jouer+'</button>'+
       '<span class="film-av" aria-hidden="true"><i id="film-p"></i></span><span class="film-tps" id="film-tps" aria-hidden="true">0:00</span>'+
       '<button type="button" class="film-b film-act" data-film="son" id="film-s" data-muet="1">'+FI.muet+'<span>Activer le son</span></button>'+
       '<input type="range" class="film-vol" id="film-vol" min="5" max="100" step="5" value="100" aria-label="Volume du film" hidden></div>'+
-    '<p class="sr" id="film-d">'+FILM_DESC+'</p><p class="sr" id="film-fin" role="status"></p>';
+    '<p class="sr" id="film-d">'+F.desc+'</p><p class="sr" id="film-fin" role="status"></p>';
   const v=el.querySelector('video');FV.el=el;FV.vid=v;FV.ouvert=true;FV.erreur=false;FV.pousse=false;
   /* Sur iPhone, le volume se règle avec les boutons du téléphone : la page ne peut pas le changer, et le curseur ne servirait à rien. */
   try{v.volume=.5;FV.volOK=Math.abs(v.volume-.5)<.01;v.volume=FV.volOK?FV.vol:1;}catch(e){FV.volOK=false;}
@@ -3360,6 +3374,16 @@ function filmSouffle(){
   filmFerme(true);
   HIST.unefois=!!(pousse&&HIST.ok);
   handle('porte',{v:'souffle'},null);
+  HIST.unefois=false;
+}
+/* « Ouvrir mon espace », sous le film de présentation quand il est fini. Le lecteur se ferme, puis l'espace s'ouvre par le même chemin que le bouton
+   du même nom sur l'accueil. Comme pour « Souffler 2 minutes », la page que le lecteur avait ajoutée devient celle de l'espace : le bouton Retour ramène à l'accueil. */
+function filmEspace(){
+  if(!FV.ouvert)return;
+  const pousse=FV.pousse;
+  filmFerme(true);
+  HIST.unefois=!!(pousse&&HIST.ok);
+  handle('entrer',{v:'today'},null);
   HIST.unefois=false;
 }
 /* Appelé au tout début du retour arrière. Rend vrai quand il n'y a rien d'autre à faire : la page n'est ni réécrite, ni déplacée. */
@@ -4730,8 +4754,8 @@ if(SITE)window.addEventListener('hashchange',()=>{
   else if(VUES_HASH[location.hash]&&state.view!==VUES_HASH[location.hash]){const v=VUES_HASH[location.hash];if(v==='apercu'){state.ap={k:0,g:'',mot:''};state.sch=1;}nav(v);histPush(true);render();window.scrollTo(0,0);}
   /* L'adresse …/#accueil, tapée alors que l'espace est ouvert, montre la vitrine. */
   else if(location.hash==='#accueil'&&state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}
-  /* L'adresse …/#film montre la vitrine, puis le lecteur du film. La lecture attend le geste du parent. */
-  else if(FILM_ON&&location.hash===FILM_HASH){if(state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}else histPush(true);filmOuvre(false);}
+  /* L'adresse …/#film (ou …/#capsule) montre la vitrine, puis le lecteur du film. La lecture attend le geste du parent. */
+  else if(filmDe(location.hash)){const lequel=filmDe(location.hash);if(state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}else histPush(true);filmOuvre(false,lequel);}
 });
 if(SITE)window.addEventListener('popstate',histRetour);
 /* La respiration s'arrête quand l'écran s'éteint ou que l'on change d'onglet, et reprend là où elle en était. */
@@ -4760,7 +4784,7 @@ if(SITE)state.sample=false;
   }else{render();if(y0)window.scrollTo(0,y0);}}
 histInit();
 /* Arrivé par l'adresse …/#film : le lecteur est là, prêt, et attend le geste du parent. */
-if(FILM_LIEN)filmOuvre(false);
+if(FILM_LIEN)filmOuvre(false,FILM_LIEN);
 /* En quittant la page (autre application, autre page, onglet fermé) : on note l'heure et l'endroit, pour les retrouver au retour. */
 window.addEventListener('pagehide',histQuitte);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')histQuitte();});

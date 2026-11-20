@@ -118,12 +118,24 @@ if [ -f site/essai/index.html ]; then
       "$(vue "l'ancien morceau de 2 minutes (ne doit plus exister : 404 attendu)" "$adresse/essai/son/etang.mp3")" \
       "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
   fi
-  # Le film « Et vous ? » : ses 3 fichiers répondent-ils, annoncés comme des vidéos, et le serveur sait-il en envoyer un morceau seulement ?
+  # Le film de présentation « Ce qu'on ne dit pas par SMS » : ses fichiers répondent-ils, annoncés comme des vidéos, et le serveur sait-il en envoyer un morceau seulement ?
+  if [ -f site/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4 ]; then
+    morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" 2>/dev/null \
+      | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires|x-content-type-options)' | tr '\n' ' ')" || true
+    note "Le film de présentation" \
+      "$(vue "le film vertical" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
+      "$(vue "le film horizontal" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal.mp4" -I)" \
+      "$(vue "l'export vertical pour Instagram, à télécharger" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram.mp4" -I)" \
+      "$(vue "l'image d'aperçu" "$adresse/essai/film/apercu-film.webp")" \
+      "$(vue "le film à l'adresse du site public (ne doit pas exister : 404 attendu)" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
+      "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
+  fi
+  # La capsule de respiration « Et vous ? » (35 secondes) : ses fichiers répondent-ils, annoncés comme des vidéos, et le serveur sait-il en envoyer un morceau seulement ?
   # (un iPhone ne lit une vidéo que si le serveur sait la donner par morceaux)
   if [ -f site/essai/film/et-vous-vertical.mp4 ]; then
     morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/essai/film/et-vous-vertical.mp4" 2>/dev/null \
       | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires|x-content-type-options)' | tr '\n' ' ')" || true
-    note "Le film" \
+    note "La capsule de respiration" \
       "$(vue "le film vertical" "$adresse/essai/film/et-vous-vertical.mp4" -I)" \
       "$(vue "le film horizontal" "$adresse/essai/film/et-vous-horizontal.mp4" -I)" \
       "$(vue "l'extrait de 5 secondes" "$adresse/essai/film/et-vous-raccord-5s.mp4" -I)" \
