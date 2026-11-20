@@ -1,14 +1,14 @@
 // Les 2 films de la version d'essai, comme les vivrait un parent.
-// « Ce qu'on ne dit pas par SMS » (1 minute 45) est le film de présentation : la commande de l'accueil l'ouvre. « Et vous ? » (35 secondes) est la capsule de respiration : elle garde ses fichiers et son adresse, …/#capsule.
+// « Ce qu'on ne dit pas par SMS » (1 minute 47, montage cinématographique du 20 novembre 2026 au soir) est le film de présentation : l'accueil le propose avec 2 boutons. « Et vous ? » (35 secondes) est la capsule de respiration : elle garde ses fichiers et son adresse, …/#capsule.
 //   - à l'arrivée sur l'accueil, rien des films n'est chargé à part une petite image, et « Souffler 2 minutes » est là tout de suite ;
-//   - la commande « Voir le film · 1 minute 45 » vient juste après les 3 portes ;
-//   - au toucher, le lecteur s'ouvre et le MP4 se lit réellement (le bon fichier selon l'écran), d'abord en silence ;
-//   - lire, mettre en pause, activer et couper le son, régler le volume, fermer, au doigt comme au clavier ;
+//   - le film et ses 2 boutons, « Regarder avec la musique » et « Regarder en silence », viennent juste après les 3 portes ;
+//   - un seul toucher sur le premier ouvre le lecteur et lance le MP4 avec son son (le bon fichier selon l'écran) ; le second le lance en silence ;
+//   - lire, mettre en pause, couper et remettre le son, régler le volume, fermer, au doigt comme au clavier ;
 //   - à la fermeture ou au retour arrière, plus aucune vidéo ne joue et le parent retrouve sa position sur l'accueil ;
-//   - l'adresse …/#film ouvre le lecteur, qui attend le geste du parent ;
+//   - l'adresse …/#film ouvre le lecteur, qui attend le geste du parent et lui propose les 2 mêmes boutons ;
 //   - à la fin du film, un vrai bouton « Ouvrir mon espace » apparaît sous la vidéo : il ouvre l'espace du parent, et le retour ramène à l'accueil ;
 //   - la capsule s'ouvre par …/#capsule ; à sa fin, « Souffler 2 minutes » ouvre l'exercice à son écran de départ, et le retour ramène à l'accueil ;
-//   - les 2 exports pour Instagram ont leur adresse, prêts au téléchargement, et le lecteur ne les charge jamais.
+//   - la bande-annonce de 30 secondes, l'export de la capsule pour Instagram, les crédits et le premier montage (gardé en sauvegarde) ont leur adresse, et le lecteur ne les charge jamais.
 // usage : node film.js [--court]      (--court : sans regarder le film jusqu'au bout)
 // Variables : PEPE_ORIGIN, PEPE_BASE, PEPE_NAV (chromium, firefox ou webkit), PEPE_CHROME,
 //             PEPE_FILM (actif, pret ou absent : l'état attendu. Sans elle, l'essai constate l'état et le dit).
@@ -24,13 +24,15 @@ let n = 0, ko = 0; const notes = [];
 const ok = (c, m) => { n++; if (!c) { ko++; console.log('  ÉCHEC : ' + m); } };
 const net = s => (s || '').split(String.fromCharCode(160)).join(' ').replace(/\s+/g, ' ').trim();
 const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTouch: true, deviceScaleFactor: 2 }, 'vertical', [1080, 1920]], ['ordinateur', { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, 'horizontal', [1920, 1080]]];
-const FILM = 'ce-quon-ne-dit-pas-par-sms', DUREE = 105;                 // le film de présentation : le début du nom de ses fichiers, sa durée en secondes
+const FILM = 'ce-quon-ne-dit-pas-par-sms', DUREE = 107.33;              // le film de présentation : le début du nom de ses fichiers, sa durée en secondes (3220 images)
+const AVEC = A('film', '[data-v="son"]'), SANS = A('film', '[data-v="silence"]');   // les 2 boutons de l'accueil
 const FICHIERS = [FILM + '-vertical.mp4', FILM + '-horizontal.mp4', 'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4'];
 // La première version du film vertical (celle du 20 novembre à 4 heures, avant la correction de l'entrée dans « Souffler ») reste à sa propre adresse, pour comparer.
-const GARDES = ['et-vous-vertical-version-1.mp4', 'et-vous-vertical-version-2.mp4', 'et-vous-horizontal-version-1.mp4', 'et-vous-horizontal-version-2.mp4'];
+const GARDES = ['et-vous-vertical-version-1.mp4', 'et-vous-vertical-version-2.mp4', 'et-vous-horizontal-version-1.mp4', 'et-vous-horizontal-version-2.mp4',
+  FILM + '-vertical-version-1.mp4', FILM + '-horizontal-version-1.mp4', FILM + '-instagram-version-1.mp4'];     // le premier montage du film de présentation, gardé en sauvegarde
 // V3 : les versions 2 (le film vertical du 20 novembre à 7 heures, et le film horizontal corrigé de la même manière) et la version 1 du film horizontal sont gardées de même.
-// L'export vertical pour Instagram : il n'est pas dans le lecteur, il a seulement son adresse, pour être téléchargé.
-const TELECHARGES = [FILM + '-instagram.mp4', 'et-vous-instagram.mp4'];
+// La bande-annonce verticale de 30 secondes et l'export de la capsule pour Instagram : ils ne sont pas dans le lecteur, ils ont seulement leur adresse, pour être téléchargés.
+const TELECHARGES = [FILM + '-bande-annonce.mp4', 'et-vous-instagram.mp4'];
 // Ce que montre le lecteur, relevé dans la page
 const etat = page => page.evaluate(() => {
   const l = document.getElementById('film-l'), v = l && l.querySelector('video'), q = s => l && l.querySelector(s), app = document.getElementById('app');
@@ -53,7 +55,7 @@ const joue = (page, apres = 1, delai = 40000) => page.waitForFunction(t => { con
 // Le saut est demandé quand le film joue pour de bon, et redemandé s'il n'a pas pris (un saut demandé pendant qu'un autre est en cours peut être perdu : c'est l'explication la plus probable d'un arrêt vu dans WebKit).
 const auBout0 = page => page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v) return r(false); if (v.ended) return r(true);
   let fini = false; const fin = q => { if (fini) return; fini = true; clearInterval(tic); r(q); }; v.addEventListener('ended', () => fin(true), { once: true });
-  const d = () => (v.duration > 0 ? v.duration : 105), saute = () => { try { v.currentTime = Math.max(0, d() - 1); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { } };
+  const d = () => (v.duration > 0 ? v.duration : 107), saute = () => { try { v.currentTime = Math.max(0, d() - 1); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { } };
   let n = 0; const tic = setInterval(() => { n++; if (v.ended) return fin(true); if (!v.seeking && v.currentTime < d() - 2.5 && n % 6 === 1) saute(); if (n > 120) fin(v.ended); }, 500); }));
 const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { timeout: delai }).then(() => true, () => false);
 // Un navigateur dit « terminé » (video.ended) un instant avant d'en prévenir la page : le lecteur ne change ses boutons qu'à ce moment-là.
@@ -135,9 +137,14 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
     }
     for (const f of TELECHARGES) {
       const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); const h = r ? r.headers() : {}; const total = Number((/\/(\d+)$/.exec(h['content-range'] || '') || [])[1] || 0);
-      ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || '') && total > 5000000, '1. ' + f + ' : l’export pour Instagram répond à son adresse, prêt au téléchargement ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
-      poids.push((f.indexOf(FILM) === 0 ? 'film pour Instagram ' : 'capsule pour Instagram ') + (total / 1048576).toFixed(1) + ' Mo');
+      ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || '') && total > 3000000, '1. ' + f + ' : ' + (f.indexOf(FILM) === 0 ? 'la bande-annonce' : 'l’export pour Instagram') + ' répond à son adresse, prêt au téléchargement ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
+      poids.push((f.indexOf(FILM) === 0 ? 'bande-annonce du film ' : 'capsule pour Instagram ') + (total / 1048576).toFixed(1) + ' Mo');
     }
+    { // les crédits du film : un texte, à sa propre adresse. L'ancienne adresse de l'export pour Instagram du premier montage n'existe plus (il est gardé sous son nom de sauvegarde).
+      const r = await api.get(APP + 'film/credits.txt').catch(() => null); const t = r && r.ok() ? await r.text() : '';
+      ok(r && r.status() === 200 && /^text\/plain/.test(r.headers()['content-type'] || '') && /Musique originale/.test(t) && /Frank Wen/.test(t) && /Open Font License/.test(t), '1. credits.txt : les crédits du film sont servis, comme un texte ' + JSON.stringify([r && r.status(), r && r.headers()['content-type'], t.length]));
+      const a = await api.get(APP + 'film/' + FILM + '-instagram.mp4', { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null);
+      ok(a && a.status() === 404, '1. l’ancienne adresse de l’export pour Instagram n’existe plus ' + (a ? a.status() : 'pas de réponse')); }
     for (const f of ['apercu-film.webp', 'affiche-film-verticale.webp', 'affiche-film-horizontale.webp', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp']) {
       const r = await api.get(APP + 'film/' + f).catch(() => null); const b = r && r.ok() ? await r.body() : Buffer.alloc(0);
       ok(r && r.status() === 200 && /^image\/webp/.test(r.headers()['content-type'] || '') && b.length > 2000 && (!/^apercu/.test(f) || b.length < 20000), '1. ' + f + ' : image servie, légère ' + JSON.stringify([r && r.status(), r && r.headers()['content-type'], b.length]));
@@ -155,20 +162,23 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
     await page.goto(APP); await page.waitForSelector('.seuil .portes'); await page.waitForTimeout(900);
     const peut = await page.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.640028, mp4a.40.2"'));
     const arr = await page.evaluate(() => {
-      const s = document.querySelector('.seuil [data-act="porte"][data-v="souffle"]'), r = s ? s.getBoundingClientRect() : null, c = document.querySelector('[data-act="film"]'), p = document.querySelector('.seuil .portes');
-      const rc = c ? c.getBoundingClientRect() : null, img = c ? c.querySelector('img') : null;
-      return { souffle: r ? [Math.round(r.top), Math.round(r.bottom), innerHeight] : null, cmd: !!c, apres: !!(c && p && p.nextElementSibling === c), balise: c ? c.tagName : '', texte: c ? c.innerText : '', nomAcc: c ? c.getAttribute('aria-label') : '',
-        haut: rc ? Math.round(rc.height) : 0, larg: rc ? Math.round(rc.width) : 0, img: img ? [img.complete, img.naturalWidth, img.getAttribute('loading'), img.getAttribute('alt')] : null, videos: document.querySelectorAll('video').length, lecteur: !!document.getElementById('film-l'), y: Math.round(scrollY) };
+      const s = document.querySelector('.seuil [data-act="porte"][data-v="souffle"]'), r = s ? s.getBoundingClientRect() : null, c = document.querySelector('.film-cmd'), p = document.querySelector('.seuil .portes');
+      const img = c ? c.querySelector('img') : null, t = c ? document.getElementById(c.getAttribute('aria-labelledby') || '') : null;
+      const boutons = c ? [...c.querySelectorAll('[data-act="film"]')].map(b => { const q = b.getBoundingClientRect(); return { balise: b.tagName, type: b.getAttribute('type'), v: b.getAttribute('data-v'), mots: (b.innerText || '').replace(/\s+/g, ' ').trim(), l: Math.round(q.width), h: Math.round(q.height), dans: q.left >= 0 && q.right <= innerWidth + .5 }; }) : [];
+      return { souffle: r ? [Math.round(r.top), Math.round(r.bottom), innerHeight] : null, cmd: !!c, apres: !!(c && p && p.nextElementSibling === c), role: c ? c.getAttribute('role') : '', texte: c ? c.innerText : '', titre: t ? t.textContent : '', boutons,
+        img: img ? [img.complete, img.naturalWidth, img.getAttribute('loading'), img.getAttribute('alt')] : null, videos: document.querySelectorAll('video').length, lecteur: !!document.getElementById('film-l'), y: Math.round(scrollY) };
     });
     ok(arr.souffle && arr.souffle[0] >= 0 && arr.souffle[1] <= arr.souffle[2] && arr.y === 0, P('2. « Souffler 2 minutes » est à l’écran dès l’arrivée, sans faire défiler ' + JSON.stringify(arr.souffle)));
     ok(arr.videos === 0 && !arr.lecteur, P('2. aucune vidéo dans la page tant que le parent n’a rien demandé ' + JSON.stringify([arr.videos, arr.lecteur])));
     if (mode === 'actif') {
-      ok(arr.cmd && arr.apres && arr.balise === 'BUTTON', P('2. la commande du film vient juste après les 3 portes ' + JSON.stringify([arr.cmd, arr.apres, arr.balise])));
-      ok(net(arr.texte) === 'Voir le film · 1 minute 45' && arr.nomAcc === 'Voir le film, 1 minute 45', P('2. son libellé dit la durée réelle du film ' + JSON.stringify([net(arr.texte), arr.nomAcc])));
-      ok(arr.haut >= 44 && arr.larg >= 200, P('2. elle se touche facilement ' + JSON.stringify([arr.larg, arr.haut])));
+      ok(arr.cmd && arr.apres && arr.role === 'group' && arr.titre === 'Le film', P('2. le film vient juste après les 3 portes, annoncé comme un groupe nommé « Le film » ' + JSON.stringify([arr.cmd, arr.apres, arr.role, arr.titre])));
+      ok(/1 minute 47, sans paroles/.test(net(arr.texte)), P('2. sa durée réelle est écrite ' + JSON.stringify(net(arr.texte))));
+      ok(arr.boutons.length === 2 && arr.boutons[0].v === 'son' && arr.boutons[0].mots === 'Regarder avec la musique' && arr.boutons[1].v === 'silence' && arr.boutons[1].mots === 'Regarder en silence' && arr.boutons.every(b => b.balise === 'BUTTON' && b.type === 'button'),
+        P('2. il propose 2 vrais boutons, « Regarder avec la musique » puis « Regarder en silence » ' + JSON.stringify(arr.boutons.map(b => [b.balise, b.v, b.mots]))));
+      ok(arr.boutons.every(b => b.h >= 44 && b.l >= 150 && b.dans), P('2. ils se touchent facilement et tiennent dans l’écran ' + JSON.stringify(arr.boutons.map(b => [b.l, b.h, b.dans]))));
       // l'image d'aperçu est demandée quand elle approche de l'écran : on y va, puis on revient en haut
-      await page.evaluate(() => document.querySelector('[data-act="film"]').scrollIntoView({ block: 'center' })); await attend(page, () => { const i = document.querySelector('[data-act="film"] img'); return i && i.complete && i.naturalWidth > 0; }); await page.evaluate(() => window.scrollTo(0, 0));
-      const img = await page.evaluate(() => { const i = document.querySelector('[data-act="film"] img'); return [i.complete, i.naturalWidth, i.getAttribute('loading'), i.getAttribute('alt')]; });
+      await page.evaluate(() => document.querySelector('.film-cmd').scrollIntoView({ block: 'center' })); await attend(page, () => { const i = document.querySelector('.film-cmd img'); return i && i.complete && i.naturalWidth > 0; }); await page.evaluate(() => window.scrollTo(0, 0));
+      const img = await page.evaluate(() => { const i = document.querySelector('.film-cmd img'); return [i.complete, i.naturalWidth, i.getAttribute('loading'), i.getAttribute('alt')]; });
       ok(img[0] && img[1] === 336 && img[2] === 'lazy' && img[3] === '', P('2. son image d’aperçu s’affiche, chargée à la demande du navigateur ' + JSON.stringify(img)));
       ok(demandes.every(u => u === 'apercu-film.webp') && demandes.length >= 1, P('2. des films, seule la petite image est demandée à l’arrivée ' + JSON.stringify(demandes)));
     } else {
@@ -177,13 +187,13 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
     }
 
     if (mode === 'actif') {
-      // ----- 3. Le parent touche « Voir le film »
+      // ----- 3. Le parent touche « Regarder avec la musique » : un seul toucher, et le film joue avec son son
       await page.evaluate(() => window.scrollTo(0, 150)); await page.waitForTimeout(250);
       const y0 = await page.evaluate(() => Math.round(scrollY)), url0 = await page.evaluate(() => location.pathname + location.hash);
       demandes.length = 0;
-      await page.click(A('film')); await page.waitForSelector('#film-l');
+      await page.click(AVEC); await page.waitForSelector('#film-l');
       let e = await etat(page);
-      ok(e.ouvert && e.role === 'dialog/true' && net(e.titre).indexOf('Ce qu’on ne dit pas par SMS') === 0 && /1 minute 45/.test(net(e.titre)), P('3. le lecteur s’ouvre, annoncé comme une fenêtre, avec le titre du film et sa durée ' + JSON.stringify([e.role, net(e.titre)])));
+      ok(e.ouvert && e.role === 'dialog/true' && net(e.titre).indexOf('Ce qu’on ne dit pas par SMS') === 0 && /1 minute 47/.test(net(e.titre)), P('3. le lecteur s’ouvre, annoncé comme une fenêtre, avec le titre du film et sa durée ' + JSON.stringify([e.role, net(e.titre)])));
       ok(e.dedans && e.inerte, P('3. le clavier est dans le lecteur, et l’accueil ne répond plus dessous ' + JSON.stringify([e.dedans, e.foyer, e.inerte])));
       ok(e.v && e.v.inline && e.v.pre === 'none', P('3. la vidéo reste dans la page (pas de plein écran imposé sur iPhone) ' + JSON.stringify(e.v && [e.v.inline, e.v.pre])));
       ok(e.y === y0, P('3. l’accueil n’a pas bougé dessous ' + JSON.stringify([y0, e.y])));
@@ -197,10 +207,11 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
         const lu = await joue(page, 1.2); e = await etat(page);
         ok(lu, P('3. le film se lit réellement : la vidéo avance ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.rs, e.v.err, e.msg])));
         ok(e.v && e.v.src === FILM + '-' + quel + '.mp4' && e.v.w === taille[0] && e.v.h === taille[1], P('3. c’est le film ' + quel + ', en ' + taille.join(' × ') + ' ' + JSON.stringify(e.v && [e.v.src, e.v.w, e.v.h])));
-        ok(e.v && Math.abs(e.v.d - DUREE) < .25, P('3. il dure 1 minute 45, comme le dit l’accueil ' + (e.v && e.v.d)));
-        ok(e.v && e.v.muted, P('3. il démarre en silence ' + JSON.stringify(e.v && [e.v.muted, e.v.vol])));
-        ok(e.s === 'Activer le son' && e.son && e.son.mots === 'Activer le son' && e.son.h >= 44 && e.son.l >= 150 && e.son.taille >= 15 && e.son.fond === 'rgb(244, 239, 216)' && e.son.encre === 'rgb(7, 36, 15)' && e.son.dans && !e.son.pressed, P('3. « Activer le son » est écrit en toutes lettres sur un bouton clair, bien visible ' + JSON.stringify([e.s, e.son])));
-        ok(!e.volVisible, P('3. tant que le film est muet, il n’y a pas de curseur de volume'));
+        ok(e.v && Math.abs(e.v.d - DUREE) < .25, P('3. il dure 1 minute 47, comme le dit l’accueil ' + (e.v && e.v.d)));
+        ok(e.v && !e.v.muted && e.v.vol > 0, P('3. ce seul toucher a suffi : le film joue avec son son, dès le début ' + JSON.stringify(e.v && [e.v.muted, e.v.vol, Math.round(e.v.t * 10) / 10])));
+        ok(e.s === 'Couper le son' && e.son && e.son.mots === '' && e.son.dans, P('3. le bouton du son dit « Couper le son » ' + JSON.stringify([e.s, e.son])));
+        const volPossible0 = await page.evaluate(() => { const v = document.createElement('video'); try { v.volume = .5; return Math.abs(v.volume - .5) < .01; } catch (x) { return false; } });
+        ok(e.volVisible === volPossible0, P('3. le curseur du volume est là quand l’appareil laisse la page le régler ' + JSON.stringify([e.volVisible, volPossible0])));
         ok(!e.go && e.j === 'Mettre en pause' && !e.msg, P('3. le bouton dit « Mettre en pause » ' + JSON.stringify([e.go, e.j, e.msg])));
         ok(demandes.includes(FILM + '-' + quel + '.mp4') && !demandes.includes(FILM + '-' + (quel === 'vertical' ? 'horizontal' : 'vertical') + '.mp4') && !demandes.some(d => /^et-vous|version-|instagram/.test(d)), P('3. un seul film est chargé, celui de cet écran, et rien de la capsule ' + JSON.stringify(demandes)));
         if (lu) { lectureVraie++; lues.push(quel + ' ' + (e.v ? e.v.w + ' × ' + e.v.h : '')); }
@@ -211,13 +222,10 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
         await page.click('#film-j'); const repris = await joue(page, tPause + .4, 15000); e = await etat(page);
         ok(repris && e.j === 'Mettre en pause', P('4. « Reprendre le film » repart où il en était ' + JSON.stringify([repris, e.j])));
         await page.click('#film-s'); e = await etat(page);
-        ok(!e.v.muted && e.v.vol > 0 && e.s === 'Couper le son' && e.son.mots === '' && !e.v.paused, P('4. « Activer le son » met le son, sans arrêter le film. Le bouton devient « Couper le son » ' + JSON.stringify([e.v.muted, e.v.vol, e.s, e.v.paused])));
-        const volPossible = await page.evaluate(() => { const v = document.createElement('video'); try { v.volume = .5; return Math.abs(v.volume - .5) < .01; } catch (x) { return false; } });
-        ok(e.volVisible === volPossible, P('4. avec le son, le curseur du volume est là quand l’appareil laisse la page le régler ' + JSON.stringify([e.volVisible, volPossible])));
+        ok(e.v.muted && !e.v.paused && !e.volVisible, P('4. « Couper le son » le coupe, sans arrêter le film ' + JSON.stringify([e.v.muted, e.v.paused, e.volVisible])));
+        ok(e.s === 'Activer le son' && e.son && e.son.mots === 'Activer le son' && e.son.h >= 44 && e.son.l >= 150 && e.son.taille >= 15 && ['rgb(244, 239, 216)', 'rgb(255, 253, 240)'].includes(e.son.fond) && e.son.encre === 'rgb(7, 36, 15)' && e.son.dans && !e.son.pressed, P('4. « Activer le son » est alors écrit en toutes lettres sur un bouton clair, bien visible ' + JSON.stringify([e.s, e.son])));
         await page.click('#film-s'); e = await etat(page);
-        ok(e.v.muted && e.s === 'Activer le son' && e.son.mots === 'Activer le son' && !e.volVisible, P('4. « Couper le son » le coupe, et le bouton clair « Activer le son » revient ' + JSON.stringify([e.v.muted, e.s, e.volVisible])));
-        await page.click('#film-s'); e = await etat(page);
-        ok(!e.v.muted && e.s === 'Couper le son', P('4. le son revient au toucher suivant ' + JSON.stringify([e.v.muted, e.s])));
+        ok(!e.v.muted && e.v.vol > 0 && e.s === 'Couper le son' && e.son.mots === '' && !e.v.paused, P('4. « Activer le son » le remet, sans arrêter le film ' + JSON.stringify([e.v.muted, e.v.vol, e.s, e.v.paused])));
         if (e.volVisible) {
           await page.evaluate(() => { const r = document.querySelector('#film-vol'); r.value = '40'; r.dispatchEvent(new Event('input', { bubbles: true })); }); await page.waitForTimeout(150); e = await etat(page);
           ok(Math.abs(e.v.vol - .4) < .02 && !e.v.muted, P('4. le curseur règle le volume ' + JSON.stringify([e.v.vol, e.v.muted])));
@@ -233,22 +241,31 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
       e = await etat(page);
       ok(!e.ouvert && e.videos === 0, P('5. « Fermer » retire le lecteur, plus aucune vidéo ne joue ' + JSON.stringify([e.ouvert, e.videos])));
       ok(e.y === y0 && e.url === url0 && /intro/.test(e.vue), P('5. le parent retrouve sa position sur l’accueil ' + JSON.stringify([y0, e.y, e.url, e.vue])));
-      ok(!e.inerte && /film-cmd/.test(e.foyer), P('5. l’accueil répond de nouveau, le clavier revient sur la commande ' + JSON.stringify([e.inerte, e.foyer])));
+      const foyer5 = await page.evaluate(() => { const a = document.activeElement; return a ? [a.getAttribute('data-act'), a.getAttribute('data-v')] : []; });
+      ok(!e.inerte && foyer5[0] === 'film' && foyer5[1] === 'son', P('5. l’accueil répond de nouveau, le clavier revient sur le bouton qui avait ouvert le film ' + JSON.stringify([e.inerte, foyer5])));
       // ----- 6. Le bouton Retour du téléphone
-      await page.click(A('film')); await page.waitForSelector('#film-l'); if (peut) await joue(page, .6, 20000);
+      // (le 2e bouton est plus bas que le 1er : sur un petit écran il faut parfois faire défiler un peu pour le toucher, et c'est cette place-là que le parent doit retrouver)
+      await page.locator(SANS).scrollIntoViewIfNeeded(); await page.waitForTimeout(250); const y6 = await page.evaluate(() => Math.round(scrollY));
+      await page.click(SANS); await page.waitForSelector('#film-l'); const lu6 = peut ? await joue(page, .6, 20000) : false;
       e = await etat(page);
-      ok(e.v && e.v.muted && e.s === 'Activer le son' && !e.volVisible, P('6. rouvert, le film repart en silence, même si le son était activé à la fermeture ' + JSON.stringify(e.v && [e.v.muted, e.s, e.volVisible])));
+      ok(e.y === y6, P('6. l’accueil n’a pas bougé dessous ' + JSON.stringify([y6, e.y])));
+      ok(e.v && e.v.muted && e.s === 'Activer le son' && !e.volVisible && (!peut || lu6), P('6. « Regarder en silence » lance le film sans le son, même si le son était là à la fermeture ' + JSON.stringify(e.v && [e.v.muted, e.s, e.volVisible, lu6])));
       await page.goBack().catch(() => { }); await attend(page, () => !document.getElementById('film-l')); await page.waitForTimeout(350);
       e = await etat(page);
       ok(!e.ouvert && e.videos === 0, P('6. le retour arrière ferme le lecteur et arrête le son ' + JSON.stringify([e.ouvert, e.videos])));
-      ok(e.y === y0 && e.url === url0 && /intro/.test(e.vue) && !e.inerte, P('6. après le retour arrière, l’accueil est à la même place ' + JSON.stringify([y0, e.y, e.url, e.vue, e.inerte])));
+      ok(e.y === y6 && e.url === url0 && /intro/.test(e.vue) && !e.inerte, P('6. après le retour arrière, l’accueil est à la même place ' + JSON.stringify([y6, e.y, e.url, e.vue, e.inerte])));
+      // rouvert avec la musique après une séance en silence : le son est là, rien n'est gardé d'une fois sur l'autre
+      await page.click(AVEC); await page.waitForSelector('#film-l'); if (peut) await joue(page, .6, 20000); e = await etat(page);
+      ok(e.v && !e.v.muted && e.s === 'Couper le son', P('6. rouvert par « Regarder avec la musique », le film a de nouveau son son ' + JSON.stringify(e.v && [e.v.muted, e.s])));
+      await page.click('#film-l [data-film="fermer"]'); await attend(page, () => !document.getElementById('film-l')); await page.waitForTimeout(300);
       // la touche Échap ferme aussi
-      await page.click(A('film')); await page.waitForSelector('#film-l'); await page.keyboard.press('Escape'); await attend(page, () => !document.getElementById('film-l')); await page.waitForTimeout(300);
+      await page.locator(AVEC).scrollIntoViewIfNeeded(); await page.waitForTimeout(200); const y6b = await page.evaluate(() => Math.round(scrollY));
+      await page.click(AVEC); await page.waitForSelector('#film-l'); await page.keyboard.press('Escape'); await attend(page, () => !document.getElementById('film-l')); await page.waitForTimeout(300);
       e = await etat(page);
-      ok(!e.ouvert && e.videos === 0 && e.y === y0, P('6. la touche Échap ferme le lecteur ' + JSON.stringify([e.ouvert, e.videos, e.y])));
+      ok(!e.ouvert && e.videos === 0 && e.y === y6b, P('6. la touche Échap ferme le lecteur, l’accueil est à la même place ' + JSON.stringify([e.ouvert, e.videos, y6b, e.y])));
       // ----- 7. Jusqu'au bout, une fois (au format téléphone)
       if (peut && !COURT && nom === 'téléphone') {
-        await page.click(A('film')); await page.waitForSelector('#film-l'); await joue(page, .6, 20000); await page.click('#film-s');
+        await page.click(AVEC); await page.waitForSelector('#film-l'); await joue(page, .6, 20000);
         const fin7 = await finNaturelle(page), fini = !!fin7.fini; e = await etat(page);
         ok(fini && fin7.lu && e.j === 'Revoir le film' && e.v.t > DUREE - .5, P('7. le film va jusqu’au bout, puis le bouton propose « Revoir le film » ' + JSON.stringify([fini, e.j, e.v && e.v.t, fin7])));
         ok(e.v && e.v.ended && e.suite && e.suite.vue && e.suite.mots === 'Ouvrir mon espace' && /terminé/.test(e.fin), P('7. quand le film se termine de lui-même, le bouton « Ouvrir mon espace » apparaît ' + JSON.stringify([e.v && e.v.ended, e.suite && e.suite.vue, e.suite && e.suite.mots, e.fin])));
@@ -257,7 +274,7 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
         await page.click('#film-j'); const rejoue = await attend(page, () => { const v = document.querySelector('#film-l video'); return v && !v.paused && !v.ended && v.currentTime > .3 && v.currentTime < 6; }, null, 15000);
         ok(rejoue, P('7. « Revoir le film » le relance depuis le début'));
         e = await etat(page);
-        ok(!e.v.muted && e.s === 'Couper le son', P('7. « Revoir le film » garde le son que le parent avait activé ' + JSON.stringify([e.v.muted, e.s])));
+        ok(!e.v.muted && e.s === 'Couper le son', P('7. « Revoir le film » garde le son que le parent avait choisi ' + JSON.stringify([e.v.muted, e.s])));
         await page.click('#film-l [data-film="fermer"]'); await attend(page, () => !document.getElementById('film-l'));
       }
       // ----- 7 bis. La fin du film : sous la vidéo, un vrai bouton « Ouvrir mon espace »
@@ -313,15 +330,17 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
       const { ctx: c2, page: p2, demandes: d2 } = await ouvre(fmt);
       await p2.goto(APP + '#film'); await p2.waitForSelector('#film-l'); await p2.waitForTimeout(900);
       let e = await etat(p2);
-      ok(e.ouvert && e.v && e.v.paused && !(e.v.t > 0) && e.go && /film-go/.test(e.foyer), P('9. par son adresse, le lecteur s’ouvre et attend : rien ne joue ' + JSON.stringify([e.ouvert, e.v && e.v.paused, e.v && e.v.t, e.go, e.foyer])));
-      ok(!d2.some(u => /\.mp4$/.test(u)), P('9. la vidéo n’est pas chargée tant que le parent n’a pas touché « Lire le film » ' + JSON.stringify(d2)));
+      ok(e.ouvert && e.v && e.v.paused && !(e.v.t > 0) && e.go && /film-g1/.test(e.foyer), P('9. par son adresse, le lecteur s’ouvre et attend : rien ne joue ' + JSON.stringify([e.ouvert, e.v && e.v.paused, e.v && e.v.t, e.go, e.foyer])));
+      const choix9 = await p2.evaluate(() => [...document.querySelectorAll('#film-l .film-go button')].map(b => { const r = b.getBoundingClientRect(), rv = document.querySelector('#film-l video').getBoundingClientRect(); return { mots: (b.innerText || '').replace(/\s+/g, ' ').trim(), q: b.getAttribute('data-film'), l: Math.round(r.width), h: Math.round(r.height), dans: r.left >= rv.left - 1 && r.right <= rv.right + 1 && r.top >= rv.top - 1 && r.bottom <= rv.bottom + 1 && r.left >= 0 && r.right <= innerWidth + .5 }; }));
+      ok(choix9.length === 2 && choix9[0].mots === 'Regarder avec la musique' && choix9[0].q === 'avec' && choix9[1].mots === 'Regarder en silence' && choix9[1].q === 'sans' && choix9.every(b => b.h >= 44 && b.l >= 150 && b.dans), P('9. il propose les 2 mêmes boutons, sur l’image du film ' + JSON.stringify(choix9)));
+      ok(!d2.some(u => /\.mp4$/.test(u)), P('9. la vidéo n’est pas chargée tant que le parent n’a touché aucun des 2 boutons ' + JSON.stringify(d2)));
       ok(/intro/.test(e.vue), P('9. l’accueil est dessous ' + e.vue));
       const peut2 = await p2.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.640028, mp4a.40.2"'));
-      await p2.click('#film-l .film-go');
+      await p2.click('#film-l [data-film="sans"]');
       if (peut2) {
         if (mode === 'pret') lectureAttendue++;
         const lu = await joue(p2, 1.2); e = await etat(p2);
-        ok(lu && e.v.src === FILM + '-' + quel + '.mp4' && e.v.w === taille[0] && e.v.h === taille[1] && e.v.muted && e.s === 'Activer le son', P('9. « Lire le film » le lance, en silence : le film ' + quel + ' se lit réellement ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.src, e.v.w, e.v.h, e.v.muted, e.v.err, e.msg])));
+        ok(lu && e.v.src === FILM + '-' + quel + '.mp4' && e.v.w === taille[0] && e.v.h === taille[1] && e.v.muted && e.s === 'Activer le son' && !e.go, P('9. « Regarder en silence » le lance, sans le son : le film ' + quel + ' se lit réellement ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.src, e.v.w, e.v.h, e.v.muted, e.v.err, e.msg])));
         if (lu && mode === 'pret') { lectureVraie++; lues.push(quel + ' ' + e.v.w + ' × ' + e.v.h); }
         await p2.click('#film-j'); await attend(p2, () => document.querySelector('#film-l video').paused); e = await etat(p2);
         ok(e.v.paused && e.j === 'Reprendre le film', P('9. la pause répond ' + JSON.stringify([e.v.paused, e.j])));
@@ -334,6 +353,9 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
         await p2.goBack().catch(() => { }); const acc9 = await attend(p2, () => !!document.querySelector('main.intro'), null, 8000); await p2.waitForTimeout(700); e = await etat(p2);
         ok(ex9 && acc9 && /intro/.test(e.vue) && !e.ouvert && e.videos === 0 && !e.inerte, P('9. il ouvre l’espace, et le retour arrière ramène à l’accueil, lecteur fermé ' + JSON.stringify([ex9, acc9, e.vue, e.ouvert, e.videos, e.url])));
         await p2.goto(APP + '#film'); await p2.waitForSelector('#film-l'); await p2.waitForTimeout(500);
+        // et « Regarder avec la musique », depuis le lecteur qui attend : un seul toucher, le film joue avec son son
+        await p2.click('#film-l [data-film="avec"]'); const lu9 = await joue(p2, 1.0); e = await etat(p2);
+        ok(lu9 && !e.v.muted && e.v.vol > 0 && e.s === 'Couper le son' && !e.go, P('9. « Regarder avec la musique » le lance avec son son, dans le même geste ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.muted, e.v.vol, e.s, e.msg])));
       }
       await p2.click('#film-l [data-film="fermer"]'); await attend(p2, () => !document.getElementById('film-l')); e = await etat(p2);
       ok(!e.ouvert && e.videos === 0 && !e.inerte && /intro/.test(e.vue), P('9. « Fermer » rend l’accueil ' + JSON.stringify([e.ouvert, e.videos, e.inerte, e.vue])));

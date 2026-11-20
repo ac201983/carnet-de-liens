@@ -74,5 +74,16 @@ cp build/film/pres/src/01-les-dominos.png build/film/pres/src/02-la-fiche-ensemb
 cp build/film/pres/titres/titres.json "$BRANCHE/outils/film/pres/titres/" 2>/dev/null || true
 cp build/film/lot-f5.sh "$BRANCHE/outils/film/" 2>/dev/null || true
 
+# Les outils du montage cinématographique de « Ce qu'on ne dit pas par SMS » du 20 novembre 2026, le soir (dans l'atelier, ces fichiers sont dans build/film/cine/) :
+# le minutage commun à l'image et au son, le fil de messages refait, les captures de « Passer le relais » et du carnet, les plans fixes tirés des photos, les textes,
+# les plans, le montage, la partition (écrite note par note), les instruments, les bruits calculés, le mixage, la bande-annonce, les exports,
+# ce qui mesure le son et l'image d'un film exporté, les planches de contrôle, les vues du lecteur, et la suite d'essais de la passe.
+# La banque de sons « MS Basic » de MuseScore (51 Mo, licence MIT) n'est pas rangée : elle se télécharge depuis le dépôt de MuseScore
+# (share/sound/MS Basic.sf3, version v4.4.4). Sa licence est rangée. Les films eux-mêmes sont dans site-src/film/.
+mkdir -p "$BRANCHE/outils/film/cine/titres" "$BRANCHE/outils/film/cine/sons"
+cp build/film/cine/LISEZ-MOI.md build/film/cine/PLAN.md build/film/cine/ctemps.py build/film/cine/cplans.py build/film/cine/cmontage.py build/film/cine/fixes.py build/film/cine/synthe.py build/film/cine/partition.py build/film/cine/bruits.py build/film/cine/cmixage.py build/film/cine/cba.py build/film/cine/cexporte.py build/film/cine/cmesure.py build/film/cine/cvoir.py build/film/cine/crevue.py build/film/cine/cvues.js build/film/cine/fil.html build/film/cine/fil.js build/film/cine/cap_relais.js build/film/cine/cap_relais0.js build/film/cine/cap_carnet.js build/film/cine/titres.html build/film/cine/titres.js build/film/cine/lot-c.sh "$BRANCHE/outils/film/cine/" 2>/dev/null || true
+cp build/film/cine/titres/titres.json "$BRANCHE/outils/film/cine/titres/" 2>/dev/null || true
+cp build/film/cine/sons/MS-Basic-LICENCE.md "$BRANCHE/outils/film/cine/sons/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

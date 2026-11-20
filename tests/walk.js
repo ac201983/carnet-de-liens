@@ -32,13 +32,14 @@ async function walk0(page, visit) {
   // le bouton flottant de l'accueil passe par-dessus le texte, comme tout bouton fixe : on le retire le temps de regarder la page (tests/accueil.js le vérifie à part)
   const masque = await page.addStyleTag({ content: '.cta-flot{display:none!important}' });
   await visit('accueil');
-  // le film de la version d'essai : sa commande sous les 3 portes, puis le lecteur ouvert (la vidéo mise en pause, pour un écran stable)
+  // le film de la version d'essai : ses 2 boutons sous les 3 portes, puis le lecteur ouvert (la vidéo mise en pause, pour un écran stable)
   if (await page.$(A('film'))) {
     await page.evaluate(() => document.querySelector('[data-act="film"]').scrollIntoView({ block: 'center' })); await w(300); await visit('accueil-film-commande');
     await page.click(A('film')); await page.waitForSelector('#film-l'); await w(600);
     await page.evaluate(() => { const v = document.querySelector('#film-l video'); if (v) v.pause(); }); await w(300); await visit('film-lecteur');
-    // le film démarre en silence, avec le bouton clair « Activer le son ». Un toucher plus loin : le son est là, le bouton est rond, le curseur du volume revient
-    await page.click('#film-l #film-s'); await w(300); await visit('film-lecteur-son');
+    // le premier bouton de l'accueil (« Regarder avec la musique ») lance le film avec son son : le bouton du son est rond, le curseur du volume est là.
+    // Un toucher plus loin, le son est coupé : le bouton clair « Activer le son » prend sa place
+    await page.click('#film-l #film-s'); await w(300); await visit('film-lecteur-silence');
     // la fin du film : sous la vidéo, le bouton « Ouvrir mon espace » (quand ce navigateur sait lire le film)
     { const fin = await page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v || !(v.duration > 0)) return r(false); v.addEventListener('ended', () => r(true), { once: true }); try { v.currentTime = Math.max(0, v.duration - .5); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { return r(false); } setTimeout(() => r(v.ended), 8000); }));
       if (fin) { await w(700); await visit('film-lecteur-fin'); } }

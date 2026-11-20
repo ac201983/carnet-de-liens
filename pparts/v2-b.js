@@ -586,8 +586,8 @@ function handle(act,d,el){
   switch(act){
     case 'peek-plans':state.prev=null;state.sheet=null;state.view='plans';break;
     case 'peek-about':nav('about');break;
-    /* « Voir le film » : le lecteur s'ouvre par-dessus l'accueil et la lecture commence. Rien n'est réécrit dessous. */
-    case 'film':filmOuvre(true);return;
+    /* « Regarder avec la musique » ou « Regarder en silence » : le lecteur s'ouvre par-dessus l'accueil et la lecture commence, avec ou sans le son. Rien n'est réécrit dessous. */
+    case 'film':filmOuvre(true,'film',d.v==='son');return;
     /* Le premier geste : une porte ouvre l'espace et mène tout de suite à ce qu'elle annonce. Rien n'est demandé avant. */
     case 'porte':{entrer(d.v);
       if(d.v==='souffle'){nav('souffle');SON.voulu=false;souffleStart();}

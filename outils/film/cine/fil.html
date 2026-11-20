@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"Nunito";src:url("file:///home/claude/site-src/fonts/nunito.woff2") format("woff2");font-weight:200 1000}
+@font-face{font-family:"Besley";src:url("file:///home/claude/site-src/fonts/besley.woff2") format("woff2");font-weight:400 900}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0b100d}
+body{width:390px;font-family:"Nunito",sans-serif;color:#f3efe6;-webkit-font-smoothing:antialiased}
+#tel{position:relative;width:390px;overflow:hidden;background:#0f1512}
+/* ---- la barre du haut, dessinée ici (aucune marque) ---- */
+.barre{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font-weight:800;font-size:16px;letter-spacing:.2px}
+.barre .ico{display:flex;gap:6px;align-items:center}
+.barre .res{display:flex;gap:2.5px;align-items:flex-end;height:11px}.barre .res i{width:3px;background:#f3efe6;border-radius:1px}
+.barre .res i:nth-child(1){height:4px}.barre .res i:nth-child(2){height:6px}.barre .res i:nth-child(3){height:8.5px}.barre .res i:nth-child(4){height:11px;opacity:.35}
+.barre .pile{width:25px;height:12px;border:1.5px solid rgba(243,239,230,.55);border-radius:4px;position:relative;padding:1.5px}
+.barre .pile::after{content:"";position:absolute;right:-4px;top:3px;width:2px;height:4px;background:rgba(243,239,230,.55);border-radius:0 1px 1px 0}
+.barre .pile b{display:block;height:100%;width:62%;background:#f3efe6;border-radius:1.5px}
+/* ---- l'écran verrouillé ---- */
+.verrou{height:844px;background:radial-gradient(120% 70% at 30% 0%,#24382c 0%,#121a15 55%,#0b100d 100%)}
+.verrou .h{margin-top:64px;text-align:center;font-family:"Besley",serif;font-weight:500;font-size:92px;line-height:1;letter-spacing:-1px}
+.verrou .j{margin-top:10px;text-align:center;font-weight:700;font-size:19px;color:rgba(243,239,230,.8)}
+.avis{position:absolute;left:14px;right:14px;top:330px;background:rgba(243,239,230,.93);color:#17201a;border-radius:22px;padding:15px 17px 16px;display:flex;gap:13px;align-items:flex-start}
+.avis .pic{flex:none;width:44px;height:44px;border-radius:12px;background:#3d5a80;display:grid;place-items:center}
+.avis .pic svg{width:25px;height:25px}
+.avis b{display:block;font-size:18px;font-weight:800}.avis span{display:block;font-size:18.5px;font-weight:600;line-height:1.3;margin-top:1px}
+.avis small{position:absolute;right:17px;top:16px;font-size:14px;font-weight:700;color:rgba(23,32,26,.55)}
+/* ---- le fil de messages ---- */
+.entete{height:58px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid rgba(243,239,230,.09)}
+.entete .ret{width:11px;height:11px;border-left:2.5px solid rgba(243,239,230,.7);border-bottom:2.5px solid rgba(243,239,230,.7);transform:rotate(45deg);margin:0 6px 0 4px}
+.entete .av{width:38px;height:38px;border-radius:50%;background:#3d5a80;display:grid;place-items:center;font-weight:800;font-size:18px}
+.entete b{font-size:19px;font-weight:800}
+.fil{position:absolute;left:0;right:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 14px 12px}
+.fil{overflow:hidden}.fil>*{flex:none}
+.jour{align-self:center;font-size:13.5px;font-weight:700;color:rgba(243,239,230,.5);margin-bottom:12px}
+.bulle{max-width:292px;padding:11px 16px 12px;border-radius:21px;font-size:20.5px;font-weight:600;line-height:1.28}
+.recu{align-self:flex-start;background:#2a332e;border-bottom-left-radius:7px}
+.envoi{align-self:flex-end;background:#3d5a80;border-bottom-right-radius:7px;margin-top:12px;transform-origin:100% 100%}
+.heure{font-size:12.5px;font-weight:700;color:rgba(243,239,230,.45);margin:4px 8px 0}
+.heure.d{align-self:flex-end}
+.saisie{position:absolute;left:0;right:0;min-height:62px;display:flex;align-items:flex-end;gap:10px;padding:8px 12px;background:#131a16;border-top:1px solid rgba(243,239,230,.08)}
+.champ{flex:1;min-height:46px;border-radius:23px;background:#222b26;border:1px solid rgba(243,239,230,.12);padding:9px 18px 9px;font-size:20.5px;font-weight:600;line-height:26px;white-space:pre-wrap;overflow-wrap:break-word;min-width:0}
+.champ .ph{color:rgba(243,239,230,.38)}
+.caret{display:inline-block;width:2.5px;height:24px;background:#f0c869;border-radius:1px;margin-left:1px;vertical-align:-5px}
+.envoyer{flex:none;width:46px;height:46px;border-radius:50%;background:#2a332e;display:grid;place-items:center}
+.envoyer svg{width:22px;height:22px;opacity:.5}
+.envoyer.pret{background:#3d5a80}.envoyer.pret svg{opacity:1}
+.envoyer.appui{background:#5b7fb0;transform:scale(.92)}
+.clavier{position:absolute;left:0;right:0;bottom:0;height:262px;background:#1a211d;padding:9px 4px 0}
+.rang{display:flex;justify-content:center;gap:6px;margin-bottom:10px}
+.t{height:44px;min-width:32.4px;flex:0 0 32.4px;border-radius:7px;background:#39433d;display:grid;place-items:center;font-size:22px;font-weight:600;color:#f3efe6;box-shadow:0 1px 0 rgba(0,0,0,.45)}
+.t.s{background:#28302b;font-size:15px;font-weight:800}
+.t.l{flex-basis:44px}.t.esp{flex:1 1 auto;margin:0 0;font-size:15px;color:rgba(243,239,230,.55)}
+.t.on{background:#8a9a90;color:#0f1512}
+.t.s.on{background:#f3efe6;color:#0f1512}
+.trait{position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:rgba(243,239,230,.55)}
+</style></head><body>
+<div id="tel"></div>
+<script>
+// Le fil de messages du montage cinématographique de « Ce qu'on ne dit pas par SMS » (20 novembre 2026, le soir). Composé ici, aucun logiciel imité.
+//   s=a   : 21 h 40. « Comment va ta fille ? » est là. Le père répond « Elle va bien, merci. » et envoie. Puis il commence « En fait, moi… », s'arrête, et efface.
+//   s=e   : un autre soir. Le même fil. Il écrit « Tu as cinq minutes ce soir ? J'aimerais te raconter ma journée. », hésite, puis envoie. Le message reste.
+//   s=ta, s=te : les mêmes scènes en plus court, pour la bande-annonce.
+//   s=verrou : l'écran verrouillé de 21 h 40, avec le message d'Élise.   s=reveil : l'écran verrouillé d'un autre soir, sans message.
+// Tous les instants sont donnés en images (30 par seconde) dans l'adresse, pour que le montage et la musique lisent les mêmes nombres :
+//   f1 : début de la frappe du premier texte, n1 : sa durée, ap : l'appui sur Envoyer, f2 : début du second texte, n2 : sa durée, ef : début de l'effacement, ne : sa durée.
+const Q = new URLSearchParams(location.search), SC = Q.get('s') || 'a', HAUT = +(Q.get('h') || 693), N = k => Q.has(k) ? +Q.get(k) / 30 : null;
+const tel = document.getElementById('tel');
+const SOIR = (SC === 'e' || SC === 'te' || SC === 'reveil'), HEURE = SOIR ? '19:40' : '21:40';
+const BARRE = '<div class="barre"><span>' + HEURE + '</span><span class="ico"><span class="res"><i></i><i></i><i></i><i></i></span><span class="pile"><b></b></span></span></div>';
+const FLECHE = '<svg viewBox="0 0 24 24" fill="none" stroke="#f3efe6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg>';
+const BULLE_SVG = '<svg viewBox="0 0 24 24" fill="#f3efe6"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/></svg>';
+if (SC === 'verrou' || SC === 'reveil') {
+  tel.className = 'verrou'; tel.style.height = '844px';
+  tel.innerHTML = BARRE + '<div class="h">' + HEURE + '</div><div class="j">' + (SOIR ? 'jeudi 17 décembre' : 'jeudi 19 novembre') + '</div>' +
+    (SC === 'verrou' ? '<div class="avis"><span class="pic">' + BULLE_SVG + '</span><div><b>Élise</b><span>Comment va ta fille ?</span></div><small>maintenant</small></div>' : '');
+  window.etat = () => {}; window.REPERES = { SC };
+} else {
+const TEXTE1 = SOIR ? 'Tu as cinq minutes ce soir ? J’aimerais te raconter ma journée.' : 'Elle va bien, merci.', TEXTE2 = SOIR ? '' : 'En fait, moi…';
+const DEJA = (SC === 'ta');                                   // bande-annonce : « Elle va bien, merci. » est déjà parti quand la scène commence
+const ECRIT = (SC === 'te');                                  // bande-annonce : le dernier message est déjà écrit quand la scène commence
+// Les instants de chaque touche : une frappe régulière sans être mécanique. Les écarts sont tirés une fois pour toutes, puis ramenés à la durée demandée.
+let g = 20261120; const alea = () => { g = (g * 1103515245 + 12345) % 2147483648; return g / 2147483648; };
+function touches(txt, debut, duree, lent) {
+  if (!txt || debut === null) return [];
+  const e = txt.split('').map((c, i) => i === 0 ? 0 : 46 + 34 * alea() + (txt[i - 1] === ' ' ? 10 : 0) + (txt[i - 1] === '?' ? 330 : 0) + (c === '’' ? 22 : 0) + (lent ? 26 * i * i / txt.length : 0) + (lent && c === '…' ? 150 : 0));
+  const tot = e.reduce((a, b) => a + b, 0) || 1; let t = debut; return e.map(x => (t += x / tot * duree));
+}
+const T1 = (DEJA || ECRIT) ? [] : touches(TEXTE1, N('f1'), N('n1'), false);
+const T_APPUI = DEJA ? -9 : N('ap'), T_ENVOI = DEJA ? -8 : T_APPUI + 0.09;
+const T2 = touches(TEXTE2, N('f2'), N('n2'), true);
+// L'effacement : une première lettre, un temps, puis les autres de plus en plus vite (la touche est tenue).
+const T_EFF = []; if (TEXTE2 && N('ef') !== null) { const n = TEXTE2.length, d = N('ne'); let e = []; for (let i = 0; i < n; i++) e.push(i === 0 ? 0 : i === 1 ? 5.2 : Math.max(.55, 1.5 - i * .1)); const tot = e.reduce((a, b) => a + b, 0); let t = N('ef'); e.forEach(x => T_EFF.push(t += x / tot * d)); }
+const CLIGNE = 0.5;
+function touche(c) { if (c === ' ') return 'esp'; if (c === ',') return 'virg'; if (c === '.') return 'point'; if (c === 'é') return 'e'; if (c === '’' || c === '?' || c === '…') return '123'; return c.toLowerCase(); }
+tel.style.height = HAUT + 'px';
+const rang = (L, avant, apres) => '<div class="rang">' + (avant || '') + L.split('').map(c => '<span class="t" data-k="' + c + '">' + c + '</span>').join('') + (apres || '') + '</div>';
+const AVANT = SOIR ? '<div class="jour">jeudi 19 novembre</div><div class="bulle recu" id="recu">Comment va ta fille ?</div><div class="heure g" id="recuh">21:40</div><div class="bulle envoi">Elle va bien, merci.</div><div class="heure d">21:40</div>'
+  : '<div class="jour">aujourd’hui</div><div class="bulle recu" id="recu">Comment va ta fille ?</div><div class="heure g" id="recuh">21:40</div>';
+tel.innerHTML = BARRE + '<header class="entete"><i class="ret"></i><span class="av">É</span><b>Élise</b></header>' +
+  '<div class="fil" id="fil" style="top:102px;bottom:324px">' + AVANT + '<div id="repw" style="display:flex;flex-direction:column;overflow:hidden">' + (SOIR ? '<div class="jour" style="margin-top:22px">aujourd’hui</div>' : '') + '<div class="bulle envoi" id="rep"' + (SOIR ? ' style="margin-top:0"' : '') + '>' + TEXTE1 + '</div><div class="heure d" id="reph">' + HEURE + '</div></div></div>' +
+  '<div class="saisie" id="saisie" style="bottom:262px"><div class="champ"><span id="txt"></span><i class="caret" id="caret"></i><span class="ph" id="ph">Message</span></div><span class="envoyer" id="env">' + FLECHE + '</span></div>' +
+  '<div class="clavier">' + rang('qwertzuiop') + rang('asdfghjkl') + rang('yxcvbnm', '<span class="t s l" data-k="maj">maj</span>', '<span class="t s l" data-k="eff">←</span>') +
+  '<div class="rang"><span class="t s l" data-k="123">123</span><span class="t" data-k="virg">,</span><span class="t esp" data-k="esp">espace</span><span class="t" data-k="point">.</span><span class="t s l" data-k="ret">↵</span></div><span class="trait"></span></div>';
+const $ = id => document.getElementById(id); const lisse = (x, a, b) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const milieu = e => { const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
+window.REPERES = { SC, T1, T2, T_EFF, T_APPUI, T_ENVOI, CLIGNE, TEXTE1, TEXTE2, HAUT,
+  FIN1: T1.length ? T1[T1.length - 1] : null, FIN2: T2.length ? T2[T2.length - 1] : null, FIN_EFF: T_EFF.length ? T_EFF[T_EFF.length - 1] : null,
+  POINT: milieu(document.querySelector('.t[data-k="point"]')), EFF: milieu(document.querySelector('.t[data-k="eff"]')), ESP: milieu(document.querySelector('.t[data-k="esp"]')), C123: milieu(document.querySelector('.t[data-k="123"]')) };
+window.etat = t => {
+  const envoye = t >= T_ENVOI;
+  let n1 = ECRIT ? TEXTE1.length : 0; for (let i = 0; i < T1.length; i++) if (t >= T1[i]) n1 = i + 1;
+  let n2 = 0; for (let i = 0; i < T2.length; i++) if (t >= T2[i]) n2 = i + 1;
+  let ne = 0; for (let i = 0; i < T_EFF.length; i++) if (t >= T_EFF[i]) ne = i + 1;
+  const champ = envoye ? TEXTE2.slice(0, Math.max(0, n2 - ne)) : TEXTE1.slice(0, n1);
+  $('txt').textContent = champ; $('ph').style.display = champ ? 'none' : '';
+  // le curseur : fixe pendant la frappe, il clignote dès que les doigts s'arrêtent
+  let dernier = -9; for (const x of T1.concat(T2, T_EFF, [T_ENVOI])) if (x <= t && x > dernier) dernier = x;
+  const debut = Math.min.apply(null, T1.concat(T2, [9e9]).filter(x => x !== null)) - .25;
+  $('caret').style.visibility = (ECRIT || DEJA || t >= debut) && (t - dernier < CLIGNE || Math.floor((t - dernier) / CLIGNE) % 2 === 0) ? 'visible' : 'hidden';
+  document.querySelectorAll('.t.on').forEach(e => e.classList.remove('on'));
+  const allume = (k) => { const e = document.querySelector('.t[data-k="' + k + '"]'); if (e) e.classList.add('on'); };
+  [[T1, TEXTE1], [T2, TEXTE2]].forEach(([T, X]) => { for (let i = 0; i < T.length; i++) if (t >= T[i] - .012 && t < T[i] + .085) { allume(touche(X[i])); if (/[A-ZÉ]/.test(X[i])) allume('maj'); } });
+  if (T_EFF.length && t >= T_EFF[0] - .012 && t < T_EFF[T_EFF.length - 1] + .1) allume('eff');       // la touche d'effacement reste enfoncée
+  const env = $('env'); env.className = 'envoyer' + (champ ? ' pret' : '') + (t >= T_APPUI && t < T_ENVOI + .06 ? ' appui' : '');
+  // le message part : la bulle se pose à droite
+  const b = lisse(t, T_ENVOI, T_ENVOI + .2); $('repw').style.height = ($('repw').scrollHeight * lisse(t, T_ENVOI - .02, T_ENVOI + .2)) + 'px'; $('rep').style.opacity = b; $('rep').style.transform = 'translateY(' + (14 * (1 - b)) + 'px) scale(' + (.9 + .1 * b) + ')'; $('reph').style.opacity = lisse(t, T_ENVOI + .15, T_ENVOI + .4);
+  // le champ grandit avec le texte : le fil remonte d'autant
+  $('fil').style.bottom = (262 + $('saisie').getBoundingClientRect().height) + 'px';
+  window.REPERES.ENV_T = milieu($('env')); const r = $('rep').getBoundingClientRect(); window.REPERES.BULLE_T = { x: r.left, y: r.top, w: r.width, h: r.height };
+  const c = $('txt').getBoundingClientRect(); window.REPERES.CHAMP_T = { x: c.left, y: c.top, w: c.width, h: c.height };
+};
+window.etat(0);
+}
+</script></body></html>

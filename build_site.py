@@ -346,7 +346,7 @@ def build_site():
     if os.path.isdir(OUT + '/film'):
         shutil.rmtree(OUT + '/film')
     if FILM:
-        # Le film de présentation (« Ce qu'on ne dit pas par SMS », 1 minute 45) et la capsule de respiration (« Et vous ? », 35 secondes), chacun avec ses fichiers.
+        # Le film de présentation (« Ce qu'on ne dit pas par SMS », 1 minute 47, montage cinématographique du 20 novembre 2026) et la capsule de respiration (« Et vous ? », 35 secondes), chacun avec ses fichiers.
         attendus = ('ce-quon-ne-dit-pas-par-sms-vertical.mp4', 'ce-quon-ne-dit-pas-par-sms-horizontal.mp4', 'apercu-film.webp', 'affiche-film-verticale.webp', 'affiche-film-horizontale.webp',
                     'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp')
         manque = [f for f in attendus if not os.path.exists(SRC + '/film/' + f)]
@@ -354,9 +354,11 @@ def build_site():
             raise SystemExit('Il manque dans site-src/film/ : ' + ', '.join(manque))
         os.makedirs(OUT + '/film')
         # Les versions gardées pour comparer (« et-vous-…-version-N.mp4 ») suivent, quand il y en a : le lecteur ne les charge jamais, elles n'ont que leur adresse.
-        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'et-vous-[a-z0-9-]+-version-[0-9]+\.mp4', f)))
-        # Les exports verticaux pour Instagram : prêts au téléchargement, à leur seule adresse. Le lecteur ne les charge jamais.
-        gardes += tuple(f for f in ('ce-quon-ne-dit-pas-par-sms-instagram.mp4', 'et-vous-instagram.mp4') if os.path.exists(SRC + '/film/' + f))
+        # Le premier montage du film de présentation est gardé de la même façon (« ce-quon-ne-dit-pas-par-sms-…-version-1.mp4 »).
+        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'(et-vous|ce-quon-ne-dit-pas-par-sms)-[a-z0-9-]+-version-[0-9]+\.mp4', f)))
+        # La bande-annonce verticale de 30 secondes et l'export de la capsule pour Instagram : prêts au téléchargement, à leur seule adresse. Le lecteur ne les charge jamais.
+        # Les crédits du film (un texte) les accompagnent.
+        gardes += tuple(f for f in ('ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4', 'et-vous-instagram.mp4', 'credits.txt') if os.path.exists(SRC + '/film/' + f))
         for f in attendus + gardes:
             shutil.copy2(SRC + '/film/' + f, OUT + '/film/' + f)
     for f in sorted(os.listdir(SRC + '/icons')):
