@@ -47,7 +47,11 @@ const etat = page => page.evaluate(() => {
 });
 const joue = (page, apres = 1, delai = 40000) => page.waitForFunction(t => { const v = document.querySelector('#film-l video'); return !!v && !v.paused && v.currentTime > t; }, apres, { timeout: delai }).then(() => true, () => false);
 // Va à la dernière seconde du film et le laisse finir : rend vrai quand le film est arrivé au bout.
-const auBout = page => page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v) return r(false); if (v.ended) return r(true); v.addEventListener('ended', () => r(true), { once: true }); try { v.currentTime = Math.max(0, (v.duration > 0 ? v.duration : 35) - 1); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { } setTimeout(() => r(v.ended), 15000); }));
+// Le saut est demandé quand le film joue pour de bon, et redemandé s'il n'a pas pris (un saut demandé pendant qu'un autre est en cours peut être perdu, vu dans WebKit).
+const auBout = page => page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v) return r(false); if (v.ended) return r(true);
+  let fini = false; const fin = q => { if (fini) return; fini = true; clearInterval(tic); r(q); }; v.addEventListener('ended', () => fin(true), { once: true });
+  const d = () => (v.duration > 0 ? v.duration : 35), saute = () => { try { v.currentTime = Math.max(0, d() - 1); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { } };
+  let n = 0; const tic = setInterval(() => { n++; if (v.ended) return fin(true); if (!v.seeking && v.currentTime < d() - 2.5 && n % 6 === 1) saute(); if (n > 120) fin(v.ended); }, 500); }));
 const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { timeout: delai }).then(() => true, () => false);
 
 (async () => {
@@ -240,13 +244,13 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
         ok(e.suite && e.suite.h >= 44 && e.suite.l >= 200 && e.suite.sous && e.suite.dans && e.suite.fond === 'rgb(244, 239, 216)', P('7. il est sous la vidéo, clair, large, entièrement dans l’écran ' + JSON.stringify(e.suite)));
         ok(/Souffler 2 minutes/.test(e.fin) && /terminé/.test(e.fin), P('7. la fin du film et ce bouton sont annoncés à la personne qui ne voit pas l’écran ' + JSON.stringify(e.fin)));
         notes.push(nom + ' : à la fin, la vidéo fait de la place au bouton (' + (videoAvant || []).join(' × ') + ' puis ' + (e.suite ? e.suite.video.join(' × ') : '') + ' points), bouton de ' + (e.suite ? e.suite.l + ' × ' + e.suite.h : '') + ' points');
-        await page.click('#film-j'); await attend(page, () => { const v = document.querySelector('#film-l video'); return v && !v.ended && !v.paused && v.currentTime < 6; }, null, 15000); e = await etat(page);
+        await page.click('#film-j'); await attend(page, () => { const v = document.querySelector('#film-l video'); return v && !v.ended && !v.paused && !v.seeking && v.currentTime > .3 && v.currentTime < 6; }, null, 20000); e = await etat(page);
         ok(e.suite && !e.suite.vue && e.fin === '', P('7. « Revoir le film » retire le bouton, le temps du film ' + JSON.stringify(e.suite && [e.suite.vue, e.fin])));
         fini2 = await auBout(page); await page.waitForTimeout(500);
         let atteint = false; for (let k = 0; k < 8 && !atteint; k++) { await page.keyboard.press('Tab'); atteint = await page.evaluate(() => !!(document.activeElement && document.activeElement.getAttribute('data-film') === 'souffle')); }
         ok(fini2 && atteint, P('7. au clavier, Tab atteint le bouton « Souffler 2 minutes » ' + JSON.stringify([fini2, atteint])));
         // le parent touche le bouton : le lecteur se ferme, l'exercice s'ouvre à son écran de départ, en silence
-        await page.click('#film-l [data-film="souffle"]');
+        await page.click('#film-l [data-film="souffle"]', { timeout: 6000 }).catch(() => { });
         let ex = await attend(page, () => !document.getElementById('film-l') && !!document.querySelector('main.souffle.s-cours') && /Installez-vous/.test((document.getElementById('souffle-mot') || {}).textContent || ''), null, 8000);
         await page.waitForTimeout(400); e = await etat(page);
         ok(ex && !e.ouvert && e.videos === 0 && !e.inerte && /souffle s-cours/.test(e.vue) && net(e.mot) === 'Installez-vous', P('7. le bouton ferme le lecteur et ouvre l’exercice à son écran de départ, « Installez-vous » ' + JSON.stringify([ex, e.ouvert, e.videos, e.inerte, e.vue, e.mot])));
@@ -262,7 +266,7 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
         ok(page2.pepe && !page2.film && page2.i === page0.i, P('7. ce retour mène à la page de l’accueil elle-même, pas à une page laissée par le lecteur ' + JSON.stringify([page0, page2])));
         // une seconde fois, avec le bouton « Retour » écrit en haut de l'exercice
         await page.click(A('film')); await page.waitForSelector('#film-l'); await joue(page, .6, 20000); await auBout(page); await page.waitForTimeout(500);
-        await page.click('#film-l [data-film="souffle"]'); ex = await attend(page, () => !document.getElementById('film-l') && !!document.querySelector('main.souffle.s-cours'), null, 8000); await page.waitForTimeout(400);
+        await page.click('#film-l [data-film="souffle"]', { timeout: 6000 }).catch(() => { }); ex = await attend(page, () => !document.getElementById('film-l') && !!document.querySelector('main.souffle.s-cours'), null, 8000); await page.waitForTimeout(400);
         await page.click('main.souffle ' + A('back')); acc = await attend(page, () => !!document.querySelector('main.intro') && !document.querySelector('main.souffle'), null, 8000); await page.waitForTimeout(600); e = await etat(page);
         ok(ex && acc && /intro/.test(e.vue) && !e.ouvert && e.videos === 0, P('7. le bouton « Retour » de l’exercice ramène aussi à l’accueil ' + JSON.stringify([ex, acc, e.vue, e.url, e.y])));
       }
@@ -295,7 +299,7 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
         // la fin du film, quand le lecteur a été ouvert par son adresse : le bouton ouvre l'exercice, et le retour ramène à l'accueil, sans rouvrir le lecteur
         const fini9 = await auBout(p2); await p2.waitForTimeout(600); e = await etat(p2);
         ok(fini9 && e.suite && e.suite.vue && e.suite.mots === 'Souffler 2 minutes', P('9. à la fin du film, le bouton « Souffler 2 minutes » est là aussi ' + JSON.stringify([fini9, e.suite && e.suite.vue])));
-        await p2.click('#film-l [data-film="souffle"]'); const ex9 = await attend(p2, () => !document.getElementById('film-l') && !!document.querySelector('main.souffle.s-cours'), null, 8000); await p2.waitForTimeout(400);
+        await p2.click('#film-l [data-film="souffle"]', { timeout: 6000 }).catch(() => { }); const ex9 = await attend(p2, () => !document.getElementById('film-l') && !!document.querySelector('main.souffle.s-cours'), null, 8000); await p2.waitForTimeout(400);
         await p2.goBack().catch(() => { }); const acc9 = await attend(p2, () => !!document.querySelector('main.intro') && !document.querySelector('main.souffle'), null, 8000); await p2.waitForTimeout(700); e = await etat(p2);
         ok(ex9 && acc9 && /intro/.test(e.vue) && !e.ouvert && e.videos === 0 && !e.inerte, P('9. il ouvre l’exercice, et le retour arrière ramène à l’accueil, lecteur fermé ' + JSON.stringify([ex9, acc9, e.vue, e.ouvert, e.videos, e.url])));
         await p2.goto(APP + '#film'); await p2.waitForSelector('#film-l'); await p2.waitForTimeout(500);
