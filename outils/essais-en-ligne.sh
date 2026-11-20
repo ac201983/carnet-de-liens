@@ -14,6 +14,11 @@
 #     chaque note comparée au mot affiché, les sorties en cours d'exercice, et les 2 minutes entières jusqu'à la dernière respiration.
 #   finition.js :
 #     « Prendre un instant » après la dose, la troisième entrée, « Accueil », « Reprendre mon parcours » et le sens de « Retour ».
+#   film.js (quand la version d'essai contient le film « Et vous ? ») :
+#     l'accueil où rien du film n'est chargé à part sa petite image, la commande après les 3 portes, le lecteur, la lecture réelle du MP4
+#     (le film vertical au format téléphone, l'horizontal au format ordinateur), la pause, le son, la fermeture, le retour arrière
+#     et la position retrouvée sur l'accueil, puis l'adresse …/#film. Tant que le film est en attente (réglage « pret »), cet essai
+#     est le seul rejoué : il dit vite si le MP4 se lit réellement en ligne. Les autres parcours sont rejoués à la mise en ligne suivante.
 #   lancement.js :
 #     la vitrine et les 3 offres, la commande en démonstration (acceptée, refusée, abandonnée, les 6 mensualités, l'achat retrouvé),
 #     « Passer le relais » de l'exemple à la fiche que le proche ouvre par son lien, le retour, le deuxième relais, la réunion,
@@ -38,6 +43,10 @@ if [ ! -f site/essai/index.html ]; then
   echo "::notice title=Essais en ligne dans $nom::Pas de version d'essai dans cette mise en ligne. Il n'y a rien à rejouer."
   exit 0
 fi
+# L'état du film dans cette version d'essai : rien, « pret » (le lecteur n'existe que par son adresse) ou « actif » (la commande est sur l'accueil).
+film=""
+grep -q 'const FILM="pret";' site/essai/app.js 2>/dev/null && film=pret
+grep -q 'const FILM="actif";' site/essai/app.js 2>/dev/null && film=actif
 cd outils/essais
 etape() { echo "$(date -u +%H:%M:%S) $*"; }   # l'heure de chaque préparatif, pour voir dans le journal lequel prend du temps
 # Les machines de GitHub ne sont pas toutes au même endroit. Certaines nuits, depuis certaines d'entre elles, le site répond en plusieurs
@@ -95,6 +104,14 @@ essai() {
     total=1
   fi
 }
+if [ -n "$film" ]; then
+  PEPE_FILM="$film" essai "Le film dans $nom" node film.js
+  if [ "$film" = pret ]; then
+    echo "::notice title=Essais en ligne dans $nom::Le film est en attente (le lecteur ne répond que par son adresse). Seul son essai a été rejoué. Les autres parcours le seront à la mise en ligne qui pose la commande sur l'accueil."
+    etape "essais : fin"
+    exit "$total"
+  fi
+fi
 [ "$nav" = chromium ] && essai "Premier geste dans Chrome" node premier-geste.js
 essai "Respiration dans $nom" node respiration.js
 essai "Finition dans $nom" node finition.js

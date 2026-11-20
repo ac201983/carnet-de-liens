@@ -2231,6 +2231,41 @@ html.fx .lum .dose::after{content:none}          /* l'ancienne lueur traversait 
 .mv-p[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--bg,#07240F),0 0 0 4.5px var(--cream)}
 @media (prefers-reduced-motion:no-preference){html.fx .mv-part{transition:stroke-dasharray 1s linear}}
 /* <<< la goutte */
+/* >>> le film (20 novembre 2026) */
+/* La commande de l'accueil : secondaire, juste après les 3 portes. Son image est légère et le film n'est demandé qu'au toucher. */
+.film-cmd{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;margin-top:14px;padding:6px 2px;background:none;border:0;color:var(--ct-titre);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.film-vig{position:relative;flex:none;width:112px;height:63px;border-radius:4px;overflow:hidden;background:var(--surface-2);box-shadow:0 0 0 1px var(--ct-filet)}
+.film-vig img{display:block;width:100%;height:100%;object-fit:cover}
+.film-vig svg.i{position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-16px 0 0 -16px;padding:8px 6px 8px 9px;border-radius:50%;background:rgba(4,19,10,.74);color:#F4EFD8}
+svg.i.fi-plein{fill:currentColor;stroke-width:1.2}
+.film-lib{min-width:0;font-weight:800;font-size:17px;line-height:1.3;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:.22em}
+@media (hover:hover){.film-cmd:hover .film-lib{text-decoration-thickness:2.5px}}
+@media (min-width:1024px){.film-cmd{margin-top:16px}.film-lib{font-size:18.5px}.film-vig{width:128px;height:72px}}
+/* Le lecteur : il couvre l'écran, l'accueil reste dessous à sa place. Il garde ses couleurs sombres, de jour comme de nuit, comme une salle. */
+.film-l{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;height:100vh;height:100dvh;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);background:#04130A;color:#F4EFD8;font-family:var(--font-ui);overscroll-behavior:contain}
+.film-l [hidden]{display:none!important}
+.film-haut{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:4px 6px 4px 16px}
+.film-haut h2{margin:0;font-family:var(--font-titre);font-weight:620;font-size:19px;line-height:1.2;letter-spacing:-.005em;color:#F4EFD8}
+.film-haut h2 small{display:block;margin-top:2px;font-family:var(--font-ui);font-weight:700;font-size:13.5px;letter-spacing:0;color:#A9C9A0}
+.film-x,.film-b{flex:none;display:grid;place-items:center;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:none;color:#F4EFD8;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.film-x svg.i,.film-b svg.i{width:26px;height:26px}
+@media (hover:hover){.film-x:hover,.film-b:hover{background:rgba(244,239,216,.12)}}
+.film-scene{position:relative;flex:1 1 auto;min-height:0;background:#000}
+.film-scene video{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.film-go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 26px 0 20px;border:0;border-radius:28px;background:#F4EFD8;color:#07240F;font-family:var(--font-ui);font-weight:800;font-size:18px;line-height:1;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);cursor:pointer}
+.film-go svg.i{width:24px;height:24px}
+.film-etat{position:absolute;left:16px;right:16px;bottom:14px;margin:0;padding:10px 14px;border-radius:8px;background:rgba(4,19,10,.9);color:#F4EFD8;font-size:15.5px;line-height:1.45;text-align:center}
+.film-etat a{color:#B4DE9C;font-weight:800;text-underline-offset:.2em}
+.film-bas{flex:none;display:flex;align-items:center;gap:6px;min-height:62px;padding:7px 8px}
+.film-av{flex:1 1 auto;min-width:40px;height:4px;border-radius:2px;background:rgba(244,239,216,.24);overflow:hidden}
+.film-av i{display:block;width:0;height:100%;background:#B4DE9C}
+.film-tps{flex:none;min-width:40px;padding-right:2px;text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#A9C9A0}
+.film-vol{flex:none;width:92px;height:44px;margin:0 6px 0 0;accent-color:#B4DE9C;cursor:pointer}
+@media (max-width:420px){.film-vol{width:72px}}
+.film-l :focus-visible{outline:3px solid #D8DF7E;outline-offset:2px}
+@keyframes film-entre{from{opacity:0}to{opacity:1}}
+html.fx .film-l{animation:film-entre .18s ease-out}
+/* <<< le film */
 @media print{
   :root,:root:not([data-theme="light"]){--bg:#fff;--surface:#fff;--surface-2:#eef1e6;--fg:#141a12;--cream:#141a12;--muted:#4a5546;--line:#cdd5c2;--green:#2f6b2f;--green-2:#6aa35a;--green-soft:#e6f0df;--sun:#b99a00;--sun-soft:#f5f0c8;--sun-fg:#6b5a00;--shadow:none;--shadow-sm:none;color-scheme:light}
   html,body{background:#fff !important;color:#141a12 !important}
