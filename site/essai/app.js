@@ -13,7 +13,7 @@ const CONTACT_R="hc.etuoce-tnerap@ruojnob";
 const AVEC_REPONSE="";
 const AVEC_VOIX=false;
 const FILM="actif";
-const FILM_V="c190db98";
+const FILM_V="d571e0fe";
 const I={
   back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
@@ -3166,12 +3166,14 @@ function essaiCarte(){
 /* Le film dure 35 secondes et n'a pas de paroles. Tant que le parent ne l'a pas demandé, rien n'est chargé : ni la vidéo, ni son affiche.
    Le lecteur s'ouvre par-dessus l'accueil, qui ne bouge pas dessous. « Fermer », la touche Échap ou le bouton Retour du téléphone
    arrêtent le son et rendent la page comme elle était, au même endroit.
+   Le film démarre toujours en silence (choix d'Antonio, le 20 novembre 2026) : le son ne vient que si le parent touche « Activer le son »,
+   un bouton clair, écrit en toutes lettres, dans la barre du bas. À chaque ouverture du lecteur, le film repart en silence.
    FILM vaut « pret » (le lecteur n'existe que par l'adresse …/#film, le temps de vérifier que la vidéo se lit en ligne)
    ou « actif » (la commande « Voir le film » est sur l'accueil, juste après les 3 portes). Sans ce réglage, rien de tout cela n'existe. */
 const FILM_ON=!!(SITE&&FILM);
 const FILM_HASH='#film';
 const FILM_LIEN=FILM_ON&&!PRE&&typeof location!=='undefined'&&location.hash===FILM_HASH;
-const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,muet:false,att:0,volOK:true,y:0,erreur:false};
+const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false};
 const FI={
   jouer:'<svg class="i fi-plein" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>',
   pause:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>',
@@ -3181,7 +3183,7 @@ const FI={
   fermer:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 /* Ce que le film montre, pour la personne qui ne le voit pas. */
-const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il répond qu’elle va bien, puis il retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone, ouvre Parent écouté, parent éclairé et choisit Souffler 2 minutes. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous.';
+const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il répond qu’elle va bien, puis il retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone, ouvre Parent écouté, parent éclairé et choisit Souffler 2 minutes. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous.';
 /* La commande de l'accueil : secondaire, après les 3 portes. Son image pèse quelques kilo-octets, et le film n'est demandé qu'au toucher. */
 function filmCmdHtml(){
   if(!FILM_ON||FILM!=='actif')return '';
@@ -3206,9 +3208,15 @@ function filmSync(){
   if(j){j.innerHTML=enCours?FI.pause:(v.ended?FI.revoir:FI.jouer);j.setAttribute('aria-label',enCours?'Mettre en pause':(v.ended?'Revoir le film':(debut?'Lire le film':'Reprendre le film')));}
   if(g)g.hidden=!debut||FV.erreur;
   FV.el.classList.toggle('en-cours',enCours);
+  /* En silence, le bouton du son est clair et porte ses mots, « Activer le son ». Avec le son, il devient un bouton rond, « Couper le son », et le curseur du volume revient. */
   const muet=v.muted||v.volume===0;
-  if(s){s.innerHTML=muet?FI.muet:FI.son;s.setAttribute('aria-label',muet?'Remettre le son':'Couper le son');s.setAttribute('aria-pressed',muet?'true':'false');}
-  if(vol&&document.activeElement!==vol)vol.value=String(Math.round((v.muted?0:v.volume)*100));
+  FV.el.classList.toggle('muet',muet);
+  if(s&&s.getAttribute('data-muet')!==(muet?'1':'0')){
+    s.setAttribute('data-muet',muet?'1':'0');s.classList.toggle('film-act',muet);
+    s.innerHTML=muet?FI.muet+'<span>Activer le son</span>':FI.son;
+    if(muet)s.removeAttribute('aria-label');else s.setAttribute('aria-label','Couper le son');
+  }
+  if(vol){vol.hidden=!FV.volOK||muet;if(!muet&&document.activeElement!==vol)vol.value=String(Math.round(v.volume*100));}
 }
 function filmAvance(){
   const v=FV.vid;if(!v||!FV.el)return;const d=v.duration>0&&isFinite(v.duration)?v.duration:35;
@@ -3237,7 +3245,7 @@ function filmSon(){
   const v=FV.vid;if(!v)return;
   if(v.muted||v.volume===0){v.muted=false;if(v.volume===0&&FV.volOK){try{v.volume=FV.vol>0?FV.vol:1;}catch(e){}}}
   else v.muted=true;
-  FV.muet=v.muted;filmSync();
+  filmSync();
 }
 function filmTouches(e){
   if(!FV.ouvert||!FV.el)return;
@@ -3282,22 +3290,22 @@ function filmOuvre(lance){
       '<p class="film-etat" role="status" hidden></p></div>'+
     '<div class="film-bas"><button type="button" class="film-b" data-film="jouer" id="film-j" aria-label="Lire le film">'+FI.jouer+'</button>'+
       '<span class="film-av" aria-hidden="true"><i id="film-p"></i></span><span class="film-tps" id="film-tps" aria-hidden="true">0:00</span>'+
-      '<button type="button" class="film-b" data-film="son" id="film-s" aria-pressed="false" aria-label="Couper le son">'+FI.son+'</button>'+
-      '<input type="range" class="film-vol" id="film-vol" min="0" max="100" step="5" value="100" aria-label="Volume du film"></div>'+
+      '<button type="button" class="film-b film-act" data-film="son" id="film-s" data-muet="1">'+FI.muet+'<span>Activer le son</span></button>'+
+      '<input type="range" class="film-vol" id="film-vol" min="5" max="100" step="5" value="100" aria-label="Volume du film" hidden></div>'+
     '<p class="sr" id="film-d">'+FILM_DESC+'</p>';
   const v=el.querySelector('video');FV.el=el;FV.vid=v;FV.ouvert=true;FV.erreur=false;FV.pousse=false;
   /* Sur iPhone, le volume se règle avec les boutons du téléphone : la page ne peut pas le changer, et le curseur ne servirait à rien. */
   try{v.volume=.5;FV.volOK=Math.abs(v.volume-.5)<.01;v.volume=FV.volOK?FV.vol:1;}catch(e){FV.volOK=false;}
-  if(!FV.volOK)el.querySelector('#film-vol').hidden=true;
-  v.muted=!!FV.muet;
-  ['play','playing','pause','ended','volumechange','seeked'].forEach(n=>v.addEventListener(n,()=>{if(n==='playing'||n==='pause'||n==='ended'){clearTimeout(FV.att);if(!FV.erreur)filmEtat('');}if(n==='volumechange'&&FV.vid){if(FV.volOK&&!FV.vid.muted&&FV.vid.volume>0)FV.vol=FV.vid.volume;FV.muet=FV.vid.muted;}filmSync();filmAvance();}));
+  /* Le film démarre en silence, à chaque ouverture. */
+  v.muted=true;
+  ['play','playing','pause','ended','volumechange','seeked'].forEach(n=>v.addEventListener(n,()=>{if(n==='playing'||n==='pause'||n==='ended'){clearTimeout(FV.att);if(!FV.erreur)filmEtat('');}if(n==='volumechange'&&FV.vid){if(FV.volOK&&!FV.vid.muted&&FV.vid.volume>0)FV.vol=FV.vid.volume;}filmSync();filmAvance();}));
   v.addEventListener('timeupdate',filmAvance);
   v.addEventListener('waiting',()=>{clearTimeout(FV.att);FV.att=setTimeout(()=>{if(FV.ouvert&&FV.vid&&!FV.vid.paused&&FV.vid.readyState<3&&!FV.erreur)filmEtat('Le film se charge.');},700);});
   v.addEventListener('error',()=>{if(FV.vid&&FV.vid.getAttribute('src'))filmErreur();});
   el.addEventListener('click',filmClic);
   el.addEventListener('touchmove',filmFige,{passive:false});el.addEventListener('wheel',filmFige,{passive:false});
   FV.y=Math.round(window.scrollY||window.pageYOffset||0);
-  el.querySelector('#film-vol').addEventListener('input',e=>{const x=Math.min(1,Math.max(0,(+e.target.value||0)/100));try{v.volume=x;v.muted=x===0;}catch(err){}});
+  el.querySelector('#film-vol').addEventListener('input',e=>{const x=Math.min(1,Math.max(.05,(+e.target.value||0)/100));try{v.volume=x;}catch(err){}});
   document.addEventListener('keydown',filmTouches,true);
   document.addEventListener('visibilitychange',filmCache);
   /* L'accueil reste dessous, à sa place. Il ne répond plus au clavier ni aux lecteurs d'écran tant que le lecteur est ouvert. */
