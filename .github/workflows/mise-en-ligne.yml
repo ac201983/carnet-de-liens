@@ -19,7 +19,8 @@ jobs:
   mise-en-ligne:
     name: parent-ecoute.ch
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # 45 minutes : la version d'essai porte plusieurs films de 17 Mo, que le dépôt envoie puis relit en ligne.
+    timeout-minutes: 45
     steps:
       - name: Récupérer les fichiers
         run: |

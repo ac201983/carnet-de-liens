@@ -128,6 +128,9 @@ if [ -f site/essai/index.html ]; then
       "$(vue "le film horizontal" "$adresse/essai/film/et-vous-horizontal.mp4" -I)" \
       "$(vue "l'extrait de 5 secondes" "$adresse/essai/film/et-vous-raccord-5s.mp4" -I)" \
       "$(vue "la première version du film vertical, gardée pour comparer" "$adresse/essai/film/et-vous-vertical-version-1.mp4" -I)" \
+      "$(vue "la version 2 du film vertical, gardée pour comparer" "$adresse/essai/film/et-vous-vertical-version-2.mp4" -I)" \
+      "$(vue "la version 1 du film horizontal, gardée pour comparer" "$adresse/essai/film/et-vous-horizontal-version-1.mp4" -I)" \
+      "$(vue "la version 2 du film horizontal, gardée pour comparer" "$adresse/essai/film/et-vous-horizontal-version-2.mp4" -I)" \
       "$(vue "l'image d'aperçu" "$adresse/essai/film/apercu.webp")" \
       "$(vue "le film à l'adresse du site public (ne doit pas exister : 404 attendu)" "$adresse/film/et-vous-vertical.mp4" -I)" \
       "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"

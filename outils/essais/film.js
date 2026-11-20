@@ -22,7 +22,7 @@ const net = s => (s || '').split(String.fromCharCode(160)).join(' ').replace(/\s
 const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTouch: true, deviceScaleFactor: 2 }, 'vertical', [1080, 1920]], ['ordinateur', { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, 'horizontal', [1920, 1080]]];
 const FICHIERS = ['et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4'];
 // La première version du film vertical (celle du 20 novembre à 4 heures, avant la correction de l'entrée dans « Souffler ») reste à sa propre adresse, pour comparer.
-const GARDES = ['et-vous-vertical-version-1.mp4'];
+const GARDES = ['et-vous-vertical-version-1.mp4', 'et-vous-vertical-version-2.mp4', 'et-vous-horizontal-version-1.mp4', 'et-vous-horizontal-version-2.mp4'];
 // Ce que montre le lecteur, relevé dans la page
 const etat = page => page.evaluate(() => {
   const l = document.getElementById('film-l'), v = l && l.querySelector('video'), q = s => l && l.querySelector(s), app = document.getElementById('app');
