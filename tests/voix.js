@@ -42,8 +42,9 @@ const TELLS = [
   const rec = (v, where) => { if (typeof v === 'string') { nTables++; const l = v.replace(/\s+/g, ' ').trim(); if (l && !seen.has(l)) seen.set(l, where); } else if (Array.isArray(v)) v.forEach(x => rec(x, where)); else if (v && typeof v === 'object') for (const k in v) rec(v[k], where + (Array.isArray(v) ? '' : '.' + k)); };
   for (const k in T1) rec(T1[k], 'contenu ' + k); for (const k in T2) rec(T2[k], 'contenu ' + k);
   if (T1.SITS.length !== 23 || T2.DOSES.length !== 18 || T2.PARCOURS.reduce((n, m) => n + m.steps.length, 0) !== 24) { console.log('✗ contenus incomplets'); process.exit(1); }
-  // Une seule exception : le libellé de la commande du film, écrit par Antonio tel quel dans sa demande du 20 novembre 2026.
-  const PERMIS = new Set(['Voir le film · 35 secondes']);
+  // Une seule exception : le libellé de la commande du film. Il garde la forme écrite par Antonio dans sa demande du 20 novembre 2026 (« Voir le film · 35 secondes »),
+  // avec la durée réelle du film de présentation.
+  const PERMIS = new Set(['Voir le film · 1 minute 45']);
   const bad = [];
   for (const [l, where] of seen) { if (PERMIS.has(l)) continue; const why = TELLS.filter(([re]) => re.test(l)).map(x => x[1]); if (why.length) bad.push([l, where, why.join(', ')]); }
   if (DUMP) {

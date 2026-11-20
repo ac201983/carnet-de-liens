@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"Nunito";src:url("file:///home/claude/site-src/fonts/nunito.woff2") format("woff2");font-weight:200 1000}
+@font-face{font-family:"Besley";src:url("file:///home/claude/site-src/fonts/besley.woff2") format("woff2");font-weight:400 900}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent;width:100%;height:100%;overflow:hidden}
+.t{position:absolute;transform:translate(-50%,-50%);font-family:"Besley",Georgia,serif;color:#F4EFD8;text-align:center;white-space:nowrap;line-height:1.16;-webkit-font-smoothing:antialiased;font-feature-settings:"kern","liga"}
+.ombre{text-shadow:0 2px 26px rgba(4,14,8,.6),0 0 3px rgba(4,14,8,.45)}
+.fort{text-shadow:0 2px 30px rgba(4,14,8,.85),0 0 4px rgba(4,14,8,.6),0 0 60px rgba(4,14,8,.5)}
+.url{font-family:"Nunito",sans-serif;font-weight:800;letter-spacing:.04em;color:#B4DE9C}
+.sans{font-family:"Nunito",sans-serif;line-height:1.3;letter-spacing:.005em}
+.vert{color:#B4DE9C}
+.doux{color:rgba(244,239,216,.62)}
+.fond{position:absolute;inset:0;background:#07240F}
+.fond::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 42% at 50% 38%,rgba(40,104,62,.55) 0%,rgba(7,36,15,0) 100%)}
+svg.logo{position:absolute;transform:translate(-50%,-50%)}
+</style></head><body><script>
+// Les textes du film « Ce qu'on ne dit pas par SMS », rendus avec les polices du site, sur fond transparent. V : vertical, H : horizontal, I : Instagram
+// (tout ce qui doit se lire tient entre les hauteurs 269 et 1248 et entre les largeurs 65 et 1015, et hors du coin en bas à droite, où Instagram pose
+// ses boutons : à droite de 853 sous la hauteur 1152).
+const Q = new URLSearchParams(location.search), quoi = Q.get('quoi'), f = Q.get('f') || 'H'; const W = f === 'H' ? 1920 : 1080, H = f === 'H' ? 1080 : 1920;
+const LOGO = s => '<svg class="logo" style="left:' + s.x + 'px;top:' + s.y + 'px;width:' + s.w + 'px;height:' + s.w + 'px" viewBox="0 0 48 48"><path d="M24 5C24 5 15.5 15.5 15.5 21.5a8.5 8.5 0 0 0 17 0C32.5 15.5 24 5 24 5z" fill="#F4EFD8"/><path d="M21 19.5c0-2 .9-4.3 2.2-6.2" fill="none" stroke="#164426" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="24" cy="37" rx="7.5" ry="2.6" fill="none" stroke="#B4DE9C" stroke-width="2.2"/><ellipse cx="24" cy="37.5" rx="16" ry="5.5" fill="none" stroke="#B4DE9C" stroke-width="1.8" opacity=".55"/></svg>';
+const T = (txt, x, y, taille, graisse, cls) => '<div class="t ' + (cls || 'ombre') + '" style="left:' + x + 'px;top:' + y + 'px;font-size:' + taille + 'px;font-weight:' + (graisse || 500) + '">' + txt + '</div>';
+const R = {
+  'public': { V: () => T('Pour les parents d’enfants,<br>d’ados et d’adultes<br>en situation de handicap', 540, 902, 74, 500, 'fort'), I: () => T('Pour les parents d’enfants,<br>d’ados et d’adultes<br>en situation de handicap', 540, 902, 66, 500, 'fort'), H: () => T('Pour les parents d’enfants, d’ados et d’adultes<br>en situation de handicap', 960, 528, 68, 500, 'fort') },
+  'lendemain': { V: () => T('Le lendemain', 540, 960, 104, 500), I: () => T('Le lendemain', 540, 758, 96, 500), H: () => T('Le lendemain', 960, 540, 104, 500) },
+  'semaines': { V: () => T('Quelques semaines<br>plus tard', 540, 960, 92, 500), I: () => T('Quelques semaines<br>plus tard', 540, 758, 86, 500), H: () => T('Quelques semaines plus tard', 960, 540, 92, 500) },
+  'souffler': { V: () => T('Souffler 2 minutes', 540, 250, 78, 600), I: () => T('Souffler 2 minutes', 540, 345, 70, 600), H: () => T('Souffler 2 minutes', 960, 952, 60, 600) },
+  'bastien': { V: () => T('Bastien prépare son week-end<br>chez son oncle Rémi.', 540, 1690, 60, 500, 'net'), I: () => T('Bastien prépare son week-end<br>chez son oncle Rémi.', 540, 1159, 54, 500, 'net'), H: () => T('Bastien prépare<br>son week-end<br>chez son oncle<br>Rémi.', 1560, 540, 66, 500, 'net') },
+  'etapes': { V: () => T('24 étapes sur 6 mois,<br>à votre rythme', 540, 440, 84, 600, 'fort'), I: () => T('24 étapes sur 6 mois,<br>à votre rythme', 540, 470, 76, 600, 'fort'), H: () => T('24 étapes sur 6 mois, à votre rythme', 960, 880, 76, 600, 'fort') },
+  'concu': { V: () => T('Conçu par Antonio Company,<br>éducateur social', 540, 680, 46, 700, 'sans fort'), I: () => T('Conçu par Antonio Company,<br>éducateur social', 540, 690, 44, 700, 'sans fort'), H: () => T('Conçu par Antonio Company, éducateur social', 960, 978, 42, 700, 'sans fort') },
+  'carte-fond': { H: () => '<div class="fond"></div>', V: () => '<div class="fond"></div>', I: () => '<div class="fond"></div>' },
+  'carte-logo': { H: () => LOGO({ x: 960, y: 262, w: 210 }), V: () => LOGO({ x: 540, y: 560, w: 280 }), I: () => LOGO({ x: 540, y: 410, w: 210 }) },
+  'carte-nom': { H: () => T('Parent écouté, parent éclairé', 960, 468, 76, 600, 'net'), V: () => T('Parent écouté,<br>parent éclairé', 540, 880, 98, 600, 'net'), I: () => T('Parent écouté,<br>parent éclairé', 540, 650, 86, 600, 'net') },
+  'carte-ici': { H: () => T('Ici, on commence par vous.', 960, 640, 64, 500, 'net vert'), V: () => T('Ici, on commence<br>par vous.', 540, 1175, 74, 500, 'net vert'), I: () => T('Ici, on commence par vous.', 540, 880, 60, 500, 'net vert') },
+  'carte-url': { H: () => T('parent-ecoute.ch', 960, 800, 46, 800, 'url'), V: () => T('parent-ecoute.ch', 540, 1420, 54, 800, 'url'), I: () => T('parent-ecoute.ch', 540, 1040, 50, 800, 'url') },
+  'carte-fiction': { H: () => T('Les photos illustrent une fiction.', 960, 990, 28, 600, 'sans doux'), V: () => T('Les photos illustrent une fiction.', 540, 1760, 32, 600, 'sans doux'), I: () => T('Les photos illustrent une fiction.', 540, 1195, 30, 600, 'sans doux') },
+};
+document.body.innerHTML = R[quoi][f]();
+</script></body></html>

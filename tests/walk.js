@@ -39,7 +39,7 @@ async function walk0(page, visit) {
     await page.evaluate(() => { const v = document.querySelector('#film-l video'); if (v) v.pause(); }); await w(300); await visit('film-lecteur');
     // le film démarre en silence, avec le bouton clair « Activer le son ». Un toucher plus loin : le son est là, le bouton est rond, le curseur du volume revient
     await page.click('#film-l #film-s'); await w(300); await visit('film-lecteur-son');
-    // la fin du film : sous la vidéo, le bouton « Souffler 2 minutes » (quand ce navigateur sait lire le film)
+    // la fin du film : sous la vidéo, le bouton « Ouvrir mon espace » (quand ce navigateur sait lire le film)
     { const fin = await page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v || !(v.duration > 0)) return r(false); v.addEventListener('ended', () => r(true), { once: true }); try { v.currentTime = Math.max(0, v.duration - .5); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { return r(false); } setTimeout(() => r(v.ended), 8000); }));
       if (fin) { await w(700); await visit('film-lecteur-fin'); } }
     await page.click('#film-l [data-film="fermer"]'); await w(350); await page.evaluate(() => scrollTo(0, 0)); await w(200);
@@ -77,6 +77,8 @@ async function walk0(page, visit) {
   // la page qu'une association ou un professionnel transmet à une famille
   await page.goto(APP + 'transmettre/'); await w(300); await visit('transmettre');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('transmettre-bas');
+  // la capsule de respiration « Et vous ? », ouverte par sa propre adresse : le même lecteur, son titre, son affiche
+  await page.goto(APP + '#capsule'); await w(700); if (await page.$('#film-l')) { await visit('film-capsule-attente'); await page.click('#film-l [data-film="fermer"]'); await w(250); }
   // le lecteur du film ouvert par son adresse : il attend le geste du parent
   await page.goto(APP + '#film'); await w(700); if (await page.$('#film-l')) { await visit('film-lecteur-attente'); await page.click('#film-l [data-film="fermer"]'); await w(250); }
   await page.goto(APP); await w(400);

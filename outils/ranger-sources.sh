@@ -64,5 +64,15 @@ cp build/film/ecrans/ecrans.html build/film/ecrans/ecrans.js "$BRANCHE/outils/fi
 cp build/film/titres/titres.html build/film/titres/titres.js build/film/titres/mot.html build/film/titres/mot.js build/film/titres/mot.json build/film/titres/titres.json "$BRANCHE/outils/film/titres/" 2>/dev/null || true
 cp build/film/site/film.css build/film/site/poser-css.py build/film/site/icones.js "$BRANCHE/outils/film/site/" 2>/dev/null || true
 
+# Les outils du film de présentation « Ce qu'on ne dit pas par SMS » du 20 novembre 2026, l'après-midi (dans l'atelier, ces fichiers sont dans build/film/pres/) :
+# les 3 photos fournies par Antonio, ce qui filme la version d'essai image par image avec des données fictives, le fil de messages, les textes,
+# les plans dans les 3 formats, le montage, le son, les exports, les planches de contrôle, les vues du lecteur, et la suite d'essais de la passe.
+# Les films eux-mêmes sont dans site-src/film/. Les captures, les agrandissements et les plans encodés ne sont pas rangés : ils se refont.
+mkdir -p "$BRANCHE/outils/film/pres/src" "$BRANCHE/outils/film/pres/titres"
+cp build/film/pres/LISEZ-MOI.md build/film/pres/lib.js build/film/pres/cap_depot.js build/film/pres/cap_ecrans.js build/film/pres/cap_relais.js build/film/pres/cap_etape7.js build/film/pres/explore.js build/film/pres/fil.html build/film/pres/fil.js build/film/pres/titres.html build/film/pres/titres.js build/film/pres/pm.py build/film/pres/plans.py build/film/pres/planche.py build/film/pres/montage.py build/film/pres/mixage.py build/film/pres/exporte.py build/film/pres/mesure_son.py build/film/pres/revue.py build/film/pres/vues.js "$BRANCHE/outils/film/pres/" 2>/dev/null || true
+cp build/film/pres/src/01-les-dominos.png build/film/pres/src/02-la-fiche-ensemble.png build/film/pres/src/03-le-cafe-de-bastien.png "$BRANCHE/outils/film/pres/src/" 2>/dev/null || true
+cp build/film/pres/titres/titres.json "$BRANCHE/outils/film/pres/titres/" 2>/dev/null || true
+cp build/film/lot-f5.sh "$BRANCHE/outils/film/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

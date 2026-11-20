@@ -94,7 +94,7 @@ function routeDe(){
   if(location.hash===STORY_HASH)return {v:'about'};
   if(location.hash==='#accueil')return {v:'intro'};
   /* L'adresse …/#film ouvre l'accueil, puis le lecteur du film (version d'essai). */
-  if(FILM_ON&&location.hash===FILM_HASH)return {v:'intro'};
+  if(filmDe(location.hash))return {v:'intro'};
   if(VUES_HASH[location.hash])return {v:VUES_HASH[location.hash]};
   return null;
 }
@@ -187,13 +187,13 @@ function histRetour(e){
   if(!HIST.ok||location.hash==='#atelier')return;
   const st=e&&e.state;souffleStop();stopTimer();
   /* L'adresse …/#film, tapée alors que la page est déjà là : après l'accueil, le lecteur s'ouvre et attend le geste du parent. */
-  const film=FILM_ON&&!(st&&st.pepe)&&location.hash===FILM_HASH;
+  const film=(st&&st.pepe)?'':filmDe(location.hash);
   if(st&&st.pepe&&st.s){HIST.i=st.i||0;navApply(st.s);}
   else{const r=routeDe()||{};HIST.i=0;navApply({v:r.v||'today',sit:r.sit,kit:r.kit,re:r.re,cf:r.cf,ck:r.ck});try{history.replaceState(histEtat(),'',urlDe());}catch(x){}}
   const y=(st&&st.y)||0;
   /* « apres » : un message à dire une fois revenu sur l'écran d'avant (par exemple après avoir enregistré le point de départ). */
   const dire=state.apres||'';state.apres='';
-  fxGo(()=>{render();window.scrollTo(0,y);if(dire)toast(dire);if(film)filmOuvre(false);},'back');
+  fxGo(()=>{render();window.scrollTo(0,y);if(dire)toast(dire);if(film)filmOuvre(false,film);},'back');
 }
 
 /* ---------- après un dépôt : la réponse vient sous les yeux ---------- */
