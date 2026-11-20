@@ -2407,7 +2407,7 @@ function titreDe(){
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
-const HIST={ok:false,i:0};
+const HIST={ok:false,i:0,unefois:false};
 function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:'',dd:state.view==='deposer'&&state.dire?state.dire.id:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
@@ -2452,6 +2452,8 @@ function histPush(remplace){
   if(!HIST.ok)return;
   try{
     if(remplace){history.replaceState(histEtat(),'',urlDe());return;}
+    /* Le lecteur du film avait ajouté sa propre page : l'écran qui le suit prend sa place au lieu d'en ajouter une (voir filmSouffle). */
+    if(HIST.unefois){HIST.unefois=false;HIST.i++;history.replaceState(histEtat(),'',urlDe());return;}
     const cur=history.state;
     if(cur&&cur.pepe){cur.y=Math.round(window.scrollY||window.pageYOffset||0);cur.t=Date.now();history.replaceState(cur,'');}
     HIST.i++;history.pushState(histEtat(),'',urlDe());
@@ -3175,7 +3177,7 @@ function essaiCarte(){
 const FILM_ON=!!(SITE&&FILM);
 const FILM_HASH='#film';
 const FILM_LIEN=FILM_ON&&!PRE&&typeof location!=='undefined'&&location.hash===FILM_HASH;
-const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false,suite:null,attS:0};
+const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false};
 const FI={
   jouer:'<svg class="i fi-plein" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>',
   pause:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>',
@@ -3323,7 +3325,8 @@ function filmOuvre(lance){
   filmSync();
   if(lance){
     /* Une page de plus dans l'historique, à la même adresse : le bouton Retour du téléphone ferme le lecteur sans quitter l'accueil. */
-    if(HIST.ok){try{const cur=history.state||{};history.pushState(Object.assign({},cur,{film:1,y:Math.round(window.scrollY||window.pageYOffset||0)}),'',location.pathname+location.search+location.hash);FV.pousse=true;}catch(e){}}
+    /* Juste avant, la page de l'accueil note où le parent en est : c'est là qu'un retour depuis l'exercice le ramènera (voir filmSouffle). */
+    if(HIST.ok){try{const cur=history.state||{},y=Math.round(window.scrollY||window.pageYOffset||0);if(cur.pepe){cur.y=y;cur.t=Date.now();history.replaceState(cur,'');}history.pushState(Object.assign({},cur,{film:1,y:y}),'',location.pathname+location.search+location.hash);FV.pousse=true;}catch(e){}}
     filmJoue();
   }
   const f=el.querySelector(lance?'#film-j':'.film-go');if(f&&f.focus){try{f.focus({preventScroll:true});}catch(e){f.focus();}}
@@ -3347,19 +3350,21 @@ function filmFerme(parRetour){
   FV.pousse=false;
   const c=document.querySelector('[data-act="film"]');if(c&&c.focus){try{c.focus({preventScroll:true});}catch(e){c.focus();}}
 }
-/* « Souffler 2 minutes », sous le film quand il est fini. Le lecteur se ferme, l'accueil revient à sa place, puis l'exercice s'ouvre à son écran de départ,
-   par le même chemin que la porte de l'accueil (en silence, une page de plus dans l'historique). Le bouton Retour ramène donc à l'accueil.
-   Si le lecteur avait ajouté sa page à l'historique, on attend qu'elle soit défaite avant d'ouvrir l'exercice, pour que les pages restent dans l'ordre. */
+/* « Souffler 2 minutes », sous le film quand il est fini. Le lecteur se ferme, puis l'exercice s'ouvre à son écran de départ par le même chemin que la porte
+   de l'accueil (en silence). Tout se passe dans le geste du parent, sans attendre : l'exercice peut ainsi garder l'écran allumé, comme par la porte.
+   La page que le lecteur avait ajoutée à l'historique n'est pas défaite : elle devient celle de l'exercice (HIST.unefois, lu par histPush).
+   Il n'y a donc qu'une page entre l'accueil et l'exercice, et le bouton Retour ramène à l'accueil, à l'endroit noté à l'ouverture du lecteur. */
 function filmSouffle(){
   if(!FV.ouvert)return;
-  const suite=()=>{if(FV.suite!==suite)return;FV.suite=null;clearTimeout(FV.attS);FV.silence=false;handle('porte',{v:'souffle'},null);};
-  FV.suite=suite;
-  filmFerme(false);
-  if(FV.silence)FV.attS=setTimeout(suite,1500);else suite();
+  const pousse=FV.pousse;
+  filmFerme(true);
+  HIST.unefois=!!(pousse&&HIST.ok);
+  handle('porte',{v:'souffle'},null);
+  HIST.unefois=false;
 }
 /* Appelé au tout début du retour arrière. Rend vrai quand il n'y a rien d'autre à faire : la page n'est ni réécrite, ni déplacée. */
 function filmRetour(){
-  if(FV.silence){FV.silence=false;if(FV.suite)setTimeout(FV.suite,0);return true;}
+  if(FV.silence){FV.silence=false;return true;}
   if(FV.ouvert&&FV.pousse){filmFerme(true);return true;}
   if(FV.ouvert)filmFerme(true);
   return false;

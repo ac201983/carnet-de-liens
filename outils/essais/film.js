@@ -230,6 +230,7 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
       // ----- 7 bis. La fin du film : sous la vidéo, un vrai bouton « Souffler 2 minutes »
       if (peut) {
         await page.evaluate(y => window.scrollTo(0, y), y0); await page.waitForTimeout(200);
+        const page0 = await page.evaluate(() => { const s = history.state || {}; return { pepe: !!s.pepe, i: s.i, film: !!s.film }; });
         await page.click(A('film')); await page.waitForSelector('#film-l'); await joue(page, .6, 20000);
         e = await etat(page); const videoAvant = e.suite && e.suite.video;
         ok(e.suite && !e.suite.vue && e.fin === '', P('7. pendant le film, le bouton « Souffler 2 minutes » n’est pas là ' + JSON.stringify(e.suite && [e.suite.vue, e.fin])));
@@ -250,11 +251,15 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
         await page.waitForTimeout(400); e = await etat(page);
         ok(ex && !e.ouvert && e.videos === 0 && !e.inerte && /souffle s-cours/.test(e.vue) && net(e.mot) === 'Installez-vous', P('7. le bouton ferme le lecteur et ouvre l’exercice à son écran de départ, « Installez-vous » ' + JSON.stringify([ex, e.ouvert, e.videos, e.inerte, e.vue, e.mot])));
         ok(/Écouter l’étang/.test(e.ecoute) && /Pause/.test(e.ecoute), P('7. l’exercice commence en silence, comme par la porte de l’accueil ' + JSON.stringify(e.ecoute)));
+        const page1 = await page.evaluate(() => { const s = history.state || {}; return { pepe: !!s.pepe, i: s.i, film: !!s.film, vue: s.s && s.s.v }; });
+        ok(page1.pepe && !page1.film && page1.vue === 'souffle' && page1.i === page0.i + 1, P('7. la page du lecteur est devenue celle de l’exercice : une seule page d’historique sépare l’accueil de l’exercice ' + JSON.stringify([page0, page1])));
         ok(e.y === 0, P('7. l’exercice s’ouvre en haut de son écran ' + e.y));
         // le bouton Retour du téléphone ramène à l'accueil, à l'endroit où le parent l'avait laissé
         await page.goBack().catch(() => { }); let acc = await attend(page, () => !!document.querySelector('main.intro') && !document.querySelector('main.souffle'), null, 8000); await page.waitForTimeout(600); e = await etat(page);
         ok(acc && !e.ouvert && e.videos === 0 && /intro/.test(e.vue) && e.url.replace(/#accueil$/, '') === url0.replace(/#accueil$/, '') && Math.abs(e.y - y0) <= 2, P('7. depuis l’exercice, le retour arrière ramène à l’accueil, à la même place ' + JSON.stringify([acc, e.ouvert, e.vue, e.url, url0, e.y, y0])));
         ok(!!(await page.$(A('film'))) && !!(await page.$('.seuil ' + A('porte', '[data-v="souffle"]'))), P('7. l’accueil a toujours ses portes et la commande du film'));
+        const page2 = await page.evaluate(() => { const s = history.state || {}; return { pepe: !!s.pepe, i: s.i, film: !!s.film, vue: s.s && s.s.v }; });
+        ok(page2.pepe && !page2.film && page2.i === page0.i, P('7. ce retour mène à la page de l’accueil elle-même, pas à une page laissée par le lecteur ' + JSON.stringify([page0, page2])));
         // une seconde fois, avec le bouton « Retour » écrit en haut de l'exercice
         await page.click(A('film')); await page.waitForSelector('#film-l'); await joue(page, .6, 20000); await auBout(page); await page.waitForTimeout(500);
         await page.click('#film-l [data-film="souffle"]'); ex = await attend(page, () => !document.getElementById('film-l') && !!document.querySelector('main.souffle.s-cours'), null, 8000); await page.waitForTimeout(400);
