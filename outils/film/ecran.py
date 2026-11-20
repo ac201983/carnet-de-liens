@@ -90,7 +90,8 @@ def image_s2(i, f):
 #   et la rangée de boutons du bas (qui commence à 639,8 points) : rien n'y est coupé en haut ni en bas.
 # Horizontal : on voit le titre entier et les 3 portes, puis la goutte sur toute la largeur de l'écran, sous la barre du haut.
 CADRE = {'V': dict(acc0=(195, 346.6, 2.7693), acc=(195, 346.6, 2.84), mot=(195, 347.6, 3.31), goutte=(195, 236.5, 5.5), fin=5.62),
-         'H': dict(acc0=(195, 391, 2.03), acc=(195, 391, 2.077), goutte=(195, 172, 4.93), fin=5.1)}
+         'H': dict(acc0=(195, 391, 2.03), acc=(195, 391, 2.077), mot=(195, 321, 2.51), goutte=(195, 172, 4.93), fin=5.1)}
+# Le cadre « mot » du format horizontal ne sert qu'à la proposition H2 (voir plus bas) : la goutte, « Installez-vous » et sa phrase, entre la pastille SOS et les points de progression.
 def image_s6(i, f):
     u = ui('app', 20); c0, c1 = CADRE[f]['acc0'], CADRE[f]['acc']; a = i / N6
     e = float(np.exp(np.log(c0[2]) * (1 - a) + np.log(c1[2]) * a)); img, M = appareil(u, f, c1[0], c0[1] * (1 - a) + c1[1] * a, e, 844)
@@ -119,9 +120,13 @@ MOT_APP = 376.0 + MOT_IMG[1] / _MOT_JS['dsf']                          # le mili
 def _fixe(c0, c1, e):
     """Entre deux cadres, un vrai zoom : un point de l'écran reste à la même place dans l'image. Rend la hauteur visée pour l'échelle e."""
     p = (c1[1] * c1[2] - c0[1] * c0[2]) / (c1[2] - c0[2]); return p - (p - c0[1]) * c0[2] / e
-def cadre_v(jj):
-    """Format vertical : le cadre à l'instant jj du plan (hauteur visée sur l'écran, échelle)."""
-    c0, c1, c2 = CADRE['V']['acc'], CADRE['V']['mot'], CADRE['V']['goutte']
+# H2 : la même correction proposée pour le film horizontal (le cadre en 2 temps, le mot écrit par le film en haut de l'image). Elle n'est faite que si on la demande
+# (python3 h2.py) et elle écrit ses fichiers à part, dans out/H2/ : le film horizontal publié reste celui du 20 novembre à 2 heures tant qu'Antonio n'a pas dit oui.
+H2 = False
+def deux_temps(f): return f == 'V' or (f == 'H' and H2)
+def cadre_v(jj, f='V'):
+    """Le cadre en 2 temps à l'instant jj du plan (hauteur visée sur l'écran, échelle). Format vertical, ou horizontal pour la proposition H2."""
+    c0, c1, c2 = CADRE[f]['acc'], CADRE[f]['mot'], CADRE[f]['goutte']
     a2 = float(lisse5(jj, J_INSPIREZ, J_INSPIREZ + JVD))
     if a2 <= 0:
         a1 = 1 - (1 - min(1.0, max(0.0, jj / JV1))) ** 3                # il part avec le toucher et se pose en douceur : la barre du haut et la rangée du bas sortent pendant que l'onde ouvre l'étang
@@ -129,7 +134,7 @@ def cadre_v(jj):
     else:
         e = float(np.exp(np.log(c1[2]) * (1 - a2) + np.log(c2[2]) * a2)); cy = _fixe(c1, c2, e)
     b = float(lisse(jj, JP * .6, N7 + 30))                              # puis l'avancée très lente du reste du plan, inchangée
-    return cy, e * (1 + (CADRE['V']['fin'] / c2[2] - 1) * b)
+    return cy, e * (1 + (CADRE[f]['fin'] / c2[2] - 1) * b)
 def mot_y_v(jj):
     """Format vertical : la hauteur du mot écrit par le film. D'abord là où l'application l'écrit, puis il descend se poser sous la goutte pendant la plongée."""
     c1 = CADRE['V']['mot']; y0 = 960 + (MOT_APP - c1[1]) * c1[2]
@@ -160,7 +165,7 @@ def image_s7(j, f, dj=0.0):
     """dj : fraction d'image ajoutée à l'instant de la caméra et de l'onde. Le montage en moyenne plusieurs pendant les mouvements, pour un vrai flou de mouvement."""
     global _dist
     # au format vertical, dès que l'application écrit « Inspirez », on prend la capture où ce mot est caché (capture_sans_mot.js) : c'est le film qui l'écrit
-    dossier = 'app-sm' if f == 'V' and j >= J_INSPIREZ else 'app'
+    dossier = 'app-sm' if f == 'V' and j >= J_INSPIREZ else 'app'        # (proposition H2 : l'écran garde son mot, qui sort par le bas pendant la plongée)
     u = ui(dossier, min(C_SOUFFLE0 + j, 376)); W, H = FORMATS[f]; R = 16; jj = j + dj    # 377 : l'inspiration suivante, que le film ne montre pas
     if jj <= R + 1:                                                                       # l'onde : un cercle qui grandit depuis le doigt
         if _dist is None:
@@ -169,7 +174,7 @@ def image_s7(j, f, dj=0.0):
         m = (1 - lisse(_dist, r - 26, r + 26)).astype(np.float32)[..., None]
         bord = (np.exp(-((_dist - r) / 30) ** 2) * .22 * (1 - jj / (R + 1))).astype(np.float32)[..., None]
         u = ui('app', C_TOUCHER) * (1 - m) + u * m + bord * np.float32([.82, .95, 1.0])
-    if f == 'V': cx = 195.0; cy, e = cadre_v(jj)
+    if deux_temps(f): cx = 195.0; cy, e = cadre_v(jj, f)
     else:
         a = avance(jj); b = float(lisse(jj, JP * .6, N7 + 30))
         c0, c1 = CADRE[f]['acc'], CADRE[f]['goutte']

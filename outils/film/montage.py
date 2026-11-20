@@ -78,6 +78,15 @@ def image(nom, i, f):
                     img = img * (1 - a * np.float32(p)) + c * np.float32(p)
                 img = ecran.pose_mot(img, 'expirez', f, ecran.MOT_V, float(lisse(i, je + 3, je + 14)))
             return ecran.finition_ui(img, n, f)
+        if ecran.H2:
+            # Proposition H2 (non publiée) : le même cadre en 2 temps au format horizontal. Le mot de l'application ne peut pas rester à sa place, il serait sur la goutte :
+            # le film l'écrit en haut de l'image, comme avant, mais dans la police de l'application.
+            fin = ji + ecran.JVD
+            k = 8 if i < 18 else (2 if i < ji else (8 if i <= fin else 1))
+            img = sum(ecran.image_s7(i, f, d / k) for d in range(k)) / k
+            img = ecran.pose_mot(img, 'inspirez', f, 150.0, float(lisse(i, ji + 1, ji + 13)) * (1 - float(lisse(i, je - 2, je + 7))))
+            img = ecran.pose_mot(img, 'expirez', f, 150.0, float(lisse(i, je + 3, je + 14)))
+            return ecran.finition_ui(img, n, f)
         k = 8 if i < 30 else (4 if i < ecran.JP else 1)                 # le rapprochement est rapide : plusieurs instants par image lui donnent son flou de mouvement
         img = sum(ecran.image_s7(i, f, d / k) for d in range(k)) / k
         # le cadre se resserre sur la goutte et le mot de l'application sort de l'image : le film le reprend

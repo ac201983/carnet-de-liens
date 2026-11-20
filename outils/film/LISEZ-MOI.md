@@ -54,6 +54,15 @@ Pendant la plongée le mot ne sort pas de l'image. Le film l'écrit lui-même, c
 
 Rien d'autre ne change : mêmes durées, même son, mêmes cadres à partir de l'image 51 du plan. Le film horizontal n'est pas touché. Il garde ses mots en Besley, en haut de l'image.
 
+### La même correction, proposée pour le film horizontal (non publiée)
+
+Le film horizontal a le même défaut, en plus court : « Installez-vous » y passe en 2 dixièmes de seconde, flou, et sort par le bas. Antonio n'a demandé que le vertical. La correction est donc seulement préparée, à part, pour qu'il puisse la voir et décider.
+
+- `python3 h2.py` refait le plan de « Souffler » au format horizontal avec le cadre en 2 temps (`ecran.H2`, cadre « mot » : 321 points, échelle 2,51) et écrit tout dans `out/H2/`. Rien n'est écrasé dans `out/H/` ni dans `site-src/film/`.
+- L'écran garde ici son vrai mot « Inspirez », qui sort par le bas pendant la plongée, pendant que le film écrit « Inspirez » en haut de l'image, comme avant. Le mot ne peut pas rester à sa place : il serait sur la goutte. Les mots du haut sont écrits dans la police de l'application (Newsreader), comme au format vertical.
+- `python3 h2.py planche` : une planche de l'entrée, dans `tmp/zoom/h2.jpg`.
+- Si Antonio dit oui : copier `out/H2/et-vous-horizontal.mp4` dans `site-src/film/`, garder l'ancien sous le nom `et-vous-horizontal-version-1.mp4`, refabriquer, rejouer `tests/film.js`, déposer.
+
 Pour revoir l'entrée : `python3 planche_v.py V tmp/zoom/apres.jpg s7:0 s7:4 s7:8 s7:12 s7:20 s7:28 s7:29 s7:34 s7:38 s7:42 s7:46 s7:52`.
 
 ## Le film dans le site
