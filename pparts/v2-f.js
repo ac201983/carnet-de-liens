@@ -5,6 +5,8 @@
    arrêtent le son et rendent la page comme elle était, au même endroit.
    Le film démarre toujours en silence (choix d'Antonio, le 20 novembre 2026) : le son ne vient que si le parent touche « Activer le son »,
    un bouton clair, écrit en toutes lettres, dans la barre du bas. À chaque ouverture du lecteur, le film repart en silence.
+   À la fin du film (V3, le 20 novembre 2026), un vrai bouton « Souffler 2 minutes » apparaît sous la vidéo. Il ferme le lecteur et ouvre l'exercice
+   à son écran de départ, exactement comme la porte de l'accueil : le bouton Retour ramène donc à l'accueil.
    FILM vaut « pret » (le lecteur n'existe que par l'adresse …/#film, le temps de vérifier que la vidéo se lit en ligne)
    ou « actif » (la commande « Voir le film » est sur l'accueil, juste après les 3 portes). Sans ce réglage, rien de tout cela n'existe. */
 const FILM_ON=!!(SITE&&FILM);
@@ -20,7 +22,9 @@ const FI={
   fermer:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 /* Ce que le film montre, pour la personne qui ne le voit pas. */
-const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il répond qu’elle va bien, puis il retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone, ouvre Parent écouté, parent éclairé et choisit Souffler 2 minutes. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous.';
+const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il écrit qu’elle va bien, laisse passer un instant, puis envoie sa réponse et retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone et touche Souffler 2 minutes dans Parent écouté, parent éclairé. L’écran l’invite à s’installer. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous. À la fin, un bouton Souffler 2 minutes apparaît sous le film et ouvre l’exercice.';
+/* Ce qui est dit à la personne qui ne voit pas l'écran, quand le film est fini. */
+const FILM_FIN='Le film est terminé. Juste après la vidéo, le bouton Souffler 2 minutes ouvre l’exercice.';
 /* La commande de l'accueil : secondaire, après les 3 portes. Son image pèse quelques kilo-octets, et le film n'est demandé qu'au toucher. */
 function filmCmdHtml(){
   if(!FILM_ON||FILM!=='actif')return '';
@@ -54,6 +58,9 @@ function filmSync(){
     if(muet)s.removeAttribute('aria-label');else s.setAttribute('aria-label','Couper le son');
   }
   if(vol){vol.hidden=!FV.volOK||muet;if(!muet&&document.activeElement!==vol)vol.value=String(Math.round(v.volume*100));}
+  /* Le film est fini : la suite vient sous la vidéo. Elle s'en va si le parent revoit le film. */
+  const su=FV.el.querySelector('#film-suite'),fin=FV.el.querySelector('#film-fin'),fini=!!v.ended&&!FV.erreur;
+  if(su&&su.hidden===fini){su.hidden=!fini;if(fin)fin.textContent=fini?FILM_FIN:'';}
 }
 function filmAvance(){
   const v=FV.vid;if(!v||!FV.el)return;const d=v.duration>0&&isFinite(v.duration)?v.duration:35;
@@ -109,7 +116,7 @@ function filmCache(){if(FV.ouvert&&FV.vid&&document.visibilityState==='hidden'&&
 function filmFige(e){const t=e.target;if(t&&t.id==='film-vol')return;if(e.touches&&e.touches.length>1)return;if(e.cancelable)e.preventDefault();}
 function filmClic(e){
   if(!FV.el)return;const b=e.target.closest&&e.target.closest('[data-film]');
-  if(b){const q=b.getAttribute('data-film');if(q==='fermer')filmFerme(false);else if(q==='jouer')filmJoue();else if(q==='son')filmSon();return;}
+  if(b){const q=b.getAttribute('data-film');if(q==='fermer')filmFerme(false);else if(q==='jouer')filmJoue();else if(q==='son')filmSon();else if(q==='souffle')filmSouffle();return;}
   if(e.target===FV.vid)filmJoue();
 }
 /* lance : vrai quand le parent vient de toucher « Voir le film » (la lecture commence), faux quand le lecteur s'ouvre par son adresse (il attend). */
@@ -125,11 +132,12 @@ function filmOuvre(lance){
     '<div class="film-scene"><video id="film-v" playsinline webkit-playsinline preload="none" tabindex="-1" data-src="'+src+'" poster="'+base+'affiche-'+(quel==='vertical'?'verticale':'horizontale')+'.webp'+q+'" width="'+(quel==='vertical'?1080:1920)+'" height="'+(quel==='vertical'?1920:1080)+'"></video>'+
       '<button type="button" class="film-go" data-film="jouer">'+FI.jouer+'<span>Lire le film</span></button>'+
       '<p class="film-etat" role="status" hidden></p></div>'+
+    '<div class="film-suite" id="film-suite" hidden><button type="button" class="film-souffle" data-film="souffle">'+I.wind+'<span>Souffler 2 minutes</span></button></div>'+
     '<div class="film-bas"><button type="button" class="film-b" data-film="jouer" id="film-j" aria-label="Lire le film">'+FI.jouer+'</button>'+
       '<span class="film-av" aria-hidden="true"><i id="film-p"></i></span><span class="film-tps" id="film-tps" aria-hidden="true">0:00</span>'+
       '<button type="button" class="film-b film-act" data-film="son" id="film-s" data-muet="1">'+FI.muet+'<span>Activer le son</span></button>'+
       '<input type="range" class="film-vol" id="film-vol" min="5" max="100" step="5" value="100" aria-label="Volume du film" hidden></div>'+
-    '<p class="sr" id="film-d">'+FILM_DESC+'</p>';
+    '<p class="sr" id="film-d">'+FILM_DESC+'</p><p class="sr" id="film-fin" role="status"></p>';
   const v=el.querySelector('video');FV.el=el;FV.vid=v;FV.ouvert=true;FV.erreur=false;FV.pousse=false;
   /* Sur iPhone, le volume se règle avec les boutons du téléphone : la page ne peut pas le changer, et le curseur ne servirait à rien. */
   try{v.volume=.5;FV.volOK=Math.abs(v.volume-.5)<.01;v.volume=FV.volOK?FV.vol:1;}catch(e){FV.volOK=false;}
@@ -152,7 +160,8 @@ function filmOuvre(lance){
   filmSync();
   if(lance){
     /* Une page de plus dans l'historique, à la même adresse : le bouton Retour du téléphone ferme le lecteur sans quitter l'accueil. */
-    if(HIST.ok){try{const cur=history.state||{};history.pushState(Object.assign({},cur,{film:1,y:Math.round(window.scrollY||window.pageYOffset||0)}),'',location.pathname+location.search+location.hash);FV.pousse=true;}catch(e){}}
+    /* Juste avant, la page de l'accueil note où le parent en est : c'est là qu'un retour depuis l'exercice le ramènera (voir filmSouffle). */
+    if(HIST.ok){try{const cur=history.state||{},y=Math.round(window.scrollY||window.pageYOffset||0);if(cur.pepe){cur.y=y;cur.t=Date.now();history.replaceState(cur,'');}history.pushState(Object.assign({},cur,{film:1,y:y}),'',location.pathname+location.search+location.hash);FV.pousse=true;}catch(e){}}
     filmJoue();
   }
   const f=el.querySelector(lance?'#film-j':'.film-go');if(f&&f.focus){try{f.focus({preventScroll:true});}catch(e){f.focus();}}
@@ -175,6 +184,18 @@ function filmFerme(parRetour){
   if(FV.pousse&&!parRetour){FV.silence=true;try{history.back();}catch(e){FV.silence=false;}}
   FV.pousse=false;
   const c=document.querySelector('[data-act="film"]');if(c&&c.focus){try{c.focus({preventScroll:true});}catch(e){c.focus();}}
+}
+/* « Souffler 2 minutes », sous le film quand il est fini. Le lecteur se ferme, puis l'exercice s'ouvre à son écran de départ par le même chemin que la porte
+   de l'accueil (en silence). Tout se passe dans le geste du parent, sans attendre : l'exercice peut ainsi garder l'écran allumé, comme par la porte.
+   La page que le lecteur avait ajoutée à l'historique n'est pas défaite : elle devient celle de l'exercice (HIST.unefois, lu par histPush).
+   Il n'y a donc qu'une page entre l'accueil et l'exercice, et le bouton Retour ramène à l'accueil, à l'endroit noté à l'ouverture du lecteur. */
+function filmSouffle(){
+  if(!FV.ouvert)return;
+  const pousse=FV.pousse;
+  filmFerme(true);
+  HIST.unefois=!!(pousse&&HIST.ok);
+  handle('porte',{v:'souffle'},null);
+  HIST.unefois=false;
 }
 /* Appelé au tout début du retour arrière. Rend vrai quand il n'y a rien d'autre à faire : la page n'est ni réécrite, ni déplacée. */
 function filmRetour(){

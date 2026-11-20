@@ -1,7 +1,9 @@
 # « Et vous ? » : outils de réalisation communs à tous les plans (caméra sur une image, grain, lumière, écriture des plans en MP4).
 import numpy as np, cv2, subprocess, os
 IPS = 30
-FORMATS = {'H': (1920, 1080), 'V': (1080, 1920)}
+FORMATS = {'H': (1920, 1080), 'V': (1080, 1920), 'I': (1080, 1920)}     # I : l'export vertical pour Instagram (V3). Mêmes images que V, sauf le SMS, « Souffler » et le dernier carton.
+# Instagram pose ses commandes sur la vidéo : on garde ce qui doit se lire entre les hauteurs 269 et 1248, et entre les largeurs 65 et 1015.
+INSTA = dict(haut=269, bas=1248, gauche=65, droite=1015)
 ICI = os.path.dirname(os.path.abspath(__file__))
 
 def lisse(x, a=0.0, b=1.0):

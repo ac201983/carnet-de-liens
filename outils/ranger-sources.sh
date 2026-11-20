@@ -57,11 +57,11 @@ cp build/goutte/goutte.css build/goutte/poser-css.py build/goutte/horloge.js bui
 # puis ce qui installe le film dans le site (le style de la commande et du lecteur, les icônes) et la suite d'essais de la passe.
 # Les films eux-mêmes sont dans site-src/film/. Les images lourdes (agrandissements, captures) ne sont pas rangées : elles se refont.
 mkdir -p "$BRANCHE/outils/film/src" "$BRANCHE/outils/film/sr" "$BRANCHE/outils/film/ecrans" "$BRANCHE/outils/film/titres" "$BRANCHE/outils/film/site"
-cp build/film/LISEZ-MOI.md build/film/film.py build/film/ondes.py build/film/raccord.py build/film/cuisine.py build/film/ecran.py build/film/montage.py build/film/mixage.py build/film/son.py build/film/extrait.py build/film/rendre_extrait.py build/film/voir.py build/film/planche_v.py build/film/capture_app.js build/film/capture_sans_mot.js build/film/lot-f1.sh build/film/lot-f2.sh build/film/lot-f3.sh build/film/estimation-main.md build/film/h2.py build/film/doc2.py "$BRANCHE/outils/film/" 2>/dev/null || true
+cp build/film/LISEZ-MOI.md build/film/film.py build/film/ondes.py build/film/raccord.py build/film/cuisine.py build/film/ecran.py build/film/montage.py build/film/mixage.py build/film/son.py build/film/extrait.py build/film/rendre_extrait.py build/film/voir.py build/film/planche_v.py build/film/capture_app.js build/film/capture_sans_mot.js build/film/capture_accueil.js build/film/planche_x.py build/film/mesure_son.py build/film/mesure_image.py build/film/affiches.py build/film/vues.js build/film/lot-f1.sh build/film/lot-f2.sh build/film/lot-f3.sh build/film/lot-f4.sh build/film/estimation-main.md build/film/h2.py build/film/doc2.py build/film/doc3.py "$BRANCHE/outils/film/" 2>/dev/null || true
 cp build/film/src/p1.png build/film/src/p2.png build/film/src/p3.png build/film/src/p4.png "$BRANCHE/outils/film/src/" 2>/dev/null || true
 cp build/film/sr/agrandir.py "$BRANCHE/outils/film/sr/" 2>/dev/null || true
 cp build/film/ecrans/ecrans.html build/film/ecrans/ecrans.js "$BRANCHE/outils/film/ecrans/" 2>/dev/null || true
-cp build/film/titres/titres.html build/film/titres/titres.js build/film/titres/mot.html build/film/titres/mot.js build/film/titres/mot.json "$BRANCHE/outils/film/titres/" 2>/dev/null || true
+cp build/film/titres/titres.html build/film/titres/titres.js build/film/titres/mot.html build/film/titres/mot.js build/film/titres/mot.json build/film/titres/titres.json "$BRANCHE/outils/film/titres/" 2>/dev/null || true
 cp build/film/site/film.css build/film/site/poser-css.py build/film/site/icones.js "$BRANCHE/outils/film/site/" 2>/dev/null || true
 
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"

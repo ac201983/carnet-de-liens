@@ -6,10 +6,11 @@ from ondes import Eau
 from film import *
 
 AJ = np.load(ICI + '/tmp/ajust.npy', allow_pickle=True).item()
-T4, T5 = 3.4, 3.9                       # durée du plan du verre, durée du plan de l'étang (secondes)
+T4, T5 = 2.9, 5.0                       # durée du plan du verre, durée du plan de l'étang (secondes). V3 : « Et vous ? » reste seul plus longtemps (V2 : 3,4 et 3,9)
 RAPPORT = 1.24                          # les cercles de l'étang sont 1,24 fois plus espacés que ceux du verre : on filme le verre 1,24 fois plus près à la coupe
 U2C = 4.0                               # décalage des cercles de l'étang à la coupe, pour que les 3 crêtes tombent sur celles du verre
 REG = {'H': dict(z0=1.03, zc=1.42, ay=.50), 'V': dict(z0=1.04, zc=1.30, ay=.47)}
+REG['I'] = REG['V']
 SYG, SYP = .95, 1.075                   # léger étirement vertical à la coupe, pour que les 2 ovales aient la même forme (0,666)
 
 _cache = {}
@@ -73,7 +74,7 @@ def ancre_etang(t, f):
     W, H = FORMATS[f]; E = etang(); r = REG[f]; f0 = H / E.img.shape[0]
     nat = (W / 2 + (E.cx - E.img.shape[1] / 2) * f0, H / 2 + (E.cy - E.img.shape[0] / 2) * f0)
     w = float(lisse5(t, .5, T5 - .2)) if zp0(f) > 1.001 else 0.0
-    if f == 'V': nat = (W / 2, H * r['ay'])
+    if f != 'H': nat = (W / 2, H * r['ay'])
     return (W / 2 * (1 - w) + nat[0] * w, H * r['ay'] * (1 - w) + nat[1] * w)
 
 def image_etang(t, f, n=0):

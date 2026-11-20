@@ -8,6 +8,7 @@ html,body{background:transparent;width:100%;height:100%;overflow:hidden}
 .t{position:absolute;transform:translate(-50%,-50%);font-family:"Besley",Georgia,serif;color:#F4EFD8;text-align:center;white-space:nowrap;line-height:1.14;-webkit-font-smoothing:antialiased;font-feature-settings:"kern","liga"}
 .ombre{text-shadow:0 2px 26px rgba(4,14,8,.55),0 0 2px rgba(4,14,8,.35)}
 .url{font-family:"Nunito",sans-serif;font-weight:800;letter-spacing:.04em;color:#B4DE9C}
+.phrase{font-family:"Nunito",sans-serif;line-height:1.32;letter-spacing:.005em;color:#F4EFD8}
 .fond{position:absolute;inset:0;background:radial-gradient(60% 46% at 50% 40%,#12402400 0%,#07240F00 100%),#07240F}
 .fond::before{content:"";position:absolute;inset:0;background:radial-gradient(58% 42% at 50% 38%,rgba(40,104,62,.55) 0%,rgba(7,36,15,0) 100%)}
 svg.logo{position:absolute;transform:translate(-50%,-50%)}
@@ -20,10 +21,12 @@ const R = {
   'inspirez': { H: () => T('Inspirez', 960, 150, 98, 400), V: () => T('Inspirez', 540, 1440, 124, 400) },
   'expirez': { H: () => T('Expirez', 960, 150, 98, 400), V: () => T('Expirez', 540, 1440, 124, 400) },
   'ici': { H: () => T('Ici, on commence par vous.', 960, 930, 80, 500), V: () => T('Ici, on commence<br>par vous.', 540, 405, 92, 500) },
-  'carte-fond': { H: () => '<div class="fond"></div>', V: () => '<div class="fond"></div>' },
-  'carte-logo': { H: () => LOGO({ x: 960, y: 330, w: 250 }), V: () => LOGO({ x: 540, y: 640, w: 300 }) },
-  'carte-nom': { H: () => T('Parent écouté,<br>parent éclairé', 960, 612, 92, 600, 'net'), V: () => T('Parent écouté,<br>parent éclairé', 540, 985, 100, 600, 'net') },
-  'carte-url': { H: () => T('parent-ecoute.ch', 960, 842, 46, 800, 'url'), V: () => T('parent-ecoute.ch', 540, 1250, 52, 800, 'url') },
+  // I : le dernier carton de l'export Instagram. Tout tient entre les hauteurs 269 et 1248 et entre les largeurs 65 et 1015, à distance des commandes d'Instagram.
+  'carte-fond': { H: () => '<div class="fond"></div>', V: () => '<div class="fond"></div>', I: () => '<div class="fond"></div>' },
+  'carte-logo': { H: () => LOGO({ x: 960, y: 330, w: 250 }), V: () => LOGO({ x: 540, y: 640, w: 300 }), I: () => LOGO({ x: 540, y: 436, w: 236 }) },
+  'carte-nom': { H: () => T('Parent écouté,<br>parent éclairé', 960, 612, 92, 600, 'net'), V: () => T('Parent écouté,<br>parent éclairé', 540, 985, 100, 600, 'net'), I: () => T('Parent écouté,<br>parent éclairé', 540, 692, 92, 600, 'net') },
+  'carte-phrase': { I: () => T('Pour les parents d’une personne<br>en situation de handicap.', 540, 928, 54, 700, 'phrase') },
+  'carte-url': { H: () => T('parent-ecoute.ch', 960, 842, 46, 800, 'url'), V: () => T('parent-ecoute.ch', 540, 1250, 52, 800, 'url'), I: () => T('parent-ecoute.ch', 540, 1128, 50, 800, 'url') },
 };
 document.body.innerHTML = R[quoi][f]();
 </script></body></html>

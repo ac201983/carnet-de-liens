@@ -353,6 +353,8 @@ def build_site():
         os.makedirs(OUT + '/film')
         # Les versions gardées pour comparer (« et-vous-…-version-N.mp4 ») suivent, quand il y en a : le lecteur ne les charge jamais, elles n'ont que leur adresse.
         gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'et-vous-[a-z0-9-]+-version-[0-9]+\.mp4', f)))
+        # L'export vertical pour Instagram (V3) : prêt au téléchargement, à sa seule adresse. Le lecteur ne le charge jamais.
+        gardes += tuple(f for f in ('et-vous-instagram.mp4',) if os.path.exists(SRC + '/film/' + f))
         for f in attendus + gardes:
             shutil.copy2(SRC + '/film/' + f, OUT + '/film/' + f)
     for f in sorted(os.listdir(SRC + '/icons')):

@@ -123,7 +123,7 @@ function titreDe(){
   return TITLE0;
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
-const HIST={ok:false,i:0};
+const HIST={ok:false,i:0,unefois:false};
 function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:'',dd:state.view==='deposer'&&state.dire?state.dire.id:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
@@ -168,6 +168,8 @@ function histPush(remplace){
   if(!HIST.ok)return;
   try{
     if(remplace){history.replaceState(histEtat(),'',urlDe());return;}
+    /* Le lecteur du film avait ajouté sa propre page : l'écran qui le suit prend sa place au lieu d'en ajouter une (voir filmSouffle). */
+    if(HIST.unefois){HIST.unefois=false;HIST.i++;history.replaceState(histEtat(),'',urlDe());return;}
     const cur=history.state;
     if(cur&&cur.pepe){cur.y=Math.round(window.scrollY||window.pageYOffset||0);cur.t=Date.now();history.replaceState(cur,'');}
     HIST.i++;history.pushState(histEtat(),'',urlDe());

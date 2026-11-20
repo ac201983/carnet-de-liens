@@ -62,10 +62,12 @@ const BULLE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#f3efe6" stroke-
 const FLECHE = '<svg viewBox="0 0 24 24" fill="none" stroke="#f3efe6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg>';
 const REPONSE = 'Elle va bien, merci.';
 // Les instants (en secondes) : chaque touche, l'hésitation, l'envoi
-const T_DEBUT = 1.0, PAS = [0, 95, 70, 62, 74, 88, 66, 60, 92, 70, 58, 64, 76, 96, 84, 70, 60, 66, 62, 110];
+const T_DEBUT = 0.85, PAS = [0, 95, 70, 62, 74, 88, 66, 60, 92, 70, 58, 64, 76, 96, 84, 70, 60, 66, 62, 110];
 const T_TOUCHE = []; { let t = T_DEBUT; for (let i = 0; i < REPONSE.length; i++) { t += PAS[i] / 1000; T_TOUCHE.push(t); } }
-const T_FIN_FRAPPE = T_TOUCHE[T_TOUCHE.length - 1], T_APPUI = 3.50, T_ENVOI = 3.59;
-window.REPERES = { T_DEBUT, T_TOUCHE, T_FIN_FRAPPE, T_APPUI, T_ENVOI };
+// V3 : après le point final, rien ne bouge que le curseur. Il reste allumé une demi-seconde, s'éteint, se rallume, puis le pouce vient et envoie.
+const BATTEMENT = 1.75, CLIGNE = 0.5;
+const T_FIN_FRAPPE = T_TOUCHE[T_TOUCHE.length - 1], T_APPUI = T_FIN_FRAPPE + BATTEMENT, T_ENVOI = T_APPUI + 0.09;
+window.REPERES = { T_DEBUT, T_TOUCHE, T_FIN_FRAPPE, T_APPUI, T_ENVOI, BATTEMENT, CLIGNE };
 function touche(c) { if (c === ' ') return 'esp'; if (c === ',') return 'virg'; if (c === '.') return 'point'; return c.toLowerCase(); }
 if (ECRAN === 'verrou') {
   tel.className = 'verrou'; tel.style.height = '844px';
@@ -89,8 +91,8 @@ if (ECRAN === 'verrou') {
     let n = 0; for (let i = 0; i < T_TOUCHE.length; i++) if (t >= T_TOUCHE[i]) n = i + 1;
     const envoye = t >= T_ENVOI;
     $('txt').textContent = envoye ? '' : REPONSE.slice(0, n); $('ph').style.display = (!envoye && n) ? 'none' : ''; 
-    const frappe = t >= T_DEBUT - .25 && !envoye; const cl = frappe && (t < T_FIN_FRAPPE + .12 || Math.floor((t - T_FIN_FRAPPE - .12) / .34) % 2 === 1 ? true : false);
-    $('caret').style.visibility = frappe && (t < T_FIN_FRAPPE + .12 || Math.floor((t - T_FIN_FRAPPE - .12) / .34) % 2 === 0) ? 'visible' : 'hidden';
+    const frappe = t >= T_DEBUT - .25 && !envoye;
+    $('caret').style.visibility = frappe && (t < T_FIN_FRAPPE + CLIGNE || Math.floor((t - T_FIN_FRAPPE) / CLIGNE) % 2 === 0) ? 'visible' : 'hidden';
     document.querySelectorAll('.t.on').forEach(e => e.classList.remove('on'));
     for (let i = 0; i < T_TOUCHE.length; i++) if (t >= T_TOUCHE[i] - .012 && t < T_TOUCHE[i] + .085) { const k = document.querySelector('.t[data-k="' + touche(REPONSE[i]) + '"]'); if (k) k.classList.add('on'); if (i === 0) document.querySelector('.t[data-k="maj"]').classList.add('on'); }
     const env = $('env'); env.className = 'envoyer' + (n && !envoye ? ' pret' : '') + (t >= T_APPUI && t < T_ENVOI + .06 ? ' appui' : '');

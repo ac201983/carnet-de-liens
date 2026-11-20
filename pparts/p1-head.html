@@ -2254,6 +2254,15 @@ svg.i.fi-plein{fill:currentColor;stroke-width:1.2}
 .film-go svg.i{width:24px;height:24px}
 .film-etat{position:absolute;left:16px;right:16px;bottom:14px;margin:0;padding:10px 14px;border-radius:8px;background:rgba(4,19,10,.9);color:#F4EFD8;font-size:15.5px;line-height:1.45;text-align:center}
 .film-etat a{color:#B4DE9C;font-weight:800;text-underline-offset:.2em}
+/* La suite, quand le film est fini : un vrai bouton « Souffler 2 minutes » sous la vidéo, clair comme « Lire le film ». La vidéo lui fait de la place en douceur. */
+.film-suite{flex:none;display:flex;justify-content:center;max-height:84px;padding:14px 16px 6px;overflow:hidden}
+.film-souffle{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:min(280px,100%);min-height:56px;padding:0 28px 0 22px;border:0;border-radius:28px;background:#F4EFD8;color:#07240F;font-family:var(--font-ui);font-weight:800;font-size:18px;line-height:1;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,.45);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.film-souffle svg.i{width:24px;height:24px}
+@media (hover:hover){.film-souffle:hover{background:#FFFDF0}}
+@keyframes film-suite{from{max-height:0;padding-top:0;padding-bottom:0}to{max-height:84px;padding-top:14px;padding-bottom:6px}}
+@keyframes film-suite-b{from{transform:translateY(10px)}to{transform:none}}
+html.fx .film-suite{animation:film-suite .32s ease-out}
+html.fx .film-souffle{animation:film-suite-b .32s ease-out}
 .film-bas{flex:none;display:flex;align-items:center;gap:6px;min-height:62px;padding:7px 8px}
 .film-av{flex:1 1 auto;min-width:40px;height:4px;border-radius:2px;background:rgba(244,239,216,.24);overflow:hidden}
 .film-av i{display:block;width:0;height:100%;background:#B4DE9C}

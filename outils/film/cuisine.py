@@ -56,8 +56,9 @@ def cadre(img, f, cx, cy, z, flou_h=0.0):
     return out
 
 # --- les plans ----------------------------------------------------------------------------------------------------------------------
-T1, T3, T6A, T8 = 1.2, 1.6, .8, 3.2
-def allumage(t, t0=.3, d=.14): return float(lisse(t, t0, t0 + d))
+T1, T3, T6A, T8 = .9, 1.2, .8, 2.3                                              # V3 (V2 : 1,2 puis 1,6 puis 0,8 puis 3,2). Le plan s6a n'est plus dans le film.
+ALLUME = .22                                                                    # l'écran s'éclaire 0,22 seconde après le début du film
+def allumage(t, t0=ALLUME, d=.14): return float(lisse(t, t0, t0 + d))
 def image_s1(t, f, ecran):
     """Le téléphone s'éclaire près du verre."""
     img = avec_ecran('verrou', ecran, allumage(t))

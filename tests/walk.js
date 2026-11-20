@@ -39,6 +39,9 @@ async function walk0(page, visit) {
     await page.evaluate(() => { const v = document.querySelector('#film-l video'); if (v) v.pause(); }); await w(300); await visit('film-lecteur');
     // le film démarre en silence, avec le bouton clair « Activer le son ». Un toucher plus loin : le son est là, le bouton est rond, le curseur du volume revient
     await page.click('#film-l #film-s'); await w(300); await visit('film-lecteur-son');
+    // la fin du film : sous la vidéo, le bouton « Souffler 2 minutes » (quand ce navigateur sait lire le film)
+    { const fin = await page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v || !(v.duration > 0)) return r(false); v.addEventListener('ended', () => r(true), { once: true }); try { v.currentTime = Math.max(0, v.duration - .5); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { return r(false); } setTimeout(() => r(v.ended), 8000); }));
+      if (fin) { await w(700); await visit('film-lecteur-fin'); } }
     await page.click('#film-l [data-film="fermer"]'); await w(350); await page.evaluate(() => scrollTo(0, 0)); await w(200);
   }
   // l'accueil est une longue page : chaque chapitre est visité à l'écran (en haut, puis en bas s'il dépasse), le schéma déroulé jusqu'au bout, les volets ouverts

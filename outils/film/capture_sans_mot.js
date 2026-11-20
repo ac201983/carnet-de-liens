@@ -2,10 +2,11 @@
 // Le film écrit ce mot lui-même, au même endroit et dans la même police, pour qu'il reste en place pendant que le cadre se resserre sur la goutte.
 // Pour le film seulement, 2 réglages de finesse sont changés à la volée (rien n'est changé dans le site) : la photo de la goutte est servie agrandie,
 // et le dessin de l'eau suit la finesse de l'écran au lieu d'être plafonné à 2 points par pixel.
-// node capture_app.js <port> <base> <dossier de sortie> [points par pixel=5] [secondes=14.5] [image du toucher=36]
+// node capture_sans_mot.js <port> <base> <dossier de sortie> [points par pixel=5] [secondes=14.5] [image du toucher=36] [ce qui est caché=#souffle-mot]
+// V3 : « #souffle-mot,#souffle-aide » cache aussi la phrase sous le mot (dossier app-st). Le film vertical écrit alors « Inspirez » et « Expirez » lui-même, sur une eau sans texte.
 const { chromium } = require('playwright'); const fs = require('fs');
 const horloge = require('/home/claude/build/goutte/horloge.js');
-const [port = '8446', base = '/essai/', out = 'app', DSF = '5', SEC = '14.5', FT = '36'] = process.argv.slice(2);
+const [port = '8446', base = '/essai/', out = 'app', DSF = '5', SEC = '14.5', FT = '36', CACHE = '#souffle-mot'] = process.argv.slice(2);
 const APP = 'https://localhost:' + port + base; const IPS = 30;
 (async () => {
   fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });
@@ -21,7 +22,7 @@ const APP = 'https://localhost:' + port + base; const IPS = 30;
     await route.fulfill({ status: 200, contentType: 'application/javascript; charset=utf-8', body: t });
   });
   await p.route('**/img/hero.webp*', route => { retouches++; return route.fulfill({ status: 200, contentType: 'image/jpeg', body: fs.readFileSync('/home/claude/build/film/plates/hero-film.jpg') }); });
-  await p.goto(APP, { waitUntil: "load" }); await p.addStyleTag({ content: "#souffle-mot{visibility:hidden!important}" }); await p.waitForSelector('.seuil [data-act="porte"][data-v="souffle"]'); await p.waitForTimeout(2600);
+  await p.goto(APP, { waitUntil: "load" }); await p.addStyleTag({ content: CACHE + "{visibility:hidden!important}" }); await p.waitForSelector('.seuil [data-act="porte"][data-v="souffle"]'); await p.waitForTimeout(2600);
   const porte = await p.$eval('.seuil [data-act="porte"][data-v="souffle"]', e => { const r = e.getBoundingClientRect(); const b = e.querySelector('b') || e; const rb = b.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height, tx: rb.left, ty: rb.top, tw: rb.width, th: rb.height, texte: e.textContent.replace(/\s+/g, ' ').trim() }; });
   const doigt = { x: Math.round(porte.tx + Math.min(porte.tw * .62, 150)), y: Math.round(porte.y + porte.h * .52) };
   await p.evaluate(() => window.__vt.on());

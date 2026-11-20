@@ -9,7 +9,7 @@ const [quoi = 'fil', out = 'fil', DSF = '5'] = process.argv.slice(2);
   fs.mkdirSync(out, { recursive: true });
   if (quoi === 'verrou') { await p.screenshot({ path: out + '/verrou.png' }); console.log('verrou fait'); }
   else {
-    const rep = await p.evaluate(() => window.REPERES); const n = Math.round(4.2 * 30);
+    const rep = await p.evaluate(() => window.REPERES); const n = Math.round(4.6 * 30);      // V3 : 4,6 secondes (138 images)
     for (let i = 0; i < n; i++) { await p.evaluate(t => window.etat(t), i / 30); fs.writeFileSync(out + '/' + String(i).padStart(4, '0') + '.jpg', await p.screenshot({ type: 'jpeg', quality: 95 })); }
     fs.writeFileSync(out + '/reperes.json', JSON.stringify(rep)); console.log('fil fait', n, 'images', JSON.stringify(rep).slice(0, 200));
   }

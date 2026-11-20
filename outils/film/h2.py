@@ -1,3 +1,5 @@
+# Version 2 : ce script va avec ecran.py et montage.py de la version 2 (20 novembre 2026, 7 h). Dans la version 3, le film horizontal a ce cadre en 2 temps d'office,
+# et ce script ne sert plus : il reste ici pour l'histoire. Le film qu'il a produit est gardé sous le nom et-vous-horizontal-version-2.mp4.
 # Proposition H2 : le film horizontal avec la même correction que le vertical à l'entrée de « Souffler » (le cadre en 2 temps).
 # Rien n'est écrasé : le plan refait va dans out/H2/s7.mp4, les autres plans sont ceux de out/H/, et le film sort dans out/H2/et-vous-horizontal.mp4.
 # python3 h2.py [planche]   (« planche » : seulement une planche d'images de l'entrée, dans tmp/zoom/h2.jpg)
