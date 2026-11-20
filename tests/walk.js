@@ -9,7 +9,20 @@ const KEY = process.env.PEPE_KEY || 'pepe-v1';
 // Le lien d'une petite fiche de relais, fabriqué avec le code du site (build/lancement/lien-exemple.js). Les prénoms et le numéro sont inventés.
 const FICHE_RECUE = 'relais/#f=1.YQQTTm_DqQRUEthSsMOpbWkFVCAHNSAq_jYfJweLQ69Dr0OvQ6gJQf4uBUBEL0QvRC4DgAQBokRdQwB1LeUjAQLwcyfQYQxuaWzgLbJvaXIuzxHBElI0dp9RdHI2oLLyOQDhY2GfoTgSPYByb-8GkTbdPfIkgm6KkXqwo7b_BkIYChJ_En8SfxJ_En8Sfx8SfyfKExJu3gNBcMOi468CEqByaXoQwQFiLvD_BEQthYNfg1-DX4NSLvg3MnMvQTcBMDAAQAAwL74xADkifa6BYw';
 
-async function walk(page, visit) {
+// PEPE_SEUL : pour ne regarder qu'une partie des écrans (une expression, par exemple « film »). Le parcours avance comme d'habitude, mais visit n'est appelé que sur les écrans dont le nom convient.
+// PEPE_JUSQUA : le nom du dernier écran à regarder. Le parcours s'arrête juste après lui (les écrans du film sont tous au début).
+const SEUL = process.env.PEPE_SEUL ? new RegExp(process.env.PEPE_SEUL) : null;
+const JUSQUA = process.env.PEPE_JUSQUA || '';
+const ARRET = new Error('fin du parcours demandée');
+async function walk(page, visit0) {
+  const visit = async (nom, ...r) => {
+    const x = (!SEUL || SEUL.test(nom)) ? await visit0(nom, ...r) : undefined;
+    if (JUSQUA && nom === JUSQUA) throw ARRET;
+    return x;
+  };
+  try { return await walk0(page, (SEUL || JUSQUA) ? visit : visit0); } catch (e) { if (e !== ARRET) throw e; }
+}
+async function walk0(page, visit) {
   const w = ms => page.waitForTimeout(ms);
   const tab = v => page.click('.tab' + A('go', `[data-view="${v}"]`));
   // ----- accueil
@@ -24,6 +37,8 @@ async function walk(page, visit) {
     await page.evaluate(() => document.querySelector('[data-act="film"]').scrollIntoView({ block: 'center' })); await w(300); await visit('accueil-film-commande');
     await page.click(A('film')); await page.waitForSelector('#film-l'); await w(600);
     await page.evaluate(() => { const v = document.querySelector('#film-l video'); if (v) v.pause(); }); await w(300); await visit('film-lecteur');
+    // le film démarre en silence, avec le bouton clair « Activer le son ». Un toucher plus loin : le son est là, le bouton est rond, le curseur du volume revient
+    await page.click('#film-l #film-s'); await w(300); await visit('film-lecteur-son');
     await page.click('#film-l [data-film="fermer"]'); await w(350); await page.evaluate(() => scrollTo(0, 0)); await w(200);
   }
   // l'accueil est une longue page : chaque chapitre est visité à l'écran (en haut, puis en bas s'il dépasse), le schéma déroulé jusqu'au bout, les volets ouverts

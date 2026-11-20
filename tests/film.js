@@ -21,13 +21,17 @@ const ok = (c, m) => { n++; if (!c) { ko++; console.log('  ÉCHEC : ' + m); } };
 const net = s => (s || '').split(String.fromCharCode(160)).join(' ').replace(/\s+/g, ' ').trim();
 const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTouch: true, deviceScaleFactor: 2 }, 'vertical', [1080, 1920]], ['ordinateur', { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, 'horizontal', [1920, 1080]]];
 const FICHIERS = ['et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4'];
+// La première version du film vertical (celle du 20 novembre à 4 heures, avant la correction de l'entrée dans « Souffler ») reste à sa propre adresse, pour comparer.
+const GARDES = ['et-vous-vertical-version-1.mp4'];
 // Ce que montre le lecteur, relevé dans la page
 const etat = page => page.evaluate(() => {
   const l = document.getElementById('film-l'), v = l && l.querySelector('video'), q = s => l && l.querySelector(s), app = document.getElementById('app');
   return {
     ouvert: !!l, role: l ? l.getAttribute('role') + '/' + l.getAttribute('aria-modal') : '', titre: l && q('#film-t') ? q('#film-t').textContent : '',
     v: v ? { paused: v.paused, t: v.currentTime, d: v.duration, w: v.videoWidth, h: v.videoHeight, muted: v.muted, vol: v.volume, ended: v.ended, src: (v.currentSrc || v.getAttribute('src') || '').replace(/^.*\/film\//, '').replace(/\?.*$/, ''), rs: v.readyState, err: v.error ? v.error.code : 0, inline: v.hasAttribute('playsinline'), pre: v.getAttribute('preload') } : null,
-    j: q('#film-j') ? q('#film-j').getAttribute('aria-label') : '', s: q('#film-s') ? q('#film-s').getAttribute('aria-label') + '/' + q('#film-s').getAttribute('aria-pressed') : '',
+    j: q('#film-j') ? q('#film-j').getAttribute('aria-label') : '', s: q('#film-s') ? (q('#film-s').getAttribute('aria-label') || q('#film-s').textContent.trim()) : '',
+    // le bouton du son tel qu'on le voit : ses mots écrits, sa taille, sa couleur de fond, et s'il tient dans l'écran
+    son: (() => { const b = q('#film-s'); if (!b) return null; const r = b.getBoundingClientRect(), c = getComputedStyle(b); return { mots: (b.innerText || '').trim(), l: Math.round(r.width), h: Math.round(r.height), fond: c.backgroundColor, encre: c.color, taille: parseFloat(c.fontSize), dans: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + .5 && r.bottom <= innerHeight + .5, pressed: b.hasAttribute('aria-pressed') }; })(),
     go: !!(q('.film-go') && !q('.film-go').hidden), msg: q('.film-etat') && !q('.film-etat').hidden ? q('.film-etat').textContent : '', volVisible: !!(q('#film-vol') && !q('#film-vol').hidden),
     dedans: !!(l && l.contains(document.activeElement)), foyer: document.activeElement ? (document.activeElement.id || document.activeElement.className || document.activeElement.tagName) : '',
     inerte: !!(app && app.inert), videos: document.querySelectorAll('video').length, y: Math.round(window.scrollY), url: location.pathname + location.hash, vue: (document.querySelector('main') || {}).className || ''
@@ -73,7 +77,7 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
   // ----- 1. Les fichiers, tels que le serveur les donne
   const api = await pw.request.newContext({ ignoreHTTPSErrors: true });
   if (mode === 'absent') {
-    for (const f of FICHIERS) { const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); ok(r && r.status() === 404, '1. sans film, ' + f + ' n’existe pas ' + (r ? r.status() : 'pas de réponse')); }
+    for (const f of FICHIERS.concat(GARDES)) { const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); ok(r && r.status() === 404, '1. sans film, ' + f + ' n’existe pas ' + (r ? r.status() : 'pas de réponse')); }
   } else {
     const poids = [];
     for (const f of FICHIERS) {
@@ -84,6 +88,10 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
       ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || '') && total > 500000 && (await r.body()).length === 1024,
         '1. ' + f + ' : le serveur donne un morceau du fichier (206), annoncé comme video/mp4 ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
       poids.push(f.replace('et-vous-', '').replace('.mp4', '') + ' ' + (total / 1048576).toFixed(1) + ' Mo');
+    }
+    for (const f of GARDES) {
+      const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); const h = r ? r.headers() : {};
+      ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || ''), '1. ' + f + ' : la version gardée pour comparer répond à sa propre adresse ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
     }
     for (const f of ['apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp']) {
       const r = await api.get(APP + 'film/' + f).catch(() => null); const b = r && r.ok() ? await r.body() : Buffer.alloc(0);
@@ -145,9 +153,11 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
         ok(lu, P('3. le film se lit réellement : la vidéo avance ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.rs, e.v.err, e.msg])));
         ok(e.v && e.v.src === 'et-vous-' + quel + '.mp4' && e.v.w === taille[0] && e.v.h === taille[1], P('3. c’est le film ' + quel + ', en ' + taille.join(' × ') + ' ' + JSON.stringify(e.v && [e.v.src, e.v.w, e.v.h])));
         ok(e.v && Math.abs(e.v.d - 35) < .25, P('3. il dure 35 secondes ' + (e.v && e.v.d)));
-        ok(e.v && !e.v.muted && e.v.vol > 0, P('3. il joue avec son son (le parent vient de le lancer) ' + JSON.stringify(e.v && [e.v.muted, e.v.vol])));
+        ok(e.v && e.v.muted, P('3. il démarre en silence ' + JSON.stringify(e.v && [e.v.muted, e.v.vol])));
+        ok(e.s === 'Activer le son' && e.son && e.son.mots === 'Activer le son' && e.son.h >= 44 && e.son.l >= 150 && e.son.taille >= 15 && e.son.fond === 'rgb(244, 239, 216)' && e.son.encre === 'rgb(7, 36, 15)' && e.son.dans && !e.son.pressed, P('3. « Activer le son » est écrit en toutes lettres sur un bouton clair, bien visible ' + JSON.stringify([e.s, e.son])));
+        ok(!e.volVisible, P('3. tant que le film est muet, il n’y a pas de curseur de volume'));
         ok(!e.go && e.j === 'Mettre en pause' && !e.msg, P('3. le bouton dit « Mettre en pause » ' + JSON.stringify([e.go, e.j, e.msg])));
-        ok(demandes.includes('et-vous-' + quel + '.mp4') && !demandes.includes('et-vous-' + (quel === 'vertical' ? 'horizontal' : 'vertical') + '.mp4') && !demandes.includes('et-vous-raccord-5s.mp4'), P('3. un seul film est chargé, celui de cet écran ' + JSON.stringify(demandes)));
+        ok(demandes.includes('et-vous-' + quel + '.mp4') && !demandes.includes('et-vous-' + (quel === 'vertical' ? 'horizontal' : 'vertical') + '.mp4') && !demandes.includes('et-vous-raccord-5s.mp4') && !demandes.some(d => /version-/.test(d)), P('3. un seul film est chargé, celui de cet écran ' + JSON.stringify(demandes)));
         if (lu) { lectureVraie++; lues.push(quel + ' ' + (e.v ? e.v.w + ' × ' + e.v.h : '')); }
         // ----- 4. Pause, reprise, son
         await page.click('#film-j'); await attend(page, () => document.querySelector('#film-l video').paused); e = await etat(page); const tPause = e.v.t;
@@ -156,9 +166,13 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
         await page.click('#film-j'); const repris = await joue(page, tPause + .4, 15000); e = await etat(page);
         ok(repris && e.j === 'Mettre en pause', P('4. « Reprendre le film » repart où il en était ' + JSON.stringify([repris, e.j])));
         await page.click('#film-s'); e = await etat(page);
-        ok(e.v.muted && e.s === 'Remettre le son/true', P('4. « Couper le son » ' + JSON.stringify([e.v.muted, e.s])));
+        ok(!e.v.muted && e.v.vol > 0 && e.s === 'Couper le son' && e.son.mots === '' && !e.v.paused, P('4. « Activer le son » met le son, sans arrêter le film. Le bouton devient « Couper le son » ' + JSON.stringify([e.v.muted, e.v.vol, e.s, e.v.paused])));
+        const volPossible = await page.evaluate(() => { const v = document.createElement('video'); try { v.volume = .5; return Math.abs(v.volume - .5) < .01; } catch (x) { return false; } });
+        ok(e.volVisible === volPossible, P('4. avec le son, le curseur du volume est là quand l’appareil laisse la page le régler ' + JSON.stringify([e.volVisible, volPossible])));
         await page.click('#film-s'); e = await etat(page);
-        ok(!e.v.muted && e.s === 'Couper le son/false', P('4. « Remettre le son » ' + JSON.stringify([e.v.muted, e.s])));
+        ok(e.v.muted && e.s === 'Activer le son' && e.son.mots === 'Activer le son' && !e.volVisible, P('4. « Couper le son » le coupe, et le bouton clair « Activer le son » revient ' + JSON.stringify([e.v.muted, e.s, e.volVisible])));
+        await page.click('#film-s'); e = await etat(page);
+        ok(!e.v.muted && e.s === 'Couper le son', P('4. le son revient au toucher suivant ' + JSON.stringify([e.v.muted, e.s])));
         if (e.volVisible) {
           await page.evaluate(() => { const r = document.querySelector('#film-vol'); r.value = '40'; r.dispatchEvent(new Event('input', { bubbles: true })); }); await page.waitForTimeout(150); e = await etat(page);
           ok(Math.abs(e.v.vol - .4) < .02 && !e.v.muted, P('4. le curseur règle le volume ' + JSON.stringify([e.v.vol, e.v.muted])));
@@ -177,6 +191,8 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
       ok(!e.inerte && /film-cmd/.test(e.foyer), P('5. l’accueil répond de nouveau, le clavier revient sur la commande ' + JSON.stringify([e.inerte, e.foyer])));
       // ----- 6. Le bouton Retour du téléphone
       await page.click(A('film')); await page.waitForSelector('#film-l'); if (peut) await joue(page, .6, 20000);
+      e = await etat(page);
+      ok(e.v && e.v.muted && e.s === 'Activer le son' && !e.volVisible, P('6. rouvert, le film repart en silence, même si le son était activé à la fermeture ' + JSON.stringify(e.v && [e.v.muted, e.s, e.volVisible])));
       await page.goBack().catch(() => { }); await attend(page, () => !document.getElementById('film-l')); await page.waitForTimeout(350);
       e = await etat(page);
       ok(!e.ouvert && e.videos === 0, P('6. le retour arrière ferme le lecteur et arrête le son ' + JSON.stringify([e.ouvert, e.videos])));
@@ -187,11 +203,13 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
       ok(!e.ouvert && e.videos === 0 && e.y === y0, P('6. la touche Échap ferme le lecteur ' + JSON.stringify([e.ouvert, e.videos, e.y])));
       // ----- 7. Jusqu'au bout, une fois (au format téléphone)
       if (peut && !COURT && nom === 'téléphone') {
-        await page.click(A('film')); await page.waitForSelector('#film-l');
+        await page.click(A('film')); await page.waitForSelector('#film-l'); await joue(page, .6, 20000); await page.click('#film-s');
         const fini = await attend(page, () => { const v = document.querySelector('#film-l video'); return v && v.ended; }, null, 70000); e = await etat(page);
         ok(fini && e.j === 'Revoir le film' && e.v.t > 34.5, P('7. le film va jusqu’au bout, puis le bouton propose « Revoir le film » ' + JSON.stringify([fini, e.j, e.v && e.v.t])));
         await page.click('#film-j'); const rejoue = await attend(page, () => { const v = document.querySelector('#film-l video'); return v && !v.paused && !v.ended && v.currentTime > .3 && v.currentTime < 6; }, null, 15000);
         ok(rejoue, P('7. « Revoir le film » le relance depuis le début'));
+        e = await etat(page);
+        ok(!e.v.muted && e.s === 'Couper le son', P('7. « Revoir le film » garde le son que le parent avait activé ' + JSON.stringify([e.v.muted, e.s])));
         await page.click('#film-l [data-film="fermer"]'); await attend(page, () => !document.getElementById('film-l'));
       }
       // ----- 8. « Souffler » répond toujours, tout de suite après
@@ -214,7 +232,7 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
       if (peut2) {
         if (mode === 'pret') lectureAttendue++;
         const lu = await joue(p2, 1.2); e = await etat(p2);
-        ok(lu && e.v.src === 'et-vous-' + quel + '.mp4' && e.v.w === taille[0] && e.v.h === taille[1] && !e.v.muted, P('9. « Lire le film » le lance : le film ' + quel + ' se lit réellement ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.src, e.v.w, e.v.h, e.v.muted, e.v.err, e.msg])));
+        ok(lu && e.v.src === 'et-vous-' + quel + '.mp4' && e.v.w === taille[0] && e.v.h === taille[1] && e.v.muted && e.s === 'Activer le son', P('9. « Lire le film » le lance, en silence : le film ' + quel + ' se lit réellement ' + JSON.stringify(e.v && [e.v.paused, Math.round(e.v.t * 10) / 10, e.v.src, e.v.w, e.v.h, e.v.muted, e.v.err, e.msg])));
         if (lu && mode === 'pret') { lectureVraie++; lues.push(quel + ' ' + e.v.w + ' × ' + e.v.h); }
         await p2.click('#film-j'); await attend(p2, () => document.querySelector('#film-l video').paused); e = await etat(p2);
         ok(e.v.paused && e.j === 'Reprendre le film', P('9. la pause répond ' + JSON.stringify([e.v.paused, e.j])));

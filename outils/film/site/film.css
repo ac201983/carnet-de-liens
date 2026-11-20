@@ -26,6 +26,11 @@ svg.i.fi-plein{fill:currentColor;stroke-width:1.2}
 .film-av{flex:1 1 auto;min-width:40px;height:4px;border-radius:2px;background:rgba(244,239,216,.24);overflow:hidden}
 .film-av i{display:block;width:0;height:100%;background:#B4DE9C}
 .film-tps{flex:none;min-width:40px;padding-right:2px;text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#A9C9A0}
+/* Le film démarre en silence. Tant qu'il est muet, le bouton du son est clair, large et écrit en toutes lettres : « Activer le son ». */
+.film-b.film-act{display:inline-flex;align-items:center;gap:8px;width:auto;height:46px;margin-left:4px;padding:0 17px 0 12px;border-radius:23px;background:#F4EFD8;color:#07240F;font-family:var(--font-ui);font-weight:800;font-size:16px;line-height:1;white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.film-b.film-act svg.i{width:24px;height:24px}
+@media (hover:hover){.film-b.film-act:hover{background:#FFFDF0}}
+@media (max-width:359px){.film-l.muet .film-tps{display:none}.film-b.film-act{padding:0 13px 0 9px;font-size:15px}}
 .film-vol{flex:none;width:92px;height:44px;margin:0 6px 0 0;accent-color:#B4DE9C;cursor:pointer}
 @media (max-width:420px){.film-vol{width:72px}}
 .film-l :focus-visible{outline:3px solid #D8DF7E;outline-offset:2px}

@@ -60,11 +60,27 @@ def image(nom, i, f):
     if nom == 's6a': return raccord.finition(cuisine.image_s6a(t, f, ecran_accueil()), n, f)
     if nom == 's6': return ecran.finition_ui(ecran.image_s6(i, f), n, f)
     if nom == 's7':
+        ji, je = ecran.C_INSPIREZ - ecran.C_SOUFFLE0, ecran.C_EXPIREZ - ecran.C_SOUFFLE0
+        if f == 'V':
+            # Vertical : le cadre reste large tant que l'application écrit « Installez-vous », puis il plonge vers la goutte à la première note.
+            # Plusieurs instants par image pendant l'onde et pendant la plongée, pour le flou de mouvement.
+            fin = ji + ecran.JVD
+            k = 8 if i < 18 else (2 if i < ji else ((16 if ji + 3 <= i <= fin - 3 else 8) if i <= fin else 1))
+            img = sum(ecran.image_s7(i, f, d / k) for d in range(k)) / k
+            img = img * (1 - ombre_mot(f) * float(lisse(i, ji + 4, fin)))                    # un peu d'ombre sous le mot : sous la goutte il se pose sur des reflets clairs
+            # le grand mot : jusqu'à la première note c'est celui de l'application. Ensuite le film l'écrit lui-même, à la même place, et le descend sous la goutte.
+            if i >= ji:
+                p = 1 - float(lisse(i, je - 2, je + 7))
+                if p > .003:
+                    kk = k if i <= fin else 1
+                    c = sum(ecran.calque_mot('inspirez', f, ecran.mot_y_v(i + d / kk))[0] for d in range(kk)) / kk
+                    a = sum(ecran.calque_mot('inspirez', f, ecran.mot_y_v(i + d / kk))[1] for d in range(kk)) / kk
+                    img = img * (1 - a * np.float32(p)) + c * np.float32(p)
+                img = ecran.pose_mot(img, 'expirez', f, ecran.MOT_V, float(lisse(i, je + 3, je + 14)))
+            return ecran.finition_ui(img, n, f)
         k = 8 if i < 30 else (4 if i < ecran.JP else 1)                 # le rapprochement est rapide : plusieurs instants par image lui donnent son flou de mouvement
         img = sum(ecran.image_s7(i, f, d / k) for d in range(k)) / k
-        # le cadre se resserre sur la goutte et le mot de l'application sort de l'image : le film le reprend, dans la même police
-        ji, je = ecran.C_INSPIREZ - ecran.C_SOUFFLE0, ecran.C_EXPIREZ - ecran.C_SOUFFLE0
-        if f == 'V': img = img * (1 - ombre_mot(f) * float(lisse(i, ji + 1, ji + 13)))       # un peu d'ombre sous le mot : il se pose sur des reflets clairs
+        # le cadre se resserre sur la goutte et le mot de l'application sort de l'image : le film le reprend
         img = pose(img, 'inspirez', f, float(lisse(i, ji + 1, ji + 13)) * (1 - float(lisse(i, je - 2, je + 7))))
         img = pose(img, 'expirez', f, float(lisse(i, je + 3, je + 14)))
         return ecran.finition_ui(img, n, f)

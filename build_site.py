@@ -84,7 +84,7 @@ def son_version():
 
 
 def film_version():
-    """Empreinte courte des fichiers de site-src/film/ (les 2 films, l'extrait, l'aperçu et les affiches)."""
+    """Empreinte courte des fichiers de site-src/film/ (les 2 films, l'extrait, l'aperçu, les affiches, et les versions gardées pour comparer)."""
     h = hashlib.sha256()
     d = SRC + '/film'
     for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
@@ -351,7 +351,9 @@ def build_site():
         if manque:
             raise SystemExit('Il manque dans site-src/film/ : ' + ', '.join(manque))
         os.makedirs(OUT + '/film')
-        for f in attendus:
+        # Les versions gardées pour comparer (« et-vous-…-version-N.mp4 ») suivent, quand il y en a : le lecteur ne les charge jamais, elles n'ont que leur adresse.
+        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'et-vous-[a-z0-9-]+-version-[0-9]+\.mp4', f)))
+        for f in attendus + gardes:
             shutil.copy2(SRC + '/film/' + f, OUT + '/film/' + f)
     for f in sorted(os.listdir(SRC + '/icons')):
         shutil.copy2(SRC + '/icons/' + f, OUT + '/' + f)

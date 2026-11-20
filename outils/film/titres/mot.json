@@ -1,0 +1,23 @@
+{
+ "dsf": 5,
+ "Inspirez": {
+  "x": 0,
+  "y": 46.453125,
+  "w": 390,
+  "h": 47.078125,
+  "taille": "44.85px",
+  "police": "Newsreader, Georgia, \"Times New Roman\", serif",
+  "graisse": "500",
+  "police_chargee": true
+ },
+ "Expirez": {
+  "x": 0,
+  "y": 46.453125,
+  "w": 390,
+  "h": 47.078125,
+  "taille": "44.85px",
+  "police": "Newsreader, Georgia, \"Times New Roman\", serif",
+  "graisse": "500",
+  "police_chargee": true
+ }
+}
