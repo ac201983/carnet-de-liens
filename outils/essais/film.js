@@ -47,12 +47,29 @@ const etat = page => page.evaluate(() => {
 });
 const joue = (page, apres = 1, delai = 40000) => page.waitForFunction(t => { const v = document.querySelector('#film-l video'); return !!v && !v.paused && v.currentTime > t; }, apres, { timeout: delai }).then(() => true, () => false);
 // Va à la dernière seconde du film et le laisse finir : rend vrai quand le film est arrivé au bout.
-// Le saut est demandé quand le film joue pour de bon, et redemandé s'il n'a pas pris (un saut demandé pendant qu'un autre est en cours peut être perdu, vu dans WebKit).
-const auBout = page => page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v) return r(false); if (v.ended) return r(true);
+// Le saut est demandé quand le film joue pour de bon, et redemandé s'il n'a pas pris (un saut demandé pendant qu'un autre est en cours peut être perdu : c'est l'explication la plus probable d'un arrêt vu dans WebKit).
+const auBout0 = page => page.evaluate(() => new Promise(r => { const v = document.querySelector('#film-l video'); if (!v) return r(false); if (v.ended) return r(true);
   let fini = false; const fin = q => { if (fini) return; fini = true; clearInterval(tic); r(q); }; v.addEventListener('ended', () => fin(true), { once: true });
   const d = () => (v.duration > 0 ? v.duration : 35), saute = () => { try { v.currentTime = Math.max(0, d() - 1); const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (e) { } };
   let n = 0; const tic = setInterval(() => { n++; if (v.ended) return fin(true); if (!v.seeking && v.currentTime < d() - 2.5 && n % 6 === 1) saute(); if (n > 120) fin(v.ended); }, 500); }));
 const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { timeout: delai }).then(() => true, () => false);
+// Un navigateur dit « terminé » (video.ended) un instant avant d'en prévenir la page : le lecteur ne change ses boutons qu'à ce moment-là.
+// Après la fin, on lui laisse donc le temps de l'apprendre, au lieu de le lire à l'instant même.
+const auBout = async page => { const f = await auBout0(page); if (f) await attend(page, () => { const j = document.querySelector('#film-j'); return !j || j.getAttribute('aria-label') === 'Revoir le film'; }, null, 5000); return f; };
+// Le film joue jusqu'à sa fin, sans saut. Rend ce qui a été vu dans la page : la fin (fini), le bouton « Revoir le film » (lu), et, comptés depuis
+// l'instant où le navigateur dit « terminé », le temps jusqu'à ce bouton (ms), jusqu'à l'événement de pause (pause) et jusqu'à l'événement de fin (ended).
+const finNaturelle = (page, delai = 70000) => page.evaluate(delai => new Promise(r => {
+  const v = document.querySelector('#film-l video'), j = document.querySelector('#film-j'), d0 = performance.now(); if (!v || !j) return r({ fini: false });
+  let t0 = null, tl = null, tp = null, te = null;
+  v.addEventListener('pause', () => { if (tp === null) tp = performance.now(); }); v.addEventListener('ended', () => { if (te === null) te = performance.now(); });
+  const de = x => (x === null || t0 === null ? null : Math.round(x - t0));
+  const tic = () => { const t = performance.now(); if (t0 === null && v.ended) t0 = t;
+    if (t0 !== null && tl === null && j.getAttribute('aria-label') === 'Revoir le film') tl = t;
+    if (tl !== null && t - tl > 80) return r({ fini: true, lu: true, ms: de(tl), pause: de(tp), ended: de(te) });
+    if (t0 !== null && tl === null && t - t0 > 5000) return r({ fini: true, lu: false, ms: null, pause: de(tp), ended: de(te) });
+    if (t - d0 > delai) return r({ fini: false, lu: false, t: v.currentTime, paused: v.paused });
+    setTimeout(tic, 4); };
+  tic(); }), delai).catch(() => ({ fini: false }));
 
 (async () => {
   const LOCAL = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
@@ -223,8 +240,10 @@ const attend = (page, f, arg, delai = 8000) => page.waitForFunction(f, arg, { ti
       // ----- 7. Jusqu'au bout, une fois (au format téléphone)
       if (peut && !COURT && nom === 'téléphone') {
         await page.click(A('film')); await page.waitForSelector('#film-l'); await joue(page, .6, 20000); await page.click('#film-s');
-        const fini = await attend(page, () => { const v = document.querySelector('#film-l video'); return v && v.ended; }, null, 70000); e = await etat(page);
-        ok(fini && e.j === 'Revoir le film' && e.v.t > 34.5, P('7. le film va jusqu’au bout, puis le bouton propose « Revoir le film » ' + JSON.stringify([fini, e.j, e.v && e.v.t])));
+        const fin7 = await finNaturelle(page), fini = !!fin7.fini; e = await etat(page);
+        ok(fini && fin7.lu && e.j === 'Revoir le film' && e.v.t > 34.5, P('7. le film va jusqu’au bout, puis le bouton propose « Revoir le film » ' + JSON.stringify([fini, e.j, e.v && e.v.t, fin7])));
+        ok(e.v && e.v.ended && e.suite && e.suite.vue && e.suite.mots === 'Souffler 2 minutes' && /terminé/.test(e.fin), P('7. quand le film se termine de lui-même, le bouton « Souffler 2 minutes » apparaît ' + JSON.stringify([e.v && e.v.ended, e.suite && e.suite.vue, e.suite && e.suite.mots, e.fin])));
+        if (fini) notes.push(nom + ' : quand le film se termine de lui-même, le lecteur affiche « Revoir le film » ' + fin7.ms + ' ms après que le navigateur a dit « terminé » (événement de pause à ' + fin7.pause + ' ms, événement de fin à ' + fin7.ended + ' ms)');
         await page.click('#film-j'); const rejoue = await attend(page, () => { const v = document.querySelector('#film-l video'); return v && !v.paused && !v.ended && v.currentTime > .3 && v.currentTime < 6; }, null, 15000);
         ok(rejoue, P('7. « Revoir le film » le relance depuis le début'));
         e = await etat(page);
