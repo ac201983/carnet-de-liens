@@ -125,7 +125,12 @@ if [ -f site/essai/index.html ]; then
     note "Le film de présentation" \
       "$(vue "le film vertical" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
       "$(vue "le film horizontal" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal.mp4" -I)" \
-      "$(vue "l'export vertical pour Instagram, à télécharger" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram.mp4" -I)" \
+      "$(vue "la bande-annonce verticale de 30 secondes, à télécharger" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4" -I)" \
+      "$(vue "les crédits du film" "$adresse/essai/film/credits.txt")" \
+      "$(vue "le premier montage vertical, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical-version-1.mp4" -I)" \
+      "$(vue "le premier montage horizontal, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal-version-1.mp4" -I)" \
+      "$(vue "le premier montage pour Instagram, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram-version-1.mp4" -I)" \
+      "$(vue "l'ancienne adresse de l'export pour Instagram (ne doit plus exister : 404 attendu)" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram.mp4" -I)" \
       "$(vue "l'image d'aperçu" "$adresse/essai/film/apercu-film.webp")" \
       "$(vue "le film à l'adresse du site public (ne doit pas exister : 404 attendu)" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
       "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"

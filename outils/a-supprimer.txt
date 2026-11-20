@@ -16,3 +16,7 @@ antonio.js
 # L'ancien morceau de 2 minutes de la respiration, dans la version d'essai. Depuis le 18 novembre 2026 au soir,
 # la musique de la respiration est jouée note après note à partir de son/notes.mp3 et son/eau.mp3.
 essai/son/etang.mp3
+
+# L'export pour Instagram du premier montage de « Ce qu'on ne dit pas par SMS ». Depuis le 21 novembre 2026, le premier montage
+# est gardé en sauvegarde sous les noms …-version-1.mp4, et le nouveau montage a sa bande-annonce verticale de 30 secondes.
+essai/film/ce-quon-ne-dit-pas-par-sms-instagram.mp4
