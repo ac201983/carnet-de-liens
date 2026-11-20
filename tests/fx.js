@@ -11,6 +11,8 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const { walk, APP, A } = require('./walk');
 const W = parseInt(process.argv[2] || '390', 10);
+// La clé sous laquelle l'espace range ses notes : celle du site, ou celle de la version d'essai (PEPE_KEY) quand l'essai tourne sur elle.
+const CLE = process.env.PEPE_KEY || 'pepe-v1';
 const OLD = process.argv[3] === 'ancien';
 const EAU_SEULE = process.argv.includes('--eau');
 const OUT = '/home/claude/build/fx/frames'; fs.mkdirSync(OUT, { recursive: true });
@@ -138,7 +140,7 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   ok(mots0.goutte && mots0.chute === 'dg-chute' && mots0.touche === 'none', 'dépôt : une goutte tombe à côté des mots, sans gêner le doigt ' + JSON.stringify([mots0.goutte, mots0.chute]));
   await page.waitForTimeout(140); await page.screenshot({ path: OUT + '/depot-0260.png' });
   await page.waitForTimeout(300); await page.screenshot({ path: OUT + '/depot-0560.png' }); await page.waitForTimeout(500); await page.screenshot({ path: OUT + '/depot-1060.png' }); await page.waitForTimeout(500); await page.screenshot({ path: OUT + '/depot-1560.png' }); await page.waitForTimeout(1600);
-  ok(await page.$('.mirror .q') && (await page.$eval('#draft', e => e.value)) === '' && (await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).depots.length)) === 1, 'dépôt : un seul dépôt enregistré, champ vidé, réponse affichée');
+  ok(await page.$('.mirror .q') && (await page.$eval('#draft', e => e.value)) === '' && (await page.evaluate(k => JSON.parse(localStorage.getItem(k)).depots.length, CLE)) === 1, 'dépôt : un seul dépôt enregistré, champ vidé, réponse affichée');
   await page.waitForTimeout(700);
   const mots1 = await page.evaluate(() => { const e = document.querySelector('.emporte'), m = e.querySelector('.em-texte'), g = e.querySelector('.depose-g'); return { ecart: Math.round(m.getBoundingClientRect().top - e.getBoundingClientRect().top), goutte: g ? getComputedStyle(g.querySelector('.dg-g')).visibility : 'retirée', ondes: g ? [...g.querySelectorAll('ellipse')].map(x => getComputedStyle(x).strokeOpacity).join(' ') : '0 0', n: document.querySelectorAll('.depose-g').length }; });
   ok(mots1.ecart === mots0.ecart && (mots1.goutte === 'hidden' || mots1.goutte === 'retirée') && mots1.ondes === '0 0' && mots1.n <= 1, 'dépôt : la goutte est tombée une seule fois, ses ondes se sont effacées, et les mots n’ont pas bougé ' + JSON.stringify(mots1));
@@ -197,7 +199,7 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   await page.click('.tab' + A('go', '[data-view="me"]')); await page.waitForTimeout(1900);
   ok(/sans l’eau/.test(await page.$eval(A('fx') + ' .state', e => e.textContent)), 'réglage : sans carte graphique, il indique « Activés, sans l’eau »');
   await page.click(A('fx')); await page.waitForTimeout(200);
-  ok(!(await page.evaluate(() => document.documentElement.classList.contains('fx'))) && (await page.evaluate(() => JSON.parse(localStorage.getItem('pepe-v1')).fxOff)) === true, 'réglage : effets coupés et choix mémorisé');
+  ok(!(await page.evaluate(() => document.documentElement.classList.contains('fx'))) && (await page.evaluate(k => JSON.parse(localStorage.getItem(k)).fxOff, CLE)) === true, 'réglage : effets coupés et choix mémorisé');
   await page.click('.tab' + A('go', '[data-view="today"]')); ok(/Camille/.test(await page.$eval('h1', e => e.textContent)) && (await page.$$('.fxe,.fxr')).length === 0, 'effets coupés : le changement d’écran est immédiat, aucun bloc animé');
   await page.reload(); await page.waitForTimeout(500); ok(!(await page.evaluate(() => document.documentElement.classList.contains('fx'))), 'effets coupés : toujours coupés après rechargement');
   await browser.close();

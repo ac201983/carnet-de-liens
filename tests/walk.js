@@ -19,6 +19,13 @@ async function walk(page, visit) {
   // le bouton flottant de l'accueil passe par-dessus le texte, comme tout bouton fixe : on le retire le temps de regarder la page (tests/accueil.js le vérifie à part)
   const masque = await page.addStyleTag({ content: '.cta-flot{display:none!important}' });
   await visit('accueil');
+  // le film de la version d'essai : sa commande sous les 3 portes, puis le lecteur ouvert (la vidéo mise en pause, pour un écran stable)
+  if (await page.$(A('film'))) {
+    await page.evaluate(() => document.querySelector('[data-act="film"]').scrollIntoView({ block: 'center' })); await w(300); await visit('accueil-film-commande');
+    await page.click(A('film')); await page.waitForSelector('#film-l'); await w(600);
+    await page.evaluate(() => { const v = document.querySelector('#film-l video'); if (v) v.pause(); }); await w(300); await visit('film-lecteur');
+    await page.click('#film-l [data-film="fermer"]'); await w(350); await page.evaluate(() => scrollTo(0, 0)); await w(200);
+  }
   // l'accueil est une longue page : chaque chapitre est visité à l'écran (en haut, puis en bas s'il dépasse), le schéma déroulé jusqu'au bout, les volets ouverts
   { const nb = await page.$$eval('main.intro>section', L => L.length);
     for (let i = 0; i < nb; i++) {
@@ -52,6 +59,8 @@ async function walk(page, visit) {
   // la page qu'une association ou un professionnel transmet à une famille
   await page.goto(APP + 'transmettre/'); await w(300); await visit('transmettre');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight)); await w(120); await visit('transmettre-bas');
+  // le lecteur du film ouvert par son adresse : il attend le geste du parent
+  await page.goto(APP + '#film'); await w(700); if (await page.$('#film-l')) { await visit('film-lecteur-attente'); await page.click('#film-l [data-film="fermer"]'); await w(250); }
   await page.goto(APP); await w(400);
   await page.click(A('peek-about')); await w(150); await visit('histoire-apercu'); await page.click(A('back')); await w(200);
   // le SOS, ouvert par un visiteur

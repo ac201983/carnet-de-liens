@@ -31,6 +31,12 @@ NAME = 'Parent écouté, parent éclairé'
 # Une version d'essai vit dans son propre dossier, avec ses propres notes (une autre clé de rangement dans le navigateur),
 # pour qu'on puisse l'essayer sur le même appareil sans toucher à l'espace habituel. Elle n'est jamais référencée par les moteurs.
 ESSAI = bool(cfg.get('essai'))
+# Le film « Et vous ? » n'est publié que dans la version d'essai : « pret » (lecteur par l'adresse …/#film seulement) ou « actif » (commande sur l'accueil).
+FILM = (cfg.get('film') or '').strip()
+if FILM not in ('', 'pret', 'actif'):
+    raise SystemExit("Réglage « film » inconnu : " + FILM + " (rien, « pret » ou « actif »).")
+if FILM and not ESSAI:
+    raise SystemExit("Le film n'est publié que dans la version d'essai : retirer « film » de ce réglage.")
 CLE = cfg.get('storage_key', 'pepe-v1')
 assert re.fullmatch(r'[a-z0-9-]+', CLE), CLE
 TITRE = NAME + ', un espace d’écoute pour les parents'
@@ -77,6 +83,16 @@ def son_version():
     return h.hexdigest()[:8]
 
 
+def film_version():
+    """Empreinte courte des fichiers de site-src/film/ (les 2 films, l'extrait, l'aperçu et les affiches)."""
+    h = hashlib.sha256()
+    d = SRC + '/film'
+    for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        with open(d + '/' + f, 'rb') as fh:
+            h.update(fh.read())
+    return h.hexdigest()[:8]
+
+
 def build_js(site):
     """Renvoie le code de l'app (sans balise <script>)."""
     src = read(ROOT + '/eparts/p2-content.js')
@@ -96,13 +112,15 @@ def build_js(site):
               ('CONTACT_R', (cfg.get('contact_email', '').strip()[::-1]) if site else ''),
               # La réponse d'Antonio à la question d'exemple de l'aperçu « Avec Antonio », et sa voix : rien n'est affiché tant qu'il ne les a pas fournies.
               ('AVEC_REPONSE', cfg.get('antonio_reponse', '').strip() if site else ''),
-              ('AVEC_VOIX', bool(site and os.path.exists(SRC + '/son/antonio.mp3')))]
+              ('AVEC_VOIX', bool(site and os.path.exists(SRC + '/son/antonio.mp3'))),
+              # FILM : l'état du film dans la version d'essai. FILM_V : l'empreinte de ses fichiers, pour qu'un téléphone ne garde pas une ancienne version.
+              ('FILM', FILM if site else ''), ('FILM_V', film_version() if (site and FILM) else '')]
     src = src.replace("const KEY='epaule-v1';", '\n'.join('const %s=%s;' % (k, json.dumps(v, ensure_ascii=False)) for k, v in consts))
     if site:
         media = "\nconst MEDAL=RACINE+'img/medaillon.webp';\nconst HERO=RACINE+'img/hero.webp';\n"
     else:
         media = "\nconst MEDAL='%s';\nconst HERO='%s';\n" % (data_uri(SRC + '/img/medaillon.webp', 'image/webp'), data_uri(SRC + '/img/hero.webp', 'image/webp'))
-    js = src + read(PARTS + '/p2b-parcours.js') + media + read(PARTS + '/v2-a.js') + read(PARTS + '/v2-c.js') + read(PARTS + '/v2-r.js') + read(PARTS + '/v2-b.js')
+    js = src + read(PARTS + '/p2b-parcours.js') + media + read(PARTS + '/v2-a.js') + read(PARTS + '/v2-c.js') + read(PARTS + '/v2-f.js') + read(PARTS + '/v2-r.js') + read(PARTS + '/v2-b.js')
     assert js.rstrip().endswith('</script>')
     js = js.rstrip()[:-len('</script>')].rstrip() + '\n'
     assert '<script' not in js and '</script' not in js
@@ -324,6 +342,17 @@ def build_site():
         if os.path.isdir(OUT + '/' + d):
             shutil.rmtree(OUT + '/' + d)
         shutil.copytree(SRC + '/' + d, OUT + '/' + d)
+    # Le film : ses fichiers ne sont recopiés que dans la version d'essai, et seulement quand le réglage « film » le demande.
+    if os.path.isdir(OUT + '/film'):
+        shutil.rmtree(OUT + '/film')
+    if FILM:
+        attendus = ('et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp')
+        manque = [f for f in attendus if not os.path.exists(SRC + '/film/' + f)]
+        if manque:
+            raise SystemExit('Il manque dans site-src/film/ : ' + ', '.join(manque))
+        os.makedirs(OUT + '/film')
+        for f in attendus:
+            shutil.copy2(SRC + '/film/' + f, OUT + '/film/' + f)
     for f in sorted(os.listdir(SRC + '/icons')):
         shutil.copy2(SRC + '/icons/' + f, OUT + '/' + f)
     shutil.copy2(SRC + '/favicon.svg', OUT + '/favicon.svg')

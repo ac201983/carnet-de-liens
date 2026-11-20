@@ -51,5 +51,18 @@ cp build/parole/parole.css build/parole/poser-css.py build/parole/voir.js build/
 mkdir -p "$BRANCHE/outils/goutte"
 cp build/goutte/goutte.css build/goutte/poser-css.py build/goutte/horloge.js build/goutte/film.js build/goutte/clip.js build/goutte/vague-vue.js build/goutte/souffle-vue.js build/goutte/souffle-etats.js build/goutte/instant-vue.js build/goutte/fractions.js build/goutte/relais-mesure.js build/goutte/minuteur-vue.js build/goutte/vue.js build/goutte/t.sh build/goutte/lot-g.sh build/goutte/lot-g3.sh build/goutte/souffle-film.js build/goutte/livrables.js build/goutte/mes-relais-mesure.js build/goutte/lot-g4.sh build/goutte/lot-g5.sh "$BRANCHE/outils/goutte/" 2>/dev/null || true
 
+# Les outils du film « Et vous ? » du 20 novembre 2026 (dans l'atelier, ces fichiers sont dans build/film/) :
+# les 4 images de base (la planche d'Antonio, découpée), ce qui les agrandit, ce qui sépare et remet en mouvement les cercles d'eau,
+# les écrans composés, la capture de la version d'essai, les titres, le montage, le son, les planches de contrôle,
+# puis ce qui installe le film dans le site (le style de la commande et du lecteur, les icônes) et la suite d'essais de la passe.
+# Les films eux-mêmes sont dans site-src/film/. Les images lourdes (agrandissements, captures) ne sont pas rangées : elles se refont.
+mkdir -p "$BRANCHE/outils/film/src" "$BRANCHE/outils/film/sr" "$BRANCHE/outils/film/ecrans" "$BRANCHE/outils/film/titres" "$BRANCHE/outils/film/site"
+cp build/film/LISEZ-MOI.md build/film/film.py build/film/ondes.py build/film/raccord.py build/film/cuisine.py build/film/ecran.py build/film/montage.py build/film/mixage.py build/film/son.py build/film/extrait.py build/film/rendre_extrait.py build/film/voir.py build/film/planche_v.py build/film/capture_app.js build/film/lot-f1.sh build/film/lot-f2.sh "$BRANCHE/outils/film/" 2>/dev/null || true
+cp build/film/src/p1.png build/film/src/p2.png build/film/src/p3.png build/film/src/p4.png "$BRANCHE/outils/film/src/" 2>/dev/null || true
+cp build/film/sr/agrandir.py "$BRANCHE/outils/film/sr/" 2>/dev/null || true
+cp build/film/ecrans/ecrans.html build/film/ecrans/ecrans.js "$BRANCHE/outils/film/ecrans/" 2>/dev/null || true
+cp build/film/titres/titres.html build/film/titres/titres.js "$BRANCHE/outils/film/titres/" 2>/dev/null || true
+cp build/film/site/film.css build/film/site/poser-css.py build/film/site/icones.js "$BRANCHE/outils/film/site/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

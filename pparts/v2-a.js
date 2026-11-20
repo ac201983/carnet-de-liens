@@ -865,7 +865,7 @@ function viewIntro(){
     '<p class="pour">Pour la mère ou le père d’une personne en situation de handicap</p>'+
     '<h1>On vous demande souvent comment va votre enfant. <span class="ici">Ici, on commence par vous.</span></h1>'+
     '<p class="besoin-l"><span class="besoin">'+DEP_Q.replace(/ (\S+) \?$/,' <span class="nb">$1 ?</span>')+'</span></p>'+
-    portes(true)+'</div>'+
+    portes(true)+filmCmdHtml()+'</div>'+
     nomSensHtml()+
     tableHtml()+
     '<div class="haut-suite">'+

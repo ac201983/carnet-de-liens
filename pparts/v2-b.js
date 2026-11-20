@@ -586,6 +586,8 @@ function handle(act,d,el){
   switch(act){
     case 'peek-plans':state.prev=null;state.sheet=null;state.view='plans';break;
     case 'peek-about':nav('about');break;
+    /* « Voir le film » : le lecteur s'ouvre par-dessus l'accueil et la lecture commence. Rien n'est réécrit dessous. */
+    case 'film':filmOuvre(true);return;
     /* Le premier geste : une porte ouvre l'espace et mène tout de suite à ce qu'elle annonce. Rien n'est demandé avant. */
     case 'porte':{entrer(d.v);
       if(d.v==='souffle'){nav('souffle');SON.voulu=false;souffleStart();}
@@ -845,6 +847,8 @@ if(SITE)window.addEventListener('hashchange',()=>{
   else if(VUES_HASH[location.hash]&&state.view!==VUES_HASH[location.hash]){const v=VUES_HASH[location.hash];if(v==='apercu'){state.ap={k:0,g:'',mot:''};state.sch=1;}nav(v);histPush(true);render();window.scrollTo(0,0);}
   /* L'adresse …/#accueil, tapée alors que l'espace est ouvert, montre la vitrine. */
   else if(location.hash==='#accueil'&&state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}
+  /* L'adresse …/#film montre la vitrine, puis le lecteur du film. La lecture attend le geste du parent. */
+  else if(FILM_ON&&location.hash===FILM_HASH){if(state.view!=='intro'){nav('intro');histPush(true);render();window.scrollTo(0,0);}else histPush(true);filmOuvre(false);}
 });
 if(SITE)window.addEventListener('popstate',histRetour);
 /* La respiration s'arrête quand l'écran s'éteint ou que l'on change d'onglet, et reprend là où elle en était. */
@@ -872,6 +876,8 @@ if(SITE)state.sample=false;
     if(pre==='intro'){introLive();fxMark();eauArrive(true);}else fxMark();
   }else{render();if(y0)window.scrollTo(0,y0);}}
 histInit();
+/* Arrivé par l'adresse …/#film : le lecteur est là, prêt, et attend le geste du parent. */
+if(FILM_LIEN)filmOuvre(false);
 /* En quittant la page (autre application, autre page, onglet fermé) : on note l'heure et l'endroit, pour les retrouver au retour. */
 window.addEventListener('pagehide',histQuitte);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')histQuitte();});
