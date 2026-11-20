@@ -128,6 +128,7 @@ if [ -f site/essai/index.html ]; then
       "$(vue "le film horizontal" "$adresse/essai/film/et-vous-horizontal.mp4" -I)" \
       "$(vue "l'extrait de 5 secondes" "$adresse/essai/film/et-vous-raccord-5s.mp4" -I)" \
       "$(vue "la première version du film vertical, gardée pour comparer" "$adresse/essai/film/et-vous-vertical-version-1.mp4" -I)" \
+      "$(vue "l'export vertical pour Instagram, à télécharger" "$adresse/essai/film/et-vous-instagram.mp4" -I)" \
       "$(vue "la version 2 du film vertical, gardée pour comparer" "$adresse/essai/film/et-vous-vertical-version-2.mp4" -I)" \
       "$(vue "la version 1 du film horizontal, gardée pour comparer" "$adresse/essai/film/et-vous-horizontal-version-1.mp4" -I)" \
       "$(vue "la version 2 du film horizontal, gardée pour comparer" "$adresse/essai/film/et-vous-horizontal-version-2.mp4" -I)" \

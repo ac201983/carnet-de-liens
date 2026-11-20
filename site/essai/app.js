@@ -13,7 +13,7 @@ const CONTACT_R="hc.etuoce-tnerap@ruojnob";
 const AVEC_REPONSE="";
 const AVEC_VOIX=false;
 const FILM="actif";
-const FILM_V="64828ba4";
+const FILM_V="52975184";
 const I={
   back:'<svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   chev:'<svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
@@ -3168,12 +3168,14 @@ function essaiCarte(){
    arrêtent le son et rendent la page comme elle était, au même endroit.
    Le film démarre toujours en silence (choix d'Antonio, le 20 novembre 2026) : le son ne vient que si le parent touche « Activer le son »,
    un bouton clair, écrit en toutes lettres, dans la barre du bas. À chaque ouverture du lecteur, le film repart en silence.
+   À la fin du film (V3, le 20 novembre 2026), un vrai bouton « Souffler 2 minutes » apparaît sous la vidéo. Il ferme le lecteur et ouvre l'exercice
+   à son écran de départ, exactement comme la porte de l'accueil : le bouton Retour ramène donc à l'accueil.
    FILM vaut « pret » (le lecteur n'existe que par l'adresse …/#film, le temps de vérifier que la vidéo se lit en ligne)
    ou « actif » (la commande « Voir le film » est sur l'accueil, juste après les 3 portes). Sans ce réglage, rien de tout cela n'existe. */
 const FILM_ON=!!(SITE&&FILM);
 const FILM_HASH='#film';
 const FILM_LIEN=FILM_ON&&!PRE&&typeof location!=='undefined'&&location.hash===FILM_HASH;
-const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false};
+const FV={ouvert:false,el:null,vid:null,pousse:false,silence:false,vol:1,att:0,volOK:true,y:0,erreur:false,suite:null,attS:0};
 const FI={
   jouer:'<svg class="i fi-plein" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>',
   pause:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>',
@@ -3183,7 +3185,9 @@ const FI={
   fermer:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 /* Ce que le film montre, pour la personne qui ne le voit pas. */
-const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il répond qu’elle va bien, puis il retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone, ouvre Parent écouté, parent éclairé et choisit Souffler 2 minutes. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous.';
+const FILM_DESC='Ce film dure 35 secondes et ne comporte aucune parole. Il démarre sans le son, et le bouton Activer le son le fait entendre. Le soir, dans une cuisine, un parent reçoit un message qui lui demande comment va sa fille. Il écrit qu’elle va bien, laisse passer un instant, puis envoie sa réponse et retourne son téléphone sur la table. Il repose son verre d’eau. Le cercle né à la surface devient une onde sur un étang, et 2 mots apparaissent, Et vous ? Le parent reprend son téléphone et touche Souffler 2 minutes dans Parent écouté, parent éclairé. L’écran l’invite à s’installer. Une goutte monte pendant l’inspiration, puis redescend pendant l’expiration. Le film se termine sur ces mots, Ici, on commence par vous. À la fin, un bouton Souffler 2 minutes apparaît sous le film et ouvre l’exercice.';
+/* Ce qui est dit à la personne qui ne voit pas l'écran, quand le film est fini. */
+const FILM_FIN='Le film est terminé. Juste après la vidéo, le bouton Souffler 2 minutes ouvre l’exercice.';
 /* La commande de l'accueil : secondaire, après les 3 portes. Son image pèse quelques kilo-octets, et le film n'est demandé qu'au toucher. */
 function filmCmdHtml(){
   if(!FILM_ON||FILM!=='actif')return '';
@@ -3217,6 +3221,9 @@ function filmSync(){
     if(muet)s.removeAttribute('aria-label');else s.setAttribute('aria-label','Couper le son');
   }
   if(vol){vol.hidden=!FV.volOK||muet;if(!muet&&document.activeElement!==vol)vol.value=String(Math.round(v.volume*100));}
+  /* Le film est fini : la suite vient sous la vidéo. Elle s'en va si le parent revoit le film. */
+  const su=FV.el.querySelector('#film-suite'),fin=FV.el.querySelector('#film-fin'),fini=!!v.ended&&!FV.erreur;
+  if(su&&su.hidden===fini){su.hidden=!fini;if(fin)fin.textContent=fini?FILM_FIN:'';}
 }
 function filmAvance(){
   const v=FV.vid;if(!v||!FV.el)return;const d=v.duration>0&&isFinite(v.duration)?v.duration:35;
@@ -3272,7 +3279,7 @@ function filmCache(){if(FV.ouvert&&FV.vid&&document.visibilityState==='hidden'&&
 function filmFige(e){const t=e.target;if(t&&t.id==='film-vol')return;if(e.touches&&e.touches.length>1)return;if(e.cancelable)e.preventDefault();}
 function filmClic(e){
   if(!FV.el)return;const b=e.target.closest&&e.target.closest('[data-film]');
-  if(b){const q=b.getAttribute('data-film');if(q==='fermer')filmFerme(false);else if(q==='jouer')filmJoue();else if(q==='son')filmSon();return;}
+  if(b){const q=b.getAttribute('data-film');if(q==='fermer')filmFerme(false);else if(q==='jouer')filmJoue();else if(q==='son')filmSon();else if(q==='souffle')filmSouffle();return;}
   if(e.target===FV.vid)filmJoue();
 }
 /* lance : vrai quand le parent vient de toucher « Voir le film » (la lecture commence), faux quand le lecteur s'ouvre par son adresse (il attend). */
@@ -3288,11 +3295,12 @@ function filmOuvre(lance){
     '<div class="film-scene"><video id="film-v" playsinline webkit-playsinline preload="none" tabindex="-1" data-src="'+src+'" poster="'+base+'affiche-'+(quel==='vertical'?'verticale':'horizontale')+'.webp'+q+'" width="'+(quel==='vertical'?1080:1920)+'" height="'+(quel==='vertical'?1920:1080)+'"></video>'+
       '<button type="button" class="film-go" data-film="jouer">'+FI.jouer+'<span>Lire le film</span></button>'+
       '<p class="film-etat" role="status" hidden></p></div>'+
+    '<div class="film-suite" id="film-suite" hidden><button type="button" class="film-souffle" data-film="souffle">'+I.wind+'<span>Souffler 2 minutes</span></button></div>'+
     '<div class="film-bas"><button type="button" class="film-b" data-film="jouer" id="film-j" aria-label="Lire le film">'+FI.jouer+'</button>'+
       '<span class="film-av" aria-hidden="true"><i id="film-p"></i></span><span class="film-tps" id="film-tps" aria-hidden="true">0:00</span>'+
       '<button type="button" class="film-b film-act" data-film="son" id="film-s" data-muet="1">'+FI.muet+'<span>Activer le son</span></button>'+
       '<input type="range" class="film-vol" id="film-vol" min="5" max="100" step="5" value="100" aria-label="Volume du film" hidden></div>'+
-    '<p class="sr" id="film-d">'+FILM_DESC+'</p>';
+    '<p class="sr" id="film-d">'+FILM_DESC+'</p><p class="sr" id="film-fin" role="status"></p>';
   const v=el.querySelector('video');FV.el=el;FV.vid=v;FV.ouvert=true;FV.erreur=false;FV.pousse=false;
   /* Sur iPhone, le volume se règle avec les boutons du téléphone : la page ne peut pas le changer, et le curseur ne servirait à rien. */
   try{v.volume=.5;FV.volOK=Math.abs(v.volume-.5)<.01;v.volume=FV.volOK?FV.vol:1;}catch(e){FV.volOK=false;}
@@ -3339,9 +3347,19 @@ function filmFerme(parRetour){
   FV.pousse=false;
   const c=document.querySelector('[data-act="film"]');if(c&&c.focus){try{c.focus({preventScroll:true});}catch(e){c.focus();}}
 }
+/* « Souffler 2 minutes », sous le film quand il est fini. Le lecteur se ferme, l'accueil revient à sa place, puis l'exercice s'ouvre à son écran de départ,
+   par le même chemin que la porte de l'accueil (en silence, une page de plus dans l'historique). Le bouton Retour ramène donc à l'accueil.
+   Si le lecteur avait ajouté sa page à l'historique, on attend qu'elle soit défaite avant d'ouvrir l'exercice, pour que les pages restent dans l'ordre. */
+function filmSouffle(){
+  if(!FV.ouvert)return;
+  const suite=()=>{if(FV.suite!==suite)return;FV.suite=null;clearTimeout(FV.attS);FV.silence=false;handle('porte',{v:'souffle'},null);};
+  FV.suite=suite;
+  filmFerme(false);
+  if(FV.silence)FV.attS=setTimeout(suite,1500);else suite();
+}
 /* Appelé au tout début du retour arrière. Rend vrai quand il n'y a rien d'autre à faire : la page n'est ni réécrite, ni déplacée. */
 function filmRetour(){
-  if(FV.silence){FV.silence=false;return true;}
+  if(FV.silence){FV.silence=false;if(FV.suite)setTimeout(FV.suite,0);return true;}
   if(FV.ouvert&&FV.pousse){filmFerme(true);return true;}
   if(FV.ouvert)filmFerme(true);
   return false;
