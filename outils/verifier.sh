@@ -130,6 +130,9 @@ if [ -f site/essai/index.html ]; then
       "$(vue "le premier montage vertical, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical-version-1.mp4" -I)" \
       "$(vue "le premier montage horizontal, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal-version-1.mp4" -I)" \
       "$(vue "le premier montage pour Instagram, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram-version-1.mp4" -I)" \
+      "$(vue "le montage du 20 novembre vertical, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical-version-2.mp4" -I)" \
+      "$(vue "le montage du 20 novembre horizontal, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal-version-2.mp4" -I)" \
+      "$(vue "la bande-annonce du 20 novembre, gardée en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-bande-annonce-version-2.mp4" -I)" \
       "$(vue "l'ancienne adresse de l'export pour Instagram (ne doit plus exister : 404 attendu)" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram.mp4" -I)" \
       "$(vue "l'image d'aperçu" "$adresse/essai/film/apercu-film.webp")" \
       "$(vue "le film à l'adresse du site public (ne doit pas exister : 404 attendu)" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \

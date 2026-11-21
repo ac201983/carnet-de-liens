@@ -1,6 +1,6 @@
 Ce qu'on ne dit pas par SMS
 Film de présentation de « Parent écouté, parent éclairé », parent-ecoute.ch
-Montage du 20 novembre 2026. Durée : 1 minute 47. Sans paroles.
+Montage du 21 novembre 2026. Durée : 1 minute 47. Sans paroles.
 Un film d'Antonio Company.
 
 Les personnes, les prénoms, les messages et les numéros de téléphone de ce film sont inventés. Les photos illustrent une fiction.
@@ -8,22 +8,20 @@ Les personnes, les prénoms, les messages et les numéros de téléphone de ce f
 
 LES IMAGES
 
-Les images de la cuisine du soir (la table, le téléphone, le verre d'eau) et les 3 photos (les dominos, Bastien qui écrit, le café du dimanche matin) ont été fournies par Antonio Company pour ce film.
+Les images de la cuisine du soir (la table, le téléphone, le verre d'eau, les 2 mains à plat) et les 4 photos (les dominos, Bastien qui écrit près de sa mère, Bastien qui tend sa feuille à son oncle, le café du dimanche matin) ont été fournies par Antonio Company pour ce film.
 
-Les écrans sont ceux du site lui-même, filmés image par image dans sa version d'essai : « Déposer ce qui pèse », la fiche « Les écrans », le minuteur visuel, « Souffler 2 minutes », « Passer le relais », le carnet de route. Ce qu'on y lit a été écrit pour le film.
+Les écrans sont ceux du site lui-même, filmés image par image dans sa version d'essai : « Déposer ce qui pèse », le carnet de route, le minuteur visuel, « Passer le relais » et la fiche de Bastien. Ce qu'on y lit a été écrit pour le film.
 
 Le fil de messages et l'écran verrouillé du téléphone ont été dessinés pour le film. Ils n'imitent aucune application existante.
-
-La feuille que Bastien tend à son oncle est la vraie fiche de « Passer le relais », avec la mise en page que le site donne à l'impression.
 
 Agrandissement des images : Real-ESRGAN (modèle realesrgan-x4plus), de Xintao Wang et de ses coauteurs, logiciel sous licence BSD à 3 clauses.
 
 
 LA MUSIQUE ET LES SONS
 
-Musique originale, écrite note par note pour ce film. Aucune musique existante n'est utilisée.
+Musique originale pour piano et violoncelle, écrite note par note pour ce film. Aucune musique existante n'est utilisée.
 
-Les instruments (piano, cordes, harpe) viennent de la banque de sons « MS Basic » de MuseScore, partagée sous licence MIT. Ses mentions :
+Les instruments (piano, violoncelle) viennent de la banque de sons « MS Basic » de MuseScore, partagée sous licence MIT. Ses mentions :
 FluidR3, version d'origine, par Frank Wen, Copyright (c) 2000-02.
 Conversion en mono (FluidR3Mono) par Michael Cowgill, Copyright (c) 2014-17.
 Adaptation pour MuseScore_General.sf2 par S. Christian Collins, Copyright (c) 2018-19.
@@ -31,9 +29,7 @@ Temple Blocks fourni par Ethan Winer, Copyright (c) 2002.
 Drumline Cymbals fourni par Michael Schorsch, Copyright (c) 2016.
 La banque est jouée par le logiciel tinysoundfont, de Nathan Whitehead, sous licence MIT. Il s'appuie sur TinySoundFont, de Bernhard Schelling, sous licence MIT.
 
-Les bruits (la vibration du téléphone sur la table, le domino, la feuille de papier, la tasse) ont été calculés pour ce film. Aucun enregistrement extérieur n'est utilisé.
-
-L'eau qu'on entend avec la goutte est celle de l'exercice « Souffler 2 minutes » du site.
+Tous les bruits ont été recréés par le calcul pour ce film : la pièce, les 2 vibrations du téléphone sur la table, le domino, la feuille de papier, le café qu'on verse, la tasse, les oiseaux du dimanche matin. Aucun enregistrement n'est utilisé.
 
 
 LES TEXTES
@@ -51,5 +47,5 @@ LES FICHIERS
 
 ce-quon-ne-dit-pas-par-sms-vertical.mp4 : le film vertical, 1080 × 1920.
 ce-quon-ne-dit-pas-par-sms-horizontal.mp4 : le film horizontal, 1920 × 1080.
-ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4 : la bande-annonce verticale de 30 secondes, 1080 × 1920.
-Les fichiers dont le nom finit par « version-1 » sont le premier montage du film, gardé en sauvegarde.
+ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4 : la bande-annonce verticale de 30 secondes, 1080 × 1920. Elle suit la fiche de Bastien jusqu'au café du dimanche.
+Les fichiers dont le nom finit par « version-2 » sont le montage du 20 novembre 2026, et ceux dont le nom finit par « version-1 » le premier montage. Ils sont gardés en sauvegarde.
