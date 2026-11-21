@@ -1,5 +1,5 @@
 # Montage intime de « Ce qu'on ne dit pas par SMS » : les exports, leurs affiches et l'image d'aperçu de l'accueil.
-# python3 iexporte.py V|H|BA     puis     python3 iexporte.py affiches <dossier de sortie>
+# python3 iexporte.py V|H|BA     puis     python3 iexporte.py affiches <dossier de sortie>     (python3 iexporte.py son V|H|BA : seulement un nouveau son)
 import sys, os, subprocess, numpy as np, cv2
 CINE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.dirname(CINE))       # (ici, CINE est le dossier de ce montage : build/film/intime)
 import film
@@ -16,6 +16,13 @@ if __name__ == '__main__':
         crf, debit = REGLAGE[q]; film.export(CINE + '/' + IMAGE[q], CINE + '/' + SON[q], fin + '/' + FICHIER[q], crf, debit)
         r = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,profile,level,width,height,r_frame_rate,duration,nb_frames,sample_rate:format=duration,size', '-of', 'compact=p=0:nk=0', fin + '/' + FICHIER[q]], capture_output=True, text=True).stdout
         print(q, FICHIER[q], round(os.path.getsize(fin + '/' + FICHIER[q]) / 1048576, 1), 'Mo |', r.replace('\n', ' | '))
+    elif q == 'son':
+        # un nouveau son sur un film déjà exporté : l'image n'est pas recompressée, elle reste exactement la même (python3 iexporte.py son V|H|BA)
+        f = sys.argv[2]; sortie = fin + '/' + FICHIER[f]; tmp = sortie[:-4] + '.tmp.mp4'
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', sortie, '-i', CINE + '/' + SON[f], '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-movflags', '+faststart', tmp], check=True)
+        os.replace(tmp, sortie)
+        r = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,profile,width,height,duration,nb_frames,sample_rate:format=duration,size', '-of', 'compact=p=0:nk=0', sortie], capture_output=True, text=True).stdout.strip()
+        print(f, FICHIER[f], round(os.path.getsize(sortie) / 1048576, 1), 'Mo |', r.replace('\n', ' | '))
     elif q == 'affiches':
         out = sys.argv[2]
         # L'affiche du lecteur, montrée avant la lecture : « Comment va ta fille ? », et la réponse du père, écrite, pas encore envoyée (image 148, à 4,9 s).

@@ -149,7 +149,7 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
     }
     { // les crédits du film : un texte, à sa propre adresse. L'ancienne adresse de l'export pour Instagram du premier montage n'existe plus (il est gardé sous son nom de sauvegarde).
       const r = await api.get(APP + 'film/credits.txt').catch(() => null); const t = r && r.ok() ? await r.text() : '';
-      ok(r && r.status() === 200 && /^text\/plain/.test(r.headers()['content-type'] || '') && /Musique originale/.test(t) && /Frank Wen/.test(t) && /Open Font License/.test(t), '1. credits.txt : les crédits du film sont servis, comme un texte ' + JSON.stringify([r && r.status(), r && r.headers()['content-type'], t.length]));
+      ok(r && r.status() === 200 && /^text\/plain/.test(r.headers()['content-type'] || '') && /Musique originale/.test(t) && /Alexander Holm/.test(t) && /Attribution 3\.0/.test(t) && /Versilian Studios/.test(t) && /Frank Wen/.test(t) && /Open Font License/.test(t), '1. credits.txt : les crédits du film sont servis, comme un texte ' + JSON.stringify([r && r.status(), r && r.headers()['content-type'], t.length]));
       const a = await api.get(APP + 'film/' + FILM + '-instagram.mp4', { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null);
       ok(a && a.status() === 404, '1. l’ancienne adresse de l’export pour Instagram n’existe plus ' + (a ? a.status() : 'pas de réponse')); }
     for (const f of ['apercu-film.webp', 'affiche-film-verticale.webp', 'affiche-film-horizontale.webp', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp']) {

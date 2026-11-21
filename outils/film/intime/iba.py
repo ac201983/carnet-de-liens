@@ -45,29 +45,39 @@ def image(nom, i, grain_f=None):
     return Mo.grain(out, n, g) if g else out
 
 def son(fichier):
-    """Le son de la bande-annonce : la phrase du violoncelle (do, la, sol) qui attend sa quatrième note, le piano feutré, le papier, le café versé, le dimanche matin
-    sans musique, puis la quatrième note (fa) sur le nom du site."""
-    import son as S, synthe as Y, ibruits as IB, bruits as B
-    from partition import Voix, m
+    """Le son de la bande-annonce, avec les instruments enregistrés du film : les violoncelles chantent la mélodie de Bastien (elle commence par do, la, sol) sur la
+    berceuse du piano, on entend ses doigts sur l'écran, puis le papier, le café versé, le dimanche matin sans musique, et la note qui manquait (fa) sur le nom du site."""
+    import son as S, ibruits as IB, bruits as B, instruments as I
+    import ipartition as PA, imixage as MX
     from cmixage import limite, niveau, enveloppe, n_
-    import imixage as MX
     SR = S.SR; DUR = TOTAL / IPS; s = lambda im: im / IPS
-    pm = Voix(Y.PIANO); pf = Voix(Y.PIANO); vc = Voix(Y.VIOLONCELLE)
-    # le violoncelle : do, la, sol (la phrase attend), puis de longues notes
-    for a, d, nom, f in ((2, 33, 'C4', 80), (33, 32, 'A4', 86), (63, 92, 'G4', 82), (153, 77, 'A4', 84), (228, 122, 'Bb4', 88), (348, 122, 'G4', 82), (468, 150, 'C4', 78)): vc.n(a, d, nom, f)
-    vc.nuance([(0, 10), (16, 86), (60, 104), (120, 86), (228, 100), (348, 86), (430, 100), (495, 88), (PAPIER, 72), (PAPIER + 60, 0)])
-    # le piano feutré : des accords espacés (fa, do, si bémol, fa avec la en basse, do, fa)
-    for a, bas, haut in ((3, ('F2', 'C3'), None), (63, ('C3', 'G3'), None), (105, ('Bb2', 'F3'), 'D4'), (225, ('A2', 'F3'), 'C4'), (345, ('C3', 'G3'), 'E4'), (465, ('F2', 'C3'), 'A3')):
-        pf.n(a, 100, bas[0], 33); pf.n(a + 2, 98, bas[1], 29); pf.pedale(a - 1, a + 100 if haut else a + 56)
-        if haut: pf.n(a + 60, 56, haut, 30)
-    e = ECRIT + 12; pm.n(e, 40, 'C5', 40); pm.n(e + 30, 40, 'A5', 44); pm.n(e + 60, 80, 'G5', 37); pm.pedale(e - 1, e + 138)      # sa phrase est écrite : le piano reprend la phrase du violoncelle
-    # sur le nom du site, la quatrième note
-    pm.n(NOTE4, 200, 'F5', 60); pf.n(NOTE4, 200, 'F3', 40); pf.n(NOTE4 + 1, 199, 'C4', 34); pf.n(NOTE4 + 45, 150, 'A4', 30); pm.pedale(NOTE4 - 1, TOTAL + 60); pf.pedale(NOTE4 - 1, TOTAL + 60)
+    M_ = PA.Mains(23); pc, pb = M_.chant_, M_.berce; AC = PA.AC
+    vc = I.Cordes('v', place=.14); hv = I.Cordes('v', place=.22); ha = I.Cordes('a', place=-.22)
+    # la berceuse : fa, do, si bémol, fa (la à la basse), ré mineur, si bémol, ré mineur, do (mi à la basse), fa. Une mesure dure 2 secondes.
+    for k, (acc, f) in enumerate((('F', 31), ('C', 30), ('Bb', 31), ('F/A', 29), ('Dm.', 30), ('Bb', 31), ('Dm7', 35), ('C/E', 36))): M_.mesure(60 * k + 2, *AC[acc], f)
+    M_.accord(482, ['F2', 'C3', 'A3', 'C4', 'F4'], 33, 150, roule=1.0)                    # la fiche change de main : fa majeur, puis plus rien jusqu'au nom du site
+    # les violoncelles : do, la, sol, puis la mélodie (ré, si bémol, la ; fa, ré, do, si bémol ; la, fa, mi, do ; la)
+    mel = [(2, 30, 'C4', .2, False), (32, 30, 'A4', .3, True), (62, 60, 'G4', .25, True), (122, 30, 'D4', .25, False), (152, 30, 'Bb4', .35, True), (182, 60, 'A4', .2, True),
+           (242, 30, 'F4', .1, False), (272, 30, 'D5', .2, True), (302, 40, 'C5', .3, True), (342, 20, 'Bb4', .3, True),
+           (362, 30, 'A4', .4, False), (392, 30, 'F5', .6, True), (422, 30, 'E5', .6, True), (452, 30, 'C5', .45, True), (482, 118, 'A4', .25, True)]
+    for a, d, nom, timbre, lie in mel: vc.n(s(a), s(d), nom, timbre, lie)
+    vc.nuance([(0, .42), (s(32), .60), (s(62), .62), (s(117), .50), (s(122), .52), (s(152), .66), (s(182), .58), (s(215), .40), (s(242), .36), (s(272), .42), (s(302), .46), (s(357), .44),
+               (s(362), .60), (s(392), .84), (s(422), .86), (s(452), .72), (s(482), .62), (s(520), .50), (s(PAPIER), .30), (s(PAPIER + 45), 0.0), (DUR + 9, 0.0)])
+    # le piano répond dans l'aigu : do, la, sol quand les violoncelles tiennent leur sol, puis la, fa, mi quand la fiche est donnée
+    for base, notes, f, reste in ((82, ('C5', 'A5', 'G5'), 35, 56), (502, ('A5', 'F6', 'E6'), 32, 60)):
+        M_.chant(base, 38, notes[0], f); M_.chant(base + 10, 11, notes[1], f + 2); M_.chant(base + 20, reste, notes[2], f - 1)
+    # sur le nom du site, la note qui manquait à do, la, sol : fa. Les cordes tiennent sa résonance.
+    for i, (nom, f) in enumerate((('F2', 37), ('C3', 34), ('F3', 34), ('A3', 33), ('C4', 35), ('A4', 33))): pb.n(s(NOTE4 - 2.2 + i * .4), s(200), nom, f)
+    pb.pedale(s(NOTE4 - 2.6), DUR + 6); pc.n(s(NOTE4), s(200), 'F5', 62)
+    for nom in ('F3', 'C4'): hv.n(s(NOTE4 + 1), s(160), nom, .12)
+    for nom in ('A4', 'C5'): ha.n(s(NOTE4 + 1), s(160), nom, .10)
+    for h in (hv, ha): h.nuance([(0, 0), (s(NOTE4), 0), (s(NOTE4 + 24), .30), (s(NOTE4 + 70), .58), (DUR + 9, .50)])
     M = S.Mixage(DUR + 3.0); rng = np.random.default_rng(47)
-    for nom, v in (('piano motif', pm), ('piano fond', pf), ('violoncelle', vc)):
-        g, salle, feutre = MX.VOIX[nom]; x = Y.piste(v.prog, v.notes, DUR + 4.0, v.cc, v.ped)
-        if feutre: x = Y.filtre(x, 'low', feutre)
-        M.pose(Y.dans_la_salle(x * g, salle, 2.3 if nom == 'violoncelle' else 1.9), 0, 1.0)
+    for nom, x in MX.rend({'piano chant': pc, 'piano berceuse': pb, 'violoncelles': vc, 'résonance violoncelles': hv, 'résonance altos': ha}, DUR + 6.0).items(): M.pose(x, 0, 1.0)
+    # les doigts de Bastien sur l'écran : il choisit « J'aime… », puis une lettre après l'autre
+    texte = "prendre mon café seul, le matin."; d3 = DEB['t3']
+    fr = MX.pose_frappes(M, [('Bastien écrit', [(s(d3 + 36 + k * 90 / 32), c) for k, c in enumerate(texte)], [(s(d3 + 16), .9)])], np.random.default_rng(49), regulier=(0,), parts=(1.8,))
+    json.dump({'frappes': [round(t, 4) for t in fr]}, open(fichier[:-4] + '.json', 'w'))
     M.pose(S.dans_la_piece(B.papier(12, .85), .18), s(PAPIER) - .30, .42, 'papier')
     d6 = s(DEB['t6']); fin = s(DEB['t7'])
     M.pose(S.dans_la_piece(IB.verse(5, 2.3), .16), s(VERSE), .38, 'café versé')
@@ -80,8 +90,9 @@ def son(fichier):
     x, baisse, part = limite(x, .84); x = x[:n_(DUR)]
     from scipy.io import wavfile
     wavfile.write(fichier, SR, (np.clip(x, -1, 1) * 32767).astype(np.int16))
+    S.regarde(x, fichier[:-4] + '-son.png', [('do la sol', s(2)), ('il écrit', s(d3 + 36)), ('sommet', s(392)), ('fiche donnée', s(482)), ('papier', s(PAPIER)), ('café', s(VERSE)), ('fa', s(NOTE4))])
     print('bande-annonce : durée', round(len(x) / SR, 3), 's | crête', round(float(np.abs(x).max()), 3), '| limiteur %.1f dB' % baisse)
-    for nom, a, b in (('violoncelle (do, la, sol)', 0, 3.4), ('Passer le relais', 3.5, 6), ('il écrit', 6, s(ECRIT)), ('le piano reprend', s(ECRIT) + .4, 15), ('la fiche tendue', 16.5, s(VERSE)), ('café versé', s(VERSE), d6), ('dimanche, sans musique', d6 + 1.6, fin - .1), ('la 4e note', s(NOTE4), s(NOTE4) + 1), ('fin', 28.5, 30)):
+    for nom, a, b in (('do, la, sol', 0, 4), ('la mélodie', 4, 7.2), ('il écrit', 7.2, s(ECRIT)), ('le sommet', 12, 16), ('la fiche donnée', 16.1, s(VERSE)), ('café versé', s(VERSE), d6), ('dimanche, sans musique', d6 + 1.6, fin - .1), ('la note qui manquait', s(NOTE4), s(NOTE4) + 1), ('fin', 28.5, DUR - 1.0)):
         print('%-28s %7.1f %9.1f' % (nom, niveau(x, a, b), niveau(x, a, b, (350, 0))))
 
 if __name__ == '__main__':

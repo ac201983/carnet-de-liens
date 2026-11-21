@@ -80,3 +80,15 @@ def matin(rng, duree):
     n = n_(duree); a = S.filtre(rng.standard_normal((n, 2)), 'band', (140, 2400)) * .5 + S.filtre(rng.standard_normal((n, 2)), 'band', (2400, 7000)) * .12
     lent = (1 + .25 * S.filtre(rng.standard_normal(n), 'low', 1.0) / .016).clip(.6, 1.5)[:, None]
     return a * lent / np.abs(a).max()
+
+def tape(rng, force=1.0, espace=False):
+    """Un doigt qui tape sur l'écran du téléphone : le petit choc mat de la pulpe du doigt sur le verre, et le claquement léger du boîtier.
+    C'est le tapotement du film « Et vous ? » (un souffle très court entre 1 700 et 4 600 Hz, sur un choc grave), avec un peu plus de corps dans le médium,
+    pour qu'il passe dans le haut-parleur d'un téléphone. La barre d'espace sonne un peu plus bas."""
+    n = n_(.06); t = np.arange(n) / SR; k = .82 if espace else 1.0
+    clic = S.filtre(rng.standard_normal(n), 'band', (1700 * k, 4600 * k)) * np.exp(-t / .0045)
+    grave = .5 * np.sin(2 * np.pi * rng.uniform(170, 210) * k * t) * np.exp(-t / .008)
+    corps = .30 * np.sin(2 * np.pi * rng.uniform(520, 640) * k * t + rng.uniform(0, 1)) * np.exp(-t / .0055)
+    fin = S.filtre(rng.standard_normal(n), 'band', (4500, 7500)) * np.exp(-t / .0022); fin = .32 * fin / np.abs(fin).max()      # l'ongle : ce qui reste net sous la musique
+    x = (clic / np.abs(clic).max() + grave + corps + fin) * S.lisse(t, 0, .0006)
+    return x / np.abs(x).max() * force
