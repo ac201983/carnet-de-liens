@@ -44,8 +44,10 @@ def film(pistes=None):
     d2 = s(D['d2']); fin = s(D['e1'])
     M.pose(S.dans_la_piece(IB.verse(5, 2.5), .16), s(IT.VERSE), .38, 'café versé')
     M.pose(S.dans_la_piece(IB.tasse_levee(), .2), s(IT.TASSE), .26, 'tasse')
-    a = IB.matin(rng, fin - s(IT.VERSE) + .4); na = len(a)
-    M.pose(a * enveloppe(na, [(0, 0), (.5, .5), (d2 - s(IT.VERSE), 1.0), (na / SR - .43, 1.0), (na / SR - .4, 0), (na / SR, 0)])[:, None], s(IT.VERSE), .10)
+    # la pièce, le jour : très bas dès « Le lendemain », pour qu'il n'y ait jamais de silence complet entre 2 notes (avant le domino, quand le violoncelle s'efface).
+    # Elle monte quand on verse le café et prend toute sa place le dimanche matin.
+    j0 = s(D['b4']); a = IB.matin(rng, fin - j0 + .4); na = len(a)
+    M.pose(a * enveloppe(na, [(0, 0), (1.0, .42), (s(D['d1']) - j0, .42), (s(IT.VERSE) - j0, .55), (d2 - j0, 1.0), (na / SR - .43, 1.0), (na / SR - .4, 0), (na / SR, 0)])[:, None], j0, .10)
     o = IB.oiseaux(fin - d2 - .1); no = len(o)
     M.pose(S.dans_la_piece(o * enveloppe(no, [(0, 0), (.4, 1.0), (no / SR - .14, 1.0), (no / SR - .04, 0), (no / SR, 0)]), .3, .5), d2 + .1, .09, 'oiseaux')
     x = M.x * MAITRE; t = np.arange(len(x)) / SR; x = x * (1 - S.lisse(t, DUR - 1.2, DUR))[:, None]

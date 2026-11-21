@@ -68,7 +68,7 @@ def ecrire():
     g = D['d1']
     pf.n(g, 110, 'F2', 34); pf.n(g + 2, 108, 'C3', 30); pf.n(g + 4, 106, 'A3', 31); pf.pedale(g - 1, g + 112)
     vc.nuance([(c - 4, 10), (c + 14, 86), (c + 60, 104), (c + 120, 86), (q, 80), (q + 80, 100), (q + 200, 84), (q + 330, 100), (q + 480, 86), (q + 560, 104), (q + 700, 90),
-               (g, 88), (IT.PAPIER, 70), (IT.PAPIER + 66, 0)])
+               (g, 88), (IT.PAPIER, 72), (IT.PAPIER + 96, 0)])
     rep += [('la fiche', s(g)), ('le violoncelle s’efface', s(IT.PAPIER))]
     # 8. Le père écrit (e2). 2 notes seulement : il cherche. Puis les 3 notes, une toutes les 1,5 seconde, et la quatrième à l'image où son pouce touche Envoyer.
     z = D['e2']; w = IT.ENVOI

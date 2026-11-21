@@ -59,6 +59,7 @@ La quatrième note tombe à l'image 2910, où le pouce touche Envoyer. Sous le n
 
 Instruments : la banque « MS Basic » de MuseScore (licence MIT), jouée par tinysoundfont. Le feutre du piano : des touchers doux et les aigus retenus au-dessus de 2700 Hz.
 Tous les bruits sont calculés (aucun enregistrement n'est joignable depuis l'atelier), la vibration comprise.
+Le son ne tombe jamais au silence complet : la pièce du soir au début et à la fin, et une pièce de jour très discrète du lendemain jusqu'au café du dimanche.
 
 ## Refaire le film
 
