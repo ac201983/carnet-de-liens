@@ -1,6 +1,6 @@
 Ce qu'on ne dit pas par SMS
 Film de présentation de « Parent écouté, parent éclairé », parent-ecoute.ch
-Montage du 21 novembre 2026. Durée : 1 minute 47. Sans paroles.
+Montage du 21 novembre 2026, musique du 21 novembre au soir. Durée : 1 minute 47. Sans paroles.
 Un film d'Antonio Company.
 
 Les personnes, les prénoms, les messages et les numéros de téléphone de ce film sont inventés. Les photos illustrent une fiction.
@@ -19,17 +19,27 @@ Agrandissement des images : Real-ESRGAN (modèle realesrgan-x4plus), de Xintao W
 
 LA MUSIQUE ET LES SONS
 
-Musique originale pour piano et violoncelle, écrite note par note pour ce film. Aucune musique existante n'est utilisée.
+Musique originale pour piano et violoncelles, écrite note par note pour ce film. Aucune musique existante n'est utilisée.
+Elle est jouée par de vrais instruments, enregistrés note par note et assemblés par le calcul pour ce film.
 
-Les instruments (piano, violoncelle) viennent de la banque de sons « MS Basic » de MuseScore, partagée sous licence MIT. Ses mentions :
+Le piano : Salamander Grand Piano V3, enregistré par Alexander Holm, sous licence Creative Commons Attribution 3.0 Unported (http://creativecommons.org/licenses/by/3.0/).
+Source : https://archive.org/details/SalamanderGrandPianoV3 et https://github.com/sfzinstruments/SalamanderGrandPiano
+Les notes ont été modifiées pour ce film : un seul des 2 micros est gardé, les notes voisines sont obtenues en changeant la hauteur d'un enregistrement, la tenue est prolongée, les niveaux sont égalisés et une salle est ajoutée.
+
+Les violoncelles et les altos : Versilian Studios Chamber Orchestra 2, Community Edition, de Versilian Studios (Sam Gossner), sous licence CC0 1.0.
+Source : http://vis.versilstudios.net/vsco-community.html et https://github.com/sgossner/VSCO-2-CE
+
+Tous les bruits ont été recréés par le calcul pour ce film : la pièce, les 2 vibrations du téléphone sur la table, les doigts sur l'écran du téléphone, le domino, la feuille de papier, le café qu'on verse, la tasse, les oiseaux du dimanche matin. Aucun bruit n'est un enregistrement.
+
+Si ce film est publié ailleurs que sur le site, cette ligne l'accompagne : Piano : Salamander Grand Piano V3, Alexander Holm, licence CC BY 3.0.
+
+Le montage du 20 novembre 2026, gardé en sauvegarde (les fichiers « version-2 »), est joué par d'autres instruments : ceux de la banque de sons « MS Basic » de MuseScore, partagée sous licence MIT. Ses mentions :
 FluidR3, version d'origine, par Frank Wen, Copyright (c) 2000-02.
 Conversion en mono (FluidR3Mono) par Michael Cowgill, Copyright (c) 2014-17.
 Adaptation pour MuseScore_General.sf2 par S. Christian Collins, Copyright (c) 2018-19.
 Temple Blocks fourni par Ethan Winer, Copyright (c) 2002.
 Drumline Cymbals fourni par Michael Schorsch, Copyright (c) 2016.
 La banque est jouée par le logiciel tinysoundfont, de Nathan Whitehead, sous licence MIT. Il s'appuie sur TinySoundFont, de Bernhard Schelling, sous licence MIT.
-
-Tous les bruits ont été recréés par le calcul pour ce film : la pièce, les 2 vibrations du téléphone sur la table, le domino, la feuille de papier, le café qu'on verse, la tasse, les oiseaux du dimanche matin. Aucun enregistrement n'est utilisé.
 
 
 LES TEXTES
