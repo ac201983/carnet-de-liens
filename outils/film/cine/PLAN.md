@@ -1,5 +1,7 @@
 # Le montage cinématographique de « Ce qu'on ne dit pas par SMS » (demande du 20 novembre 2026, 22 h 20)
 
+Ce fichier est le plan de départ, écrit avant de commencer. Le minutage définitif est dans `ctemps.py`, et le film tel qu'il a été fait est décrit dans `LISEZ-MOI.md`.
+
 Atelier : `build/film/cine/` (il s'appuie sur `build/film/pres/` : `pm.py`, `plans.py`, captures `pres/cap/`, photos `plates/photo{1,2,3}x4.png`, planche `plates/p{1..4}x4.png`).
 
 ## La demande (résumé fidèle)
