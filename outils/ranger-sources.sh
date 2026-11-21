@@ -85,5 +85,13 @@ cp build/film/cine/LISEZ-MOI.md build/film/cine/PLAN.md build/film/cine/ctemps.p
 cp build/film/cine/titres/titres.json "$BRANCHE/outils/film/cine/titres/" 2>/dev/null || true
 cp build/film/cine/sons/MS-Basic-LICENCE.md "$BRANCHE/outils/film/cine/sons/" 2>/dev/null || true
 
+# Les outils du montage intime de « Ce qu'on ne dit pas par SMS » du 21 novembre 2026 (dans l'atelier, ces fichiers sont dans build/film/intime/). Il s'appuie sur
+# les 2 ateliers précédents (pres/ et cine/) : le minutage, les plans, les cadres tirés des photos, le montage, la partition, les bruits ajoutés, le mixage,
+# la bande-annonce, les exports, les mesures, les 2 captures refaites, la légende ajoutée, la suite d'essais de la passe. Et les 2 images qu'Antonio a fournies pour ce montage.
+mkdir -p "$BRANCHE/outils/film/intime/titres"
+cp build/film/intime/LISEZ-MOI.md build/film/intime/PLAN.md build/film/intime/itemps.py build/film/intime/iplans.py build/film/intime/ifixes.py build/film/intime/imontage.py build/film/intime/ipartition.py build/film/intime/ibruits.py build/film/intime/imixage.py build/film/intime/iba.py build/film/intime/iexporte.py build/film/intime/imesure.py build/film/intime/ivoir.py build/film/intime/cap_depot2.js build/film/intime/cap_carnet2.js build/film/intime/titres.html build/film/intime/titres.js build/film/intime/lot-i.sh "$BRANCHE/outils/film/intime/" 2>/dev/null || true
+cp build/film/intime/titres/titres.json "$BRANCHE/outils/film/intime/titres/" 2>/dev/null || true
+cp build/film/pres/src/04-la-fiche-tendue.png build/film/pres/src/06-les-mains-cuisine.png "$BRANCHE/outils/film/pres/src/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

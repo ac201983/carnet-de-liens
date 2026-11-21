@@ -29,7 +29,8 @@ const AVEC = A('film', '[data-v="son"]'), SANS = A('film', '[data-v="silence"]')
 const FICHIERS = [FILM + '-vertical.mp4', FILM + '-horizontal.mp4', 'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4'];
 // La première version du film vertical (celle du 20 novembre à 4 heures, avant la correction de l'entrée dans « Souffler ») reste à sa propre adresse, pour comparer.
 const GARDES = ['et-vous-vertical-version-1.mp4', 'et-vous-vertical-version-2.mp4', 'et-vous-horizontal-version-1.mp4', 'et-vous-horizontal-version-2.mp4',
-  FILM + '-vertical-version-1.mp4', FILM + '-horizontal-version-1.mp4', FILM + '-instagram-version-1.mp4'];     // le premier montage du film de présentation, gardé en sauvegarde
+  FILM + '-vertical-version-1.mp4', FILM + '-horizontal-version-1.mp4', FILM + '-instagram-version-1.mp4',     // le premier montage du film de présentation, gardé en sauvegarde
+  FILM + '-vertical-version-2.mp4', FILM + '-horizontal-version-2.mp4', FILM + '-bande-annonce-version-2.mp4'];  // le montage du 20 novembre 2026 et sa bande-annonce, gardés en sauvegarde
 // V3 : les versions 2 (le film vertical du 20 novembre à 7 heures, et le film horizontal corrigé de la même manière) et la version 1 du film horizontal sont gardées de même.
 // La bande-annonce verticale de 30 secondes et l'export de la capsule pour Instagram : ils ne sont pas dans le lecteur, ils ont seulement leur adresse, pour être téléchargés.
 const TELECHARGES = [FILM + '-bande-annonce.mp4', 'et-vous-instagram.mp4'];
