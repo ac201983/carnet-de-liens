@@ -108,11 +108,17 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
   { const { ctx, page } = await ouvre(FORMATS[0][1]);
     await page.goto(APP); await page.waitForSelector('.seuil .portes');
     const cmd = !!(await page.$(A('film')));
-    await page.goto(APP + '#film'); await page.waitForSelector('.seuil .portes'); await page.waitForTimeout(600);
-    const lecteur = !!(await page.$('#film-l'));
+    // Le lecteur s'ouvre après le changement d'écran, qui peut prendre plus d'une demi-seconde sur une machine lente (WebKit, le 21 novembre 2026) :
+    // on l'attend au lieu de regarder à un instant fixe, et on note le temps qu'il a mis. Sans film dans cette version, il n'y a rien à attendre.
+    await page.goto(APP + '#film'); await page.waitForSelector('.seuil .portes');
+    const t0 = Date.now(); const lecteur = await page.waitForSelector('#film-l', { timeout: mode === 'absent' ? 600 : 8000 }).then(() => true, () => false); const dt0 = Date.now() - t0;
     const vu = cmd ? 'actif' : (lecteur ? 'pret' : 'absent');
     if (mode) ok(vu === mode, '0. état du film attendu « ' + mode + ' », constaté « ' + vu + ' »'); else { mode = vu; }
-    if (vu !== 'absent') ok(lecteur, '0. l’adresse …/#film, ouverte alors que l’accueil est déjà affiché, ouvre aussi le lecteur');
+    if (vu !== 'absent') {
+      const ou = lecteur ? '' : await page.evaluate(() => JSON.stringify([location.pathname + location.hash, document.documentElement.className, !!document.querySelector('.seuil .portes')])).catch(() => '');
+      ok(lecteur, '0. l’adresse …/#film, ouverte alors que l’accueil est déjà affiché, ouvre aussi le lecteur ' + (lecteur ? '' : 'pas de lecteur après ' + dt0 + ' ms ' + ou + ' ' + JSON.stringify(erreurs)));
+      if (lecteur) notes.push('l’adresse …/#film, ouverte alors que l’accueil est déjà affiché : le lecteur est là ' + dt0 + ' ms après');
+    }
     notes.push('état du film dans cette version : ' + vu + (vu === 'pret' ? ' (le lecteur répond à l’adresse …/#film, la commande n’est pas encore sur l’accueil)' : vu === 'actif' ? ' (la commande est sur l’accueil)' : ' (ni commande ni lecteur)'));
     await ctx.close(); }
 
