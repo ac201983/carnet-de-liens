@@ -2320,6 +2320,8 @@ html.fx .film-l{animation:film-entre .18s ease-out}
 .haut-table .nature{margin-top:6px}
 /* Dans la fiche d'exemple, « Voir la fiche en entier » passe au second plan : le geste qui compte est de préparer la sienne. */
 .fb-voir{background:none;color:#1D4B31;padding:6px 2px;min-height:48px;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:.22em}
+/* Avec une souris : l'ancienne règle fonçait le fond du bouton au survol de la fiche. Le lien n'a plus de fond, seul son trait s'épaissit. */
+@media (hover:hover){.fiche-b:hover .fb-voir{background:none;text-decoration-thickness:2.5px}}
 .seuil>.film-cmd{margin-top:6px;padding-top:20px;border-top:1px solid var(--ct-filet)}
 
 @media (max-width:1023px) and (max-height:700px){

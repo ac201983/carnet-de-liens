@@ -98,6 +98,17 @@ const R3 = 'Elle choisit elle-même ses vêtements et son film du soir.';
       ok(!o.films.length, P('1. le film ne se charge pas tant que le parent ne l’a pas demandé ' + JSON.stringify(o.films.slice(0, 2))));
       await sansDebord(page, P('1. l’accueil'));
       await doigt(page, '.seuil .porte, .invite-rl .btn, .fb-voir, .hbar .sos', P('1. les gestes du premier écran'));
+      // Avec une souris, la fiche de Bastien réagit au survol : son lien doit rester lisible (trouvé le 26 novembre : vert sur vert).
+      { const survol = await page.evaluate(() => matchMedia('(hover:hover)').matches);
+        let y0 = 0;
+        if (survol) {
+          y0 = await page.evaluate(() => { const y = window.scrollY; document.querySelector('.fiche-b h2').scrollIntoView({ block: 'center', behavior: 'instant' }); return y; }); await w(page, 200);
+          const r = await page.evaluate(() => { const b = document.querySelector('.fiche-b h2').getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+          await page.mouse.move(r.x, r.y); await w(page, 250); }
+        const s = await page.evaluate(() => { const e = document.querySelector('.fb-voir'), c = getComputedStyle(e); return { fond: c.backgroundColor, encre: c.color, trait: c.textDecorationLine, survolee: document.querySelector('.fiche-b').matches(':hover') }; });
+        // Dans Chrome, la fiche doit vraiment être survolée au moment de la mesure. Ailleurs, un moteur qui ne rend pas le survol ne fait pas échouer l'essai : la règle de style est la même.
+        ok(/rgba\(0, 0, 0, 0\)|transparent/.test(s.fond) && s.encre === 'rgb(29, 75, 49)' && /underline/.test(s.trait) && (s.survolee === survol || NAV !== 'chromium'), P('1. le lien vers la fiche de Bastien reste lisible' + (s.survolee ? ' quand la souris passe sur la fiche ' : ' ') + JSON.stringify(s)));
+        if (survol) { await page.mouse.move(2, 2); await page.evaluate(y => window.scrollTo(0, y), y0); await w(page, 150); } }
       // Chaque aide fait ce que son libellé annonce.
       await page.click('.seuil .porte[data-v="deposer"]'); await page.waitForSelector('main.deposer'); await w(page, 300);
       let b = await page.evaluate(() => ({ h1: document.querySelector('main.deposer h1').textContent, champ: !!document.querySelector('main.deposer textarea'), t: document.querySelector('main.deposer').innerText }));
