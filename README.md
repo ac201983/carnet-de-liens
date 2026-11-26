@@ -9,8 +9,8 @@ Le dépôt est public : rien ici n'est secret. On n'y met jamais de mot de passe
 | Branche | Ce qu'elle contient | Où cela s'affiche |
 |---|---|---|
 | `sources` | les fichiers de fabrication du site tel qu'il est en ligne | nulle part |
-| `sources-essai` | la même chose que `sources` depuis le 26 novembre 2026, jour où la version d'essai a été publiée sur le site. Elle servira de nouveau le jour où une version d'essai sera refaite | nulle part |
-| `infomaniak` | le site fabriqué pour parent-ecoute.ch et ce qui le dépose. Jusqu'au 25 novembre 2026, elle contenait aussi la version d'essai, dans `site/essai/` | https://parent-ecoute.ch |
+| `sources-essai` | les fichiers de fabrication de la préversion (voir plus bas). Depuis le 26 novembre 2026, l'après-midi, elle est en avance sur `sources`. Le jour où Antonio valide la préversion et où elle est publiée sur le site, `sources` la rejoint | nulle part |
+| `infomaniak` | le site fabriqué pour parent-ecoute.ch et ce qui le dépose. Jusqu'au 25 novembre 2026, elle contenait aussi la version d'essai, dans `site/essai/`. Depuis le 26 novembre 2026, l'après-midi, elle contient la préversion, dans `site/preversion/` | https://parent-ecoute.ch et https://parent-ecoute.ch/preversion/ |
 | `avant-publication-2026-11-22` | le site et la version d'essai tels qu'ils étaient en ligne du 21 au 26 novembre 2026, pour pouvoir revenir en arrière | nulle part |
 | `main` | l'ancienne adresse (GitHub Pages) | https://ac201983.github.io/carnet-de-liens/parent-ecoute/ |
 
@@ -98,6 +98,23 @@ Trois détails qui comptent sur un téléphone :
 - `tests/finition.js` garde l'instant de la dose, l'accueil et la navigation.
 
 Aucun de ces essais n'écoute : ils mesurent. Le timbre et le plaisir d'écoute se jugent à l'oreille, sur un vrai téléphone.
+
+## La préversion (depuis le 26 novembre 2026, l'après-midi)
+
+Le 26 novembre 2026, à 13 h 35, Antonio a demandé une amélioration de fond du site, à lui montrer dans une préversion avant toute publication officielle. Elle vit à https://parent-ecoute.ch/preversion/, à côté du site, qui ne change pas tant qu'Antonio n'a pas validé. Elle n'est pas référencée (`noindex,nofollow`, absente du plan du site), elle range ce qu'on y écrit sous sa propre clé (`pepe-preversion-v1`), elle ne contient pas l'Espace Antonio, et la vente y est fermée : les prix restent affichés, « Essayer » et « Me prévenir à l'ouverture » remplacent les commandes simulées.
+
+Ses fichiers de fabrication sont dans la branche `sources-essai`. Tout y est décrit dans `outils/preversion/LISEZ-MOI.md` : les réglages (`site-src/config.preversion.json`), la vente fermée et le réglage des essais internes, ce qui a changé dans l'espace, comment fabriquer, vérifier et mettre en ligne. Dans l'atelier, les scripts de `outils/preversion/` sont dans `build/preversion/`.
+
+```
+PEPE_REPO=$PEPE_ROOT/prev-out PEPE_CONFIG=$PEPE_ROOT/site-src/config.preversion.json PEPE_SITE_ONLY=1 python3 build_site.py
+node tests/serve.js $PEPE_ROOT/prev-out 8448 / build/cert
+PEPE_ORIGIN=https://localhost:8448 PEPE_BASE=/preversion/ PEPE_PUBLIC=https://parent-ecoute.ch/preversion/ PEPE_KEY=pepe-preversion-v1 PEPE_APPDIR= node tests/trajet.js
+outils/preparer-preversion.sh
+```
+
+`preparer-preversion.sh` refuse de continuer si quelque chose a changé dans `site/` en dehors de `preversion/`. Après l'envoi, GitHub dépose les fichiers, contrôle la préversion en ligne et y rejoue `tests/trajet.js` dans Chrome, Firefox et WebKit.
+
+**Tant que la préversion n'est pas validée**, cette amélioration n'existe que dans la branche `sources-essai` : fabriquer le site officiel avec ses fichiers publierait la préversion à la racine du site. La branche `sources` garde les fichiers du site en ligne. C'est d'elle qu'il faut partir pour corriger le site officiel sans publier la préversion.
 
 ## La version d'essai
 
