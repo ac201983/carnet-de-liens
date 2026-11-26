@@ -15,6 +15,8 @@ const SEUL = process.env.PEPE_SEUL ? new RegExp(process.env.PEPE_SEUL) : null;
 const JUSQUA = process.env.PEPE_JUSQUA || '';
 const ARRET = new Error('fin du parcours demandée');
 async function walk(page, visit0) {
+  // PEPE_WALK=trajet : le trajet d'un parent du site public (vente fermée), à la place du grand parcours (voir walk-trajet.js).
+  if (process.env.PEPE_WALK === 'trajet') return require('./walk-trajet').walkTrajet(page, visit0, { APP, A, R });
   const visit = async (nom, ...r) => {
     const x = (!SEUL || SEUL.test(nom)) ? await visit0(nom, ...r) : undefined;
     if (JUSQUA && nom === JUSQUA) throw ARRET;

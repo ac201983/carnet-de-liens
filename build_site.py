@@ -31,6 +31,16 @@ NAME = 'Parent écouté, parent éclairé'
 # Une version d'essai vit dans son propre dossier, avec ses propres notes (une autre clé de rangement dans le navigateur),
 # pour qu'on puisse l'essayer sur le même appareil sans toucher à l'espace habituel. Elle n'est jamais référencée par les moteurs.
 ESSAI = bool(cfg.get('essai'))
+# Le nom que cette version à part se donne dans ses propres écrans : « version d'essai » jusqu'au 25 novembre 2026, « préversion » depuis.
+ESSAI_NOM = (cfg.get('essai_nom') or 'version d’essai') if ESSAI else ''
+# Les montages gardés pour comparer et l'extrait de 5 secondes : seulement si la version à part les demande (l'ancien essai les publiait tous).
+GARDES = bool(cfg.get('gardes', True)) if ESSAI else False
+# La vente. « fermee » : le site public montre les prix, « Essayer » et « Me prévenir à l'ouverture », sans commande.
+# « demo » : la commande en démonstration, pour les essais internes seulement. Sans réglage, c'est « demo », comme avant le 26 novembre 2026.
+VENTE = cfg.get('vente') or 'demo'
+assert VENTE in ('fermee', 'demo')
+# INTERNE : là où la vente est fermée, autorise un interrupteur réservé aux essais (l'adresse ouverte une fois avec #interne dans l'onglet).
+INTERNE = bool(cfg.get('interne'))
 # Le film : « pret » (lecteur par l'adresse …/#film seulement) ou « actif » (commande sur l'accueil).
 # Jusqu'au 25 novembre 2026, il n'était publié que dans la version d'essai, et la fabrication le refusait ailleurs.
 # Le 22 novembre 2026, Antonio a demandé de publier sur le site officiel tout ce que l'essai contenait (publication faite le 26 novembre) : le réglage est accepté partout.
@@ -106,6 +116,10 @@ def build_js(site):
     # PUBLIC : l'adresse complète, pour les liens qu'un parent envoie. KEY_SITE : la clé de l'espace habituel, que la version d'essai sait recopier.
     consts = [('SITE', site), ('MENTIONS', bool(site and editeur_ok())), ('KEY', CLE if site else 'pepe-v1'), ('KEY_SITE', 'pepe-v1'),
               ('RACINE', APP_PATH if site else ''), ('PUBLIC', APP_URL if site else 'https://parent-ecoute.ch/'), ('ESSAI', bool(site and ESSAI)), ('TITRE_SITE', TITRE),
+              # ESSAI_NOM : le nom que la version à part se donne. KEY_ESSAI : la clé de l'ancienne version d'essai, dont les notes peuvent être proposées à la reprise.
+              ('ESSAI_NOM', ESSAI_NOM if site else ''), ('KEY_ESSAI', 'pepe-essai-v1'),
+              # VENTE et INTERNE : voir plus haut. Hors du site (l'artefact), la commande reste la démonstration.
+              ('VENTE', VENTE if site else 'demo'), ('INTERNE', bool(site and INTERNE)),
               # SON_V : l'empreinte des 2 morceaux de l'étang. Elle change avec eux, pour qu'un téléphone ne garde pas une ancienne version en mémoire.
               ('SON_V', son_version()),
               # CONTACT_R : l'adresse de contact, écrite à l'envers (comme dans les pages de texte) pour ne pas l'offrir aux robots.
@@ -312,6 +326,36 @@ def host_blocks(body):
     return re.sub(r'<!--HOST:(\w+)-->(.*?)<!--/HOST-->\n?', lambda m: m.group(2) if m.group(1) == HOST else '', body, flags=re.S)
 
 
+# Quand la vente est fermée (plus de commande en démonstration sur le site public), les 2 pages de texte le disent.
+# Chaque phrase remplacée doit exister une fois, et une seule : si le texte d'origine change, la fabrication s'arrête au lieu de laisser une phrase fausse.
+VENTE_FERMEE = {
+    'conditions': [
+        ('<li>Les 2 offres payantes sont présentées en démonstration, sans paiement et sans abonnement.</li>',
+         '<li>Les 2 offres payantes sont présentées avec leur prix. Leur vente n’est pas encore ouverte.</li>'),
+        ('Dans la version de test, trois règles s’appliquent.</p>', 'Dans la version de test, deux règles s’appliquent.</p>'),
+        ('<li>Choisir une offre ouvre une démonstration de commande. Aucun paiement n’est déclenché et aucune obligation n’est créée, pour vous comme pour nous.</li>',
+         '<li>La vente n’est pas encore ouverte. Aucun paiement n’est possible et aucune obligation n’est créée, pour vous comme pour nous. Vous pouvez essayer une partie de chaque offre, et demander à être prévenu de son ouverture.</li>'),
+        ('    <li>Les écrans « Offrir à un parent » et « Retrouver un achat » sont des maquettes.</li>\n', ''),
+    ],
+    'confidentialite': [
+        ('<h2>3. L’écoute, « Passer le relais » et la commande dans la version de test</h2>', '<h2>3. L’écoute, « Passer le relais » et la vente dans la version de test</h2>'),
+        ('<p><b>La commande est une démonstration.</b> Choisir une offre ouvre une démonstration de commande. Aucun moyen de paiement n’est demandé, aucun montant n’est débité et aucune donnée de paiement n’est collectée. « Offrir à un parent » et « Retrouver un achat » sont des maquettes, et aucune adresse e-mail n’y est demandée.</p>',
+         '<p><b>La vente n’est pas encore ouverte.</b> Aucune offre ne peut être achetée pour l’instant. Aucun moyen de paiement n’est demandé, aucun montant n’est débité et aucune donnée de paiement n’est collectée.</p>'),
+        ('<p><b>Les 3 mesures du lancement.</b> L’espace note sur votre appareil si vous avez terminé l’essai du parcours, si vous avez confirmé une commande de démonstration, et si vous êtes revenu utiliser un outil un autre jour.',
+         '<p><b>Les mesures du lancement.</b> L’espace note sur votre appareil si vous avez commencé l’essai de « Passer le relais », si vous avez regardé votre fiche à la place de votre proche et si vous avez terminé l’essai du parcours.'),
+    ],
+}
+
+
+def vente_fermee(body, page):
+    if VENTE != 'fermee':
+        return body
+    for avant, apres in VENTE_FERMEE[page]:
+        assert body.count(avant) == 1, ('vente fermée : phrase introuvable ou en double dans ' + page, avant[:70])
+        body = body.replace(avant, apres)
+    return body
+
+
 def text_page(fname, h1, title, desc, body, v, band='center 45%'):
     canonical = APP_URL + fname
     body = host_blocks(body)
@@ -350,7 +394,7 @@ def build_site():
         attendus = ('ce-quon-ne-dit-pas-par-sms-vertical.mp4', 'ce-quon-ne-dit-pas-par-sms-horizontal.mp4', 'apercu-film.webp', 'affiche-film-verticale.webp', 'affiche-film-horizontale.webp',
                     'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp')
         # L'extrait de 5 secondes et les versions gardées pour comparer ne servent qu'à juger un montage : ils ne vont que dans une version d'essai.
-        if ESSAI:
+        if GARDES:
             attendus += ('et-vous-raccord-5s.mp4',)
         manque = [f for f in attendus if not os.path.exists(SRC + '/film/' + f)]
         if manque:
@@ -358,7 +402,7 @@ def build_site():
         os.makedirs(OUT + '/film')
         # Les versions gardées pour comparer (« et-vous-…-version-N.mp4 ») suivent, quand il y en a : le lecteur ne les charge jamais, elles n'ont que leur adresse.
         # Le premier montage du film de présentation est gardé de la même façon (« ce-quon-ne-dit-pas-par-sms-…-version-1.mp4 »).
-        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'(et-vous|ce-quon-ne-dit-pas-par-sms)-[a-z0-9-]+-version-[0-9]+\.mp4', f))) if ESSAI else ()
+        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'(et-vous|ce-quon-ne-dit-pas-par-sms)-[a-z0-9-]+-version-[0-9]+\.mp4', f))) if GARDES else ()
         # La bande-annonce verticale de 30 secondes et l'export de la capsule pour Instagram : prêts au téléchargement, à leur seule adresse. Le lecteur ne les charge jamais.
         # Les crédits du film (un texte) les accompagnent.
         gardes += tuple(f for f in ('ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4', 'et-vous-instagram.mp4', 'credits.txt') if os.path.exists(SRC + '/film/' + f))
@@ -463,10 +507,10 @@ def build_site():
     else:
         urls.append(text_page('confidentialite.html', 'Politique de confidentialité', 'Politique de confidentialité de ' + NAME,
                               'Ce que vous écrivez reste sur votre appareil. Il n’y a ni compte ni cookie, et la mesure d’audience anonyme ne se fait qu’avec votre accord.',
-                              read(SRC + '/confidentialite.body.html'), v))
+                              vente_fermee(read(SRC + '/confidentialite.body.html'), 'confidentialite'), v))
         urls.append(text_page('conditions.html', 'Conditions générales', 'Conditions générales de ' + NAME,
-                              'Les règles d’utilisation de l’espace, avec la version de test gratuite, ce que l’espace est et n’est pas, et les offres présentées à titre de démonstration.',
-                              read(SRC + '/conditions.body.html'), v, band='left 55%'))
+                              'Les règles d’utilisation de l’espace, avec la version de test gratuite, ce que l’espace est et n’est pas, et les offres ' + ('dont la vente n’est pas encore ouverte.' if VENTE == 'fermee' else 'présentées à titre de démonstration.'),
+                              vente_fermee(read(SRC + '/conditions.body.html'), 'conditions'), v, band='left 55%'))
         if editeur_ok():
             urls.append(text_page('mentions-legales.html', 'Mentions légales', 'Mentions légales de ' + NAME,
                                   'Qui édite l’espace, comment le joindre et qui héberge le site.', mentions_body(), v, band='right 70%'))
@@ -509,7 +553,7 @@ def build_site():
 
     # --- manifest, robots, sitemap
     manifest = {
-        'name': NAME + (' (essai)' if ESSAI else ''), 'short_name': 'Parent écouté' + (' essai' if ESSAI else ''), 'id': APP_PATH,
+        'name': NAME + ((' (préversion)' if ESSAI_NOM == 'préversion' else ' (essai)') if ESSAI else ''), 'short_name': 'Parent écouté' + ((' préversion' if ESSAI_NOM == 'préversion' else ' essai') if ESSAI else ''), 'id': APP_PATH,
         'description': 'Un espace d’écoute pour tout parent en chemin, avec la dose de lumière intérieure, Déposer, le parcours de six mois et les conseils et outils d’un travailleur social.',
         'lang': 'fr', 'dir': 'ltr', 'start_url': './', 'scope': './', 'display': 'standalone', 'background_color': '#07240F', 'theme_color': '#07240F',
         'categories': ['lifestyle', 'health', 'education'],

@@ -197,25 +197,32 @@ function rlDuHash(){const m=/^#f=(.+)$/.exec(location.hash||'');if(!m)return fal
 function rlFil(noms,p,quoi){return '<ol class="ap-fil rl-fil" aria-label="'+quoi+'">'+noms.map((t,i)=>'<li'+(i===p?' aria-current="step"':'')+' class="'+(i<p?'ap-fait':i===p?'ap-ici':'')+'"><span>'+(i+1)+'</span><b>'+t+'</b></li>').join('')+'</ol>';}
 /* La carte de l'offre. Elle dit ce qui est gratuit et ce que l'outil ajoute, puis ouvre la commande. */
 function rlOffre(de){
+  /* Sur l'accueil de l'outil : le prix, ce qu'il apporte, et un seul geste. Tant que la vente est fermée, ce geste est d'essayer. */
   return '<section class="offre rl-offre" aria-labelledby="rl-offre-t"><div class="f-haut"><h2 id="rl-offre-t">Passer le relais</h2><p class="f-prix"><b>49 CHF</b> <small>une seule fois</small></p></div>'+
     '<p class="f-benef">Envoyer la fiche, l’imprimer et la retrouver prête la prochaine fois.</p>'+
-    '<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="'+(de||'relais')+'">Choisir Passer le relais</button>'+
+    (venteDemo()?'<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="'+(de||'relais')+'">Choisir Passer le relais</button>':prevenirBtn('relais'))+
     '<p class="f-note">Voir l’exemple, préparer votre fiche et la relire est gratuit. L’outil sert ensuite à toute la famille, sans abonnement et sans limite de fiches.</p>'+
-    '<p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>';
+    '<p class="demo-paie">'+I.info+'<span>'+demoPaie()+'</span></p></section>';
 }
 function rlVueAccueil(){
   const R=rel(),F=R.fiches,a=rlOuvert();const attente=F.slice().reverse().find(f=>f.env&&!f.retour);
   let h='<div class="f-tete"><span class="label">Un outil pour toute la famille</span><h1 class="t1">Passer le relais</h1><p class="sub">Une page pour la personne qui garde votre enfant, écrite avec vos mots. Elle sait l’essentiel en 1 minute, et vous partez l’esprit plus léger.</p></div>';
   if(!F.length){
-    h+='<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button><button type="button" class="btn wide" data-act="rl" data-k="nouveau">'+I.pen+'Préparer mon premier relais</button></div>'+
+    h+='<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="essai">'+I.pen+'Préparer les 3 choses à savoir pour samedi</button><p class="hint">Un premier essai gratuit. Vous voyez la fiche comme votre proche la recevra.</p><button type="button" class="btn wide" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button><button type="button" class="lien-f" data-act="rl" data-k="nouveau">'+I.note+'Préparer une fiche complète, en 5 moments</button></div>'+
       '<ol class="rl-comment"><li><b>Vous choisissez vos phrases.</b><span>Des modèles vous aident à commencer, et vous les adaptez avec vos mots.</span></li><li><b>Vous décidez des 3 repères.</b><span>Ils sont en tête de la fiche, sous « Si tu ne lis que trois choses ».</span></li><li><b>Votre proche ouvre la fiche.</b><span>Il la lit sur son téléphone, sans compte et sans rien acheter.</span></li><li><b>Au retour, une seule question.</b><span>Le prochain relais est alors prêt en quelques gestes.</span></li></ol>'+
       /* L'outil sert aussi sans fiche : une réunion se prépare avec le journal « avant, pendant, après » ou avec ce que le parent écrit sur le moment. */
       (a?'<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="reunion">'+I.user+'Préparer une réunion avec l’école ou le foyer</button></div>':'');
   }else{
+    /* Un parent qui essaie retrouve d'abord son brouillon. Les gestes de l'outil complet ne lui sont pas montrés comme des boutons qui refusent :
+       ils sont dits plus bas, avec le prix, et il peut essayer aussi pour une réunion. */
+    const ec=rlEsEnCours();
+    if(ec&&!ec.reu)h+='<section class="rl-carte rl-es-reprise"><h2>Votre brouillon vous attend</h2><p>'+esc(ec.t)+', avec '+ec.n+' repère'+(ec.n>1?'s':'')+' déjà écrit'+(ec.n>1?'s':'')+'.</p><button type="button" class="btn primary" data-act="rl" data-k="essai" data-v="'+ec.v+'">'+I.pen+'Reprendre mon brouillon</button></section>';
     if(attente&&a)h+='<section class="rl-carte rl-auretour"><h2>Le relais est passé ?</h2><p>'+esc(rlTitre(attente))+(attente.chez?', pour '+esc(attente.chez):'')+'. Une seule question vous attend.</p><button type="button" class="btn primary" data-act="rl" data-k="retour" data-id="'+attente.id+'">Répondre</button></section>';
     h+='<section class="rl-mes" aria-labelledby="rl-mes-t"><h2 id="rl-mes-t">Mes relais</h2><div class="liste">'+F.slice().reverse().map(f=>'<button type="button" class="sit" data-act="rl" data-k="ouvrir" data-id="'+f.id+'"><span class="e">'+I.note+'</span><span class="tx"><b>'+esc(rlTitre(f))+'</b><span>'+esc([f.chez?'Pour '+f.chez:'',f.env?'envoyée le '+fmtDate(f.env):'pas encore envoyée',f.retour?'retour noté':''].filter(Boolean).join(', '))+'</span></span><span class="chev">'+I.chev+'</span></button>').join('')+'</div></section>'+
-      '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="suivant">'+I.plus+'Préparer un nouveau relais</button><p class="hint">Vous repartez de votre dernière fiche, et vous ne changez que ce qui change.</p>'+
-      '<button type="button" class="btn wide" data-act="rl" data-k="reunion">'+I.user+'Préparer une réunion avec l’école ou le foyer</button><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Revoir un exemple de fiche</button></div>';
+      (a?'<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="suivant">'+I.plus+'Préparer un nouveau relais</button><p class="hint">Vous repartez de votre dernière fiche, et vous ne changez que ce qui change.</p>'+
+      '<button type="button" class="btn wide" data-act="rl" data-k="reunion">'+I.user+'Préparer une réunion avec l’école ou le foyer</button><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Revoir un exemple de fiche</button></div>':
+      '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="essai" data-v="reunion">'+I.user+'Essayer aussi pour une réunion</button><p class="hint">Vos 3 priorités sur une feuille, pour l’école, le foyer ou un thérapeute. C’est un essai gratuit.</p>'+
+      '<button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Revoir un exemple de fiche</button></div>');
   }
   {
     if(R.reunions.length)h+='<section class="rl-mes" aria-labelledby="rl-reu-t"><h2 id="rl-reu-t">Mes réunions</h2><div class="liste">'+R.reunions.slice().reverse().map(x=>'<button type="button" class="sit" data-act="rl" data-k="feuille" data-id="'+x.id+'"><span class="e">'+I.user+'</span><span class="tx"><b>'+esc(rlReuTitre(x))+'</b><span>'+esc(x.quand||'Ma feuille pour la réunion')+'</span></span><span class="chev">'+I.chev+'</span></button>').join('')+'</div></section>';
@@ -227,11 +234,14 @@ function rlVueAccueil(){
 }
 function rlVueExemple(){
   const k=RL_EX[state.rl.ex]?state.rl.ex:'g';
-  return '<div class="f-tete"><span class="label">Un exemple, inventé pour vous montrer</span><h1 class="t1">Une fiche terminée</h1><p class="sub">Voici ce que reçoit la personne qui prend le relais. Elle l’ouvre sur son téléphone, sans compte et sans rien acheter.</p></div>'+
+  return '<div class="f-tete"><span class="label">Un exemple, inventé pour vous montrer</span><h1 class="t1">Une fiche terminée</h1><p class="sub">Voici ce que reçoit la personne qui prend le relais. Elle l’ouvre sur son téléphone, sans compte et sans rien acheter.</p>'+
+    /* L'essai est à un geste dès le haut de l'exemple, sans avoir à faire défiler toute la fiche. */
+    (rlOuvert()||rel().fiches.length?'':'<button type="button" class="lien-f rl-ex-essai" data-act="rl" data-k="essai">'+I.pen+'Préparer la mienne, en 3 repères</button>')+'</div>'+
     '<div class="chips rl-ages" role="group" aria-label="Choisir un exemple">'+[['e','Un enfant'],['a','Une adolescente'],['g','Un adulte']].map(x=>'<button type="button" class="chip" data-act="rl" data-k="ex" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>').join('')+'</div>'+
     rlFicheHtml(RL_EX[k],{cls:'rl-ex',pose:rlSePose()})+
     '<p class="hint">Ces 3 fiches sont des exemples. L’outil sert quel que soit l’âge de votre enfant, tout-petit ou adulte depuis longtemps. Les prénoms et les numéros sont inventés.</p>'+
-    '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="nouveau">'+I.pen+(rel().fiches.length?'Préparer un relais':'Préparer mon premier relais')+'</button><p class="hint">Vous choisissez chaque phrase, et rien ne part sans vous.</p>'+(SITE?'<button type="button" class="lien-f" data-act="rl" data-k="imprimer">Imprimer cet exemple</button>':'')+'</div>';
+    '<div class="ap-suite">'+(rel().fiches.length?'<button type="button" class="btn primary wide" data-act="rl" data-k="nouveau">'+I.pen+'Préparer un relais</button>':
+      '<button type="button" class="btn primary wide" data-act="rl" data-k="essai">'+I.pen+'Préparer les 3 choses à savoir pour samedi</button>')+'<p class="hint">Vous choisissez chaque phrase, et rien ne part sans vous.</p>'+(rel().fiches.length?'':'<button type="button" class="lien-f" data-act="rl" data-k="nouveau">'+I.note+'Préparer une fiche complète, en 5 moments</button>')+(SITE?'<button type="button" class="lien-f" data-act="rl" data-k="imprimer">Imprimer cet exemple</button>':'')+'</div>';
 }
 function rlChamp(id,ch,lab,val,ph,lim,aide){return '<div class="field"><label for="'+id+'">'+lab+'</label><input type="text" id="'+id+'" data-rl="'+ch+'" maxlength="'+lim+'" value="'+esc(val||'')+'" placeholder="'+esc(ph)+'" autocomplete="off">'+(aide?'<p class="hint">'+aide+'</p>':'')+'</div>';}
 function rlVuePrep(){
@@ -287,15 +297,16 @@ function rlVueApercu(){
     (n3<3?'<p class="rl-alerte">'+I.info+'<span>'+(n3?'Il vous reste '+(3-n3)+' repère'+(3-n3>1?'s':'')+' à choisir.':'Vos 3 repères ne sont pas encore choisis.')+'</span><button type="button" class="lien-f" data-act="rl" data-k="aller" data-v="2">Les choisir</button></p>':'')+
     fiche+
     (M.ok?'<p class="rl-page">'+I.check+'<span>Votre fiche tient sur une page, sur un téléphone comme sur une feuille.</span></p>':'<p class="rl-page rl-trop">'+I.info+'<span>Imprimée, votre fiche dépasse une page. Votre proche la lira plus facilement si vous retirez une phrase ou deux.</span></p>')+
-    '<div class="ap-suite">'+(a?'<button type="button" class="btn primary wide" data-act="rl" data-k="envoi">'+I.send+'Envoyer la fiche</button><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button>':'')+
-    '<button type="button" class="btn'+(a?'':' primary')+' wide" data-act="rl" data-k="aller" data-v="0">'+I.pen+'Modifier la fiche</button>'+(f.env&&a?'<button type="button" class="btn wide" data-act="rl" data-k="retour" data-id="'+f.id+'">Noter le retour</button>':'')+'</div>'+
-    (a?'':rlOffre('apercu'));
+    '<div class="ap-suite">'+(a?'<button type="button" class="btn primary wide" data-act="rl" data-k="envoi">'+I.send+'Envoyer la fiche</button><button type="button" class="btn wide" data-act="rl" data-k="recu">'+I.eye+'Voir ce que mon proche recevra</button><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button>':'<button type="button" class="btn primary wide" data-act="rl" data-k="recu">'+I.eye+'Voir ce que mon proche recevra</button>')+
+    '<button type="button" class="btn wide" data-act="rl" data-k="aller" data-v="0">'+I.pen+'Modifier la fiche</button>'+(f.env&&a?'<button type="button" class="btn wide" data-act="rl" data-k="retour" data-id="'+f.id+'">Noter le retour</button>':'')+'</div>'+
+    (a?'':rlMoment49(false));
 }
 function rlMessage(f){return 'Voici la fiche pour le relais. Elle se lit en 1 minute.';}
 function rlVueEnvoi(){
   const f=rlFiche(state.rl.id);if(!f||!rlOuvert())return rlVueApercu();const url=rlLien(f);
   return '<div class="f-tete"><span class="label">Envoyer</span><h1 class="t1">'+esc(f.chez?'Envoyer la fiche à '+f.chez:'Envoyer la fiche')+'</h1></div>'+
     '<ul class="list rl-sait"><li>La fiche est écrite dans le lien lui-même. Aucun serveur ne la reçoit, et le site ne la lit pas.</li><li>La personne l’ouvre sur son téléphone, sans compte et sans rien acheter.</li><li>Toute personne à qui ce lien est transmis peut lire la fiche. Envoyez-le comme vous enverriez une photo de famille.</li></ul>'+
+    '<button type="button" class="lien-f" data-act="rl" data-k="recu">'+I.eye+'Voir d’abord ce que '+esc(f.chez||'mon proche')+' recevra</button>'+
     '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="partage">'+I.share+'Envoyer le lien</button><button type="button" class="btn wide" data-act="rl" data-k="texte">'+I.mail+'Envoyer le texte, sans lien</button><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer la fiche</button></div>'+
     '<div class="field"><label for="rl-lien">Le lien de la fiche, à copier</label><input type="text" id="rl-lien" readonly value="'+esc(url)+'"><p class="hint">Dans WhatsApp ou dans un message, l’aperçu du lien ne montre rien de votre fiche.</p></div>'+
     '<p class="lecture-l">Quand le relais est passé, revenez ici. Une seule question vous attend, et le prochain relais sera prêt plus vite.</p>'+
@@ -364,8 +375,9 @@ function rlVueFeuille(){
     (x.dem?'<section class="rl-moi"><h2 class="rl-h">Ma demande</h2><p>'+nl2(clean(x.dem,RL_LIM.dem))+'</p></section>':'')+
     (O.length?'<section class="rl-s"><h2 class="rl-h">Ce que j’ai observé</h2><ul>'+O.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></section>':'')+'</article>'+
     (state.rl.mots?'<section class="rl-carte rl-dire" aria-labelledby="rl-dire-t"><h2 id="rl-dire-t">Des phrases à dire, telles quelles</h2><ul class="list">'+RL_MOTS_DIRE.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul><button type="button" class="lien-f" data-act="rl" data-k="mots">Refermer</button></section>':'<button type="button" class="btn primary wide rl-perds" data-act="rl" data-k="mots">'+I.bulb+'Je perds mes mots</button>')+
-    '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer ma feuille</button><button type="button" class="btn wide" data-act="rl" data-k="reu-modif">'+I.pen+'Modifier</button><button type="button" class="btn ghost wide" data-act="rl" data-k="accueil">Revenir à mes relais</button></div>'+
-    '<p class="hint">Cette feuille reste sur votre appareil. Vous pouvez la garder ouverte pendant la réunion.</p>';
+    '<div class="ap-suite">'+(rlOuvert()?'<button type="button" class="btn wide" data-act="rl" data-k="imprimer">Imprimer ma feuille</button>':'')+'<button type="button" class="btn wide" data-act="rl" data-k="reu-modif">'+I.pen+'Modifier</button><button type="button" class="btn ghost wide" data-act="rl" data-k="accueil">Revenir à mes relais</button></div>'+
+    '<p class="hint">Cette feuille reste sur votre appareil. Vous pouvez la garder ouverte pendant la réunion.</p>'+
+    (rlOuvert()?'':rlMoment49(true));
 }
 /* ---------- sauvegarder et restaurer ---------- */
 function rlVueSauver(){
@@ -385,12 +397,188 @@ function rlVueLu(){
     '<p class="hint">Cette fiche est contenue dans le lien que vous avez reçu. Le site ne l’a ni lue ni enregistrée. Gardez ce lien pour la retrouver.</p>'+
     '<section class="rl-carte"><h2>D’où vient cette fiche ?</h2><p>Elle a été préparée avec « Passer le relais », un outil de Parent écouté, parent éclairé, un espace pour les parents d’une personne en situation de handicap.</p><button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir comment une famille prépare sa fiche</button></section>';
 }
+/* ---------- le premier essai : « Et si vous prépariez les trois choses à savoir pour samedi ? » ---------- */
+/* Un parent qui découvre l'outil n'a pas à traverser 5 écrans pour sentir ce qu'il vaut. Il choisit une occasion (une soirée, un week-end,
+   une réunion), répond à 3 questions simples, une par écran, et voit sa fiche se construire sous ses yeux. Il la regarde ensuite comme son
+   proche la recevra, puis retrouve son brouillon. Rien n'est envoyé pendant l'essai.
+   La fiche de l'essai est une vraie fiche de l'outil (rel().fiches), gardée comme les autres : le parent la retrouve à son retour, la complète
+   ou la modifie avec l'éditeur de toujours. Pour une réunion, ses 3 réponses sont les 3 priorités de sa feuille (rel().reunions).
+   Le prénom est facultatif : sans lui, la fiche s'appelle « La fiche de relais ». */
+const RL_OCC=[['soiree','Une soirée','Quelqu’un vient à la maison, ou votre enfant sort.'],['weekend','Un week-end','Une ou deux nuits chez un proche.'],['reunion','Une réunion','Avec l’école, le foyer ou un thérapeute.']];
+const RL_OCC_POUR={soiree:'pour une soirée',weekend:'pour un week-end',reunion:'pour une réunion'};
+/* Les 3 questions, puis une ligne d'aide. La troisième question d'une fiche porte le prénom quand la famille l'a donné. */
+const RL_ES_Q={
+  f:[['Qu’aimeriez-vous que votre proche sache en premier ?','Le plus important pour que tout se passe bien. Une phrase suffit.','Par exemple, il a besoin de savoir ce qui vient après.'],
+     ['Qu’est-ce qui évite une difficulté ?','Un geste, un mot ou une habitude qui change tout.','Par exemple, prévenir avant de changer d’activité.'],
+     ['Qu’est-ce qui compte pour lui ou pour elle ?','Ce qu’il ou elle aime, choisit ou décide.','Par exemple, on lui demande son avis avant de décider.']],
+  r:[['Qu’aimeriez-vous que l’équipe sache en premier ?','Un fait précis, dit simplement. Une phrase suffit.','Par exemple, ce que vous observez à la maison depuis quelques semaines.'],
+     ['Que voulez-vous obtenir ?','Une demande claire aide tout le monde.','Par exemple, un essai pendant 1 mois, puis un point ensemble.'],
+     ['Qu’est-ce qui ne doit pas être oublié ?','Ce qui compte pour votre enfant, même si le temps manque.','Par exemple, ce qui l’aide à rester dans le groupe.']]
+};
+/* Des phrases à adapter, pour qui ne sait pas par où commencer. Celles d'une fiche viennent des modèles de l'outil. */
+const RL_ES_IDEES={
+  f:[[RL_SEC[0][3][2],RL_SEC[4][3][0],RL_SEC[0][3][1],RL_SEC[0][3][4]],
+     [RL_SEC[0][3][0],RL_SEC[3][3][1],RL_SEC[1][3][1],RL_SEC[3][3][2]],
+     [RL_SEC[5][3][2],['Demande-lui son avis avant de décider, même pour un détail.','Demandez-lui son avis avant de décider, même pour un détail.'],RL_SEC[4][3][3],RL_SEC[3][3][5]]],
+  r:[['Ce que j’observe à la maison, c’est que','Depuis quelques semaines,','Ce qui aide {P}, c’est'],
+     ['Je vous demande de','Pouvons-nous essayer pendant 1 mois de','J’aimerais que nous décidions ensemble de'],
+     ['Ce qui compte pour {P}, c’est','{Pm} tient beaucoup à','J’aimerais qu’on n’oublie pas que']]
+};
+/* La situation inventée de chaque occasion : un exemple de l'outil (Noé pour une soirée, Bastien pour un week-end), et pour une réunion
+   3 priorités écrites pour l'essai, autour de Lina, l'adolescente des exemples. Les prénoms sont inventés. */
+const RL_ES_EX={soiree:'e',weekend:'g'};
+const RL_ES_EX_R=['Lina a besoin d’être prévenue la veille quand le programme change.','Je demande un court message chaque vendredi, pour savoir comment s’est passée la semaine.','Son casque l’aide à rester en classe. J’aimerais qu’il soit accepté.'];
+function rlEsBrouillon(){return rel().fiches.find(f=>!f.env)||null;}
+function rlEsReu(){return rel().reunions.find(x=>x.ess)||null;}
+/* L'essai en cours, s'il y en a un : la fiche pas encore envoyée, sinon la feuille de réunion de l'essai. Qui a déjà l'outil n'a pas d'essai en cours. */
+function rlEsEnCours(){
+  if(rlOuvert())return null;
+  const b=rlEsBrouillon(),n=b?(b.trois||[]).filter(x=>clean(x,9)).length:0;
+  if(n)return {v:b.occ==='soiree'?'soiree':'weekend',n:n,reu:false,t:rlTitre(b)+(b.chez?', pour '+b.chez:'')};
+  const x=rlEsReu(),m=x?(x.pri||[]).filter(v=>clean(v,9)).length:0;
+  if(m)return {v:'reunion',n:m,reu:true,t:'Votre feuille pour la réunion'};
+  return null;
+}
+function rlEsTrois(){
+  const r=state.rl;
+  if(r.occ==='reunion'){const x=rlReu(r.r);return [0,1,2].map(i=>x?clean((x.pri||[])[i],RL_LIM.pri):'');}
+  const f=rlFiche(r.id);return [0,1,2].map(i=>f?clean((f.trois||[])[i],RL_LIM.l):'');
+}
+function rlEsIdee(m,f){return rlModele(m,f||{tu:true,qui:''}).replace(/Votre enfant/g,'Mon enfant').replace(/votre enfant/g,'mon enfant');}
+/* La fiche qui se construit. Le parent écrit dans la fiche elle-même : le repère en cours est un champ, à sa place parmi les 3,
+   et ce qu'il a déjà écrit est là, tel que son proche le lira. Un repère pas encore écrit garde sa place, en pointillé. */
+function rlEsFicheHtml(){
+  const r=state.rl,reu=r.occ==='reunion',T=rlEsTrois(),p=Math.max(0,Math.min(3,r.p||0));const f=reu?null:rlFiche(r.id);
+  const tu=!f||f.tu!==false;const M=f&&Array.isArray(f.moi)?f.moi.map(x=>clean(x,RL_LIM.l)).filter(Boolean):[];
+  const vide=reu?['Votre première priorité viendra ici.','Votre deuxième priorité viendra ici.','Votre troisième priorité viendra ici.']:['Votre premier repère viendra ici.','Votre deuxième repère viendra ici.','Votre troisième repère viendra ici.'];
+  const Q=p<3?RL_ES_Q[reu?'r':'f'][p]:null;
+  const li=(x,i)=>i===p?'<li class="rl-es-ici"><textarea id="rl-es-t" rows="3" maxlength="'+(reu?RL_LIM.pri:RL_LIM.l)+'" data-rl="'+(reu?'reu.pri.':'trois.')+i+'" aria-labelledby="rl-es-q" aria-describedby="rl-es-aide" enterkeyhint="'+(i<2?'next':'done')+'" placeholder="'+esc(Q[2])+'">'+esc(x)+'</textarea></li>':
+    '<li class="'+(x?'':'rl-es-vide')+'">'+esc(x||vide[i])+'</li>';
+  return '<header class="rl-tete"><span class="rl-goutte" aria-hidden="true">'+LOGO+'</span><div><h2 class="rl-t">'+esc(reu?'Ma feuille pour la réunion':rlTitre(f||{}))+'</h2>'+(f&&rlSousTitre(f)?'<p class="rl-st">'+esc(rlSousTitre(f))+'</p>':'')+'</div></header>'+
+    '<section class="rl-trois"><h3>'+(reu?'Mes 3 priorités':tu?'Si tu ne lis que trois choses':'Si vous ne lisez que trois choses')+'</h3><ol>'+T.map(li).join('')+'</ol></section>'+
+    (M.length?'<section class="rl-moi"><h3>Ce que je souhaite dire moi-même</h3><ul>'+M.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'+(f.qui?'<p class="rl-signe">'+esc(rlMaj(f.qui))+'</p>':'')+'</section>':'');
+}
+/* Pendant que le parent écrit un repère, la fiche n'est pas redessinée : le champ garde son curseur, et le bouton de la suite s'ouvre dès le premier mot.
+   Quand les 3 repères sont prêts, la fiche suit ce qu'il ajoute en dessous (un prénom, la parole de son enfant). */
+function rlEssaiVif(){
+  try{
+    const r=state.rl,p=r.p||0;
+    if(p>=3){const a=document.getElementById('rl-es-f');if(a)a.innerHTML=rlEsFicheHtml();return;}
+    const b=document.getElementById('rl-es-suite');if(b)b.setAttribute('aria-disabled',rlEsTrois()[p]?'false':'true');
+  }catch(e){}
+}
+function rlPermetHtml(){
+  return '<section class="rl-permet" aria-labelledby="rl-permet-t"><h2 id="rl-permet-t">Ce que cet essai vous permet</h2>'+
+    '<ul><li>'+I.check+'<span>Écrire vos 3 repères, avec vos mots ou à partir d’une situation inventée.</span></li><li>'+I.check+'<span>Voir la fiche comme votre proche la recevra sur son téléphone.</span></li><li>'+I.check+'<span>Garder votre brouillon sur cet appareil, et le retrouver à votre retour.</span></li></ul>'+
+    '<p class="rl-apres">Envoyer la fiche, l’imprimer et repartir d’elle la prochaine fois font partie de l’outil complet, à 49 CHF une seule fois.'+(venteDemo()?'':' Sa vente n’est pas encore ouverte.')+'</p></section>';
+}
+function rlVueEssaiDebut(){
+  const c=rlEsEnCours();const mot=c&&c.reu?['priorité','écrite']:['repère','écrit'];
+  return '<div class="f-tete"><span class="label">Passer le relais, un premier essai gratuit</span><h1 class="t1">Et si vous prépariez les trois choses à savoir pour samedi ?</h1>'+
+    '<p class="sub">Quelqu’un va prendre le relais auprès de votre enfant, petit ou adulte depuis longtemps. Vous écrivez 3 repères, et vous voyez la fiche comme cette personne la recevra.</p></div>'+
+    (c?'<section class="rl-carte rl-es-reprise"><h2>Votre brouillon vous attend</h2><p>'+esc(c.t)+', avec '+c.n+' '+mot[0]+(c.n>1?'s':'')+' déjà '+mot[1]+(c.n>1?'s':'')+'.</p><button type="button" class="btn primary" data-act="rl" data-k="essai" data-v="'+c.v+'">'+I.pen+'Reprendre mon brouillon</button></section>':'')+
+    '<div class="rl-occ" role="group" aria-labelledby="rl-occ-t"><h2 id="rl-occ-t">'+(c?'Ou préparer autre chose':'Vous préparez')+'</h2>'+RL_OCC.map(o=>'<button type="button" class="rl-oc" data-act="rl" data-k="essai" data-v="'+o[0]+'"><span class="tx"><b>'+o[1]+'</b><span>'+o[2]+'</span></span><span class="chev" aria-hidden="true">'+I.chev+'</span></button>').join('')+'</div>'+
+    rlPermetHtml()+
+    '<p class="rl-prive">'+I.lock+'<span>Rien n’est envoyé pendant l’essai. Vos mots restent sur cet appareil.</span></p>'+
+    '<button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir d’abord un exemple de fiche terminée</button>';
+}
+function rlVueEssai(){
+  const r=state.rl;if(r.es!=='ecrire')return rlVueEssaiDebut();
+  const reu=r.occ==='reunion';const f=reu?null:rlFiche(r.id),x=reu?rlReu(r.r):null;if(!f&&!x)return rlVueEssaiDebut();
+  const T=rlEsTrois(),p=Math.max(0,Math.min(3,r.p||0)),P=f&&f.qui?f.qui:'';const occ=reu?'reunion':(f.occ==='soiree'?'soiree':'weekend');
+  const nomOcc=(RL_OCC.find(o=>o[0]===occ)||RL_OCC[1])[1];
+  const fiche='<article class="rl-fiche rl-es-f" id="rl-es-f">'+rlEsFicheHtml()+'</article>';
+  let c='';
+  if(p<3){
+    const Q=RL_ES_Q[reu?'r':'f'][p];const perso=p===2&&!reu&&P;
+    c='<div class="f-tete"><span class="label">'+nomOcc+', '+(reu?'priorité':'repère')+' '+(p+1)+' sur 3</span>'+
+      '<h1 class="t1" id="rl-es-q">'+esc(perso?'Qu’est-ce qui compte pour '+P+' ?':Q[0])+'</h1><p class="sub" id="rl-es-aide">'+esc(perso?'Ce que '+P+' aime, choisit ou décide.':Q[1])+'</p></div>'+
+      fiche+
+      (r.sec==='es'?'<div class="rl-modeles" role="group" aria-label="Phrases à adapter"><span class="label">'+(reu?'Commencer par':'Une phrase à adapter')+'</span>'+RL_ES_IDEES[reu?'r':'f'][p].map((m,i)=>'<button type="button" class="rl-m" data-act="rl" data-k="es-idee" data-i="'+i+'">'+esc(rlEsIdee(m,f))+(reu?'…':'')+'</button>').join('')+'</div>':
+        '<div class="rl-es-aides"><button type="button" class="lien-f" data-act="rl" data-k="es-idees">'+I.bulb+'Je ne sais pas par où commencer</button>'+
+        (p===0&&!T.filter(Boolean).length?'<button type="button" class="lien-f" data-act="rl" data-k="es-exemple">'+I.eye+'Essayer avec une situation inventée</button>':'')+'</div>')+
+      '<div class="ap-suite"><button type="button" class="btn primary wide" id="rl-es-suite" data-act="rl" data-k="es-pas" data-v="1" aria-disabled="'+(T[p]?'false':'true')+'">'+(p<2?(reu?'Priorité suivante':'Repère suivant'):(reu?'Voir mes 3 priorités':'Voir mes 3 repères'))+' '+I.chev+'</button>'+
+      (p>0?'<button type="button" class="btn ghost wide" data-act="rl" data-k="es-pas" data-v="-1">'+(reu?'Revenir à la priorité d’avant':'Revenir au repère d’avant')+'</button>':'<button type="button" class="btn ghost wide" data-act="rl" data-k="essai-debut">Changer d’occasion</button>')+'</div>'+
+      '<p class="rl-prive">'+I.lock+'<span>Rien n’est envoyé. Vos mots restent sur cet appareil.</span></p>';
+  }else{
+    const ex=reu?!!x.ex:!!f.ex;const M=f&&Array.isArray(f.moi)?f.moi:[];
+    c='<div class="f-tete"><span class="label">'+nomOcc+', '+(reu?'vos 3 priorités':'vos 3 repères')+'</span><h1 class="t1">'+(reu?'Vos 3 priorités sont prêtes':'Vos 3 repères sont prêts')+'</h1><p class="sub">'+(reu?'Voici ce que vous aurez sous les yeux pendant la réunion.':'Regardez maintenant la fiche comme votre proche la recevra.')+'</p></div>'+
+      (ex?'<p class="rl-alerte rl-es-ex">'+I.info+'<span>C’est une situation inventée, pour essayer. Vous pouvez changer chaque phrase, ou tout effacer pour écrire avec vos mots.</span><button type="button" class="lien-f" data-act="rl" data-k="es-vider">Tout effacer</button></p>':'')+
+      fiche+
+      '<div class="ap-suite">'+(reu?'<button type="button" class="btn primary wide" data-act="rl" data-k="feuille-ok">'+I.eye+'Voir ma feuille</button>':'<button type="button" class="btn primary wide" data-act="rl" data-k="recu">'+I.eye+'Voir ce que mon proche recevra</button>')+
+      '<button type="button" class="btn ghost wide" data-act="rl" data-k="es-pas" data-v="-3">'+I.pen+(reu?'Modifier mes priorités':'Modifier mes repères')+'</button></div>';
+    if(!reu){
+      /* 2 ajouts facultatifs : le prénom et le proche, puis la parole de la personne elle-même. Chacun s'ouvre d'un geste, et reste ouvert dès qu'il contient quelque chose. */
+      const qOuv=r.plusQ||!!(f.qui||f.chez||f.quand),mOuv=r.plusM||M.length>0;
+      c+='<section class="rl-es-plus" aria-labelledby="rl-es-pq"><h2 id="rl-es-pq">Un prénom, si vous le souhaitez</h2>'+
+        (qOuv?rlChamp('rl-qui','qui','Comment l’appelez-vous dans cette fiche ?',f.qui,'Son prénom, ou « notre fils », « ma fille »',RL_LIM.nom,'')+
+          rlChamp('rl-chez','chez','Qui prend le relais ?',f.chez,'Par exemple, son oncle Rémi',RL_LIM.chez,'')+
+          rlChamp('rl-quand','quand','Quand ?',f.quand,occ==='soiree'?'Par exemple, samedi soir':'Par exemple, du samedi au dimanche',RL_LIM.quand,'Ces 3 lignes sont facultatives. Sans prénom, la fiche s’appelle « La fiche de relais ».')+
+          '<div class="rl-tu"><span class="label" id="rl-tu-l">Dans la fiche, vous dites</span><div class="seg" role="group" aria-labelledby="rl-tu-l"><button type="button" data-act="rl" data-k="tu" data-v="1" aria-pressed="'+(f.tu!==false)+'">Tu</button><button type="button" data-act="rl" data-k="tu" data-v="0" aria-pressed="'+(f.tu===false)+'">Vous</button></div></div>':
+          '<p>La fiche fonctionne sans prénom. Vous pouvez en ajouter un, et dire qui prend le relais.</p><button type="button" class="lien-f" data-act="rl" data-k="es-plus" data-v="q">'+I.plus+'Ajouter un prénom</button>')+'</section>'+
+        '<section class="rl-es-plus" aria-labelledby="rl-es-pm"><h2 id="rl-es-pm">Ce que je souhaite dire moi-même</h2><p>Cette partie appartient à '+esc(P||'votre enfant')+', à tout âge. Vous pouvez l’écrire ensemble, avec ses mots, ses gestes ou ses images.</p>'+
+        (mOuv?M.map((v,i)=>'<div class="rl-ligne"><textarea rows="2" maxlength="'+RL_LIM.l+'" data-rl="moi.'+i+'" aria-label="Phrase '+(i+1)+' de '+esc(P||'votre enfant')+'">'+esc(v)+'</textarea><button type="button" class="rl-ote" data-act="rl" data-k="ote-moi" data-i="'+i+'" aria-label="Retirer cette phrase">'+I.trash+'</button></div>').join('')+
+          (M.length<RL_LIM.moi?'<div class="rl-modeles" role="group" aria-label="Débuts de phrase"><span class="label">Commencer par</span>'+RL_MOI.map((m,i)=>'<button type="button" class="rl-m" data-act="rl" data-k="moi" data-i="'+i+'">'+esc(m.replace(/,$/,''))+'…</button>').join('')+'</div>':''):
+          '<button type="button" class="lien-f" data-act="rl" data-k="es-plus" data-v="m">'+I.plus+'Lui laisser une place</button>')+'</section>';
+    }
+    c+='<p class="rl-prive">'+I.lock+'<span>Votre brouillon est gardé sur cet appareil. Vous le retrouverez dans « Passer le relais ».</span></p>';
+  }
+  return c;
+}
+/* Le moment où l'outil prend son sens : le parent vient de voir sa fiche comme son proche. La phrase dit le prochain usage, la liste ne nomme que
+   ce que l'outil sait réellement faire, et 2 lignes séparent ce qui reste privé de ce qui est transmis. Tant que la vente est fermée, un seul geste : être prévenu. */
+function rlMoment49(reu){
+  const a=rlOuvert();
+  if(a)return '<p class="rl-acquis">'+I.check+'<span>Vous avez Passer le relais. Il sert à toute la famille, sans limite de fiches.</span></p>';
+  return '<section class="offre rl-offre rl-49" aria-labelledby="rl-offre-t"><span class="label">Passer le relais, l’outil complet</span><h2 id="rl-offre-t">Et la prochaine fois ?</h2>'+
+    '<p class="rl-49-dit">'+(reu?'Avant la prochaine réunion, vous retrouverez les phrases que vous avez déjà écrites, vous formulerez votre demande et vous arriverez avec une feuille imprimée.':'La prochaine fois que sa sœur prend le relais, vous pourrez repartir de cette fiche et adapter seulement ce qui change.')+'</p>'+
+    '<ul class="rl-49-l">'+
+      '<li><b>Envoyer ou imprimer.</b><span>La fiche part par un lien, ou tient sur une page imprimée.</span></li>'+
+      '<li><b>Votre proche ne paie rien.</b><span>Il ouvre la fiche sur son téléphone, sans compte.</span></li>'+
+      '<li><b>Autant de fiches que vous voulez.</b><span>Pour une grand-mère, un oncle, une amie ou un accueil de week-end.</span></li>'+
+      '<li><b>Au retour, une seule question.</b><span>Ce qui a bien marché vous est proposé au relais suivant.</span></li>'+
+      '<li><b>Préparer une réunion.</b><span>Vos observations, votre demande et vos 3 priorités sur une feuille.</span></li></ul>'+
+    '<div class="f-haut rl-49-prix"><p class="f-prix"><b>49 CHF</b> <small>une seule fois</small></p><p class="rl-49-sans">Sans abonnement. L’outil sert à toute la famille.</p></div>'+
+    (venteDemo()?'<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="essai">Choisir Passer le relais</button><p class="demo-paie">'+I.info+'<span>'+demoPaie()+'</span></p>':
+      prevenirBtn('relais','primary')+'<p class="f-note">La vente n’est pas encore ouverte. Ce bouton ouvre votre messagerie avec un message prêt, que vous envoyez vous-même. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p>')+
+    '<p class="f-note rl-49-gratuit">'+(reu?'Préparer vos 3 priorités et relire votre feuille est gratuit.':'Préparer votre fiche, la relire et la voir à la place de votre proche est gratuit.')+'</p>'+
+    '<div class="rl-49-prive"><div><b>Ce qui reste privé</b><p>Votre brouillon, vos autres fiches, votre carnet et vos dépôts. Ils restent sur cet appareil.</p></div><div><b>Ce que vous transmettez</b><p>'+(reu?'Rien. Votre feuille est pour vous, et vous dites ce que vous choisissez de dire.':'Cette fiche, telle que vous venez de la voir, et seulement le jour où vous l’envoyez.')+'</p></div></div></section>';
+}
+/* La fiche vue par le proche. Le parent quitte un instant son espace : l'écran est celui que son proche ouvrira par le lien, mot pour mot,
+   avec le haut de page qu'il verra. Un bandeau, tout en haut, dit au parent où il se trouve et le ramène à son brouillon (voir render).
+   Sous la fiche, une ligne marque la fin de ce qui est transmis. Le moment des 49 CHF vient seulement après. */
+function rlVuTete(){
+  const f=rlFiche(state.rl.id);const qui=f?clean(f.chez,RL_LIM.chez):'';
+  return '<div class="bar rl-vu" role="region" aria-label="Vous regardez votre fiche comme votre proche" tabindex="-1" data-foyer><p><b>Vous êtes à la place de '+esc(qui||'votre proche')+'.</b> <span>Voici ce qui s’ouvrira sur son téléphone.</span></p><button type="button" class="btn small" data-act="rl" data-k="essai-retour">'+I.back+(rlOuvert()?'Revenir à ma fiche':'Revenir à mon brouillon')+'</button></div>';
+}
+function rlVueRecu(){
+  const f=rlFiche(state.rl.id);if(!f)return rlVueAccueil();const qui=clean(f.chez,RL_LIM.chez);
+  return '<div class="rl-vu-ecran"><div class="rl-vu-bar" aria-hidden="true"><span class="wordmark">'+LOGO+'<span>Parent écouté,<small>parent éclairé</small></span></span></div>'+
+    '<p class="label rl-recu-l">Une fiche de relais, écrite par une famille</p>'+rlFicheHtml(f,{cls:'rl-recu',h1:true,pose:rlSePose()})+
+    '<p class="hint">Cette fiche est contenue dans le lien que vous avez reçu. Le site ne l’a ni lue ni enregistrée. Gardez ce lien pour la retrouver.</p></div>'+
+    '<div class="rl-vu-apres"><p class="rl-vu-fin"><b>Ici s’arrête ce que '+esc(qui||'votre proche')+' reçoit.</b> Rien d’autre ne part. Votre proche peut aussi imprimer la fiche, qui tient sur une page.</p>'+
+    (rlOuvert()?'<div class="ap-suite"><button type="button" class="btn primary wide" data-act="rl" data-k="envoi">'+I.send+'Envoyer la fiche</button><button type="button" class="btn wide" data-act="rl" data-k="essai-retour">Revenir à ma fiche</button></div>':
+    rlMoment49(false)+
+    '<div class="ap-suite"><button type="button" class="btn wide" data-act="rl" data-k="aller" data-v="1">'+I.pen+'Compléter ma fiche</button><p class="hint">Le quotidien, les repas, la nuit et vos numéros. C’est gratuit, et votre brouillon est gardé.</p>'+
+    '<button type="button" class="btn ghost wide" data-act="rl" data-k="essai-retour">Revenir à mon brouillon</button></div>')+'</div>';
+}
+/* Sur l'accueil, une invitation courte et concrète, juste après les 3 aides. Qui a déjà l'outil y retrouve ses relais. */
+function rlInviteHtml(){
+  const c=rlEsEnCours(),a=rlOuvert();
+  return '<section class="invite-rl" aria-labelledby="invite-rl-t"><h2 id="invite-rl-t">Samedi, quelqu’un prend le relais ?</h2><p>Préparez les 3 choses à savoir, et voyez la fiche comme votre proche la recevra.</p>'+
+    '<button type="button" class="btn" data-act="rl" data-k="'+(a?'ouvre':'essai')+'"'+(c?' data-v="'+c.v+'"':'')+'>'+I.hand+(a?'Ouvrir Passer le relais':c?(c.reu?'Reprendre ma feuille':'Reprendre ma fiche'):'Préparer les 3 choses à savoir')+'</button></section>';
+}
+/* Sur « Aujourd'hui » : un brouillon de fiche attend le parent, là où il s'est arrêté. */
+function rlBrouillonHtml(){
+  const c=rlEsEnCours();if(!c)return '';const r=3-c.n;
+  return '<div class="card rl-rappel rl-brouillon reveal d2"><span class="label">Passer le relais</span><p class="rg-t">'+esc(c.t)+'. '+(r>0?'Il vous reste '+r+' '+(c.reu?'priorité':'repère')+(r>1?'s':'')+' à écrire.':(c.reu?'Vos 3 priorités sont prêtes.':'Vos 3 repères sont prêts.'))+'</p><button type="button" class="btn primary" data-act="rl" data-k="essai" data-v="'+c.v+'">'+I.pen+(c.reu?'Reprendre ma feuille':'Reprendre ma fiche')+'</button></div>';
+}
 function viewRelais(){
   const e=state.rl.e||'accueil';
   /* L'aperçu ou l'exemple vient de s'ouvrir (et l'écran n'est pas seulement redessiné) : la feuille se posera. */
-  {const R=state.rl,cle=e+'/'+(R.id||'');if(!/relais$/.test(state.lastKey||'')||R.vu!==cle)R.poseT=(e==='apercu'||e==='exemple')?performance.now():0;R.vu=cle;}
-  const c=e==='lu'?rlVueLu():e==='exemple'?rlVueExemple():e==='prep'?rlVuePrep():e==='apercu'?rlVueApercu():e==='envoi'?rlVueEnvoi():e==='retour'?rlVueRetour():e==='reunion'?rlVueReunion():e==='feuille'?rlVueFeuille():e==='sauver'?rlVueSauver():rlVueAccueil();
-  return '<main id="main" tabindex="-1" class="view v-feuille v-relais rl-e-'+e+'"><div class="feuille">'+c+'</div></main>';
+  {const R=state.rl,cle=e+'/'+(R.id||'');if(!/relais$/.test(state.lastKey||'')||R.vu!==cle)R.poseT=(e==='apercu'||e==='exemple'||e==='recu')?performance.now():0;R.vu=cle;}
+  const c=e==='lu'?rlVueLu():e==='essai'?rlVueEssai():e==='recu'?rlVueRecu():e==='exemple'?rlVueExemple():e==='prep'?rlVuePrep():e==='apercu'?rlVueApercu():e==='envoi'?rlVueEnvoi():e==='retour'?rlVueRetour():e==='reunion'?rlVueReunion():e==='feuille'?rlVueFeuille():e==='sauver'?rlVueSauver():rlVueAccueil();
+  return '<main id="main" tabindex="-1" class="view v-feuille v-relais rl-e-'+e+(e==='essai'?' rl-es-'+(state.rl.es==='ecrire'?'p'+Math.max(0,Math.min(3,state.rl.p||0)):'debut'):'')+'"><div class="feuille">'+c+'</div></main>';
 }
 /* La porte de l'outil, posée dans la boîte à outils et sur « Aujourd'hui » quand un retour est attendu. */
 function rlPorteHtml(){
@@ -402,7 +590,7 @@ function rlPorteHtml(){
 function rlVitrineHtml(){
   const f=RL_EX.e;
   return '<div class="rl-mini" aria-label="Le début d’une fiche d’exemple"><span class="label">'+esc(rlTitre(f))+', '+esc(f.quand)+'</span><b>Si tu ne lis que trois choses</b><ol>'+f.trois.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></div>'+
-    '<div class="acc-relais-b"><button type="button" class="btn" data-act="rl" data-k="exemple" data-v="e">'+I.eye+'Voir un exemple de fiche terminée</button><span class="prix">49 CHF, une seule fois</span></div>';
+    '<div class="acc-relais-b"><button type="button" class="btn primary" data-act="rl" data-k="essai">'+I.pen+'Préparer les 3 choses à savoir</button><button type="button" class="btn" data-act="rl" data-k="exemple" data-v="e">'+I.eye+'Voir un exemple de fiche terminée</button><span class="prix">Essai gratuit. L’outil complet, 49 CHF une seule fois.</span></div>';
 }
 
 /* ---------- les gestes ---------- */
@@ -424,6 +612,7 @@ function rlSaisie(el){
   else{const f=rlFiche(state.rl.id);if(!f)return;
     const lim=ch==='qui'?RL_LIM.nom:ch==='chez'?RL_LIM.chez:ch==='quand'?RL_LIM.quand:ch==='retour'?RL_LIM.retour:ch.indexOf('tel')===0?RL_LIM.tel:RL_LIM.l;
     rlPose(f,ch,v.slice(0,lim));if(ch!=='retour')f.m=todayIso();}
+  if(state.rl.e==='essai')rlEssaiVif();
   clearTimeout(rlT);rlT=setTimeout(save,400);
 }
 function rlCapture(){try{document.querySelectorAll('#app [data-rl]').forEach(el=>{if(el.tagName==='TEXTAREA'||el.tagName==='INPUT')rlSaisie(el);});}catch(e){}clearTimeout(rlT);}
@@ -460,6 +649,40 @@ function rlAct(d){
     case 'ouvre':r.e='accueil';r.sec='';r.mots=false;versOutil();break;
     case 'accueil':r.e='accueil';r.sec='';r.mots=false;r.attente=null;break;
     case 'exemple':r.e='exemple';if(d.v&&RL_EX[d.v])r.ex=d.v;versOutil();break;
+    /* Le premier essai. Sans occasion, son écran de départ. Avec une occasion, la première question qui n'a pas encore de réponse. */
+    case 'essai':{r.sec='';r.mots=false;r.plusQ=false;r.plusM=false;
+      /* Qui a déjà l'outil n'a pas d'essai à faire : il retrouve ses relais. */
+      if(rlOuvert()){r.e='accueil';versOutil();break;}
+      if(!d.v){r.e='essai';r.es='occasion';r.p=0;versOutil();break;}
+      if(d.v==='reunion'){let x=rlEsReu();if(!x){entrer('relais');x={id:rlId(),c:todayIso(),avec:'ecole',quand:'',obs:[],plus:'',dem:'',pri:['','',''],ess:1};R.reunions.push(x);}r.r=x.id;r.occ='reunion';}
+      else{let n=rlEsBrouillon();if(!n){entrer('relais');n=rlVide();R.fiches.push(n);}n.occ=d.v==='soiree'?'soiree':'weekend';r.id=n.id;r.occ=n.occ;}
+      {const c=com();if(!c.re)c.re=todayIso();}
+      /* En arrivant, le parent lit d'abord la question et voit la fiche : le curseur ne se pose dans le champ que lorsqu'il le touche. */
+      r.e='essai';r.es='ecrire';r.foc='';{const T=rlEsTrois();const i=T.findIndex(v=>!v);r.p=i<0?3:i;}save();versOutil();break;}
+    case 'essai-debut':r.e='essai';r.es='occasion';r.p=0;r.sec='';break;
+    /* Le retour depuis la fiche vue à la place du proche : là d'où le parent venait. Qui a l'outil retrouve l'envoi ou l'aperçu de sa fiche. */
+    case 'essai-retour':{const de=r.de;r.de='';if(f&&de==='envoi'&&rlOuvert()){r.e='envoi';break;}if(f&&(de==='apercu'||rlOuvert())){r.e='apercu';break;}
+      r.e='essai';r.es='ecrire';r.occ=f&&f.occ==='soiree'?'soiree':'weekend';r.p=3;r.sec='';break;}
+    case 'es-pas':{const pas=Number(d.v)||0;const T=rlEsTrois();const p0=r.p||0;
+      if(pas>0&&p0<3&&!T[p0]){fieldErr('rl-es-t','Écrivez quelques mots, ou touchez « Je ne sais pas par où commencer ».');return false;}
+      r.p=Math.max(0,Math.min(3,p0+pas));r.sec='';if(r.p<3)r.foc=(r.occ==='reunion'?'reu.pri.':'trois.')+r.p;save();break;}
+    case 'es-idees':r.sec=r.sec==='es'?'':'es';break;
+    case 'es-idee':{const p0=Math.max(0,Math.min(2,r.p||0));const reu=r.occ==='reunion';const m=(RL_ES_IDEES[reu?'r':'f'][p0]||[])[Number(d.i)];if(!m)break;
+      if(reu){const x=rlReu(r.r);if(!x)break;if(!Array.isArray(x.pri))x.pri=['','',''];x.pri[p0]=(rlEsIdee(m,null)+' ').slice(0,RL_LIM.pri);r.foc='reu.pri.'+p0;}
+      else{if(!f)break;if(!Array.isArray(f.trois))f.trois=['','',''];f.trois[p0]=clean(rlEsIdee(m,f),RL_LIM.l);f.m=todayIso();r.foc='trois.'+p0;}
+      r.sec='';save();break;}
+    case 'es-exemple':{if(r.occ==='reunion'){const x=rlReu(r.r);if(!x)break;x.pri=RL_ES_EX_R.slice();x.ex=1;}
+      else{if(!f)break;const E=RL_EX[RL_ES_EX[f.occ]||'g'];f.trois=E.trois.slice();f.qui=E.qui;f.chez=E.chez;f.tu=true;f.ex=1;f.m=todayIso();}
+      r.p=3;r.sec='';save();break;}
+    case 'es-vider':{if(r.occ==='reunion'){const x=rlReu(r.r);if(!x)break;x.pri=['','',''];x.ex=0;}
+      else{if(!f)break;f.trois=['','',''];if(f.ex){f.qui='';f.chez='';}f.ex=0;f.m=todayIso();}
+      r.p=0;r.sec='';r.foc=(r.occ==='reunion'?'reu.pri.':'trois.')+'0';save();break;}
+    case 'es-plus':if(d.v==='q'){r.plusQ=true;r.foc='qui';}else{r.plusM=true;}break;
+    /* La fiche vue par le proche. Il faut ses 3 repères : sinon, le parent est ramené à celui qui manque. */
+    case 'recu':{if(!f)break;rlRange(f);const T=[0,1,2].map(k=>clean((f.trois||[])[k],9));const i=T.findIndex(v=>!v);
+      if(r.e==='essai'&&i>=0){r.es='ecrire';r.p=i;r.foc='trois.'+i;toast('Il manque encore un de vos 3 repères.');break;}
+      if(!T.some(Boolean)){toast('Écrivez au moins un repère pour voir la fiche à la place de votre proche.');return false;}
+      {const c=com();if(!c.rv)c.rv=todayIso();}r.de=r.e==='apercu'?'apercu':r.e==='envoi'?'envoi':'';r.e='recu';save();versOutil();break;}
     case 'ex':if(RL_EX[d.v])r.ex=d.v;break;
     case 'nouveau':{if(R.fiches.length){if(rlOuvert())return rlAct({k:'suivant'});r.id=R.fiches[0].id;}else{entrer('relais');const n=rlVide();R.fiches.push(n);r.id=n.id;save();}r.e='prep';r.p=0;r.sec='';versOutil();break;}
     case 'suivant':{if(!rlOuvert()){r.e='accueil';toast('Repartir de votre dernière fiche fait partie de l’outil.');break;}
@@ -496,7 +719,7 @@ function rlAct(d){
     case 'mot':{const x=rlReu(r.r);if(!x)break;const der=R.fiches[R.fiches.length-1];const m=RL_MOTS_ECRIRE[Number(d.i)]||'';x.dem=clean((x.dem?x.dem+'\n':'')+m.replace('{P}',(der&&der.qui)||'mon enfant')+' ',RL_LIM.dem)+' ';r.mots=false;r.foc='reu.dem';save();break;}
     case 'feuille-ok':r.e='feuille';r.mots=false;save();break;
     case 'feuille':{const x=rlReu(d.id);if(!x)break;r.r=x.id;r.e='feuille';r.mots=false;versOutil();break;}
-    case 'reu-modif':r.e='reunion';r.p=0;r.mots=false;break;
+    case 'reu-modif':{const x=rlReu(r.r);if(x&&x.ess&&!rlOuvert()){r.e='essai';r.es='ecrire';r.occ='reunion';r.p=3;r.sec='';break;}r.e='reunion';r.p=0;r.mots=false;break;}
     case 'sauver':r.e='sauver';r.attente=null;versOutil();break;
     case 'sauve':rlSauve();return false;
     case 'restaure-non':r.attente=null;break;

@@ -179,13 +179,13 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
       const s = document.querySelector('.seuil [data-act="porte"][data-v="souffle"]'), r = s ? s.getBoundingClientRect() : null, c = document.querySelector('.film-cmd'), p = document.querySelector('.seuil .portes');
       const img = c ? c.querySelector('img') : null, t = c ? document.getElementById(c.getAttribute('aria-labelledby') || '') : null;
       const boutons = c ? [...c.querySelectorAll('[data-act="film"]')].map(b => { const q = b.getBoundingClientRect(); return { balise: b.tagName, type: b.getAttribute('type'), v: b.getAttribute('data-v'), mots: (b.innerText || '').replace(/\s+/g, ' ').trim(), l: Math.round(q.width), h: Math.round(q.height), dans: q.left >= 0 && q.right <= innerWidth + .5 }; }) : [];
-      return { souffle: r ? [Math.round(r.top), Math.round(r.bottom), innerHeight] : null, cmd: !!c, apres: !!(c && p && p.nextElementSibling === c), role: c ? c.getAttribute('role') : '', texte: c ? c.innerText : '', titre: t ? t.textContent : '', boutons,
+      return { souffle: r ? [Math.round(r.top), Math.round(r.bottom), innerHeight] : null, cmd: !!c, apres: !!(c && p && (p.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) && c.closest('.seuil') && (!document.querySelector('.invite-rl') || (document.querySelector('.invite-rl').compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING))), role: c ? c.getAttribute('role') : '', texte: c ? c.innerText : '', titre: t ? t.textContent : '', boutons,
         img: img ? [img.complete, img.naturalWidth, img.getAttribute('loading'), img.getAttribute('alt')] : null, videos: document.querySelectorAll('video').length, lecteur: !!document.getElementById('film-l'), y: Math.round(scrollY) };
     });
     ok(arr.souffle && arr.souffle[0] >= 0 && arr.souffle[1] <= arr.souffle[2] && arr.y === 0, P('2. « Souffler 2 minutes » est à l’écran dès l’arrivée, sans faire défiler ' + JSON.stringify(arr.souffle)));
     ok(arr.videos === 0 && !arr.lecteur, P('2. aucune vidéo dans la page tant que le parent n’a rien demandé ' + JSON.stringify([arr.videos, arr.lecteur])));
     if (mode === 'actif') {
-      ok(arr.cmd && arr.apres && arr.role === 'group' && arr.titre === 'Le film', P('2. le film vient juste après les 3 portes, annoncé comme un groupe nommé « Le film » ' + JSON.stringify([arr.cmd, arr.apres, arr.role, arr.titre])));
+      ok(arr.cmd && arr.apres && arr.role === 'group' && arr.titre === 'Le film', P('2. le film vient après les 3 aides et l’invitation au relais, dans le premier bloc de l’accueil, annoncé comme un groupe nommé « Le film » ' + JSON.stringify([arr.cmd, arr.apres, arr.role, arr.titre])));
       ok(/1 minute 47, sans paroles/.test(net(arr.texte)), P('2. sa durée réelle est écrite ' + JSON.stringify(net(arr.texte))));
       ok(arr.boutons.length === 2 && arr.boutons[0].v === 'son' && arr.boutons[0].mots === 'Regarder avec la musique' && arr.boutons[1].v === 'silence' && arr.boutons[1].mots === 'Regarder en silence' && arr.boutons.every(b => b.balise === 'BUTTON' && b.type === 'button'),
         P('2. il propose 2 vrais boutons, « Regarder avec la musique » puis « Regarder en silence » ' + JSON.stringify(arr.boutons.map(b => [b.balise, b.v, b.mots]))));
@@ -202,7 +202,8 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
 
     if (mode === 'actif') {
       // ----- 3. Le parent touche « Regarder avec la musique » : un seul toucher, et le film joue avec son son
-      await page.evaluate(() => window.scrollTo(0, 150)); await page.waitForTimeout(250);
+      // Depuis le 26 novembre 2026, le film vient après les 3 aides, l'invitation au relais et la fiche d'exemple : le parent fait défiler jusqu'à lui.
+      await page.locator(AVEC).scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
       const y0 = await page.evaluate(() => Math.round(scrollY)), url0 = await page.evaluate(() => location.pathname + location.hash);
       demandes.length = 0;
       await page.click(AVEC); await page.waitForSelector('#film-l');

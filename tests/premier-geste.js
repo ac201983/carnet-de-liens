@@ -58,10 +58,10 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
       await page.waitForSelector('.seuil .porte'); const tPortes = Date.now() - t0;
       await page.waitForTimeout(600);
       ok(tPortes < (EN_LIGNE ? 4000 : 1500), P('1. les 3 portes sont à l’écran en ' + tPortes + ' ms'));
-      const acc = await page.evaluate(() => ({ salut: document.querySelectorAll('.seuil .salut').length, besoin: document.querySelector('.seuil .besoin').textContent, clair: document.documentElement.classList.contains('clair'), fond: getComputedStyle(document.body).backgroundColor, portes: [...document.querySelectorAll('.seuil .porte b')].map(e => e.textContent), bandeau: !!document.getElementById('consent'), nuit: document.documentElement.className }));
-      ok(acc.salut === 0 && net(acc.besoin) === 'Qu’aimeriez-vous qu’on comprenne de votre journée ?' && acc.portes.map(net).join('|') === 'Déposer ce qui pèse|Souffler 2 minutes|Trouver une idée pour ce soir' && /\bh-soir\b/.test(acc.nuit) && !acc.clair && acc.fond === 'rgb(7, 36, 15)', P('1. à 21 h 40 : « Qu’aimeriez-vous qu’on comprenne de votre journée ? », 3 portes, écrire d’abord, et la table sombre du soir ' + JSON.stringify(acc)));
+      const acc = await page.evaluate(() => ({ salut: document.querySelectorAll('.seuil .salut').length, besoin: document.querySelector('.seuil .besoin-q').textContent, clair: document.documentElement.classList.contains('clair'), fond: getComputedStyle(document.body).backgroundColor, portes: [...document.querySelectorAll('.seuil .porte b')].map(e => e.textContent), bandeau: !!document.getElementById('consent'), nuit: document.documentElement.className }));
+      ok(acc.salut === 0 && net(acc.besoin) === 'De quoi auriez-vous besoin aujourd’hui ?' && acc.portes.map(net).join('|') === 'Écrire ce que j’ai sur le cœur|Souffler 2 minutes|Trouver une idée pour ce soir' && /\bh-soir\b/.test(acc.nuit) && !acc.clair && acc.fond === 'rgb(7, 36, 15)', P('1. à 21 h 40 : « De quoi auriez-vous besoin aujourd’hui ? », 3 aides, écrire d’abord, et la table sombre du soir ' + JSON.stringify(acc)));
       ok(!acc.bandeau, P('1. aucun bandeau ne se met devant le premier écran'));
-      ok(await dansEcran(page, '.seuil h1, .seuil .porte, main.intro .hbar .sos'), P('1. la question, les 3 portes et le SOS tiennent dans l’écran sans défiler'));
+      ok(await dansEcran(page, '.seuil h1, .seuil .besoin-q, .seuil .porte, main.intro .hbar .sos'), P('1. la phrase d’Antonio, la question, les 3 aides et le SOS tiennent dans l’écran sans défiler'));
       ok((await notes(page)) === null, P('1. rien n’est enregistré avant le premier geste'));
       // un geste
       const t1 = Date.now(); await page.click('.seuil ' + A('porte', '[data-v="souffle"]')); await page.waitForSelector('main.souffle.s-cours'); const tGeste = Date.now() - t1;
@@ -98,7 +98,7 @@ const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, isMobi
         await page.goBack(); await page.waitForTimeout(800);
         const vit = await page.evaluate(() => ({ intro: !!document.querySelector('main.intro'), portes: document.querySelectorAll('.seuil .porte').length, liens: [...document.querySelectorAll('.seuil .voie')].map(e => e.textContent.trim()) }));
         ok(page.url() === APP + '#accueil' && vit.intro && vit.portes === 3, P('1. le bouton Retour du téléphone ramène à la vitrine, d’où le parent venait (' + page.url().replace(ORIGIN, '') + ')'));
-        ok(vit.liens.join('|') === 'Commencer le parcours de 6 mois|Ouvrir mon espace', P('1. la vitrine propose maintenant « Ouvrir mon espace » ' + JSON.stringify(vit.liens)));
+        ok(vit.liens.join('|') === 'Ouvrir mon espace|Commencer le parcours de 6 mois', P('1. la vitrine propose maintenant « Ouvrir mon espace », tout en haut ' + JSON.stringify(vit.liens)));
         await page.click('.seuil ' + A('entrer', '[data-v="today"]')); await page.waitForSelector('.tabs'); await page.waitForTimeout(700);
       }
       // ensuite : l'espace, avec la dose en premier, et le choix de personnaliser

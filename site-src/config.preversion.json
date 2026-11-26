@@ -1,0 +1,23 @@
+{
+  "site_url": "https://parent-ecoute.ch",
+  "base_path": "/",
+  "app_dir": "preversion",
+  "host": "infomaniak",
+  "updated": "2026-11-26",
+  "updated_fr": "26 novembre 2026",
+  "cf_token": "",
+  "contact_email": "bonjour@parent-ecoute.ch",
+  "legal_name": "Antonio Company",
+  "postal_address": "Rue du Pays-d’Enhaut 80, 1630 Bulle",
+  "phone": "",
+  "ide": "",
+  "host_name": "Infomaniak Network SA",
+  "host_address": "Rue Eugène-Marziano 25, 1227 Les Acacias, Suisse",
+  "essai": true,
+  "film": "actif",
+  "storage_key": "pepe-preversion-v1",
+  "essai_nom": "préversion",
+  "gardes": false,
+  "vente": "fermee",
+  "interne": true
+}

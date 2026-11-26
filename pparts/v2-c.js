@@ -39,8 +39,9 @@ function pistesDuMoment(m,age,devant){
 }
 
 /* ---------- les 3 portes : souffler, déposer, trouver une piste ---------- */
-/* « grand » : sur l'accueil, chaque porte dit ce qu'on y trouve. Dans « Aujourd'hui », les 3 portes tiennent sur une ligne. */
-function portes(grand){
+/* « grand » : sur l'accueil, chaque porte dit ce qu'on y trouve. Dans « Aujourd'hui », les 3 portes tiennent sur une ligne.
+   « titre » : l'identifiant de la question à laquelle les 3 portes répondent, quand elle est écrite juste au-dessus. */
+function portes(grand,titre){
   const m=moment();
   const P=[
     ['souffle',I.wind,'Souffler 2 minutes','Souffler','L’étang respire avec vous.',null],
@@ -50,8 +51,12 @@ function portes(grand){
   ];
   /* Sur l'accueil, la question invite à écrire : « Déposer ce qui pèse » vient donc en premier. « Souffler 2 minutes » reste à un geste,
      pour la personne qui préfère le silence. Dans « Aujourd'hui », l'ordre des 3 portes ne change pas. */
-  if(grand){P[0][4]='En silence, l’étang respire avec vous.';P[1][4]='Vous l’écrivez avec vos mots, pour vous ou pour le dire à quelqu’un.';P.unshift(P.splice(1,1)[0]);}
-  return '<div class="portes'+(grand?'':' mini')+'" role="group" aria-label="Ce dont vous avez besoin">'+P.map((p,i)=>
+  /* Chaque libellé de l'accueil annonce ce qui se passe au toucher, et la ligne du dessous dit ce que le parent trouve en arrivant :
+     « Écrire ce que j'ai sur le cœur » ouvre l'écran « Déposer ce qui pèse », avec sa page blanche. « Souffler 2 minutes » lance l'exercice,
+     en silence, sans écran intermédiaire. « Trouver une idée » ouvre la liste des situations, et sa ligne garde les 3 âges : un enfant, un ado ou un adulte. */
+  if(grand){P[0][4]='L’exercice commence tout de suite, en silence. L’étang respire avec vous.';
+    P[1][2]='Écrire ce que j’ai sur le cœur';P[1][4]='Vous déposez ce qui pèse, puis vous recevez une question préparée à l’avance.';P.unshift(P.splice(1,1)[0]);}
+  return '<div class="portes'+(grand?'':' mini')+'" role="group" '+(titre?'aria-labelledby="'+titre+'"':'aria-label="Ce dont vous avez besoin"')+'>'+P.map((p,i)=>
     '<button type="button" class="porte'+(i===0?' un':'')+'" data-act="porte" data-v="'+p[0]+'"'+(grand?'':' aria-label="'+esc(p[2])+'"')+'><span class="ic" aria-hidden="true">'+p[1]+'</span>'+
     (grand?'<span class="tx"><b'+(p[5]?heureAttr(p[5]):'')+'>'+esc(p[2])+'</b><span>'+esc(p[4])+'</span></span><span class="chev" aria-hidden="true">'+I.chev+'</span>':'<b>'+esc(p[3])+'</b>')+'</button>').join('')+'</div>';
 }
@@ -124,7 +129,7 @@ function titreDe(){
 }
 /* ---------- le bouton Retour du téléphone : chaque écran est une page de l'historique ---------- */
 const HIST={ok:false,i:0,unefois:false};
-function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,rh:state.rl.e==='lu'?state.rl.h:'',dd:state.view==='deposer'&&state.dire?state.dire.id:''};}
+function navSnap(){return {v:state.view,sit:state.sit,exo:state.exo,step:state.step,kit:state.kit,tool:state.tool,letter:state.letter,et:state.evoTime,p:state.piste?1:0,ap:state.ap.k,cf:state.cmd.f,ck:state.cmd.k,cm:state.cmd.m,re:state.rl.e,rp:state.rl.p,ri:state.rl.id,rr:state.rl.r,rx:state.rl.ex,res:state.rl.es||'',ro:state.rl.occ||'',rh:state.rl.e==='lu'?state.rl.h:'',dd:state.view==='deposer'&&state.dire?state.dire.id:''};}
 function navApply(s){
   state.view=s.v||'today';state.sit=s.sit||null;state.exo=s.exo||null;state.step=(typeof s.step==='number')?s.step:null;state.kit=s.kit||'sits';state.tool=s.tool||'timer';
   state.letter=(typeof s.letter==='number')?s.letter:null;state.evoTime=s.et||'t1';state.piste=!!s.p&&state.view==='kit';
@@ -132,9 +137,11 @@ function navApply(s){
   state.ap.k=Math.max(0,Math.min(3,Number(s.ap)||0));state.cmd={f:s.cf||'',m:s.cm==='six'?'six':'une',k:s.ck||'recap',de:''};
   if(state.view==='commande'&&!PRODUITS[state.cmd.f]&&state.cmd.k!=='retrouver')state.view='plans';
   /* « Passer le relais » : l'écran, le pas, la fiche et la réunion en cours. Une fiche reçue se relit dans l'adresse. */
-  {const r=state.rl;r.e=s.re||'accueil';r.p=Number(s.rp)||0;r.id=s.ri||null;r.r=s.rr||null;if(s.rx&&RL_EX[s.rx])r.ex=s.rx;r.sec='';r.mots=false;r.attente=null;r.foc='';
+  {const r=state.rl;r.e=s.re||'accueil';r.p=Number(s.rp)||0;r.id=s.ri||null;r.r=s.rr||null;if(s.rx&&RL_EX[s.rx])r.ex=s.rx;r.sec='';r.mots=false;r.attente=null;r.foc='';r.es=s.res||'';r.occ=s.ro||'';
     if(r.e==='lu'){if(!rlDuHash()){r.h=s.rh||'';r.lu=r.h?rlDecode(r.h):null;r.e='lu';}}
-    if(['prep','apercu','envoi','retour'].includes(r.e)&&!rlFiche(r.id))r.e='accueil';
+    if(['prep','apercu','envoi','retour','recu'].includes(r.e)&&!rlFiche(r.id))r.e='accueil';
+    /* Le premier essai : sans son brouillon (une fiche, ou une feuille de réunion), il revient à son écran de départ. */
+    if(r.e==='essai'&&r.es==='ecrire'&&!(r.occ==='reunion'?rlReu(r.r):rlFiche(r.id)))r.es='occasion';
     if(['reunion','feuille'].includes(r.e)&&!rlReu(r.r))r.e='accueil';}
   if(state.view==='apercu'&&state.ap.k>=2&&!noteDe('reguler'))state.ap.k=1;
   /* Un écran qui n'a plus de sens (une étape pas encore ouverte, une fiche inconnue) ramène à « Aujourd'hui ». */
@@ -875,7 +882,7 @@ function essaiNotes(){try{const d=JSON.parse(localStorage.getItem(KEY_SITE)||'nu
 function essaiCarte(){
   if(!ESSAI)return '';
   const n=essaiNotes();
-  return '<div class="card essai"><span class="label">Version d’essai</span><p class="hint">Vous êtes sur une version d’essai de l’espace, à une adresse à part. Ce que vous y écrivez est rangé séparément, et le site habituel ne change pas.</p>'+
+  return '<div class="card essai"><span class="label">'+esc(rlMaj(NOM_ESSAI))+'</span><p class="hint">Vous êtes sur une '+NOM_ESSAI+' de l’espace, à une adresse à part. Ce que vous y écrivez est rangé séparément, et le site habituel ne change pas.</p>'+
     (n?'<button type="button" class="btn" data-act="essai-copie" style="align-self:flex-start">Ouvrir ici une copie de mes notes</button><p class="hint">Vos dépôts, votre carnet et votre progression de parent-ecoute.ch sont recopiés ici. Les originaux ne sont pas modifiés.</p>':'')+
-    (state.confirmEssai?'<div class="confirm" role="alert"><span>Effacer ce que contient la version d’essai sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="essai-zero-oui">Oui, effacer</button><button type="button" class="btn" data-act="essai-zero-non">Annuler</button></div></div>':'<button type="button" class="btn" data-act="essai-zero" style="align-self:flex-start">Revoir la version d’essai depuis le début</button>')+reperesHtml()+'</div>';
+    (state.confirmEssai?'<div class="confirm" role="alert"><span>Effacer ce que contient la '+NOM_ESSAI+' sur cet appareil ?</span><div class="row"><button type="button" class="btn danger" data-act="essai-zero-oui">Oui, effacer</button><button type="button" class="btn" data-act="essai-zero-non">Annuler</button></div></div>':'<button type="button" class="btn" data-act="essai-zero" style="align-self:flex-start">Revoir la '+NOM_ESSAI+' depuis le début</button>')+reperesHtml()+'</div>';
 }

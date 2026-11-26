@@ -99,5 +99,12 @@ mkdir -p "$BRANCHE/outils/officiel/repet"
 cp build/officiel/LISEZ-MOI.md build/officiel/lot-o.sh build/officiel/doc-officiel.py "$BRANCHE/outils/officiel/" 2>/dev/null || true
 cp build/officiel/repet/repet.sh build/officiel/repet/serveur-ftp.py build/officiel/repet/serveur-http.js "$BRANCHE/outils/officiel/repet/" 2>/dev/null || true
 
+# Les outils de la préversion du 26 novembre 2026 (dans l'atelier, ces fichiers sont dans build/preversion/) :
+# le style de la passe et le script qui le pose, la fabrication, le lanceur d'essais (comme un parent, ou avec le réglage des essais internes),
+# la passe complète, et ce qui photographie un écran pendant le travail. Le script qui pose la préversion dans la branche de publication
+# (preparer-preversion.sh) est rangé avec les autres scripts de outils/.
+mkdir -p "$BRANCHE/outils/preversion"
+cp build/preversion/LISEZ-MOI.md build/preversion/prev.css build/preversion/poser-css.py build/preversion/p.sh build/preversion/t.sh build/preversion/lot-p.sh build/preversion/voir.js "$BRANCHE/outils/preversion/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

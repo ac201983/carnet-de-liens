@@ -1,0 +1,182 @@
+/* ==================================================================
+   La préversion (26 novembre 2026) : l'accueil commence par le parent, et « Passer le relais » s'essaie en 3 repères.
+   - Sur l'accueil, l'accroche d'Antonio ouvre la page et la question « De quoi auriez-vous besoin aujourd'hui ? » en est le point d'attention.
+   - Juste après les 3 aides vient l'invitation au relais, puis la fiche d'exemple (à droite sur un ordinateur). Le film vient ensuite.
+   - Dans le relais, le parent écrit dans la fiche elle-même, puis la regarde à la place de son proche.
+   ================================================================== */
+
+/* -- l'accueil : un parent déjà entré retrouve ce qu'il faisait, tout en haut -- */
+.revenu{display:flex;flex-wrap:wrap;align-items:center;gap:0 18px;margin:0 0 14px;padding:4px 0 10px;border-bottom:1px solid var(--ct-filet)}
+.revenu>span{font-family:var(--font-titre);font-weight:620;font-size:18px;line-height:1.3;color:var(--ct-titre)}
+.seuil .revenu .voie{min-height:44px;font-size:16.5px;padding-block:6px}
+/* Sur un téléphone, 2 reprises tiennent sur une ligne : le mot d'accueil leur laisse la place. */
+@media (max-width:479px){.revenu.deux>span{display:none}.revenu.deux{justify-content:space-between;gap:0 12px}}
+
+/* -- l'accueil : l'accroche, puis la question en grand -- */
+.seuil h1{margin-top:8px;font-weight:560;font-size:clamp(20.5px,5.7vw,24px);line-height:1.24;letter-spacing:-.004em;color:var(--fg);max-width:21em}
+.seuil .besoin-q{margin-top:22px;font-family:var(--font-titre);font-weight:640;font-size:clamp(26px,8.4vw,40px);line-height:1.06;letter-spacing:-.018em;color:var(--ct-titre);text-wrap:balance}
+.seuil .besoin-q .nb{white-space:nowrap}
+.seuil .portes{margin-top:16px}
+.seuil .haut-texte .rassure{margin-top:12px}
+
+/* -- l'accueil : l'invitation au relais, juste après les 3 aides -- */
+.invite-rl{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;padding-top:20px;border-top:1px solid var(--ct-filet)}
+.invite-rl h2{font-family:var(--font-titre);font-weight:620;font-size:23px;line-height:1.14;letter-spacing:-.01em;color:var(--ct-titre);text-wrap:balance}
+.invite-rl p{font-size:16.5px;line-height:1.45;color:var(--fg);max-width:27em}
+.v-intro .invite-rl .btn,html.clair .v-intro .invite-rl .btn{margin-top:6px;min-height:50px;padding:8px 18px;border:0;border-radius:4px;background:var(--ct-titre);color:var(--bg);font-family:var(--font-titre);font-weight:620;font-size:17px;line-height:1.2;letter-spacing:-.003em;text-align:left;box-shadow:none}
+.invite-rl .btn .i{display:none}
+.v-intro .invite-rl .btn:focus-visible{outline:3px solid var(--ct-titre);outline-offset:3px}
+.haut-table{gap:8px}
+.haut-table .nature{margin-top:6px}
+/* Dans la fiche d'exemple, « Voir la fiche en entier » passe au second plan : le geste qui compte est de préparer la sienne. */
+.fb-voir{background:none;color:#1D4B31;padding:6px 2px;min-height:48px;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:.22em}
+.seuil>.film-cmd{margin-top:6px;padding-top:20px;border-top:1px solid var(--ct-filet)}
+
+@media (max-width:1023px) and (max-height:700px){
+  .seuil .besoin-q{margin-top:16px}
+  .seuil .portes{margin-top:10px}
+}
+@media (min-width:1024px){
+  .revenu{margin-bottom:18px}
+  .revenu>span{font-size:20px}
+  .seuil{grid-template-areas:"texte table" "film table" "suite table" "nom nom";grid-template-rows:auto auto 1fr auto}
+  .seuil>.film-cmd{grid-area:film;margin-top:10px}
+  .seuil h1{margin-top:12px;font-size:clamp(24px,1.95vw,28px);line-height:1.24;max-width:none;text-wrap:wrap}
+  .seuil .besoin-q{margin-top:30px;font-size:clamp(38px,3.3vw,48px);line-height:1.05}
+  .seuil .portes{margin-top:22px}
+  .seuil .haut-texte .rassure{margin-top:14px}
+  /* À droite, la fiche de Bastien d'abord. L'invitation à préparer la sienne vient dessous. */
+  .haut-table{gap:26px}
+  .haut-table .nature{margin-top:0}
+  .invite-rl{order:2;padding-top:22px}
+  .invite-rl h2{font-size:28px}
+  .invite-rl p{font-size:17.5px}
+}
+@media (min-width:1024px) and (max-height:860px){
+  .seuil h1{margin-top:8px;font-size:clamp(22px,1.8vw,26px)}
+  .seuil .besoin-q{margin-top:20px;font-size:clamp(36px,3.1vw,44px)}
+  .seuil .portes{margin-top:16px}
+}
+@media (min-width:1024px) and (max-height:720px){
+  .seuil h1{font-size:21px}
+  .seuil .besoin-q{margin-top:14px;font-size:clamp(32px,2.8vw,38px)}
+  .seuil .portes{margin-top:12px}
+}
+
+/* -- les 3 offres, tant que la vente est fermée : essayer, puis être prévenu -- */
+.f-ferme{display:flex;flex-direction:column;gap:10px}
+.btn.prevenir{text-decoration:none}
+.btn.prevenir .i{width:19px;height:19px;flex:none}
+
+/* -- « Passer le relais », le premier essai : une question, puis 3 occasions -- */
+.rl-occ{display:flex;flex-direction:column}
+.rl-occ h2{margin:0 0 8px;font-family:var(--font-ui);font-size:15px;line-height:1.3;font-weight:800;color:var(--muted)}
+.rl-oc{display:grid;grid-template-columns:minmax(0,1fr) 22px;align-items:center;gap:12px;width:100%;min-height:72px;padding:13px 2px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;color:var(--fg);font-family:inherit;text-align:left}
+.rl-occ h2+.rl-oc{border-top:2px solid var(--fg)}
+.rl-oc .tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+.rl-oc b{font-family:var(--font-display);font-size:23px;font-weight:600;line-height:1.14;letter-spacing:-.005em}
+.rl-oc .tx>span{font-size:15.5px;line-height:1.4;color:var(--muted)}
+.rl-oc .chev{display:grid;place-items:center;color:var(--fg)}
+.rl-oc .chev .i{width:22px;height:22px;stroke-width:2}
+@media (hover:hover){.rl-oc:hover b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.16em}}
+.rl-permet{display:flex;flex-direction:column;gap:10px;padding:16px 16px 15px;border-radius:18px;background:var(--surface-2)}
+.rl-permet h2{margin:0;font-family:var(--font-display);font-size:20.5px;font-weight:600;line-height:1.2}
+.rl-permet ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.rl-permet li{display:flex;align-items:flex-start;gap:9px;font-size:16px;line-height:1.45}
+.rl-permet li .i{width:18px;height:18px;flex:none;margin-top:3px;color:var(--green)}
+.rl-apres{margin:2px 0 0;font-size:14.5px;line-height:1.45;color:var(--muted)}
+
+/* -- le premier essai : le parent écrit dans la fiche elle-même -- */
+.rl-e-essai .feuille .t1{text-wrap:balance}
+/* Pendant l'écriture, le haut de l'écran se resserre : la question, la fiche et le champ tiennent ensemble au-dessus du clavier. */
+.rl-es-p0 .feuille,.rl-es-p1 .feuille,.rl-es-p2 .feuille{gap:16px;padding-top:20px}
+.rl-es-p0 .feuille .t1,.rl-es-p1 .feuille .t1,.rl-es-p2 .feuille .t1{font-size:27px;line-height:1.14}
+.rl-es-p0 .feuille .sub,.rl-es-p1 .feuille .sub,.rl-es-p2 .feuille .sub{font-size:16px;line-height:1.45}
+.rl-es-f{padding:14px 14px 14px}
+.rl-es-f .rl-tete{padding-bottom:10px}
+.rl-es-f .rl-goutte{width:32px;height:32px}
+.rl-es-f .rl-goutte .logo{width:20px;height:20px}
+.rl-es-f .rl-t{font-size:1.42em}
+.rl-es-f .rl-trois ol{gap:12px}
+.rl-es-f .rl-trois li.rl-es-vide{color:rgba(244,239,216,.66)}
+.rl-es-f .rl-trois li.rl-es-vide::before{background:none;box-shadow:inset 0 0 0 1.5px rgba(216,223,126,.72);color:#D8DF7E}
+.rl-es-f .rl-trois li.rl-es-ici::before{top:.5em}
+.v-relais .rl-es-f .rl-trois textarea{display:block;width:100%;min-height:84px;border:2px solid #D8DF7E;border-radius:12px;background:#FFFDF6;color:#11301C;padding:10px 12px;font-family:var(--font-ui);font-size:17px;line-height:1.42}
+.v-relais .rl-es-f .rl-trois textarea::placeholder{color:#5C7163}
+.v-relais .rl-es-f .rl-trois textarea:focus-visible{outline:3px solid #D8DF7E;outline-offset:2px}
+.rl-es-aides{display:flex;flex-direction:column;align-items:flex-start}
+.rl-alerte.rl-es-ex{display:grid;grid-template-columns:18px minmax(0,1fr);gap:2px 9px;align-items:start}
+.rl-alerte.rl-es-ex .lien-f{grid-column:2}
+.rl-es-plus{display:flex;flex-direction:column;gap:10px;padding-top:20px;border-top:1px solid var(--line)}
+.rl-es-plus h2{margin:0;font-family:var(--font-display);font-size:21.5px;font-weight:600;line-height:1.2}
+.rl-es-plus>p{margin:0;font-size:16px;line-height:1.5;color:var(--muted)}
+
+/* -- la fiche vue à la place du proche -- */
+.bar.rl-vu{z-index:7;flex-wrap:wrap;justify-content:space-between;gap:8px 14px;min-height:0;padding-block:10px;background:#061C0C;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:2px solid #D8DF7E;color:#F4EFD8}
+.bar.rl-vu p{margin:0;flex:1 1 210px;font-size:14.5px;line-height:1.35;color:#C9D8C2}
+.bar.rl-vu p b{display:block;font-size:16px;color:#F4EFD8}
+.bar.rl-vu .btn{flex:none;min-height:44px;padding:8px 13px;border-color:rgba(244,239,216,.5);background:none;color:#F4EFD8}
+.bar.rl-vu .btn .i{width:17px;height:17px}
+.rl-e-recu .feuille{background:none;box-shadow:none;padding:14px 0 26px;margin-inline:0;gap:22px;border-radius:0}
+.rl-vu-ecran{--bg:#F7F2E1;display:flex;flex-direction:column;gap:14px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)) + 6px);padding:0 14px 20px;border-radius:26px;background:#F7F2E1;color:#11301C;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden}
+.rl-vu-bar{display:flex;align-items:center;min-height:60px;margin-inline:-14px;padding:10px 16px;background:#07240F}
+.rl-vu-bar .wordmark{--cream:#F4EFD8;--plum:#F4EFD8;color:#F4EFD8}
+.rl-vu-ecran .hint{margin:0;color:#4B6352}
+.rl-vu-apres{--bg:#F7F2E1;--fg:#11301C;--cream:#0F331C;--muted:#4B6352;--surface:#FFFCF0;--surface-2:#EDE6CB;--line:rgba(17,48,28,.17);--green:#1E6A39;--sun:#B9C24A;--sun-fg:#4F5410;--sun-soft:rgba(216,223,126,.36);
+  display:flex;flex-direction:column;gap:18px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)) + 6px);padding:22px 20px 26px;border-radius:26px;background:var(--bg);color:var(--fg);box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.rl-vu-fin{margin:0;font-size:16px;line-height:1.5;color:var(--muted)}
+.rl-vu-fin b{display:block;font-family:var(--font-display);font-size:21px;font-weight:600;line-height:1.25;color:var(--fg)}
+
+/* -- le moment où les 49 CHF prennent leur sens -- */
+.rl-49{gap:14px}
+.rl-49>.label{color:var(--muted)}
+.rl-49 h2{margin:0;font-family:var(--font-display);font-size:27px;font-weight:600;line-height:1.1}
+.rl-49-dit{margin:0;font-family:var(--font-display);font-size:21px;line-height:1.36;color:var(--fg)}
+.rl-49-l{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+.rl-49-l li{display:flex;flex-direction:column;gap:1px;padding-left:13px;border-left:3px solid var(--sun)}
+.rl-49-l b{font-size:16px;line-height:1.35}
+.rl-49-l span{font-size:15px;line-height:1.45;color:var(--muted)}
+.rl-49-prix{align-items:center;padding-top:14px;border-top:1px solid var(--line)}
+.rl-49-prix .f-prix{text-align:left}
+.rl-49-sans{margin:0;max-width:13em;font-size:14.5px;line-height:1.4;color:var(--muted);text-align:right}
+.rl-49-prive{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding-top:14px;border-top:1px solid var(--line)}
+.rl-49-prive b{display:block;font-size:15.5px;line-height:1.3}
+.rl-49-prive p{margin:3px 0 0;font-size:15px;line-height:1.45;color:var(--muted)}
+@media (min-width:560px){.rl-49-prive{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}
+
+/* Sur un ordinateur, la fiche du proche tient dans un téléphone, et la suite se lit à côté. */
+@media (min-width:1024px){
+  .app.v-relais-recu>main.view{max-width:calc(1040px + 2*var(--pad))}
+  .rl-e-recu .feuille{display:grid;grid-template-columns:minmax(0,412px) minmax(0,1fr);gap:44px;align-items:start;padding-top:22px}
+  .rl-vu-ecran{margin-inline:0;border:10px solid #04140A;border-radius:44px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  .rl-vu-apres{margin-inline:0;padding:28px 28px 30px}
+}
+
+/* -- avec un texte très agrandi (un téléphone réglé à 150 %, soit 260 points de large), rien ne dépasse plus de l'écran -- */
+@media (max-width:319px){
+  .film-c{white-space:normal;flex-basis:100%}
+  .film-c span{text-align:left}
+  .acc-plans .h{flex-wrap:wrap;gap:2px 10px}
+  .invite-rl h2{font-size:21px}
+  .rl-oc b{font-size:21px}
+  .rl-49 h2{font-size:24px}
+  .rl-49-prix{flex-wrap:wrap}
+  .rl-49-sans{text-align:left;max-width:none}
+}
+/* Le message d'aide du champ, lisible sur le fond sombre de la fiche. */
+.rl-es-f .rl-trois .err{margin:8px 0 0;font-size:15px;line-height:1.4;font-weight:700;color:#FFD9C7}
+.bar.rl-vu:focus{outline:none}
+@media (max-width:319px){
+  /* La barre de l'espace, avec « Retour », « Accueil » et le SOS, tient encore sur un téléphone réglé à 150 %. */
+  .bar .bar-d{gap:6px}
+  .va-accueil{padding:0 9px;font-size:13.5px}
+  .bar .bar-d .sos{padding-inline:10px;font-size:13.5px}
+  .bar .bar-d .sos .i{display:none}
+  .bar .back{font-size:15px;padding-right:4px}
+}
+/* Imprimée depuis l'écran « à la place du proche », la page porte la fiche, et elle seule. */
+@media print{
+  .bar.rl-vu{display:none !important}
+  .v-relais.rl-e-recu .feuille>.rl-vu-ecran{display:block !important;margin:0 !important;padding:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#fff !important}
+  .v-relais.rl-e-recu .rl-vu-ecran>*:not(.rl-fiche){display:none !important}
+}

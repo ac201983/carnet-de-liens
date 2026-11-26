@@ -251,11 +251,18 @@ const F_TXT={
 };
 const PRIX=k=>k==='relais'?'49 CHF, une seule fois':k==='parcours'?'84 CHF en tout':'0 CHF';
 /* Le site officiel s'appelle lui-même « version de test » dans ses pages de texte, tant que la vente n'est pas ouverte. L'ancienne version d'essai disait « version d'essai ». */
-const V_NOM=ESSAI?'version d’essai':'version de test';
+/* NOM_ESSAI : le nom que se donne une version à part (« version d'essai » jusqu'au 25 novembre 2026, « préversion » depuis). */
+const NOM_ESSAI=ESSAI?(ESSAI_NOM||'version d’essai'):'';
+const V_NOM=ESSAI?NOM_ESSAI:'version de test';
 const POUR_DEMO=ESSAI?'Pour l’essai':'Pour la démonstration';
-/* Tant que la commande est une démonstration, le parent peut faire avancer les mensualités et annuler ses achats de démonstration. */
-const VENTE_DEMO=true;
-const DEMO_PAIE='Dans cette '+V_NOM+', aucun montant réel n’est débité.';
+/* La vente n'est pas ouverte. Pour un parent, une offre se présente avec son prix, « Essayer » et « Me prévenir à l'ouverture » : aucune commande.
+   La commande en démonstration ne sert qu'aux essais internes. Elle existe quand la fabrication le demande (VENTE vaut « demo »), ou bien,
+   là où la fabrication l'autorise (INTERNE), quand l'adresse a été ouverte une fois avec #interne dans cet onglet. Fermer l'onglet l'oublie. */
+function interne(){if(!INTERNE)return false;try{return sessionStorage.getItem('pepe-interne')==='1';}catch(e){return false;}}
+function venteDemo(){return VENTE==='demo'||interne();}
+function demoPaie(){return venteDemo()?'Dans cette '+V_NOM+', aucun montant réel n’est débité.':'La vente n’est pas encore ouverte. Les prix sont ceux prévus pour l’ouverture.';}
+/* « Me prévenir à l'ouverture » : le même geste partout où une offre payante se présente. */
+function prevenirBtn(k,cls){return CONTACT_R?'<a class="btn wide prevenir'+(cls?' '+cls:'')+'" href="'+esc(prevenirUrl(k))+'" aria-label="Me prévenir à l’ouverture de '+esc(PRODUITS[k].t)+', '+PRIX(k)+'">'+I.mail+'<span>Me prévenir à l’ouverture</span></a>':'';}
 const TOTAL_84='Total 84 CHF dans les deux cas. Sans supplément ni renouvellement automatique.';
 /* Les 6 dates d'un paiement en six fois : le jour de l'achat, puis le même jour des 5 mois suivants (ou le dernier jour du mois s'il est plus court). */
 function echeances(depuis){const p=String(depuis||todayIso()).split('-').map(Number);const out=[];for(let i=0;i<NB_ECH;i++){const y=p[0]+Math.floor((p[1]-1+i)/12),m=(p[1]-1+i)%12;const fin=new Date(y,m+1,0).getDate();out.push(y+'-'+pad(m+1)+'-'+pad(Math.min(p[2],fin)));}return out;}
@@ -267,6 +274,7 @@ function echeancesHtml(depuis,payees){
 /* Les 2 façons de payer Le parcours, avec la même importance à l'écran. */
 function payerParcours(de){
   if(can('parcours'))return '<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'Vous avez Le parcours</button>';
+  if(!venteDemo())return '<div class="f-ferme"><button type="button" class="btn primary wide" data-act="apercu">'+I.path+'Essayer une étape en 3 minutes</button>'+prevenirBtn('parcours')+'</div><p class="f-total">84 CHF en tout, en une fois ou en 6 fois 14 CHF. Sans supplément ni renouvellement automatique.</p>';
   return '<div class="f-payer" role="group" aria-label="2 façons de payer Le parcours"><button type="button" class="btn primary f-mode" data-act="commande" data-v="parcours" data-m="une" data-de="'+de+'"><b>En une fois</b><span>84 CHF aujourd’hui</span></button><button type="button" class="btn primary f-mode" data-act="commande" data-v="parcours" data-m="six" data-de="'+de+'"><b>En six fois</b><span>14 CHF aujourd’hui, puis 5 mensualités de 14 CHF</span></button></div><p class="f-total">'+TOTAL_84+'</p>';
 }
 function viewPlans(){
@@ -277,12 +285,13 @@ function viewPlans(){
     return '<section class="formule f-'+k+(best?' best':'')+'" aria-labelledby="f-'+k+'"><div class="f-haut"><div class="f-nom"><h2 id="f-'+k+'">'+nom+'</h2></div><p class="f-prix"><b>'+prix+'</b> <small>'+petit+'</small></p></div><p class="f-benef">'+X.b+'</p>'+bouton+plus+
       '<details class="f-concret"'+(large?' open':'')+'><summary>'+X.s+'</summary><ul>'+X.c.map(x=>'<li>'+x+'</li>').join('')+'</ul><p class="f-note">'+X.d+'</p></details></section>';};
   const bFree=peek?'<button type="button" class="btn wide" data-act="entrer" data-v="today">Commencer gratuitement</button>':'<button type="button" class="btn wide" data-act="rien" aria-disabled="true">'+I.check+'C’est déjà à vous</button>';
-  const bRel=can('relais')?'<button type="button" class="btn wide" data-act="rl" data-k="ouvre">'+I.hand+'Ouvrir Passer le relais</button>':'<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="plans">Choisir Passer le relais</button>';
+  const demo=venteDemo();
+  const bRel=can('relais')?'<button type="button" class="btn wide" data-act="rl" data-k="ouvre">'+I.hand+'Ouvrir Passer le relais</button>':demo?'<button type="button" class="btn primary wide" data-act="commande" data-v="relais" data-de="plans">Choisir Passer le relais</button>':'<div class="f-ferme"><button type="button" class="btn primary wide" data-act="rl" data-k="essai">'+I.pen+'Essayer avec ma situation</button>'+prevenirBtn('relais')+'</div>';
   return '<main id="main" tabindex="-1" class="view v-feuille"><div class="feuille">'+
-    '<div class="f-tete"><h1 class="t1">Les 3 offres</h1><p class="sub">Vous commencez gratuitement. Ensuite, vous payez une fois ce qui vous sert, sans abonnement.</p><p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></div>'+
+    '<div class="f-tete"><h1 class="t1">Les 3 offres</h1><p class="sub">Vous commencez gratuitement. Ensuite, vous payez une fois ce qui vous sert, sans abonnement.</p><p class="demo-paie">'+I.info+'<span>'+demoPaie()+'</span></p></div>'+
     '<div class="formules">'+
       carte('free','Découverte','0 CHF','sans limite de durée',bFree,'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>',false)+
-      carte('parcours','Le parcours','84 CHF','en tout',payerParcours('plans'),'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape avant de choisir</button>',false)+
+      carte('parcours','Le parcours','84 CHF','en tout',payerParcours('plans'),demo?'<button type="button" class="lien-f" data-act="apercu">'+I.path+'Essayer une étape avant de choisir</button>':'',false)+
       carte('relais','Passer le relais','49 CHF','une seule fois',bRel,'<button type="button" class="lien-f" data-act="rl" data-k="exemple">'+I.eye+'Voir un exemple de fiche terminée</button>',false)+
     '</div>'+
     '<section class="f-regles"><h2>Paiement, durée et ce que vous gardez</h2><ul class="list">'+
@@ -293,9 +302,10 @@ function viewPlans(){
       '<li>Ce que vous achetez reste ouvert sans limite de durée.</li>'+
       '<li>Votre carnet, vos fiches et vos dépôts restent sur votre appareil. Vous pouvez les sauvegarder dans un fichier, les restaurer, et imprimer « Mon chemin » comme vos fiches de relais.</li>'+
     '</ul><p class="f-avant">Le moyen de paiement, le remboursement et ce qui se passe si une mensualité ne peut pas être prélevée seront écrits ici et dans les conditions générales avant l’ouverture de la vente.</p></section>'+
-    '<section class="f-prevenir"><h2>Être prévenu de l’ouverture</h2><p>La vente n’est pas encore ouverte. Si vous le souhaitez, vous pouvez demander à être prévenu par e-mail du jour où une offre ouvrira, à son prix annoncé.</p>'+prevenirHtml('parcours')+prevenirHtml('relais')+'<p class="hint">Le message part de votre propre messagerie. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p></section>'+
-    '<div class="f-discret"><button type="button" class="lien-f" data-act="cadeau">'+I.star+'Offrir à un parent</button><button type="button" class="lien-f" data-act="retrouver">'+I.search+'Retrouver un achat</button></div>'+
-    '<p class="hint">Dans cette '+V_NOM+', choisir une offre ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>'+
+    '<section class="f-prevenir"><h2>Être prévenu de l’ouverture</h2><p>La vente n’est pas encore ouverte. Si vous le souhaitez, vous pouvez demander à être prévenu par e-mail du jour où une offre ouvrira, à son prix annoncé.</p>'+(demo?prevenirHtml('parcours')+prevenirHtml('relais'):'')+'<p class="hint">Le message part de votre propre messagerie. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p></section>'+
+    (demo?'<div class="f-discret"><button type="button" class="lien-f" data-act="cadeau">'+I.star+'Offrir à un parent</button><button type="button" class="lien-f" data-act="retrouver">'+I.search+'Retrouver un achat</button></div>'+
+    '<p class="hint">Dans cette '+V_NOM+', choisir une offre ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>':
+    (SITE?'<a class="lien-f" href="'+RACINE+'conditions.html">Lire les conditions générales</a>':''))+
     '</div></main>';
 }
 /* « Me prévenir » est un vrai lien vers la messagerie du parent, avec un message écrit d'avance. C'est lui qui l'envoie : rien ne part sans lui. */
@@ -365,7 +375,7 @@ function viewApercu(){
       '<section class="offre" aria-labelledby="offre-t"><div class="f-haut"><h2 id="offre-t">Le parcours</h2><p class="f-prix"><b>84 CHF</b> <small>en tout</small></p></div><p class="f-benef">'+F_TXT.parcours.b+'</p>'+
       payerParcours('apercu')+
       '<p class="f-note">24 étapes guidées, une par semaine, pendant 6 mois. Une fois acheté, le parcours reste ouvert sans limite de durée.</p>'+
-      '<p class="demo-paie">'+I.info+'<span>'+DEMO_PAIE+'</span></p></section>'+
+      '<p class="demo-paie">'+I.info+'<span>'+demoPaie()+'</span></p></section>'+
       '<div class="ap-suite"><button type="button" class="btn wide" data-act="entrer" data-v="parcours">Continuer gratuitement avec l’étape 1</button><button type="button" class="lien-f" data-act="go" data-view="plans">Voir les 3 offres</button></div>');
   }
   return '<main id="main" tabindex="-1" class="view v-feuille v-apercu ap-'+k+'"><div class="feuille">'+corps+'</div></main>';
@@ -381,6 +391,8 @@ function achete(f,m){
   entrer('achat');save();
 }
 function viewCommande(){
+  /* Pour un parent, la vente est fermée : aucune adresse ni aucun bouton ne mène à une commande. */
+  if(!venteDemo())return viewPlans();
   const c=state.cmd||{},e=c.k||'recap';const f=PRODUITS[c.f]?c.f:'parcours',P=PRODUITS[f],X=F_TXT[f],six=f==='parcours'&&c.m==='six';
   const demo='<p class="demo-paie demo-fort">'+I.info+'<span>Ceci est une démonstration. Aucun montant réel n’est débité, et aucune carte n’est demandée.</span></p>';
   const tete=(l,t,s)=>'<div class="f-tete"><span class="label">'+l+'</span><h1 class="t1">'+t+'</h1>'+(s?'<p class="sub">'+s+'</p>':'')+'</div>';
@@ -435,18 +447,22 @@ function achatsHtml(){
     (p&&E&&n<NB_ECH?'<p class="hint">La prochaine mensualité de 14 CHF est celle du '+esc(dateLongue(E[n]))+'. La dernière est celle du '+esc(dateLongue(E[NB_ECH-1]))+'.</p>':'')+
     (p&&E&&n>=NB_ECH?'<p class="hint">Les 6 mensualités sont payées. Plus rien ne sera prélevé.</p>':'')+
     '<div class="kv"><span>Passer le relais</span><span>'+(r?'acheté, 49 CHF':'pas acheté')+'</span></div>'+
-    (VENTE_DEMO&&p&&E&&n<NB_ECH?'<button type="button" class="btn small" data-act="ech-suite" style="align-self:flex-start">Simuler la mensualité suivante</button>':'')+
+    (venteDemo()&&p&&E&&n<NB_ECH?'<button type="button" class="btn small" data-act="ech-suite" style="align-self:flex-start">Simuler la mensualité suivante</button>':'')+
     '<div class="row"><button type="button" class="btn'+(p&&r?'':' primary')+'" data-act="go" data-view="plans">'+I.tag+'Voir les 3 offres</button></div>'+
-    (VENTE_DEMO&&(p||r)?'<button type="button" class="lien-f" data-act="achats-zero">Annuler mes achats de démonstration</button>':'')+'</div>';
+    (venteDemo()&&(p||r)?'<button type="button" class="lien-f" data-act="achats-zero">Annuler mes achats de démonstration</button>':'')+'</div>';
 }
 /* Ce que cet appareil a compté, pour la carte « Version d'essai » de l'écran « Moi ». */
 function reperesHtml(){
   const c=com(),a=c.ach||{},u=c.us||{};const dit=k=>a[k]?(k==='parcours'?(a[k].m==='six'?'en six fois':'en une fois')+', ':'')+'le '+fmtDate(a[k].d):'aucun';
   const rev=k=>Array.isArray(u[k])&&u[k].length>1?'oui, le '+fmtDate(u[k][1]):Array.isArray(u[k])&&u[k].length?'pas encore':'';
-  const l=[['Essai du parcours terminé',c.ap?'le '+fmtDate(c.ap):'pas encore'],['Achat du parcours',dit('parcours')],['Achat de Passer le relais',dit('relais')]];
-  if(a.parcours)l.push(['Retour sur le parcours, un autre jour',rev('parcours')||'pas encore']);
-  if(a.relais)l.push(['Retour sur Passer le relais, un autre jour',rev('relais')||'pas encore']);
-  return '<div class="reperes"><span class="label">Les 3 mesures du lancement, sur cet appareil</span>'+l.map(x=>'<div class="kv"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>').join('')+'<p class="hint">Ces mesures ne contiennent ni vos écrits, ni vos humeurs, ni votre situation. Dans cette version d’essai, elles restent sur votre appareil et rien n’est envoyé. Les achats sont des démonstrations.</p></div>';
+  /* Ce que l'on veut savoir d'un essai : a-t-il commencé, le parent a-t-il vu sa fiche comme son proche, a-t-il terminé l'étape du parcours.
+     Les achats ne se comptent que là où la commande de démonstration existe. Aucune de ces mesures ne contient un mot écrit par le parent. */
+  const demo=venteDemo();
+  const l=[['Essai du relais commencé',c.re?'le '+fmtDate(c.re):'pas encore'],['Fiche vue à la place du proche',c.rv?'le '+fmtDate(c.rv):'pas encore'],['Essai du parcours terminé',c.ap?'le '+fmtDate(c.ap):'pas encore']];
+  if(demo)l.push(['Achat du parcours',dit('parcours')],['Achat de Passer le relais',dit('relais')]);
+  if(demo&&a.parcours)l.push(['Retour sur le parcours, un autre jour',rev('parcours')||'pas encore']);
+  if(demo&&a.relais)l.push(['Retour sur Passer le relais, un autre jour',rev('relais')||'pas encore']);
+  return '<div class="reperes"><span class="label">Les mesures du lancement, sur cet appareil</span>'+l.map(x=>'<div class="kv"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>').join('')+'<p class="hint">Ces mesures ne contiennent ni vos écrits, ni vos humeurs, ni votre situation. Dans cette '+NOM_ESSAI+', elles restent sur votre appareil et rien n’est envoyé.'+(demo?' Les achats sont des démonstrations.':'')+'</p></div>';
 }
 
 function sheetUpgrade(sheetIn){
@@ -455,7 +471,7 @@ function sheetUpgrade(sheetIn){
   return '<div class="backdrop" data-act="sheet-close"></div><div class="sheet'+(sheetIn?' in':'')+'" role="dialog" aria-modal="true" aria-labelledby="up-title" tabindex="-1"><div class="sheet-in"><div class="grab"></div><span class="label">'+I.lock+' Fait partie du Parcours</span><h2 id="up-title" class="t2" style="font-family:var(--font-display);font-weight:500">'+esc(u.t)+'</h2><p>'+esc(u.s)+'</p>'+
     '<button type="button" class="btn primary wide" data-act="apercu">'+I.path+'Essayer une étape, en 3 minutes</button>'+
     '<button type="button" class="btn wide" data-act="go" data-view="plans">Voir les 3 offres et les prix</button>'+
-    '<button type="button" class="btn ghost wide" data-act="sheet-close">Plus tard</button><p class="hint" style="text-align:center">'+DEMO_PAIE+'</p></div></div>';
+    '<button type="button" class="btn ghost wide" data-act="sheet-close">Plus tard</button><p class="hint" style="text-align:center">'+demoPaie()+'</p></div></div>';
 }
 
 /* ---------- une page à transmettre ---------- */
@@ -585,7 +601,7 @@ function mdLite(t){const lines=String(t).split('\n');let out='';let inl=false;fo
 
 /* ---------- actions ---------- */
 function nav(v){if(state.view==='souffle'&&v!=='souffle')souffleStop();if(state.dire){direGarde();state.dire=null;}state.prev=state.view;state.view=v;state.sheet=null;state.ob=null;state.confirmReset=false;state.confirmEssai=false;state.photoPick=false;state.photoOrder=null;state.pdraft=null;state.lien='';state.piste=false;}
-function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):'',state.view==='deposer'&&state.dire?'dire-'+state.dire.id:''].join('|');}
+function fxSig(){return [state.view,state.sit,state.exo,state.step,state.kit,state.piste?'piste':'',state.letter,!!D().onboarded,state.view==='photo'?(state.photoPick?'choix':'photo-'+(photoRec().id||'')):'',state.view==='apercu'?'ap'+state.ap.k:'',state.view==='commande'?state.cmd.f+'-'+state.cmd.k:'',state.view==='relais'?'rl-'+state.rl.e+(state.rl.e==='essai'?'.'+(state.rl.es||''):'')+'-'+state.rl.p+'-'+(state.rl.id||'')+'-'+(state.rl.r||''):'',state.view==='deposer'&&state.dire?'dire-'+state.dire.id:''].join('|');}
 function handle(act,d,el){
   const data=D();const sig0=fxSig();const sheet0=state.sheet;const view0=state.view;
   switch(act){
@@ -687,7 +703,7 @@ function handle(act,d,el){
     case 'ap-g':{const m=document.getElementById('ap-mot');if(m)state.ap.mot=m.value;state.ap.g=state.ap.g===d.v?'':d.v;break;}
     case 'ap-garde':if(!apGarde()){toast('Choisissez un geste, ou écrivez le vôtre.');return;}state.ap.k=2;break;
     case 'apercu-reprise':state.ap={k:2,g:'',mot:''};state.sheet=null;if(!com().rp){com().rp=todayIso();save();}nav('apercu');break;
-    case 'commande':{if(!PRODUITS[d.v])return;if(can(d.v)){toast('Vous avez déjà '+PRODUITS[d.v].t+'.');return;}state.cmd={f:d.v,m:d.m==='six'?'six':'une',k:'recap',de:d.de||''};state.sheet=null;repere('choix',d.v);nav('commande');break;}
+    case 'commande':{if(!PRODUITS[d.v])return;if(!venteDemo()){state.sheet=null;nav('plans');break;}if(can(d.v)){toast('Vous avez déjà '+PRODUITS[d.v].t+'.');return;}state.cmd={f:d.v,m:d.m==='six'?'six':'une',k:'recap',de:d.de||''};state.sheet=null;repere('choix',d.v);nav('commande');break;}
     case 'cmd-mode':state.cmd.m=d.v==='six'?'six':'une';break;
     case 'cmd':{const c=state.cmd;if(!c)return;const v=d.v;
       if(v==='retrouve'){if(!PRODUITS[d.f])return;c.f=d.f;if(!can(d.f))achete(d.f,'une');c.k='retrouve';break;}
@@ -697,10 +713,10 @@ function handle(act,d,el){
       if(v==='ok'){achete(c.f,c.m);repere('achat',c.f,c.f==='parcours'?c.m:'');}
       c.k=v;break;}
     /* « Offrir à un parent » est une maquette. « Retrouver un achat » montre le principe du lien reçu par e-mail. */
-    case 'cadeau':state.cmd={f:PRODUITS[d.v]?d.v:(state.view==='commande'&&state.cmd.k==='cadeau'&&PRODUITS[state.cmd.f]?state.cmd.f:'parcours'),m:'une',k:'cadeau',de:''};state.sheet=null;if(state.view!=='commande')nav('commande');break;
+    case 'cadeau':if(!venteDemo()){state.sheet=null;nav('plans');break;}state.cmd={f:PRODUITS[d.v]?d.v:(state.view==='commande'&&state.cmd.k==='cadeau'&&PRODUITS[state.cmd.f]?state.cmd.f:'parcours'),m:'une',k:'cadeau',de:''};state.sheet=null;if(state.view!=='commande')nav('commande');break;
     case 'cadeau-voir':if(!PRODUITS[d.v])return;state.cmd={f:d.v,m:'une',k:'activer',de:''};break;
     case 'cadeau-envoi':{const u=PUBLIC+'#cadeau-'+state.cmd.f;(async()=>{if(navigator.share){try{await navigator.share({title:'Un cadeau pour vous',text:'Je vous offre '+PRODUITS[state.cmd.f].t+', sur Parent écouté, parent éclairé. Vous l’activez quand vous voulez.',url:u});return;}catch(e){if(e&&e.name==='AbortError')return;}}try{await navigator.clipboard.writeText(u);toast('Le lien du cadeau est copié.');}catch(e){const c=document.getElementById('cad-lien');if(c){try{c.focus();c.select();}catch(x){}}}})();return;}
-    case 'retrouver':state.cmd={f:'parcours',m:'une',k:'retrouver',de:''};state.sheet=null;nav('commande');break;
+    case 'retrouver':if(!venteDemo()){state.sheet=null;nav('plans');break;}state.cmd={f:'parcours',m:'une',k:'retrouver',de:''};state.sheet=null;nav('commande');break;
     case 'ech-suite':{const p=achats().parcours;if(!p||p.m!=='six'||(p.n||1)>=NB_ECH)return;p.n=(p.n||1)+1;save();toast(p.n>=NB_ECH?'La 6e mensualité est payée. Plus rien ne sera prélevé.':'Mensualité '+p.n+' sur 6, en démonstration.');break;}
     case 'achats-zero':data.tier='free';data.achats={};save();toast('Vos achats de démonstration sont annulés. Rien de ce que vous avez écrit n’a été effacé.');break;
     /* « Passer le relais » a ses propres gestes, dans v2-r.js. */
@@ -769,10 +785,14 @@ function handle(act,d,el){
   /* Chaque nouvel écran est une page de l'historique. Ce qui se passe à l'intérieur d'un même écran (une rubrique de la boîte à outils, le choix d'une photo) remplace la page au lieu d'en ajouter une. */
   /* L'aperçu d'une fiche du relais (ou la fiche d'exemple) : l'écran arrive en simple fondu, parce que c'est la feuille qui fait le mouvement.
      Elle vient se poser, et la page s'ouvre de façon que ses 3 repères se lisent ensemble. */
-  const pose=act==='rl'&&state.view==='relais'&&(state.rl.e==='apercu'||state.rl.e==='exemple');
+  const pose=act==='rl'&&state.view==='relais'&&(state.rl.e==='apercu'||state.rl.e==='exemple');const recu=act==='rl'&&state.view==='relais'&&state.rl.e==='recu';
   /* Le bouton « Le minuteur visuel » d'une fiche mène tout droit au minuteur, et pas en haut de la boîte à outils. */
   const versMinuteur=act==='kit'&&d.tool==='timer';
-  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);if(pose)rlVoirTrois();if(versMinuteur)minuteurEnVue();},pose?'fade':act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
+  /* Dans l'essai du relais, passer d'un repère au suivant ne joue aucun effet : l'écran est redessiné dans le geste même, et le curseur se pose
+     aussitôt dans le nouveau champ. Sur un téléphone, le clavier reste ainsi ouvert d'un repère à l'autre. */
+  const pasEssai=act==='rl'&&state.view==='relais'&&state.rl.e==='essai'&&state.rl.es==='ecrire'&&sig0.indexOf('rl-essai.ecrire-')>=0;
+  if(pasEssai&&fxSig()!==sig0){histPush(false);render();window.scrollTo(0,0);rlApres();return;}
+  if(navAct&&fxSig()!==sig0){histPush((act==='kit'&&view0==='kit')||act==='photopick'||act==='photoback'||act==='ob-done'||act==='cmd'||(act==='cadeau'&&view0==='commande'));fxGo(()=>{render();window.scrollTo(0,0);if(pose)rlVoirTrois();if(versMinuteur)minuteurEnVue();},(pose||recu)?'fade':act==='back'||act==='photoback'?'back':(act==='kit'||(el&&el.classList&&el.classList.contains('tab'))?'tab':'open'));return;}
   /* Une feuille qui se referme s'efface en douceur elle aussi, quand le navigateur sait faire le fondu d'écran. */
   if(sheet0&&!state.sheet){fxGo(()=>{render();if(navAct)window.scrollTo(0,0);},'fade',true);return;}
   render();
@@ -812,10 +832,13 @@ app.addEventListener('keydown',e=>{
   else if(t.id==='ob-me'){e.preventDefault();handle('ob-done',{},t);}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet){state.sheet=null;state.ob=null;fxGo(render,'fade',true);}});
+/* Dans l'essai du relais, la touche Entrée valide le repère et passe au suivant. Maj et Entrée vont à la ligne. */
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.isComposing)return;const t=e.target;if(!t||t.id!=='rl-es-t')return;e.preventDefault();const b=document.getElementById('rl-es-suite');if(b)b.click();});
 try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);localStorage.removeItem(KEY_AVANT);try{sessionStorage.removeItem(KEY+'-place');sessionStorage.removeItem(KEY+'-brouillon');}catch(e){}if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
 /* L'aperçu d'Antonio s'active aussi par l'adresse …/#atelier. Ce n'est pas un verrou : il sert à tout relire sans attendre les sept jours. */
 let atelierMsg=false;
+try{if(INTERNE&&(location.hash==='#interne'||location.hash==='#public')){if(location.hash==='#interne')sessionStorage.setItem('pepe-interne','1');else sessionStorage.removeItem('pepe-interne');if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
 try{if(location.hash==='#atelier'){state.data.atelier=true;state.data.tout=true;save();atelierMsg=true;if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
 fxSync();
 /* La fenêtre passe d'un format à l'autre (fenêtre agrandie ou réduite, tablette qu'on tourne) : l'écran est réécrit dans le bon ordre, sans perdre ce qui est en cours de saisie. */

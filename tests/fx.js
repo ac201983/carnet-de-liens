@@ -53,6 +53,12 @@ const tap = async (page, x, y) => { await page.mouse.move(x, y); await page.mous
   };
   await walk(page, visit);
   ok(!bad.length, 'après chaque écran : rien d’estompé ni de flou, chaque bloc posé à sa place, pas de calque d’eau sans carte graphique, pas de débordement\n   ' + bad.join('\n   '));
+  // PEPE_WALK=trajet : seul le trajet d'un parent du site public est regardé, écran par écran. Les scènes filmées plus bas passent par la commande
+  // des essais internes : elles sont rejouées dans l'autre passe.
+  if (process.env.PEPE_WALK === 'trajet') {
+    console.log((fails ? fails + ' échec(s)' : 'effets, le trajet d’un parent : tout passe (' + n + ' écrans, largeur ' + W + ')') + ' | erreurs console : ' + (errs.length ? errs.slice(0, 5).join(' | ') : 'aucune'));
+    await browser.close(); process.exit(fails || errs.length ? 1 : 0);
+  }
 
   // --- l'arrivée des blocs et le changement d'écran, en images
   await page.evaluate(() => localStorage.clear()); await page.goto(APP); await page.waitForTimeout(700);

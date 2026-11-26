@@ -639,6 +639,8 @@ function render(){
   else if(visiteur&&SITE&&state.view==='transmettre'){base='app nobar pub';key='pub-transmettre';html=barPub()+viewTransmettre()+'<footer class="foot"><a href="'+RACINE+'" data-act="accueil">Accueil</a><a href="'+RACINE+'fiches/" data-act="fiches">Les situations</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a></footer>';}
   /* La vitrine. Un visiteur y arrive, et un parent déjà entré la retrouve par « Accueil » : c'est un écran comme les autres, on y revient avec « Retour ». */
   else if(visiteur||state.view==='intro'){base='app nobar';key='intro';html=viewIntro();}
+  /* La fiche vue à la place du proche : le parent quitte un instant son espace. Il n'y a ni onglets ni barre de l'espace, seulement le bandeau qui le ramène à son brouillon. */
+  else if(state.view==='relais'&&state.rl.e==='recu'&&rlFiche(state.rl.id)){base='app nobar';key='relais-recu';html=rlVuTete()+viewRelais();}
   else{
     key=state.view;html+=(large()?tabs():'')+bar();
     switch(state.view){
@@ -693,7 +695,9 @@ function render(){
     if(fkey){
       let el=null;try{el=app.querySelector(fkey);}catch(e){}
       if(el){try{el.focus({preventScroll:true});}catch(e){}}
-      else if(entering){const m=document.getElementById('main');if(m){try{m.focus({preventScroll:true});}catch(e){}}}
+      /* En entrant sur un écran, le clavier et le lecteur d'écran partent du début du contenu. Un écran peut désigner un autre point de départ
+         (« data-foyer ») : à la place du proche, c'est le bandeau qui dit au parent où il se trouve. */
+      else if(entering){const m=app.querySelector('[data-foyer]')||document.getElementById('main');if(m){try{m.focus({preventScroll:true});}catch(e){}}}
     }
   }
   if((state.view==='kit'&&state.kit==='tools'&&state.tool==='timer')||(state.view==='exo'&&state.exo==='minute'))drawTimer();
@@ -798,14 +802,15 @@ const SAC='<svg class="sac" viewBox="0 0 460 300" aria-hidden="true">'+
   '<rect class="sac-p" x="372" y="250" width="23" height="40" rx="10"/><rect class="sac-p" x="431" y="250" width="23" height="40" rx="10"/></svg>';
 /* La table : le sac, et devant lui le début de la fiche d'exemple de Bastien (35 ans). Toute la feuille est un seul grand bouton :
    le bouton du bas s'étend sur elle (voir .fb-voir::after), et il ouvre la fiche entière. En dessous, la fiche pratique qui va avec. */
+/* La table : l'invitation au relais, puis la fiche d'exemple. Sur un téléphone, l'invitation vient juste après les 3 aides, et la fiche la suit.
+   Sur un ordinateur, la fiche de Bastien reste en haut à droite et l'invitation se lit dessous (ordre donné par la feuille de style). */
 function tableHtml(){
-  const f=RL_EX.g,s=SITS.find(x=>x.id==='relais');
-  return '<div class="haut-table"><div class="nature">'+SAC+
+  const f=RL_EX.g;
+  return '<div class="haut-table">'+rlInviteHtml()+'<div class="nature">'+SAC+
     '<article class="fiche-b" aria-label="Le début d’une fiche d’exemple"><span class="fb-ex">Exemple</span>'+
     '<div class="fb-tete">'+LOGO+'<div><h2>'+esc(rlTitre(f))+'</h2><p>'+esc(rlSousTitre(f))+'</p></div></div>'+
     '<h3>Si tu ne lis que trois choses</h3><ol>'+f.trois.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+
-    '<button type="button" class="fb-voir" data-act="rl" data-k="exemple" data-v="g">Voir la fiche '+esc(rlDe(f.qui))+' en entier</button></article></div>'+
-    (SITE&&s?'<a class="haut-sit" href="'+ficheUrl('relais')+'" data-act="sit" data-id="relais"><span class="tx"><b>'+esc(s.t)+'</b><span>'+esc(s.s)+'</span></span>'+I.chev+'</a>':'')+'</div>';
+    '<button type="button" class="fb-voir" data-act="rl" data-k="exemple" data-v="g">Voir la fiche '+esc(rlDe(f.qui))+' en entier</button></article></div></div>';
 }
 function introDoseLabel(){if(new Date().getDay()===0)return 'Dose spéciale du dimanche';let j='';try{j=new Date().toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});}catch(e){}return 'La dose du '+(j||fmtDate(todayIso()));}
 /* Ce que le nom de l'espace veut dire, en 2 phrases, puis le mot d'Antonio, signé, tel qu'il l'a écrit le 19 novembre 2026.
@@ -825,7 +830,12 @@ function viewIntro(){
   /* Un parent déjà entré retrouve la même vitrine. Les boutons disent alors ce qui l'attend : son espace, et son parcours s'il l'a commencé. */
   const membre=!!D().onboarded,repr=membre&&parcoursCommence(),cur=currentStepIdx();
   const cta=wide=>'<button type="button" class="btn primary'+(wide?' wide':'')+'" data-act="entrer" data-v="today">'+I.sun2+(membre?'Ouvrir mon espace':'Commencer gratuitement')+'</button>';
-  const priv=SITE?'Cette version de test est gratuite, et tout ce que vous écrivez reste sur votre appareil. Chaque dépôt reçoit une question et une lumière, choisies parmi des textes écrits à l’avance.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
+  /* Le parent qui revient retrouve ce qu'il faisait, tout en haut : sa fiche en cours, son parcours, et toujours son espace. */
+  const br=membre?rlEsEnCours():null;
+  const revenu=!membre?'':'<div class="revenu'+(br||repr?' deux':'')+'"><span>Vous revoilà.</span>'+
+    (br?'<button type="button" class="voie" data-act="rl" data-k="essai" data-v="'+br.v+'"><span>'+(br.reu?'Reprendre ma feuille':'Reprendre ma fiche')+'</span></button>':repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'"><span>Reprendre mon parcours</span></button>':'')+
+    '<button type="button" class="voie" data-act="entrer" data-v="today"><span>Ouvrir mon espace</span></button></div>';
+  const priv=SITE?(venteDemo()?'Cette version de test est gratuite, et tout':'Tout')+' ce que vous écrivez reste sur votre appareil. Chaque dépôt reçoit une question et une lumière, choisies parmi des textes écrits à l’avance.':'Vos notes restent sur votre appareil. Quand vous déposez, votre texte part sans votre nom et une intelligence artificielle écrit la réponse, avec la méthode d’Antonio.';
   const sec=(k,t,l,c)=>'<section class="acc acc-'+k+'" aria-labelledby="acc-'+k+'-t"><div class="acc-h"><h2 id="acc-'+k+'-t" class="acc-t">'+t+'</h2>'+(l?'<p class="acc-l">'+l+'</p>':'')+'</div><div class="acc-c">'+c+'</div></section>';
   const steps=allSteps();const etape=id=>steps.find(x=>x.id===id)||{};
   /* La dose du jour, la vraie. Sur le site, la page est écrite à l'avance : introLive() remet la dose d'aujourd'hui. */
@@ -852,7 +862,7 @@ function viewIntro(){
   const vecu=!vec.length?'':'<div class="card vecu"><div class="from"><span class="av" aria-hidden="true">A</span><div><b>Ce que j’ai vécu</b><small>Antonio, à l’étape 2</small></div></div>'+vec.map(p=>'<p class="lesson">'+esc(p)+'</p>').join('')+'<div class="vecu-lien"><button type="button" class="linkbtn" data-act="peek-about">Lire mon histoire</button></div></div>';
   const allerParcours=repr?'<button type="button" class="btn" data-act="step" data-i="'+cur+'">'+I.path+'Reprendre mon parcours</button>':'<button type="button" class="btn" data-act="entrer" data-v="parcours">'+I.path+'Commencer le parcours de 6 mois</button>';
   /* Les formules, avec les prix affichés dans l'espace. */
-  const plans='<ul class="acc-plans">'+[['free','Découverte','0 CHF','',F_TXT.free.c[0],'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape, en 3 minutes</button>'],['parcours','Le parcours','84 CHF','en tout','En une fois, ou en 6 fois 14 CHF. '+TOTAL_84,'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape avant de choisir</button>'],['relais','Passer le relais','49 CHF','une seule fois',F_TXT.relais.c[0],'<button type="button" class="linkbtn" data-act="rl" data-k="exemple">Voir un exemple de fiche terminée</button>']].map(x=>'<li><div class="h"><b>'+x[1]+'</b><span class="prix">'+x[2]+(x[3]?' <small>'+x[3]+'</small>':'')+'</span></div><p class="acc-benef">'+F_TXT[x[0]].b+'</p><p>'+x[4]+'</p>'+x[5]+'</li>').join('')+'</ul>'+'<button type="button" class="btn" data-act="peek-plans">Voir les 3 offres en détail</button><button type="button" class="linkbtn acc-offrir" data-act="cadeau">Offrir à un parent</button>';
+  const plans='<ul class="acc-plans">'+[['free','Découverte','0 CHF','',F_TXT.free.c[0],'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape, en 3 minutes</button>'],['parcours','Le parcours','84 CHF','en tout','En une fois, ou en 6 fois 14 CHF. '+TOTAL_84,'<button type="button" class="linkbtn" data-act="apercu">Essayer une étape avant de choisir</button>'],['relais','Passer le relais','49 CHF','une seule fois',F_TXT.relais.c[0],'<button type="button" class="linkbtn" data-act="rl" data-k="essai">Préparer les 3 choses à savoir, pour essayer</button>']].map(x=>'<li><div class="h"><b>'+x[1]+'</b><span class="prix">'+x[2]+(x[3]?' <small>'+x[3]+'</small>':'')+'</span></div><p class="acc-benef">'+F_TXT[x[0]].b+'</p><p>'+x[4]+'</p>'+x[5]+'</li>').join('')+'</ul>'+'<button type="button" class="btn" data-act="peek-plans">Voir les 3 offres en détail</button>'+(venteDemo()?'<button type="button" class="linkbtn acc-offrir" data-act="cadeau">Offrir à un parent</button>':'');
   /* Les questions qu'un parent se pose avant de commencer. */
   const Q=[
     ['Faut-il créer un compte ?','Non. Il n’y a ni compte ni mot de passe. Votre espace se crée sur votre appareil dès votre premier geste, et vous pouvez ensuite le personnaliser si vous le souhaitez.'],
@@ -870,18 +880,24 @@ function viewIntro(){
   /* Le premier écran, « le carnet sur la table » : la phrase d'accueil en grand, une question, et 3 réponses qui tiennent chacune en un geste.
      À côté, un sac de week-end et une fiche de relais d'exemple, que l'on ouvre d'un toucher. Le nom de l'espace et le SOS restent en haut de l'écran. */
   return '<main id="main" tabindex="-1" class="view intro" style="padding-top:0">'+
-    '<div class="hbar bleed"><span class="wordmark">'+LOGO+'<span>Parent écouté,<small>parent éclairé</small></span></span><button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></div>'+
-    '<div class="seuil" id="accueil"><div class="haut-texte">'+
-    '<p class="pour">Pour la mère ou le père d’une personne en situation de handicap</p>'+
+    '<div class="hbar bleed"><span class="wordmark">'+LOGO+'<span>Parent écouté,<small>parent éclairé</small></span></span>'+
+    '<button type="button" class="sos" data-act="go" data-view="sos">'+I.alert+'SOS</button></div>'+
+    /* Le premier écran. L'accroche d'Antonio ouvre la page, et la question adressée au parent en est le point d'attention : elle est écrite en grand,
+       juste au-dessus des 3 réponses, qui s'ouvrent chacune d'un geste. Viennent ensuite l'invitation au relais et la fiche d'exemple
+       (à droite sur un ordinateur). Le film reste facultatif, plus bas : un parent en difficulté agit sans l'avoir regardé. */
+    '<div class="seuil" id="accueil"><div class="haut-texte">'+revenu+
+    '<p class="pour">Pour les parents d’un enfant, d’un ado ou d’un adulte en situation de handicap</p>'+
     '<h1>On vous demande souvent comment va votre enfant. <span class="ici">Ici, on commence par vous.</span></h1>'+
-    '<p class="besoin-l"><span class="besoin">'+DEP_Q.replace(/ (\S+) \?$/,' <span class="nb">$1 ?</span>')+'</span></p>'+
-    portes(true)+filmCmdHtml()+'</div>'+
-    nomSensHtml()+
+    '<h2 class="besoin-q" id="besoin-q">De quoi <span class="nb">auriez-vous</span> besoin <span class="nb">aujourd’hui\u00a0?</span></h2>'+
+    portes(true,'besoin-q')+
+    '<p class="rassure">'+(SITE?(venteDemo()?'Version de test, gratuite et sans compte.':'Ces 3 aides sont gratuites et sans compte.')+' Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div>'+
     tableHtml()+
-    '<div class="haut-suite">'+
+    filmCmdHtml()+
+    nomSensHtml()+
+    /* Sous le premier écran : le parcours de 6 mois. Quand la bande « Vous revoilà » propose déjà de le reprendre, il n'est pas répété ici. */
+    (repr&&!br?'':'<div class="haut-suite">'+
     (repr?'<button type="button" class="voie" data-act="step" data-i="'+cur+'">'+I.path+'<span>Reprendre mon parcours</span></button>':'<button type="button" class="voie" data-act="entrer" data-v="parcours">'+I.path+'<span>Commencer le parcours de 6 mois</span></button>')+
-    (membre?'<button type="button" class="voie" data-act="entrer" data-v="today">'+I.sun2+'<span>Ouvrir mon espace</span></button>':'')+
-    '<p class="rassure">'+(SITE?'Version de test, gratuite et sans compte. Ce que vous écrivez reste sur votre appareil.':'Gratuit et sans compte. Vos notes restent sur votre appareil.')+'</p></div></div>'+
+    '</div>')+'</div>'+
     sec('dose','Chaque matin, une dose de lumière','Voici celle d’aujourd’hui. Demain, une autre vous attendra.',dose)+
     sec('outils','Des pistes pour les jours difficiles','Vous y trouvez '+SITS.length+' situations de la vraie vie, avec des pistes à essayer dès ce soir. Chaque fiche se lit en 2 minutes'+(SITE?' et s’envoie à quelqu’un qui compte pour vous.':'.'),scenes+pictos)+
     sec('depot','Un endroit pour déposer ce qui pèse',SITE?'Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. Vous gardez vos mots pour vous, ou vous préparez comment les dire à quelqu’un. En retour, vous recevez une question qui ouvre et une lumière.':'Vous écrivez ce que vous avez sur le cœur, sans donner de prénom. En retour, vous recevez une question qui ouvre et une lumière.',depot)+
@@ -889,11 +905,11 @@ function viewIntro(){
     sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+'<button type="button" class="btn acc-essai" data-act="apercu">'+I.path+'Essayer cette étape, en 3 minutes</button>'+mois+vecu+allerParcours)+
     sec('relais','Passer le relais, l’esprit plus léger','Un week-end chez un proche, une soirée, une première nuit ailleurs. Vous préparez une page pour la personne qui garde votre enfant, avec vos mots. Elle sait l’essentiel en 1 minute.',rlVitrineHtml())+
     '<section class="voice" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à 10 ans, je suis travailleur social depuis mes 19 ans et je suis père de 3 enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><span class="who-tx"><b>Antonio Company</b><small>'+ROLE_A+'</small></span><button type="button" class="btn small" data-act="peek-about">Lire mon histoire</button></div></section>'+
-    sec('formules','Vous commencez gratuitement','Ensuite, vous payez une fois ce qui vous sert, sans abonnement. Voici les 3 offres, avec les prix prévus pour la Suisse. Dans cette '+V_NOM+', aucun montant réel n’est débité.',plans)+
+    sec('formules','Vous commencez gratuitement','Ensuite, vous payez une fois ce qui vous sert, sans abonnement. Voici les 3 offres, avec les prix prévus pour la Suisse. '+demoPaie(),plans)+
     sec('faq','Vos questions','',faq)+
     '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+PHOTO_DIR+'eau-g.webp" alt="" width="1120" height="840" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
     '<p class="hint" style="text-align:center">'+priv+'</p>'+
-    (ESSAI?'<p class="hint essai-l" style="text-align:center">Vous êtes sur une version d’essai, à une adresse à part. Le site habituel ne change pas.</p>':'')+
+    (ESSAI?'<p class="hint essai-l" style="text-align:center">Vous êtes sur une '+NOM_ESSAI+', à une adresse à part. Le site habituel ne change pas.</p>':'')+
     '<div class="cta-flot">'+cta(false)+'</div></main>'+
     '<footer class="foot"><button type="button" class="linkbtn" data-act="peek-plans">Les 3 offres</button>'+(SITE?'<a href="'+RACINE+'fiches/" data-act="fiches">Les situations</a><a href="'+RACINE+'transmettre/" data-act="transmettre">Une page à transmettre</a><a href="'+RACINE+'confidentialite.html">Confidentialité</a><a href="'+RACINE+'conditions.html">Conditions générales</a>'+(MENTIONS?'<a href="'+RACINE+'mentions-legales.html">Mentions légales</a>':''):'')+'</footer>';
 }
@@ -950,7 +966,7 @@ function viewToday(){
   /* À la visite qui suit l'essai du parcours, le parent voit d'abord son propre geste et « Reprendre ici ». Une fois repris, la carte se range sous la dose.
      Le retour d'un relais, s'il est attendu, se montre aussi tout de suite. */
   const repr=repriseHtml(),reprHaut=!!repr&&!com().rp;
-  html+=revoila()+portes(false)+(reprHaut?repr:'')+rlRappelHtml();
+  html+=revoila()+portes(false)+(reprHaut?repr:'')+rlRappelHtml()+rlBrouillonHtml();
   html+='<div class="duo"><div class="duo-a">';
   html+='<div class="dose reveal d1"><span class="label">'+(new Date().getDay()===0?'Dose spéciale du dimanche':'La dose de lumière intérieure')+'</span><p>'+esc(doseText())+'</p>'+(d.doseDate===t&&d.doseText?'<span class="sig">Écrite pour vous par une intelligence artificielle, dans l’esprit d’Antonio</span>':'<div class="sigrow"><span class="sig">Antonio<button type="button" class="qui-b" data-act="voix" aria-label="Qui écrit cette dose ?">'+I.info+'</button></span><button type="button" class="linkbtn" data-act="go" data-view="about">Lire mon histoire</button></div>')+
     (rd&&state.sample?(can('parcours')?'<div class="row"><button type="button" class="btn small" data-act="dose-perso"'+(state.doseBusy?' disabled':'')+'>'+I.sun2+(state.doseBusy?'Un instant…':(d.doseDate===t?'Une autre dose pour moi':'Ma dose, d’après ce que j’ai déposé'))+'</button></div>':'<div class="row"><button type="button" class="btn small" data-act="upgrade" data-f="dose">'+I.lock+'Ma dose personnalisée</button></div>'):'')+

@@ -4,6 +4,7 @@
 # Les vrais outils (outils/deposer.sh puis outils/verifier.sh) sont joués tels quels, avec seulement d'autres réglages (outils/reglages.env).
 #
 #   repet.sh depart              remet le serveur de répétition dans l'état du site en ligne avant le 22 novembre (branche avant-publication-2026-11-22)
+#   repet.sh depart-actuel [ref]  remet le serveur de répétition dans l'état de la branche publiée (par défaut origin/infomaniak)
 #   repet.sh joue [dossier]      copie outils/ et site/ de la branche (par défaut /home/claude/pub/infomaniak) et joue le dépôt puis le contrôle
 #   repet.sh arret               arrête les 2 serveurs
 set -u
@@ -27,6 +28,21 @@ case "${1:-}" in
     (cd $R/serveur && find . -type f | LC_ALL=C sort | xargs sha256sum) > $R/depart.sha
     serveurs
     echo "serveur de répétition : $(find $R/serveur -type f | wc -l) fichiers, $(du -sh $R/serveur | cut -f1), dont essai/ $(find $R/serveur/essai -type f | wc -l) fichiers"
+    ;;
+  depart-actuel)
+    # Le serveur de répétition dans l'état du site en ligne aujourd'hui : ce que porte la branche publiée (par défaut origin/infomaniak).
+    REF="${2:-origin/infomaniak}"
+    pkill -f "repet/serveur-http.js" 2>/dev/null; pkill -f "repet/serveur-ftp.py" 2>/dev/null
+    rm -rf $R; mkdir -p $R/serveur
+    git -C /home/claude/pub/infomaniak archive "$REF" site | tar -x -C $R/serveur --strip-components=1
+    { printf '# Reglages poses par l hebergeur (repetition)\nOptions -Indexes\n'
+      echo "# >>> parent-ecoute.ch : debut (gere par la mise en ligne automatique, ne pas modifier a la main)"
+      git -C /home/claude/pub/infomaniak show "$REF":outils/htaccess-bloc.txt | tr -d '\r'
+      echo "# <<< parent-ecoute.ch : fin"; } > $R/serveur/.htaccess
+    cp $R/serveur/.htaccess $R/htaccess.depart
+    (cd $R/serveur && find . -type f | LC_ALL=C sort | xargs sha256sum) > $R/depart.sha
+    serveurs
+    echo "serveur de répétition, état de $REF : $(find $R/serveur -type f | wc -l) fichiers, $(du -sh $R/serveur | cut -f1)"
     ;;
   joue)
     B="${2:-/home/claude/pub/infomaniak}"
