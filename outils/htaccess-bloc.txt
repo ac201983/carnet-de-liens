@@ -14,9 +14,13 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
 Header always set X-Frame-Options "DENY"
 </IfModule>
 
-# Une seule adresse : https://parent-ecoute.ch, sans www et toujours avec le cadenas
+# Une seule adresse : https://parent-ecoute.ch, sans www et toujours avec le cadenas.
+# Avant cela, les anciennes adresses de la version d'essai (retiree le 26 novembre 2026) menent a la meme page du site :
+# un lien deja envoye (une fiche, une fiche de relais, le film) continue de s'ouvrir. Le renvoi est provisoire (302),
+# pour qu'aucun navigateur ne le retienne si une version d'essai revenait un jour a cette adresse.
 <IfModule mod_rewrite.c>
 RewriteEngine On
+RewriteRule ^essai(?:/(.*))?$ https://parent-ecoute.ch/$1 [R=302,L]
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteCond %{REQUEST_URI} !^/\.well-known/
