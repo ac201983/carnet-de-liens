@@ -90,72 +90,94 @@ note "Adresses" \
   "$(vue "plan du site" "$adresse/sitemap.xml")" \
   "$(vue "robots" "$adresse/robots.txt")"
 
-# 3 bis. La version d'essai, quand il y en a une : son accueil, une fiche ouverte par son adresse (avec et sans la barre finale), son image d'aperçu
-if [ -f site/essai/index.html ]; then
-  fiche="essai/fiches/quand-il-ou-elle-vit-ailleurs"
+# 3 bis. Ce que le site contient depuis le 26 novembre 2026 : tout ce qui avait été mis au point dans la version d'essai.
+#        Les situations ouvertes par leur adresse (avec et sans la barre finale), la page du relais, le son, le film et la capsule.
+if [ -f site/fiches/index.html ]; then
+  fiche="fiches/quand-il-ou-elle-vit-ailleurs"
   # Chaque page est d'abord enregistrée, puis lue. Chercher dans ce que curl envoie au fil de l'eau coupait la lecture dès le premier mot trouvé,
   # et la note disait « non » pour une consigne pourtant bien présente en haut de page.
-  va -o "$tmp/essai-fiche" "$adresse/$fiche/" 2>/dev/null || true
-  va -o "$tmp/essai-accueil" "$adresse/essai/" 2>/dev/null || true
-  titre="non"; grep -q '<h1[^>]*>Quand il ou elle vit ailleurs</h1>' "$tmp/essai-fiche" 2>/dev/null && titre="oui"
-  consigne="non"; grep -q 'name="robots" content="noindex,nofollow"' "$tmp/essai-accueil" 2>/dev/null && consigne="oui"
-  note "Version d'essai" \
-    "$(vue "accueil de l'essai" "$adresse/essai/") | consigne noindex : $consigne" \
-    "$(vue "liste des situations" "$adresse/essai/fiches/")" \
+  va -o "$tmp/fiche" "$adresse/$fiche/" 2>/dev/null || true
+  va -o "$tmp/accueil" "$adresse/" 2>/dev/null || true
+  titre="non"; grep -q '<h1[^>]*>Quand il ou elle vit ailleurs</h1>' "$tmp/fiche" 2>/dev/null && titre="oui"
+  consigne="non"; grep -q 'name="robots" content="index,follow"' "$tmp/accueil" 2>/dev/null && consigne="oui"
+  note "Les situations et le relais" \
+    "accueil | consigne index,follow : $consigne" \
+    "$(vue "liste des situations" "$adresse/fiches/")" \
     "$(vue "une fiche par son adresse" "$adresse/$fiche/") | la fiche est écrite dans la page : $titre" \
     "$(vue "la même sans barre finale" "$adresse/$fiche")" \
-    "$(vue "image d'aperçu de la fiche" "$adresse/essai/img/fiches/quand-il-ou-elle-vit-ailleurs.jpg")" \
-    "$(vue "tableau de bord dans l'essai (ne doit pas exister)" "$adresse/essai/antonio/")"
-  # Le son de l'étang : les fichiers répondent-ils, avec le bon type, et le serveur sait-il en envoyer un morceau seulement ?
-  # (le lecteur audio ordinaire, qui sert de secours pour l'instant de la dose sur les anciens iPhone, lit le fichier par morceaux)
-  if [ -f site/essai/son/notes.mp3 ]; then
-    morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/essai/son/instant.mp3" 2>/dev/null \
-      | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires)' | tr '\n' ' ')" || true
-    note "Le son de l'étang" \
-      "$(vue "les notes de piano de la respiration" "$adresse/essai/son/notes.mp3")" \
-      "$(vue "la boucle d'eau de la respiration" "$adresse/essai/son/eau.mp3")" \
-      "$(vue "l'instant de 40 secondes" "$adresse/essai/son/instant.mp3")" \
-      "$(vue "l'ancien morceau de 2 minutes (ne doit plus exister : 404 attendu)" "$adresse/essai/son/etang.mp3")" \
-      "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
+    "$(vue "image d'aperçu de la fiche" "$adresse/img/fiches/quand-il-ou-elle-vit-ailleurs.jpg")" \
+    "$(vue "la page du relais, celle qu'ouvre un proche" "$adresse/relais/")" \
+    "$(vue "la page à transmettre à une famille" "$adresse/transmettre/")" \
+    "$(vue "l'ancienne adresse de l'atelier" "$adresse/atelier/")"
+fi
+# Le son de l'étang : les fichiers répondent-ils, avec le bon type, et le serveur sait-il en envoyer un morceau seulement ?
+# (le lecteur audio ordinaire, qui sert de secours pour l'instant de la dose sur les anciens iPhone, lit le fichier par morceaux)
+if [ -f site/son/notes.mp3 ]; then
+  morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/son/instant.mp3" 2>/dev/null \
+    | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires)' | tr '\n' ' ')" || true
+  note "Le son de l'étang" \
+    "$(vue "les notes de piano de la respiration" "$adresse/son/notes.mp3")" \
+    "$(vue "la boucle d'eau de la respiration" "$adresse/son/eau.mp3")" \
+    "$(vue "l'instant de 40 secondes" "$adresse/son/instant.mp3")" \
+    "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
+fi
+# Le film de présentation « Ce qu'on ne dit pas par SMS » : ses fichiers répondent-ils, annoncés comme des vidéos, et le serveur sait-il en envoyer un morceau seulement ?
+# (un iPhone ne lit une vidéo que si le serveur sait la donner par morceaux)
+if [ -f site/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4 ]; then
+  morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" 2>/dev/null \
+    | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires|x-content-type-options)' | tr '\n' ' ')" || true
+  note "Le film de présentation" \
+    "$(vue "le film vertical" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
+    "$(vue "le film horizontal" "$adresse/film/ce-quon-ne-dit-pas-par-sms-horizontal.mp4" -I)" \
+    "$(vue "la bande-annonce verticale de 30 secondes, à télécharger" "$adresse/film/ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4" -I)" \
+    "$(vue "les crédits du film" "$adresse/film/credits.txt")" \
+    "$(vue "l'image d'aperçu" "$adresse/film/apercu-film.webp")" \
+    "$(vue "un ancien montage gardé pour comparer dans l'essai (ne doit pas exister ici : 404 attendu)" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical-version-2.mp4" -I)" \
+    "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
+fi
+# La capsule de respiration « Et vous ? » (35 secondes)
+if [ -f site/film/et-vous-vertical.mp4 ]; then
+  morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/film/et-vous-vertical.mp4" 2>/dev/null \
+    | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires|x-content-type-options)' | tr '\n' ' ')" || true
+  note "La capsule de respiration" \
+    "$(vue "le film vertical" "$adresse/film/et-vous-vertical.mp4" -I)" \
+    "$(vue "le film horizontal" "$adresse/film/et-vous-horizontal.mp4" -I)" \
+    "$(vue "l'export vertical pour Instagram, à télécharger" "$adresse/film/et-vous-instagram.mp4" -I)" \
+    "$(vue "l'image d'aperçu" "$adresse/film/apercu.webp")" \
+    "$(vue "l'extrait de 5 secondes de l'essai (ne doit pas exister ici : 404 attendu)" "$adresse/film/et-vous-raccord-5s.mp4" -I)" \
+    "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
+fi
+
+# 3 ter. L'ancienne version d'essai (…/essai/). Tout son contenu a été publié sur le site le 26 novembre 2026, puis elle a été retirée.
+#        Quand les réglages du serveur portent le renvoi (outils/htaccess-bloc.txt), chacune de ses anciennes adresses doit mener à la même page du site :
+#        les liens déjà envoyés (une fiche, une fiche de relais, le film) continuent ainsi de s'ouvrir. Sans ce renvoi, on constate seulement.
+: > "$tmp/renvois-faux"
+renvoie() {   # renvoie "nom" chemin adresse-attendue
+  local r code vers
+  r="$(va -o /dev/null -w '%{http_code}|%{redirect_url}' "$adresse/$2" 2>/dev/null)" || true
+  IFS='|' read -r code vers <<< "$r"
+  if [ "$code" = 302 ] && [ "$vers" = "$3" ]; then
+    printf '%s : 302, renvoie vers %s' "$1" "$vers"
+  else
+    printf '%s : %s%s | ATTENDU : 302 vers %s' "$1" "${code:-pas de réponse}" "${vers:+, renvoie vers $vers}" "$3"
+    echo "$2" >> "$tmp/renvois-faux"
   fi
-  # Le film de présentation « Ce qu'on ne dit pas par SMS » : ses fichiers répondent-ils, annoncés comme des vidéos, et le serveur sait-il en envoyer un morceau seulement ?
-  if [ -f site/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4 ]; then
-    morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" 2>/dev/null \
-      | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires|x-content-type-options)' | tr '\n' ' ')" || true
-    note "Le film de présentation" \
-      "$(vue "le film vertical" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
-      "$(vue "le film horizontal" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal.mp4" -I)" \
-      "$(vue "la bande-annonce verticale de 30 secondes, à télécharger" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4" -I)" \
-      "$(vue "les crédits du film" "$adresse/essai/film/credits.txt")" \
-      "$(vue "le premier montage vertical, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical-version-1.mp4" -I)" \
-      "$(vue "le premier montage horizontal, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal-version-1.mp4" -I)" \
-      "$(vue "le premier montage pour Instagram, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram-version-1.mp4" -I)" \
-      "$(vue "le montage du 20 novembre vertical, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-vertical-version-2.mp4" -I)" \
-      "$(vue "le montage du 20 novembre horizontal, gardé en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-horizontal-version-2.mp4" -I)" \
-      "$(vue "la bande-annonce du 20 novembre, gardée en sauvegarde" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-bande-annonce-version-2.mp4" -I)" \
-      "$(vue "l'ancienne adresse de l'export pour Instagram (ne doit plus exister : 404 attendu)" "$adresse/essai/film/ce-quon-ne-dit-pas-par-sms-instagram.mp4" -I)" \
-      "$(vue "l'image d'aperçu" "$adresse/essai/film/apercu-film.webp")" \
-      "$(vue "le film à l'adresse du site public (ne doit pas exister : 404 attendu)" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
-      "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
-  fi
-  # La capsule de respiration « Et vous ? » (35 secondes) : ses fichiers répondent-ils, annoncés comme des vidéos, et le serveur sait-il en envoyer un morceau seulement ?
-  # (un iPhone ne lit une vidéo que si le serveur sait la donner par morceaux)
-  if [ -f site/essai/film/et-vous-vertical.mp4 ]; then
-    morceau="$(va -D - -o /dev/null -H 'Range: bytes=0-1023' "$adresse/essai/film/et-vous-vertical.mp4" 2>/dev/null \
-      | tr -d '\r' | grep -i -E '^(http|content-type|content-range|accept-ranges|content-length|cache-control|expires|x-content-type-options)' | tr '\n' ' ')" || true
-    note "La capsule de respiration" \
-      "$(vue "le film vertical" "$adresse/essai/film/et-vous-vertical.mp4" -I)" \
-      "$(vue "le film horizontal" "$adresse/essai/film/et-vous-horizontal.mp4" -I)" \
-      "$(vue "l'extrait de 5 secondes" "$adresse/essai/film/et-vous-raccord-5s.mp4" -I)" \
-      "$(vue "la première version du film vertical, gardée pour comparer" "$adresse/essai/film/et-vous-vertical-version-1.mp4" -I)" \
-      "$(vue "l'export vertical pour Instagram, à télécharger" "$adresse/essai/film/et-vous-instagram.mp4" -I)" \
-      "$(vue "la version 2 du film vertical, gardée pour comparer" "$adresse/essai/film/et-vous-vertical-version-2.mp4" -I)" \
-      "$(vue "la version 1 du film horizontal, gardée pour comparer" "$adresse/essai/film/et-vous-horizontal-version-1.mp4" -I)" \
-      "$(vue "la version 2 du film horizontal, gardée pour comparer" "$adresse/essai/film/et-vous-horizontal-version-2.mp4" -I)" \
-      "$(vue "l'image d'aperçu" "$adresse/essai/film/apercu.webp")" \
-      "$(vue "le film à l'adresse du site public (ne doit pas exister : 404 attendu)" "$adresse/film/et-vous-vertical.mp4" -I)" \
-      "un morceau du fichier seulement (réponse attendue : 206) : ${morceau:-pas de réponse}"
-  fi
+}
+renvoi_essai=0; grep -q '^RewriteRule \^essai' outils/htaccess-bloc.txt 2>/dev/null && renvoi_essai=1
+if [ "$renvoi_essai" = 1 ]; then
+  note "Anciennes adresses de la version d'essai" \
+    "$(renvoie "l'accueil de l'essai" "essai/" "$adresse/")" \
+    "$(renvoie "le même sans barre finale" "essai" "$adresse/")" \
+    "$(renvoie "une fiche" "essai/fiches/quand-il-ou-elle-vit-ailleurs/" "$adresse/fiches/quand-il-ou-elle-vit-ailleurs/")" \
+    "$(renvoie "la page du relais, celle qu'ouvre un proche" "essai/relais/" "$adresse/relais/")" \
+    "$(renvoie "la page à transmettre" "essai/transmettre/" "$adresse/transmettre/")" \
+    "$(renvoie "le film vertical" "essai/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" "$adresse/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4")" \
+    "$(renvoie "le script de l'essai" "essai/app.js" "$adresse/app.js")" \
+    "$(vue "une adresse qui commence seulement par les mêmes lettres (404 attendu, pas de renvoi)" "$adresse/essais")"
+else
+  note "Ancienne version d'essai" \
+    "$(vue "l'accueil de l'essai" "$adresse/essai/")" \
+    "Le renvoi de ses anciennes adresses vers le site n'est pas encore dans les réglages du serveur."
 fi
 
 # 4. Les en-têtes de la page d'accueil
@@ -187,6 +209,10 @@ if [ "$depose" = 1 ]; then
   fi
   if [ -n "$differents" ]; then
     echo "::error title=Site incomplet::Des fichiers en ligne ne correspondent pas à ceux de site/ :$differents"
+    exit 1
+  fi
+  if [ -s "$tmp/renvois-faux" ]; then
+    echo "::error title=Anciennes adresses de l'essai::Ces anciennes adresses de la version d'essai ne renvoient pas vers la même page du site : $(tr '\n' ' ' < "$tmp/renvois-faux")"
     exit 1
   fi
 fi

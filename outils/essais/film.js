@@ -1,4 +1,4 @@
-// Les 2 films de la version d'essai, comme les vivrait un parent.
+// Les 2 films, comme les vivrait un parent. Jusqu'au 25 novembre 2026 ils n'existaient que dans la version d'essai. Depuis le 26, ils sont sur le site officiel.
 // « Ce qu'on ne dit pas par SMS » (1 minute 47, montage cinématographique du 20 novembre 2026 au soir) est le film de présentation : l'accueil le propose avec 2 boutons. « Et vous ? » (35 secondes) est la capsule de respiration : elle garde ses fichiers et son adresse, …/#capsule.
 //   - à l'arrivée sur l'accueil, rien des films n'est chargé à part une petite image, et « Souffler 2 minutes » est là tout de suite ;
 //   - le film et ses 2 boutons, « Regarder avec la musique » et « Regarder en silence », viennent juste après les 3 portes ;
@@ -26,11 +26,14 @@ const net = s => (s || '').split(String.fromCharCode(160)).join(' ').replace(/\s
 const FORMATS = [['téléphone', { viewport: { width: 390, height: 664 }, hasTouch: true, deviceScaleFactor: 2 }, 'vertical', [1080, 1920]], ['ordinateur', { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }, 'horizontal', [1920, 1080]]];
 const FILM = 'ce-quon-ne-dit-pas-par-sms', DUREE = 107.33;              // le film de présentation : le début du nom de ses fichiers, sa durée en secondes (3220 images)
 const AVEC = A('film', '[data-v="son"]'), SANS = A('film', '[data-v="silence"]');   // les 2 boutons de l'accueil
-const FICHIERS = [FILM + '-vertical.mp4', FILM + '-horizontal.mp4', 'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4'];
+// Une version d'essai porte en plus l'extrait de 5 secondes et les versions gardées pour comparer, qui ne servent qu'à juger un montage. Le site officiel ne les publie pas.
+const ESSAI_T = /\/essai\/$/.test(BASE);
+const FICHIERS = [FILM + '-vertical.mp4', FILM + '-horizontal.mp4', 'et-vous-vertical.mp4', 'et-vous-horizontal.mp4'].concat(ESSAI_T ? ['et-vous-raccord-5s.mp4'] : []);
 // La première version du film vertical (celle du 20 novembre à 4 heures, avant la correction de l'entrée dans « Souffler ») reste à sa propre adresse, pour comparer.
-const GARDES = ['et-vous-vertical-version-1.mp4', 'et-vous-vertical-version-2.mp4', 'et-vous-horizontal-version-1.mp4', 'et-vous-horizontal-version-2.mp4',
+const GARDES_TOUS = ['et-vous-vertical-version-1.mp4', 'et-vous-vertical-version-2.mp4', 'et-vous-horizontal-version-1.mp4', 'et-vous-horizontal-version-2.mp4',
   FILM + '-vertical-version-1.mp4', FILM + '-horizontal-version-1.mp4', FILM + '-instagram-version-1.mp4',     // le premier montage du film de présentation, gardé en sauvegarde
   FILM + '-vertical-version-2.mp4', FILM + '-horizontal-version-2.mp4', FILM + '-bande-annonce-version-2.mp4'];  // le montage du 20 novembre 2026 et sa bande-annonce, gardés en sauvegarde
+const GARDES = ESSAI_T ? GARDES_TOUS : [];
 // V3 : les versions 2 (le film vertical du 20 novembre à 7 heures, et le film horizontal corrigé de la même manière) et la version 1 du film horizontal sont gardées de même.
 // La bande-annonce verticale de 30 secondes et l'export de la capsule pour Instagram : ils ne sont pas dans le lecteur, ils ont seulement leur adresse, pour être téléchargés.
 const TELECHARGES = [FILM + '-bande-annonce.mp4', 'et-vous-instagram.mp4'];
@@ -142,6 +145,10 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
       const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); const h = r ? r.headers() : {};
       ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || ''), '1. ' + f + ' : la version gardée pour comparer répond à sa propre adresse ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
     }
+    if (!ESSAI_T) for (const f of GARDES_TOUS.concat(['et-vous-raccord-5s.mp4'])) {   // sur le site officiel, aucun montage écarté n'est publié
+      const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null);
+      ok(r && r.status() === 404, '1. ' + f + ' : un fichier de comparaison n’est pas publié sur le site officiel ' + (r ? r.status() : 'pas de réponse'));
+    }
     for (const f of TELECHARGES) {
       const r = await api.get(APP + 'film/' + f, { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null); const h = r ? r.headers() : {}; const total = Number((/\/(\d+)$/.exec(h['content-range'] || '') || [])[1] || 0);
       ok(r && r.status() === 206 && /^video\/mp4/.test(h['content-type'] || '') && total > 3000000, '1. ' + f + ' : ' + (f.indexOf(FILM) === 0 ? 'la bande-annonce' : 'l’export pour Instagram') + ' répond à son adresse, prêt au téléchargement ' + JSON.stringify([r && r.status(), h['content-type'], h['content-range']]));
@@ -149,7 +156,7 @@ const finNaturelle = (page, delai = 150000) => page.evaluate(delai => new Promis
     }
     { // les crédits du film : un texte, à sa propre adresse. L'ancienne adresse de l'export pour Instagram du premier montage n'existe plus (il est gardé sous son nom de sauvegarde).
       const r = await api.get(APP + 'film/credits.txt').catch(() => null); const t = r && r.ok() ? await r.text() : '';
-      ok(r && r.status() === 200 && /^text\/plain/.test(r.headers()['content-type'] || '') && /Musique originale/.test(t) && /Alexander Holm/.test(t) && /Attribution 3\.0/.test(t) && /Versilian Studios/.test(t) && /Frank Wen/.test(t) && /Open Font License/.test(t), '1. credits.txt : les crédits du film sont servis, comme un texte ' + JSON.stringify([r && r.status(), r && r.headers()['content-type'], t.length]));
+      ok(r && r.status() === 200 && /^text\/plain/.test(r.headers()['content-type'] || '') && /Musique originale/.test(t) && /Alexander Holm/.test(t) && /Attribution 3\.0/.test(t) && /Versilian Studios/.test(t) && /Frank Wen/.test(t) === ESSAI_T && /Open Font License/.test(t), '1. credits.txt : les crédits du film sont servis, comme un texte, avec les instruments des seuls fichiers publiés ici ' + JSON.stringify([r && r.status(), r && r.headers()['content-type'], t.length]));
       const a = await api.get(APP + 'film/' + FILM + '-instagram.mp4', { headers: { Range: 'bytes=0-1023', 'Accept-Encoding': 'identity' } }).catch(() => null);
       ok(a && a.status() === 404, '1. l’ancienne adresse de l’export pour Instagram n’existe plus ' + (a ? a.status() : 'pas de réponse')); }
     for (const f of ['apercu-film.webp', 'affiche-film-verticale.webp', 'affiche-film-horizontale.webp', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp']) {

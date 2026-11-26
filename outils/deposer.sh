@@ -2,7 +2,7 @@
 # Dépose le contenu de site/ dans le dossier du site, chez Infomaniak.
 # Connexion FTP chiffrée (TLS explicite, port 21). Le mot de passe vient du secret FTP_PASSWORD du dépôt.
 # Ce script n'envoie pas les fichiers qu'Infomaniak gère lui-même (.htaccess, .user.ini, .infomaniak-*).
-# Il ne retire du serveur que les fichiers nommés un par un dans outils/a-supprimer.txt.
+# Il ne retire du serveur que ce qui est nommé dans outils/a-supprimer.txt : des fichiers, un par un, et des dossiers une fois vides.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 . outils/reglages.env
@@ -113,32 +113,77 @@ if [ "${#envoi[@]}" -gt 0 ]; then
 fi
 touch /tmp/depose
 
-# 4. Retirer du serveur les seuls fichiers nommés un par un dans outils/a-supprimer.txt.
-#    Jamais un fichier du site, jamais un fichier d'Infomaniak, jamais un dossier.
-retires=""
+# 4. Retirer du serveur ce qui est nommé dans outils/a-supprimer.txt, et rien d'autre.
+#    Jamais un fichier du site, jamais un fichier d'Infomaniak.
+#    Un nom terminé par une barre (essai/son/) désigne un dossier. Il n'est retiré que s'il est vide : c'est le serveur lui-même
+#    qui refuse de retirer un dossier où il reste quelque chose. Les dossiers passent après les fichiers, les plus profonds d'abord.
+#    Chaque nom est d'abord relu par son adresse publique : ce qui n'existe déjà plus n'est pas redemandé.
+#    Tout part ensuite dans une seule connexion (une connexion par nom, répétée des centaines de fois, ferait travailler le serveur pour rien),
+#    puis chaque nom est relu une seconde fois, pour dire ce qui a réellement disparu.
+repond() { curl --silent --max-time 30 -o /dev/null -w '%{http_code}' "${ADRESSE%/}/$1?c=$RANDOM$RANDOM" 2>/dev/null || true; }
+resume() {   # resume "nom1 nom2 …" : tous les noms s'il y en a peu, sinon leur nombre et les premiers
+  local -a t; read -r -a t <<< "$1"
+  if [ "${#t[@]}" = 0 ]; then printf ' rien'
+  elif [ "${#t[@]}" -le 12 ]; then printf ' %s' "${t[*]}"
+  else printf ' %s noms (%s, …)' "${#t[@]}" "${t[*]:0:4}"; fi
+}
+fichiers=(); dossiers=()
 if [ -f ../outils/a-supprimer.txt ]; then
   while IFS= read -r nom || [ -n "$nom" ]; do
     nom="$(printf '%s' "$nom" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
     case "$nom" in '' | '#'*) continue ;; esac
     case "$nom" in
-      /* | *..* | *' '* | .htaccess | */.htaccess | .user.ini | */.user.ini | .infomaniak* | */.infomaniak*)
+      /* | *..* | *' '* | *'*'* | *'?'* | *//* | .htaccess | */.htaccess | .user.ini | */.user.ini | .infomaniak* | */.infomaniak*)
         echo "::warning title=Suppression refusée::$nom n'est pas un nom que ce script accepte de retirer."
         continue ;;
     esac
-    if [ -e "$nom" ]; then
+    if [ -e "${nom%/}" ]; then
       echo "::warning title=Suppression refusée::$nom fait partie du site."
       continue
     fi
-    # shellcheck disable=SC2086
-    if curl "${commun[@]}" $mode --list-only -Q "DELE ${base#/}$nom" "ftp://$HOTE_FTP/" >/dev/null 2>/tmp/err; then
-      retires="$retires $nom"
-    fi
+    case "$nom" in */) dossiers+=("${nom%/}") ;; *) fichiers+=("$nom") ;; esac
   done < ../outils/a-supprimer.txt
+fi
+# ce qui répond encore en ligne (un renvoi vers une autre adresse ou une réponse 404 veut dire qu'il n'y a plus rien à retirer)
+f_la=(); d_la=0; d_tries=()
+for f in "${fichiers[@]:-}"; do
+  [ -n "$f" ] || continue
+  case "$(repond "$f")" in 404 | 410 | 30?) ;; *) f_la+=("$f") ;; esac
+done
+if [ "${#dossiers[@]}" -gt 0 ]; then
+  mapfile -t d_tries < <(printf '%s\n' "${dossiers[@]}" | awk -F/ '{ print NF "\t" $0 }' | LC_ALL=C sort -t "$(printf '\t')" -k1,1nr -k2,2 | cut -f2-)
+  for d in "${d_tries[@]}"; do
+    case "$(repond "$d/")" in 404 | 410 | 30?) ;; *) d_la=$((d_la + 1)) ;; esac
+  done
+fi
+retires=""; restes=""; d_retires=""; d_restes=""
+if [ "${#f_la[@]}" -gt 0 ] || [ "$d_la" -gt 0 ]; then
+  # Dès qu'il reste quelque chose à retirer, tous les dossiers nommés sont redemandés : un dossier sans page d'accueil peut répondre 404
+  # par son adresse alors qu'il existe encore. Demander de retirer un dossier absent ne fait rien.
+  demandes=()
+  for f in "${f_la[@]:-}"; do [ -n "$f" ] && demandes+=(-Q "*DELE ${base#/}$f"); done
+  for d in "${d_tries[@]:-}"; do [ -n "$d" ] && demandes+=(-Q "*RMD ${base#/}$d"); done
+  # shellcheck disable=SC2086
+  if ! curl "${commun[@]}" $mode --max-time 900 --list-only "${demandes[@]}" "ftp://$HOTE_FTP/" >/dev/null 2>/tmp/err; then
+    echo "::warning title=Suppression::La demande de suppression ne s'est pas terminée normalement. Réponse : $(message)."
+  fi
+  for f in "${f_la[@]:-}"; do
+    [ -n "$f" ] || continue
+    c="$(repond "$f")"
+    case "$c" in 404 | 410) retires="$retires $f" ;; *) restes="$restes $f($c)" ;; esac
+  done
+  for d in "${d_tries[@]:-}"; do
+    [ -n "$d" ] || continue
+    c="$(repond "$d/")"
+    case "$c" in 404 | 410) d_retires="$d_retires $d/" ;; *) d_restes="$d_restes $d/($c)" ;; esac
+  done
+  [ -n "$restes" ] && echo "::warning title=Suppression incomplète::Ces fichiers répondent encore après la demande :$(resume "$restes")"
+  [ -n "$d_restes" ] && echo "::warning title=Dossiers encore là::Ces dossiers répondent encore après la demande (un dossier n'est retiré que s'il est vide) :$(resume "$d_restes")"
 fi
 
 arrivee="directement dans le dossier du site"
 [ "$base" != "/" ] && arrivee="à la racine de l'hébergement, puis dans $DOSSIER"
-echo "::notice title=Dépôt::${#a_envoyer[@]} fichiers déposés, $identiques déjà identiques en ligne et laissés tels quels. Le compte arrive $arrivee. Retirés du serveur :${retires:- rien}"
+echo "::notice title=Dépôt::${#a_envoyer[@]} fichiers déposés, $identiques déjà identiques en ligne et laissés tels quels. Le compte arrive $arrivee. Fichiers retirés du serveur :$(resume "$retires"). Dossiers qui ne répondent plus après cette demande :$(resume "$d_retires")"
 
 # 5. Les réglages du serveur. Le fichier .htaccess appartient à Infomaniak : on n'y change rien, on ajoute seulement
 #    à la fin un bloc à nous, entre deux repères (outils/htaccess-bloc.txt). Si le site ne répond plus juste après,

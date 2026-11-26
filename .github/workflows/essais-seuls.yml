@@ -1,4 +1,4 @@
-# Rejoue les essais sur la version d'essai déjà en ligne, sans rien déposer.
+# Rejoue les essais sur le site déjà en ligne, sans rien déposer.
 # Sert à mettre au point les essais eux-mêmes : il suffit de pousser la branche « essais-en-ligne ».
 # Ce fichier ne reçoit aucun mot de passe et ne touche pas au site : il le visite, comme un parent.
 name: Essais en ligne, sans dépôt
@@ -29,5 +29,5 @@ jobs:
           git init -q .
           git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
           git checkout -q FETCH_HEAD
-      - name: Rejouer les parcours sur la version d'essai
+      - name: Rejouer les parcours sur le site en ligne
         run: bash outils/essais-en-ligne.sh ${{ matrix.navigateur }}

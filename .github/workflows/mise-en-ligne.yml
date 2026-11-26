@@ -19,7 +19,7 @@ jobs:
   mise-en-ligne:
     name: parent-ecoute.ch
     runs-on: ubuntu-24.04
-    # 45 minutes : la version d'essai porte plusieurs films de 17 Mo, que le dépôt envoie puis relit en ligne.
+    # 45 minutes : le site porte plusieurs films de 14 à 24 Mo, que le dépôt envoie puis relit en ligne.
     timeout-minutes: 45
     steps:
       - name: Récupérer les fichiers
@@ -50,7 +50,7 @@ jobs:
       - name: Vérifier le site en ligne
         run: bash outils/verifier.sh
 
-  # Quand la branche contient une version d'essai (site/essai/), des parcours de parent y sont rejoués dans de vrais navigateurs,
+  # Après le dépôt, des parcours de parent sont rejoués sur le site en ligne dans de vrais navigateurs,
   # au format téléphone puis ordinateur : Chrome, WebKit (le moteur de Safari) et Firefox, chacun sur sa machine, en même temps.
   # Cette étape ne reçoit aucun mot de passe : elle visite le site comme un parent.
   essais:
@@ -68,5 +68,5 @@ jobs:
           git init -q .
           git fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}"
           git checkout -q FETCH_HEAD
-      - name: Rejouer les parcours sur la version d'essai
+      - name: Rejouer les parcours sur le site en ligne
         run: bash outils/essais-en-ligne.sh ${{ matrix.navigateur }}
