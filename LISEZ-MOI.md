@@ -1,6 +1,6 @@
 # Le site de parent-ecoute.ch
 
-Cette branche contient le site « Parent Écouté, Parent Éclairé » tel qu'il est servi à l'adresse https://parent-ecoute.ch, hébergée en Suisse chez Infomaniak.
+Cette branche contient le site « Parent écouté, parent éclairé » tel qu'il est servi à l'adresse https://parent-ecoute.ch, hébergée en Suisse chez Infomaniak.
 
 ## Comment le site se met à jour
 
@@ -17,6 +17,17 @@ Chaque fois que cette branche change, GitHub dépose le contenu du dossier `site
 - `outils/essais-en-ligne.sh` et `outils/essais/` : après chaque mise en ligne, des parcours de parent sont rejoués sur le site en ligne dans de vrais navigateurs, au format téléphone puis ordinateur. `premier-geste.js` joue 3 parcours dans Chrome. `respiration.js` joue « Souffler 2 minutes » en silence, « Changer de respiration », puis la musique qui guide la respiration (chaque note comparée au mot affiché, jusqu'à la dernière respiration). `finition.js` joue l'instant de la dose, « Accueil » et « Retour ». `lancement.js` joue ce qu'une famille vit avec les 3 offres : la vitrine, les prix et les 2 façons de payer Le parcours, la commande en démonstration (acceptée, refusée, abandonnée, les 6 mensualités qui s'arrêtent après la sixième, l'achat retrouvé), l'outil « Passer le relais » de l'exemple jusqu'à la fiche que le proche ouvre par son lien, la question du retour, le deuxième relais, la réunion, la sauvegarde et la restauration, puis la page à transmettre et la maquette du cadeau. Il vérifie aussi que le SOS, la respiration et « Déposer » ne proposent rien à acheter, et qu'aucune requête ne part vers un autre site. Tout paiement y est simulé : aucun prestataire de paiement n'est branché. `film.js` joue le film de présentation « Ce qu'on ne dit pas par SMS » et la capsule « Et vous ? » : rien du film n'est chargé à l'arrivée à part sa petite image, la commande vient après les 3 portes, le MP4 se lit réellement (le vertical au format téléphone, l'horizontal au format ordinateur), le film démarre en silence avec le bouton « Activer le son » bien visible, les commandes répondent (lire, pause, son, fermer), le lecteur rouvert repart en silence, et la fermeture ou le retour arrière rendent l'accueil à la même place. Tant que le film est en attente (réglage `pret`), `film.js` est le seul essai rejoué. `reprise.js` ouvre le site avec les notes d'un parent venu avant le 26 novembre 2026, telles que l'ancien site les rangeait (un parent inventé, dans `reprise-notes.json`), et vérifie qu'il retrouve tout. `ancien-essai.js` ouvre les anciennes adresses de la version d'essai et vérifie qu'elles mènent à la même page du site. Tous ces essais sauf le premier tournent dans Chrome, WebKit (le moteur de Safari) et Firefox. Chaque navigateur a sa machine, et les 3 tournent en même temps. Les résultats sont écrits en notes sur la page de la mise en ligne. WebKit n'est pas Safari sur un iPhone : l'essai sur un vrai téléphone reste nécessaire.
 - `.github/workflows/mise-en-ligne.yml` : ce qui lance ces scripts.
 - `.github/workflows/essais-seuls.yml` : rejoue les mêmes essais sur le site déjà en ligne, sans rien déposer. Il se lance en poussant la branche `essais-en-ligne` (par exemple `git push origin infomaniak:essais-en-ligne`). Il sert à mettre au point les essais eux-mêmes.
+
+## La préversion
+
+Depuis le 26 novembre 2026, le dossier `site/preversion/` contient une préversion de l'espace, servie à https://parent-ecoute.ch/preversion/. Antonio y essaie sur son téléphone une amélioration de fond avant qu'elle soit publiée. Le site lui-même, à son adresse ordinaire, ne change pas tant qu'il ne l'a pas validée.
+
+- Les moteurs de recherche ne la référencent pas (consigne `noindex,nofollow`), et elle n'est pas dans le plan du site.
+- Ce que l'on y écrit est rangé à part sur l'appareil (`pepe-preversion-v1`). Les notes prises sur le site ne sont pas touchées.
+- La vente y est fermée. Les prix sont affichés, avec « Essayer » et « Me prévenir à l'ouverture ». La commande de démonstration n'y est jouée que par les essais.
+- Elle ne contient pas le tableau de bord d'Antonio, dont le dossier n'est fermé par un mot de passe que sur le site.
+- `outils/verifier.sh` contrôle ces points en ligne. `outils/essais/preversion/trajet.js` y rejoue le trajet d'un parent, « Je découvre, j'essaie, je vois ma fiche », dans Chrome, WebKit et Firefox.
+- Quand une mise en ligne ne change que la préversion, les parcours du site lui-même ne sont pas rejoués : chaque fichier du site vient d'être comparé à celui du dépôt, octet par octet.
 
 ## L'ancienne version d'essai
 

@@ -33,6 +33,15 @@
 #   ancien-essai.js (quand les réglages du serveur portent le renvoi des anciennes adresses de l'essai) :
 #     …/essai/, …/essai/#film, …/essai/#capsule, une fiche, une fiche de relais envoyée à un proche et la page à transmettre
 #     mènent à la même page du site, et ce qui suit le signe # est gardé. Les notes écrites dans l'essai restent sur l'appareil.
+#   preversion/trajet.js (quand la mise en ligne porte une préversion, à l'adresse …/preversion/) :
+#     le trajet « Je découvre, j'essaie, je vois ma fiche » sur 2 téléphones puis sur un ordinateur, comme un parent du site public
+#     (la vente y est fermée) : le premier écran et ses 3 aides, « Et si vous prépariez les trois choses à savoir pour samedi ? »,
+#     les 3 repères écrits dans la fiche, la fiche vue à la place du proche, le moment des 49 CHF sans commande simulée, le brouillon
+#     retrouvé au retour, puis la situation inventée, la réunion, le clavier seul, les animations réduites et le texte agrandi.
+#     Une dernière partie allume le réglage des essais internes pour comparer, mot pour mot, la fiche vue par le parent à celle que le proche ouvre.
+#
+# Quand une mise en ligne ne change que la préversion, les parcours du site lui-même ne sont pas rejoués : le contrôle qui précède
+# (outils/verifier.sh) a comparé chaque fichier du site avec celui du dépôt, octet par octet, et rien n'y a bougé.
 #
 # Le son n'est pas écouté, il est mesuré. Sur une machine sans sortie audio, un navigateur peut ne rien jouer : le test le dit alors en note.
 # WebKit est le moteur de Safari. Ce n'est pas Safari sur un iPhone : l'essai sur un vrai téléphone reste nécessaire.
@@ -59,6 +68,21 @@ grep -q 'const FILM="pret";' site/app.js 2>/dev/null && film=pret
 grep -q 'const FILM="actif";' site/app.js 2>/dev/null && film=actif
 # Les anciennes adresses de la version d'essai sont-elles renvoyées vers le site par les réglages du serveur ?
 renvoi_essai=0; grep -q '^RewriteRule \^essai' outils/htaccess-bloc.txt 2>/dev/null && renvoi_essai=1
+# La mise en ligne porte-t-elle une préversion ?
+preversion=0; [ -f site/preversion/index.html ] && [ -f outils/essais/preversion/trajet.js ] && preversion=1
+# Le site lui-même a-t-il changé dans cette mise en ligne ? On compare avec la mise en ligne d'avant, sans compter le dossier de la préversion.
+# Dans le doute (pas de mise en ligne d'avant, ou comparaison impossible), on fait comme s'il avait changé : tout est rejoué.
+site_change=1
+if [ -n "${GITHUB_SHA:-}" ] && [ -n "${GITHUB_REPOSITORY:-}" ] \
+   && git fetch -q --depth 2 "https://github.com/${GITHUB_REPOSITORY}.git" "${GITHUB_SHA}" 2>/dev/null \
+   && git rev-parse -q --verify FETCH_HEAD~1 >/dev/null 2>&1 \
+   && git diff --quiet FETCH_HEAD~1 FETCH_HEAD -- site outils/htaccess-bloc.txt outils/essais ':(exclude)site/preversion' ':(exclude)outils/essais/preversion' 2>/dev/null; then
+  site_change=0
+fi
+if [ "$site_change" = 0 ] && [ "$preversion" = 0 ]; then
+  echo "::notice title=Essais en ligne dans $nom::Cette mise en ligne ne change ni le site ni une préversion. Il n'y a rien à rejouer."
+  exit 0
+fi
 cd outils/essais
 etape() { echo "$(date -u +%H:%M:%S) $*"; }   # l'heure de chaque préparatif, pour voir dans le journal lequel prend du temps
 # Les machines de GitHub ne sont pas toutes au même endroit. Certaines nuits, depuis certaines d'entre elles, le site répond en plusieurs
@@ -116,6 +140,15 @@ essai() {
     total=1
   fi
 }
+# La préversion d'abord : c'est elle que cette mise en ligne apporte, et son trajet est court.
+if [ "$preversion" = 1 ]; then
+  PEPE_BASE=/preversion/ PEPE_PUBLIC="${ADRESSE%/}/preversion/" PEPE_KEY=pepe-preversion-v1 essai "Préversion · le trajet d'un parent dans $nom" node preversion/trajet.js
+fi
+if [ "$site_change" = 0 ]; then
+  echo "::notice title=Essais en ligne dans $nom::Le site lui-même n'a pas changé dans cette mise en ligne (seule la préversion change). Ses parcours ne sont pas rejoués : chaque fichier du site vient d'être comparé à celui du dépôt, octet par octet."
+  etape "essais : fin"
+  exit "$total"
+fi
 if [ -n "$film" ]; then
   PEPE_FILM="$film" essai "Le film dans $nom" node film.js
   if [ "$film" = pret ]; then

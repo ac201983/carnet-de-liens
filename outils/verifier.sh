@@ -180,6 +180,35 @@ else
     "Le renvoi de ses anciennes adresses vers le site n'est pas encore dans les réglages du serveur."
 fi
 
+# 3 quater. La préversion (…/preversion/) : une copie de travail du site, à une adresse à part, pour qu'Antonio essaie une amélioration
+#           sur son téléphone avant qu'elle soit publiée. Les moteurs de recherche ne doivent pas la référencer, ce qu'on y écrit est rangé
+#           à part sur l'appareil, et elle ne contient pas le tableau de bord d'Antonio, dont le dossier n'est fermé que sur le site.
+: > "$tmp/prev-faux"
+if [ -f site/preversion/index.html ]; then
+  va -o "$tmp/prev" "$adresse/preversion/" 2>/dev/null || true
+  va -o "$tmp/prev-app" "$adresse/preversion/app.js" 2>/dev/null || true
+  va -o "$tmp/plan" "$adresse/sitemap.xml" 2>/dev/null || true
+  consigne="non"; grep -q 'name="robots" content="noindex,nofollow"' "$tmp/prev" 2>/dev/null && consigne="oui"
+  cle="non"; grep -q 'const KEY="pepe-preversion-v1";' "$tmp/prev-app" 2>/dev/null && cle="oui"
+  vente="non"; grep -q 'const VENTE="fermee";' "$tmp/prev-app" 2>/dev/null && vente="oui"
+  plan="non"; grep -q 'preversion' "$tmp/plan" 2>/dev/null && plan="oui"
+  tdb="$(va -o /dev/null -w '%{http_code}' "$adresse/preversion/antonio/" 2>/dev/null)" || true
+  [ "$consigne" = oui ] || echo "la consigne noindex,nofollow manque" >> "$tmp/prev-faux"
+  [ "$cle" = oui ] || echo "le rangement à part manque" >> "$tmp/prev-faux"
+  [ "$vente" = oui ] || echo "la vente n'y est pas fermée" >> "$tmp/prev-faux"
+  [ "$plan" = non ] || echo "elle est citée dans le plan du site" >> "$tmp/prev-faux"
+  # 404 est la réponse attendue. Toute réponse qui ne donne rien à lire (4xx) convient : seule une page servie serait un défaut.
+  case "$tdb" in 4??) ;; *) echo "un tableau de bord y répond ($tdb)" >> "$tmp/prev-faux" ;; esac
+  note "La préversion" \
+    "$(vue "l'accueil de la préversion" "$adresse/preversion/") | consigne noindex,nofollow : $consigne" \
+    "rangement à part sur l'appareil (pepe-preversion-v1) : $cle | vente fermée pour les parents : $vente | citée dans le plan du site : $plan" \
+    "$(vue "son script" "$adresse/preversion/app.js")" \
+    "$(vue "la page du relais, celle qu'ouvre un proche" "$adresse/preversion/relais/")" \
+    "$(vue "une fiche par son adresse" "$adresse/preversion/fiches/quand-il-ou-elle-vit-ailleurs/")" \
+    "$(vue "le film vertical" "$adresse/preversion/film/ce-quon-ne-dit-pas-par-sms-vertical.mp4" -I)" \
+    "$(vue "le tableau de bord (ne doit pas exister ici : 404 attendu)" "$adresse/preversion/antonio/")"
+fi
+
 # 4. Les en-têtes de la page d'accueil
 entetes="$(va -D - -o /dev/null -H 'Accept-Encoding: gzip, br' -w 'http %{http_version}\n' "$adresse/" 2>/dev/null \
   | tr -d '\r' | grep -i -E '^(http|content-type|content-encoding|cache-control|expires|strict-transport-security|x-frame-options|x-content-type-options|referrer-policy|content-security-policy|server|last-modified|etag|alt-svc|vary)' )" || true
@@ -213,6 +242,10 @@ if [ "$depose" = 1 ]; then
   fi
   if [ -s "$tmp/renvois-faux" ]; then
     echo "::error title=Anciennes adresses de l'essai::Ces anciennes adresses de la version d'essai ne renvoient pas vers la même page du site : $(tr '\n' ' ' < "$tmp/renvois-faux")"
+    exit 1
+  fi
+  if [ -s "$tmp/prev-faux" ]; then
+    echo "::error title=Préversion::La préversion en ligne n'est pas ce qu'elle doit être : $(tr '\n' ';' < "$tmp/prev-faux")"
     exit 1
   fi
 fi
