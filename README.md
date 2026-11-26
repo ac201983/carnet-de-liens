@@ -9,8 +9,9 @@ Le dépôt est public : rien ici n'est secret. On n'y met jamais de mot de passe
 | Branche | Ce qu'elle contient | Où cela s'affiche |
 |---|---|---|
 | `sources` | les fichiers de fabrication du site tel qu'il est en ligne | nulle part |
-| `sources-essai` | les fichiers de fabrication de la version d'essai (cette branche), tant qu'elle n'est pas validée | nulle part |
-| `infomaniak` | le site fabriqué pour parent-ecoute.ch, la version d'essai dans `site/essai/`, et ce qui les dépose | https://parent-ecoute.ch et https://parent-ecoute.ch/essai/ |
+| `sources-essai` | la même chose que `sources` depuis le 26 novembre 2026, jour où la version d'essai a été publiée sur le site. Elle servira de nouveau le jour où une version d'essai sera refaite | nulle part |
+| `infomaniak` | le site fabriqué pour parent-ecoute.ch et ce qui le dépose. Jusqu'au 25 novembre 2026, elle contenait aussi la version d'essai, dans `site/essai/` | https://parent-ecoute.ch |
+| `avant-publication-2026-11-22` | le site et la version d'essai tels qu'ils étaient en ligne du 21 au 26 novembre 2026, pour pouvoir revenir en arrière | nulle part |
 | `main` | l'ancienne adresse (GitHub Pages) | https://ac201983.github.io/carnet-de-liens/parent-ecoute/ |
 
 ## Ce qu'il y a ici
@@ -100,6 +101,8 @@ Aucun de ces essais n'écoute : ils mesurent. Le timbre et le plaisir d'écoute 
 
 ## La version d'essai
 
+**Depuis le 26 novembre 2026, il n'y a plus de version d'essai en ligne.** À la demande d'Antonio, tout ce qu'elle contenait a été publié sur le site, ses fichiers ont été retirés du serveur, et ses anciennes adresses renvoient vers la même page du site (voir `outils/officiel/LISEZ-MOI.md`). Ce qui suit décrit comment elle fonctionnait, et sert le jour où il faudra en refaire une. Il faudra d'abord retirer la règle de renvoi de `outils/htaccess-bloc.txt` et les lignes de l'essai de `outils/a-supprimer.txt`, dans la branche `infomaniak`.
+
 Elle sert à essayer une nouvelle version sur un vrai téléphone avant de la publier. Elle vit à une adresse à part, https://parent-ecoute.ch/essai/, que rien ne référence : chaque page porte la consigne `noindex,nofollow` et n'est pas dans le plan du site. Elle range ses notes sous sa propre clé dans le navigateur (`pepe-essai-v1`), donc elle ne touche pas à ce qu'un parent a écrit sur le site habituel. L'Espace Antonio n'y existe pas, parce qu'il n'y serait pas fermé par son mot de passe.
 
 Fabriquer, vérifier, envoyer (dans l'atelier, les scripts de `outils/essai/` sont dans `build/essai/`) :
@@ -117,7 +120,7 @@ cd pub/infomaniak && git add -A && git commit -m "Ce qui change" && git push ori
 
 Dans `finition.js`, l'horloge de la respiration est relevée dans la page, au moment du geste. La relever depuis l'extérieur ajoute le temps que le navigateur d'essai met à cliquer, qui dépasse 1 seconde sur une machine lente.
 
-Publier la version d'essai comme site (seulement quand Antonio l'a essayée et validée) :
+Publier la version d'essai comme site (seulement quand Antonio l'a essayée et validée). C'est ce qui a été fait le 26 novembre 2026, avec la suite `outils/officiel/lot-o.sh` et une répétition sur un faux serveur (`outils/officiel/repet/`) :
 
 1. Fabriquer avec `config.infomaniak.json` dans `infomaniak/site`, rejouer toute la suite (`outils/essai/tout.sh`).
 2. `outils/preparer-infomaniak.sh`, puis enregistrer et envoyer la branche `infomaniak`.
