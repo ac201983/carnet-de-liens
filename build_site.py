@@ -31,12 +31,12 @@ NAME = 'Parent écouté, parent éclairé'
 # Une version d'essai vit dans son propre dossier, avec ses propres notes (une autre clé de rangement dans le navigateur),
 # pour qu'on puisse l'essayer sur le même appareil sans toucher à l'espace habituel. Elle n'est jamais référencée par les moteurs.
 ESSAI = bool(cfg.get('essai'))
-# Le film « Et vous ? » n'est publié que dans la version d'essai : « pret » (lecteur par l'adresse …/#film seulement) ou « actif » (commande sur l'accueil).
+# Le film : « pret » (lecteur par l'adresse …/#film seulement) ou « actif » (commande sur l'accueil).
+# Jusqu'au 25 novembre 2026, il n'était publié que dans la version d'essai, et la fabrication le refusait ailleurs.
+# Le 22 novembre 2026, Antonio a demandé de publier sur le site officiel tout ce que l'essai contenait (publication faite le 26 novembre) : le réglage est accepté partout.
 FILM = (cfg.get('film') or '').strip()
 if FILM not in ('', 'pret', 'actif'):
     raise SystemExit("Réglage « film » inconnu : " + FILM + " (rien, « pret » ou « actif »).")
-if FILM and not ESSAI:
-    raise SystemExit("Le film n'est publié que dans la version d'essai : retirer « film » de ce réglage.")
 CLE = cfg.get('storage_key', 'pepe-v1')
 assert re.fullmatch(r'[a-z0-9-]+', CLE), CLE
 TITRE = NAME + ', un espace d’écoute pour les parents'
@@ -342,20 +342,23 @@ def build_site():
         if os.path.isdir(OUT + '/' + d):
             shutil.rmtree(OUT + '/' + d)
         shutil.copytree(SRC + '/' + d, OUT + '/' + d)
-    # Le film : ses fichiers ne sont recopiés que dans la version d'essai, et seulement quand le réglage « film » le demande.
+    # Le film : ses fichiers ne sont recopiés que quand le réglage « film » le demande.
     if os.path.isdir(OUT + '/film'):
         shutil.rmtree(OUT + '/film')
     if FILM:
         # Le film de présentation (« Ce qu'on ne dit pas par SMS », 1 minute 47, montage cinématographique du 20 novembre 2026) et la capsule de respiration (« Et vous ? », 35 secondes), chacun avec ses fichiers.
         attendus = ('ce-quon-ne-dit-pas-par-sms-vertical.mp4', 'ce-quon-ne-dit-pas-par-sms-horizontal.mp4', 'apercu-film.webp', 'affiche-film-verticale.webp', 'affiche-film-horizontale.webp',
-                    'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'et-vous-raccord-5s.mp4', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp')
+                    'et-vous-vertical.mp4', 'et-vous-horizontal.mp4', 'apercu.webp', 'affiche-verticale.webp', 'affiche-horizontale.webp')
+        # L'extrait de 5 secondes et les versions gardées pour comparer ne servent qu'à juger un montage : ils ne vont que dans une version d'essai.
+        if ESSAI:
+            attendus += ('et-vous-raccord-5s.mp4',)
         manque = [f for f in attendus if not os.path.exists(SRC + '/film/' + f)]
         if manque:
             raise SystemExit('Il manque dans site-src/film/ : ' + ', '.join(manque))
         os.makedirs(OUT + '/film')
         # Les versions gardées pour comparer (« et-vous-…-version-N.mp4 ») suivent, quand il y en a : le lecteur ne les charge jamais, elles n'ont que leur adresse.
         # Le premier montage du film de présentation est gardé de la même façon (« ce-quon-ne-dit-pas-par-sms-…-version-1.mp4 »).
-        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'(et-vous|ce-quon-ne-dit-pas-par-sms)-[a-z0-9-]+-version-[0-9]+\.mp4', f)))
+        gardes = tuple(sorted(f for f in os.listdir(SRC + '/film') if re.fullmatch(r'(et-vous|ce-quon-ne-dit-pas-par-sms)-[a-z0-9-]+-version-[0-9]+\.mp4', f))) if ESSAI else ()
         # La bande-annonce verticale de 30 secondes et l'export de la capsule pour Instagram : prêts au téléchargement, à leur seule adresse. Le lecteur ne les charge jamais.
         # Les crédits du film (un texte) les accompagnent.
         gardes += tuple(f for f in ('ce-quon-ne-dit-pas-par-sms-bande-annonce.mp4', 'et-vous-instagram.mp4', 'credits.txt') if os.path.exists(SRC + '/film/' + f))

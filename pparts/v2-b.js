@@ -250,7 +250,12 @@ const F_TXT={
     d:'L’outil sert à toute la famille, sans abonnement et sans limite de fiches.'}
 };
 const PRIX=k=>k==='relais'?'49 CHF, une seule fois':k==='parcours'?'84 CHF en tout':'0 CHF';
-const DEMO_PAIE='Dans cette version d’essai, aucun montant réel n’est débité.';
+/* Le site officiel s'appelle lui-même « version de test » dans ses pages de texte, tant que la vente n'est pas ouverte. L'ancienne version d'essai disait « version d'essai ». */
+const V_NOM=ESSAI?'version d’essai':'version de test';
+const POUR_DEMO=ESSAI?'Pour l’essai':'Pour la démonstration';
+/* Tant que la commande est une démonstration, le parent peut faire avancer les mensualités et annuler ses achats de démonstration. */
+const VENTE_DEMO=true;
+const DEMO_PAIE='Dans cette '+V_NOM+', aucun montant réel n’est débité.';
 const TOTAL_84='Total 84 CHF dans les deux cas. Sans supplément ni renouvellement automatique.';
 /* Les 6 dates d'un paiement en six fois : le jour de l'achat, puis le même jour des 5 mois suivants (ou le dernier jour du mois s'il est plus court). */
 function echeances(depuis){const p=String(depuis||todayIso()).split('-').map(Number);const out=[];for(let i=0;i<NB_ECH;i++){const y=p[0]+Math.floor((p[1]-1+i)/12),m=(p[1]-1+i)%12;const fin=new Date(y,m+1,0).getDate();out.push(y+'-'+pad(m+1)+'-'+pad(Math.min(p[2],fin)));}return out;}
@@ -290,7 +295,7 @@ function viewPlans(){
     '</ul><p class="f-avant">Le moyen de paiement, le remboursement et ce qui se passe si une mensualité ne peut pas être prélevée seront écrits ici et dans les conditions générales avant l’ouverture de la vente.</p></section>'+
     '<section class="f-prevenir"><h2>Être prévenu de l’ouverture</h2><p>La vente n’est pas encore ouverte. Si vous le souhaitez, vous pouvez demander à être prévenu par e-mail du jour où une offre ouvrira, à son prix annoncé.</p>'+prevenirHtml('parcours')+prevenirHtml('relais')+'<p class="hint">Le message part de votre propre messagerie. Antonio garde votre adresse seulement pour vous écrire ce jour-là, et vous pouvez lui demander de l’effacer.'+(CONTACT_R?' Si rien ne s’ouvre, écrivez à '+esc(contact())+'.':'')+'</p></section>'+
     '<div class="f-discret"><button type="button" class="lien-f" data-act="cadeau">'+I.star+'Offrir à un parent</button><button type="button" class="lien-f" data-act="retrouver">'+I.search+'Retrouver un achat</button></div>'+
-    '<p class="hint">Dans cette version d’essai, choisir une offre ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>'+
+    '<p class="hint">Dans cette '+V_NOM+', choisir une offre ouvre une démonstration de commande. Aucun paiement n’est demandé et rien n’est transmis.'+(SITE?' <a href="'+RACINE+'conditions.html">Conditions générales</a>':'')+'</p>'+
     '</div></main>';
 }
 /* « Me prévenir » est un vrai lien vers la messagerie du parent, avec un message écrit d'avance. C'est lui qui l'envoie : rien ne part sans lui. */
@@ -382,7 +387,7 @@ function viewCommande(){
   let corps='';
   if(e==='retrouver')corps=tete('Démonstration','Retrouver un achat','Vous avez changé d’appareil, ou effacé les données de votre navigateur ? Votre achat, lui, n’est pas perdu.')+demo+
       '<div class="cmd-recap"><p class="f-benef">Dans la vraie version, vous écrirez ici l’adresse e-mail utilisée pour l’achat.</p><ul><li>Vous recevrez un lien par e-mail, et ce lien rouvrira votre achat sur cet appareil.</li><li>Vos écrits, eux, ne voyagent pas avec l’achat. Pour les emporter, utilisez « Sauvegarder mes écrits ».</li></ul></div>'+
-      '<section class="cmd-paie"><h2>Pour l’essai</h2><p>Choisissez l’achat que ce lien rouvrirait.</p><div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="retrouve" data-f="parcours">Simuler le lien pour Le parcours</button><button type="button" class="btn primary wide" data-act="cmd" data-v="retrouve" data-f="relais">Simuler le lien pour Passer le relais</button><button type="button" class="btn ghost wide" data-act="go" data-view="plans">Revenir aux offres</button></div></section>';
+      '<section class="cmd-paie"><h2>'+POUR_DEMO+'</h2><p>Choisissez l’achat que ce lien rouvrirait.</p><div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="retrouve" data-f="parcours">Simuler le lien pour Le parcours</button><button type="button" class="btn primary wide" data-act="cmd" data-v="retrouve" data-f="relais">Simuler le lien pour Passer le relais</button><button type="button" class="btn ghost wide" data-act="go" data-view="plans">Revenir aux offres</button></div></section>';
   else if(e==='retrouve')corps=tete('Démonstration','Votre achat est rouvert.',esc(P.t)+' est de nouveau ouvert sur cet appareil.')+demo+
       '<div class="ap-suite">'+(f==='relais'?'<button type="button" class="btn primary wide" data-act="rl" data-k="ouvre">'+I.hand+'Ouvrir Passer le relais</button>':'<button type="button" class="btn primary wide" data-act="go" data-view="parcours">'+I.path+'Ouvrir mon parcours</button>')+'<button type="button" class="btn wide" data-act="rl" data-k="sauver">'+I.download+'Restaurer mes écrits depuis un fichier</button></div>';
   else if(e==='cadeau')corps=tete('Maquette','Offrir à un parent','Vous payez une fois. Le parent reçoit un lien et active son cadeau quand il le souhaite.')+demo+
@@ -416,7 +421,7 @@ function viewCommande(){
         '<p class="f-total">'+TOTAL_84+'</p></section>':
         '<section class="cmd-mode"><h2>Ce que vous payez</h2><ol class="ech"><li><span>Aujourd’hui, le '+esc(auj)+'</span><b>49 CHF</b></li><li class="ech-total"><span>Total</span><b>49 CHF</b></li></ol><p class="f-note">Ensuite, plus rien n’est prélevé. Il n’y a ni abonnement ni renouvellement.</p></section>')+
       '<section class="cmd-garde"><h2>Ce que vous gardez</h2><ul class="list"><li>'+esc(P.t)+' reste ouvert sans limite de durée.</li><li>'+(f==='relais'?'Vos fiches restent sur votre appareil. Vous pouvez les envoyer, les imprimer et les sauvegarder dans un fichier.':'Votre carnet reste sur votre appareil. Vous pouvez le sauvegarder dans un fichier et imprimer « Mon chemin ».')+'</li></ul></section>'+
-      '<section class="cmd-paie"><h2>Le paiement</h2><p>Dans la vraie version, vous paierez ici, auprès d’un prestataire de paiement. Il n’est pas encore choisi. Pour l’essai, choisissez l’issue que vous voulez voir.</p>'+
+      '<section class="cmd-paie"><h2>Le paiement</h2><p>Dans la vraie version, vous paierez ici, auprès d’un prestataire de paiement. Il n’est pas encore choisi. '+POUR_DEMO+', choisissez l’issue que vous voulez voir.</p>'+
       '<div class="ap-suite"><button type="button" class="btn primary wide" data-act="cmd" data-v="ok">Simuler un paiement accepté</button><button type="button" class="btn wide" data-act="cmd" data-v="refus">Simuler un paiement refusé</button><button type="button" class="btn ghost wide" data-act="cmd" data-v="abandon">Abandonner la commande</button></div></section>';
   }
   return '<main id="main" tabindex="-1" class="view v-feuille commande cde-'+e+'"><div class="feuille">'+corps+'</div></main>';
@@ -430,9 +435,9 @@ function achatsHtml(){
     (p&&E&&n<NB_ECH?'<p class="hint">La prochaine mensualité de 14 CHF est celle du '+esc(dateLongue(E[n]))+'. La dernière est celle du '+esc(dateLongue(E[NB_ECH-1]))+'.</p>':'')+
     (p&&E&&n>=NB_ECH?'<p class="hint">Les 6 mensualités sont payées. Plus rien ne sera prélevé.</p>':'')+
     '<div class="kv"><span>Passer le relais</span><span>'+(r?'acheté, 49 CHF':'pas acheté')+'</span></div>'+
-    (ESSAI&&p&&E&&n<NB_ECH?'<button type="button" class="btn small" data-act="ech-suite" style="align-self:flex-start">Simuler la mensualité suivante</button>':'')+
+    (VENTE_DEMO&&p&&E&&n<NB_ECH?'<button type="button" class="btn small" data-act="ech-suite" style="align-self:flex-start">Simuler la mensualité suivante</button>':'')+
     '<div class="row"><button type="button" class="btn'+(p&&r?'':' primary')+'" data-act="go" data-view="plans">'+I.tag+'Voir les 3 offres</button></div>'+
-    (ESSAI&&(p||r)?'<button type="button" class="lien-f" data-act="achats-zero">Annuler mes achats de démonstration</button>':'')+'</div>';
+    (VENTE_DEMO&&(p||r)?'<button type="button" class="lien-f" data-act="achats-zero">Annuler mes achats de démonstration</button>':'')+'</div>';
 }
 /* Ce que cet appareil a compté, pour la carte « Version d'essai » de l'écran « Moi ». */
 function reperesHtml(){
@@ -757,7 +762,7 @@ function handle(act,d,el){
     case 'consent':if(window.PEPEConsent)window.PEPEConsent.set(d.v==='yes');break;
     case 'reset':state.confirmReset=true;break;
     case 'reset-no':state.confirmReset=false;break;
-    case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
+    case 'reset-yes':souffleStop();state.draft='';brouillonOte();placeOte();state.data=migre(JSON.parse(JSON.stringify(DEF)));try{localStorage.removeItem(KEY);localStorage.removeItem(KEY_AVANT);}catch(e){}state.confirmReset=false;state.view='intro';state.prev=null;fxSync();render();histPush(true);window.scrollTo(0,0);toast('Effacé.');return;
     default:return;
   }
   const navAct=['go','sit','back','exo','step','kit','letter','peek-plans','peek-about','ob-done','photopick','photoback','porte','entrer','accueil','fiches','rouvrir-outil','apercu','apercu-reprise','ap','ap-garde','commande','cmd','cadeau','cadeau-voir','retrouver','transmettre','dfin'].includes(act)||((act==='rl'||act==='dire')&&fxSig()!==sig0);
@@ -807,7 +812,7 @@ app.addEventListener('keydown',e=>{
   else if(t.id==='ob-me'){e.preventDefault();handle('ob-done',{},t);}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.sheet){state.sheet=null;state.ob=null;fxGo(render,'fade',true);}});
-try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);try{sessionStorage.removeItem(KEY+'-place');sessionStorage.removeItem(KEY+'-brouillon');}catch(e){}if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
+try{if(/[?&](nouveau|reset|new)\b/.test(location.search)){localStorage.removeItem(KEY);localStorage.removeItem(KEY_AVANT);try{sessionStorage.removeItem(KEY+'-place');sessionStorage.removeItem(KEY+'-brouillon');}catch(e){}if(history.replaceState)history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 state.data=load();
 /* L'aperçu d'Antonio s'active aussi par l'adresse …/#atelier. Ce n'est pas un verrou : il sert à tout relire sans attendre les sept jours. */
 let atelierMsg=false;

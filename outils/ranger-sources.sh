@@ -93,5 +93,11 @@ cp build/film/intime/LISEZ-MOI.md build/film/intime/PLAN.md build/film/intime/it
 cp build/film/intime/titres/titres.json "$BRANCHE/outils/film/intime/titres/" 2>/dev/null || true
 cp build/film/pres/src/04-la-fiche-tendue.png build/film/pres/src/06-les-mains-cuisine.png "$BRANCHE/outils/film/pres/src/" 2>/dev/null || true
 
+# Les outils de la publication sur le site officiel et du retrait de la version d'essai, le 26 novembre 2026 (dans l'atelier, build/officiel/) :
+# la suite d'essais sur le site fabriqué, la répétition d'une mise en ligne sur un faux serveur, la mise à jour du document du projet.
+mkdir -p "$BRANCHE/outils/officiel/repet"
+cp build/officiel/LISEZ-MOI.md build/officiel/lot-o.sh build/officiel/doc-officiel.py "$BRANCHE/outils/officiel/" 2>/dev/null || true
+cp build/officiel/repet/repet.sh build/officiel/repet/serveur-ftp.py build/officiel/repet/serveur-http.js "$BRANCHE/outils/officiel/repet/" 2>/dev/null || true
+
 echo "sources : $(find "$BRANCHE" -type f -not -path '*/.git/*' | wc -l) fichiers, $(du -sh --exclude=.git "$BRANCHE" | cut -f1)"
 git -C "$BRANCHE" status --short | head -40

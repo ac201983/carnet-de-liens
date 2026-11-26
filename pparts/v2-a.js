@@ -66,7 +66,17 @@ const DEF={fxOff:false,tier:'free',achats:{},vu:'',me:'',age:'',situation:'',per
 const state={ap:{k:0,g:'',mot:''},cmd:{f:'',m:'une',k:'recap',de:''},rl:{e:'accueil',ex:'g',id:null,p:0,sec:'',r:null,lu:null,h:'',mots:false,attente:null,foc:''},photoPick:false,photoOrder:null,pdraft:null,evoDraft:null,data:null,view:'today',prev:null,lastKey:null,lastSheet:null,sit:null,q:'',theme:'all',age:'all',sheet:null,upFeat:null,toast:'',exo:null,kit:'sits',tool:'timer',timer:{total:300,left:300,running:false,h:null},ft:{pick:'first',g:null},confirmReset:false,sample:null,inClaude:false,busy:false,ctl:null,draft:'',qdraft:'',step:null,evoTime:'t1',depotMode:'listen',doseBusy:false,letter:null,souffle:{k:'pret',t0:0,raf:0,ph:'',cyc:-1,hid:0,ix:-1,tr:-1,seq:[],fin:0,cle:-1,choix:false,foc:''},lien:'',piste:false,confirmEssai:false,dire:null};
 let toastTimer=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d==='object')return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
+/* Le 26 novembre 2026, le site officiel a reçu la nouvelle version. Quand des notes écrites avec l'ancienne sont converties pour la première fois,
+   on en garde d'abord une copie telle quelle, sur l'appareil seulement, pendant 30 jours : si la conversion avait un défaut, rien ne serait perdu.
+   La copie s'efface avec le reste quand le parent choisit de tout recommencer. */
+const KEY_AVANT=KEY+'-avant-2026-11-26';
+function gardeAvant(brut,d){try{
+  const a=JSON.parse(localStorage.getItem(KEY_AVANT)||'null');
+  if(a&&a.le){if(Date.now()-new Date(a.le).getTime()>30*86400000)localStorage.removeItem(KEY_AVANT);return;}
+  /* des notes sont du texte, quelques milliers de signes. Au-delà de 1,5 million de signes, la copie prendrait la place dont l'enregistrement ordinaire a besoin : on ne la fait pas. */
+  if(d.onboarded&&!(d.pv>=3)&&brut.length<1500000)localStorage.setItem(KEY_AVANT,JSON.stringify({le:new Date().toISOString().slice(0,10),notes:brut}));
+}catch(e){}}
+function load(){try{const brut=localStorage.getItem(KEY);const d=JSON.parse(brut||'null');if(d&&typeof d==='object'){gardeAvant(brut,d);return migre(Object.assign(JSON.parse(JSON.stringify(DEF)),d));}}catch(e){}return migre(JSON.parse(JSON.stringify(DEF)));}
 /* Avant le 16 novembre 2026, les étapes faites étaient rangées par leur numéro. Elles le sont maintenant par leur nom.
    Un parent venu avant garde ouvertes autant d'étapes que de semaines écoulées depuis son arrivée, et celles qu'il avait faites. */
 function migre(d){
@@ -879,7 +889,7 @@ function viewIntro(){
     sec('parcours','6 mois pour comprendre, essayer et avancer','Le parcours compte 24 étapes, une par semaine. À chaque étape, un schéma vous fait comprendre une idée, Antonio vous raconte ce qu’il a vécu, vous essayez chez vous et vous écrivez quelques mots dans votre carnet de route.',sch+'<button type="button" class="btn acc-essai" data-act="apercu">'+I.path+'Essayer cette étape, en 3 minutes</button>'+mois+vecu+allerParcours)+
     sec('relais','Passer le relais, l’esprit plus léger','Un week-end chez un proche, une soirée, une première nuit ailleurs. Vous préparez une page pour la personne qui garde votre enfant, avec vos mots. Elle sait l’essentiel en 1 minute.',rlVitrineHtml())+
     '<section class="voice" aria-labelledby="voice-t"><h2 id="voice-t" class="sr">Qui est derrière cet espace</h2><p class="say">Avant d’accompagner des familles, j’ai moi-même été accueilli dans une famille.</p><p>J’ai été placé en famille d’accueil à 10 ans, je suis travailleur social depuis mes 19 ans et je suis père de 3 enfants. Moi aussi, j’ai connu ces périodes où la santé d’un enfant prend beaucoup de place.</p><p>Avec le temps, j’ai appris à composer, à apprendre et à évoluer avec la différence, et c’est ce que j’ai voulu mettre dans cet espace.</p><div class="who"><span class="av" aria-hidden="true">A</span><span class="who-tx"><b>Antonio Company</b><small>'+ROLE_A+'</small></span><button type="button" class="btn small" data-act="peek-about">Lire mon histoire</button></div></section>'+
-    sec('formules','Vous commencez gratuitement','Ensuite, vous payez une fois ce qui vous sert, sans abonnement. Voici les 3 offres, avec les prix prévus pour la Suisse. Dans cette version d’essai, aucun montant réel n’est débité.',plans)+
+    sec('formules','Vous commencez gratuitement','Ensuite, vous payez une fois ce qui vous sert, sans abonnement. Voici les 3 offres, avec les prix prévus pour la Suisse. Dans cette '+V_NOM+', aucun montant réel n’est débité.',plans)+
     sec('faq','Vos questions','',faq)+
     '<section class="acc-fin" aria-label="Pour commencer"><img class="finbg" src="'+PHOTO_DIR+'eau-g.webp" alt="" width="1120" height="840" loading="lazy" decoding="async">'+(cit?'<blockquote><p>'+esc(cit)+'</p><footer>Antonio</footer></blockquote>':'')+cta(true)+'</section>'+
     '<p class="hint" style="text-align:center">'+priv+'</p>'+

@@ -3,8 +3,8 @@
   "base_path": "/",
   "app_dir": "",
   "host": "infomaniak",
-  "updated": "2026-11-16",
-  "updated_fr": "16 novembre 2026",
+  "updated": "2026-11-26",
+  "updated_fr": "26 novembre 2026",
   "cf_token": "",
   "contact_email": "bonjour@parent-ecoute.ch",
   "legal_name": "Antonio Company",
@@ -12,5 +12,6 @@
   "phone": "",
   "ide": "",
   "host_name": "Infomaniak Network SA",
-  "host_address": "Rue Eugène-Marziano 25, 1227 Les Acacias, Suisse"
+  "host_address": "Rue Eugène-Marziano 25, 1227 Les Acacias, Suisse",
+  "film": "actif"
 }
